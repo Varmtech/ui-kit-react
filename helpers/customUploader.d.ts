@@ -1,0 +1,11 @@
+import { IAttachment } from '../types';
+import { ICustomUploader, IProgress } from '../components/ChatContainer';
+export declare const setCustomUploader: (uploader: any) => void;
+export declare const setSendAttachmentsAsSeparateMessages: (asSeparate: boolean) => void;
+export declare const getSendAttachmentsAsSeparateMessages: () => boolean;
+export declare const getCustomUploader: () => ICustomUploader;
+export declare const getCustomDownloader: () => (attachment: IAttachment, progressCallback?: ((progress: any) => void) | undefined) => Promise<string>;
+export declare const customUpload: (attachment: IAttachment, progress: ({ loaded, total }: IProgress) => void, getUpdatedFilePath?: ((newPath: String) => void) | undefined) => Promise<string>;
+export declare const pauseUpload: (attachmentId: string) => false | void;
+export declare const resumeUpload: (attachmentId: string) => false | void;
+export declare const cancelUpload: (attachmentId: string) => void;
