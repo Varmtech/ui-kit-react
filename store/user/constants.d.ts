@@ -6,6 +6,9 @@ export declare const GET_ROLES = "GET_ROLES";
 export declare const SET_ROLES = "SET_ROLES";
 export declare const BLOCK_USERS = "BLOCK_USERS";
 export declare const UNBLOCK_USERS = "UNBLOCK_USERS";
+export declare const SET_USER = "SET_USER";
+export declare const UPDATE_PROFILE = "UPDATE_PROFILE";
+export declare const UPDATE_USER_PROFILE = "UPDATE_USER_PROFILE";
 export declare const CONNECTION_EVENT_TYPES: {
     TOKEN_WILL_EXPIRE: string;
     CONNECTION_STATUS_CHANGED: string;

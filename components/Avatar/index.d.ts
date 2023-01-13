@@ -8,6 +8,7 @@ interface IProps {
     setDefaultAvatar?: boolean;
     DeletedIcon?: JSX.Element;
     defaultAvatarIcon?: JSX.Element;
+    defaultAvatarColor?: string;
 }
 declare const Avatar: React.FC<IProps>;
 export default Avatar;
