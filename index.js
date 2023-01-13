@@ -5,8 +5,6 @@ var React__default = _interopDefault(React);
 var reactRedux = require('react-redux');
 var createSagaMiddleware = require('redux-saga');
 var createSagaMiddleware__default = _interopDefault(createSagaMiddleware);
-var createNextState = require('immer');
-var createNextState__default = _interopDefault(createNextState);
 var redux = require('redux');
 var styled = require('styled-components');
 var styled__default = _interopDefault(styled);
@@ -445,8 +443,6 @@ function configureStore(options) {
     var composedEnhancer = finalCompose.apply(void 0, storeEnhancers);
     return redux.createStore(rootReducer, preloadedState, composedEnhancer);
 }
-// src/index.ts
-createNextState.enableES5();
 
 function _regeneratorRuntime() {
   /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
@@ -8515,15 +8511,13 @@ var UserReducer = (function (state, _ref) {
     case SET_CONTACTS:
       {
         var contacts = payload.contacts;
+        newState.contactList = _extends({}, contacts);
         var contactsMap = {};
         contacts.map(function (contact) {
           contactsMap[contact.id] = contact;
         });
-        var nextState = createNextState__default(newState, function (draft) {
-          draft.contactList = contacts;
-          draft.contactsMap = contactsMap;
-        });
-        return nextState;
+        newState.contactsMap = contactsMap;
+        return newState;
       }
 
     case SET_ROLES:

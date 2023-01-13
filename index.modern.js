@@ -1,7 +1,6 @@
 import React__default, { createElement, Children, useState, useEffect, useRef, useLayoutEffect, useCallback, createRef, useMemo } from 'react';
 import { useDispatch, useSelector, Provider, shallowEqual } from 'react-redux';
 import createSagaMiddleware, { eventChannel } from 'redux-saga';
-import createNextState, { enableES5 } from 'immer';
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import FileSaver from 'file-saver';
@@ -438,8 +437,6 @@ function configureStore(options) {
     var composedEnhancer = finalCompose.apply(void 0, storeEnhancers);
     return createStore(rootReducer, preloadedState, composedEnhancer);
 }
-// src/index.ts
-enableES5();
 //# sourceMappingURL=redux-toolkit.esm.js.map
 
 function _regeneratorRuntime() {
@@ -8509,15 +8506,13 @@ var UserReducer = (function (state, _ref) {
     case SET_CONTACTS:
       {
         var contacts = payload.contacts;
+        newState.contactList = _extends({}, contacts);
         var contactsMap = {};
         contacts.map(function (contact) {
           contactsMap[contact.id] = contact;
         });
-        var nextState = createNextState(newState, function (draft) {
-          draft.contactList = contacts;
-          draft.contactsMap = contactsMap;
-        });
-        return nextState;
+        newState.contactsMap = contactsMap;
+        return newState;
       }
 
     case SET_ROLES:
