@@ -11023,7 +11023,7 @@ function notificationsTurnOn() {
         case 14:
           _context9.prev = 14;
           _context9.t0 = _context9["catch"](6);
-          console.log('ERROR turn on notifications', _context9.t0.message);
+          console.log('ERROR turn on notifications: ', _context9.t0.message);
 
         case 17:
         case "end":
@@ -13805,7 +13805,7 @@ function getContacts() {
         case 11:
           _context.prev = 11;
           _context.t0 = _context["catch"](0);
-          console.log('ERROR in get contacts - ', _context.t0.message);
+          console.log('ERROR in get contacts - :', _context.t0.message);
 
         case 15:
         case "end":
