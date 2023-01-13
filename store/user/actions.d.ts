@@ -1,4 +1,4 @@
-import { IContact, IRole } from '../../types';
+import { IContact, IRole, IUser } from '../../types';
 export declare function setConnectionStatusAC(status: string): {
     type: string;
     payload: {
@@ -41,5 +41,29 @@ export declare function setContactsLoadingStateAC(status: number): {
     type: string;
     payload: {
         status: number;
+    };
+};
+export declare function setUserAC(user: IUser): {
+    type: string;
+    payload: {
+        user: IUser;
+    };
+};
+export declare function updateUserProfileAC(profile: any): {
+    type: string;
+    payload: {
+        profile: any;
+    };
+};
+export declare function updateProfileAC(user: IUser, firstName?: string, lastName?: string, avatarUrl?: string, metadata?: string, avatarFile?: File, presence?: string): {
+    type: string;
+    payload: {
+        user: IUser;
+        firstName: string | undefined;
+        lastName: string | undefined;
+        avatarUrl: string | undefined;
+        metadata: string | undefined;
+        avatarFile: File | undefined;
+        presence: string | undefined;
     };
 };

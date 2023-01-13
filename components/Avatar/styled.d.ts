@@ -1,6 +1,7 @@
 interface ContainerProps {
     size?: number;
     avatarName: string;
+    defaultAvatarColor?: string;
     textSize?: number;
     isImage?: boolean;
     marginAuto?: boolean;

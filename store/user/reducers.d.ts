@@ -1,4 +1,4 @@
-import { IAction, IContact, IRole } from '../../types';
+import { IAction, IContact, IRole, IUser } from '../../types';
 export interface IUserStore {
     connectionStatus: string;
     contactList: IContact[];
@@ -8,6 +8,7 @@ export interface IUserStore {
     contactsMap: {
         [key: string]: IContact;
     };
+    user: IUser;
 }
 declare const _default: (state: IUserStore | undefined, { type, payload }: IAction) => IUserStore;
 export default _default;

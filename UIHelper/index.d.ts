@@ -5,11 +5,12 @@ export declare const DropdownOptionLi: import("styled-components").StyledCompone
     textColor?: string | undefined;
     hoverBackground?: string | undefined;
     iconWidth?: string | undefined;
+    iconColor?: string | undefined;
+    margin?: string | undefined;
 }, never>;
 export declare const CustomSelect: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const CustomSelectTrigger: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const Label: import("styled-components").StyledComponent<"label", any, {}, never>;
-export declare const SectionHeader: import("styled-components").StyledComponent<"h3", any, {}, never>;
 export declare const UploadFile: import("styled-components").StyledComponent<"input", any, {}, never>;
 export declare const UploadFileLabel: import("styled-components").StyledComponent<"label", any, {}, never>;
 export declare const InputErrorMessage: import("styled-components").StyledComponent<"p", any, {}, never>;
@@ -26,6 +27,7 @@ export declare const Button: import("styled-components").StyledComponent<"button
     backgroundColor?: string | undefined;
     borderRadius?: string | undefined;
     disabled?: boolean | undefined;
+    margin?: string | undefined;
 }, never>;
 export declare const PopupName: import("styled-components").StyledComponent<"h3", any, {
     marginTop?: string | undefined;
@@ -41,7 +43,7 @@ export declare const PopupBody: import("styled-components").StyledComponent<"div
 }, never>;
 export declare const PopupDescription: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const PopupFooter: import("styled-components").StyledComponent<"div", any, any, never>;
-export declare const DetailsSectionHeader: import("styled-components").StyledComponent<"h4", any, {
+export declare const SectionHeader: import("styled-components").StyledComponent<"h4", any, {
     margin?: string | undefined;
 }, never>;
 export declare const ItemNote: import("styled-components").StyledComponent<"div", any, {

@@ -12,7 +12,7 @@ export declare const MessageTextFormat: ({ text, message }: {
     message: any;
 }) => string | string[];
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
-export declare const setMessageTypeByAttachment: (attachmentType: string) => "media" | "file";
+export declare const setMessageTypeByAttachment: (attachmentType: string) => "file" | "media";
 export declare const getAttachmentType: (dataName: string) => string;
 export declare const doesTextHasLink: (text: string) => any[];
 export declare const makeUserName: (contact?: IContact | undefined, user?: IUser | undefined) => string;
@@ -24,3 +24,4 @@ export declare const lastMessageDateFormat: (date: Date) => string;
 export declare const userLastActiveDateFormat: (date: Date) => string;
 export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;
 export declare const getMetadataFromUrl: (url: string) => Promise<any>;
+export declare const formatAudioVideoTime: (duration: number, currentTime: number) => string;
