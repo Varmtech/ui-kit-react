@@ -2,26 +2,19 @@
   "name": "sceyt-ui-kit",
   "version": "1.0.0",
   "description": "Made with create-react-library",
-  "author": "Armen-Varmtech",
+  "author": "Varmtech",
   "license": "MIT",
-  "repository": "Armen-Varmtech/sceyt-ui-kit",
-  "main": "dist/index.js",
-  "module": "dist/index.modern.js",
-  "source": "src/index.tsx",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Varmtech/ui-kit-react"
+  },
+  "main": "index.js",
+  "module": "index.modern.js",
   "engines": {
     "node": ">=10"
   },
   "scripts": {
-    "build": "microbundle-crl --no-compress --format modern,cjs",
-    "start": "microbundle-crl watch --no-compress --format cjs --jsxFragment React.Fragment",
-    "prepare": "run-s build",
-    "test": "run-s test:unit test:lint test:build",
-    "test:build": "run-s build",
-    "test:lint": "eslint .",
-    "test:unit": "cross-env CI=1 react-scripts test --env=jsdom",
-    "test:watch": "react-scripts test --env=jsdom",
-    "predeploy": "cd example && yarn install && yarn run build",
-    "deploy": "gh-pages -d example/build"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "peerDependencies": {
     "file-saver": "^2.0.5",
@@ -75,7 +68,6 @@
     "webpack-cli": "^5.0.1"
   },
   "files": [
-    "dist",
     "assets"
   ],
   "dependencies": {}
