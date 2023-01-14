@@ -7548,7 +7548,7 @@ var getCustomUploader = function getCustomUploader() {
 var getCustomDownloader = function getCustomDownloader() {
   return CustomUploader && CustomUploader.download;
 };
-var customUpload = function customUpload(attachment, progress, getUpdatedFilePath) {
+var customUpload = function customUpload(file, uploadId, progress, getUpdatedFilePath) {
   return new Promise(function (resolve, reject) {
     if (CustomUploader) {
       var uploadTask = {
@@ -7564,8 +7564,8 @@ var customUpload = function customUpload(attachment, progress, getUpdatedFilePat
         stop: function stop() {},
         resume: function resume() {}
       };
-      pendingUploaders[attachment.attachmentId] = uploadTask;
-      CustomUploader.upload(attachment, uploadTask);
+      pendingUploaders[uploadId] = uploadTask;
+      CustomUploader.upload(file, uploadTask);
     } else {
       reject(new Error('No Custom uploader'));
     }
@@ -7708,7 +7708,7 @@ var downloadFile = function downloadFile(attachment) {
 
     var _temp2 = function () {
       if (customDownloader) {
-        customDownloader(attachment).then(function (url) {
+        customDownloader(attachment.url).then(function (url) {
           try {
             return Promise.resolve(fetch(url)).then(function (_fetch2) {
               response = _fetch2;
@@ -11881,7 +11881,7 @@ function sendMessage(action) {
 
           _context.prev = 32;
           _context.next = 35;
-          return effects.call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
+          return effects.call(customUpload, messageAttachment.url, messageAttachment.attachmentId, handleUploadProgress, handleUpdateLocalPath);
 
         case 35:
           uri = _context.sent;
@@ -12044,7 +12044,7 @@ function sendMessage(action) {
           uploadAllAttachments = function uploadAllAttachments() {
             try {
               return Promise.resolve(Promise.all(attachmentsToSend.map(function (attachment) {
-                return customUpload(attachment, function (_ref2) {
+                return customUpload(attachment.url, attachment.attachmentId, function (_ref2) {
                   var loaded = _ref2.loaded,
                       total = _ref2.total;
                   console.log('progress  ,,, ', loaded / total);
@@ -12380,7 +12380,7 @@ function resendMessage(action) {
 
           _context3.prev = 22;
           _context3.next = 25;
-          return effects.call(customUpload, _messageAttachment, handleUploadProgress);
+          return effects.call(customUpload, _messageAttachment.url, _messageAttachment.attachmentId, handleUploadProgress);
 
         case 25:
           uri = _context3.sent;
@@ -14391,6 +14391,7 @@ function SvgDevaultAvatar32(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$9({
     width: 32,
     height: 32,
+    viewBox: "0 0 33 33",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$8 || (_path$8 = /*#__PURE__*/React.createElement("path", {
@@ -14592,6 +14593,7 @@ var Channel = function Channel(_ref) {
     textSize: 16,
     setDefaultAvatar: isDirectChannel,
     defaultAvatarIcon: React__default.createElement(SvgDevaultAvatar50, null),
+    DeletedIcon: React__default.createElement(SvgDevaultAvatar50, null),
     defaultAvatarColor: colors.gray3
   }), isDirectChannel && channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE && React__default.createElement(UserStatus, {
     backgroundColor: customColors && customColors.messageReadStatusTickColor
@@ -26154,7 +26156,7 @@ var Attachment = function Attachment(_ref) {
       setDownloadIsCancelled(false);
 
       if (customDownloader) {
-        customDownloader(attachment).then(function (url) {
+        customDownloader(attachment.url).then(function (url) {
           downloadImage(url);
         });
       } else {
@@ -26205,7 +26207,7 @@ var Attachment = function Attachment(_ref) {
 
     if (attachment.type === 'image' && !isPrevious) {
       if (customDownloader) {
-        customDownloader(attachment).then(function (url) {
+        customDownloader(attachment.url).then(function (url) {
           downloadImage(url);
         });
       } else {
@@ -26213,7 +26215,7 @@ var Attachment = function Attachment(_ref) {
       }
     } else {
       if (customDownloader) {
-        customDownloader(attachment).then(function (url) {
+        customDownloader(attachment.url).then(function (url) {
           setAttachmentUrl(url);
         });
       } else {
@@ -26264,10 +26266,10 @@ var Attachment = function Attachment(_ref) {
     }
   })) : ext === 'mp4' || ext === 'mov' || ext === 'avi' || ext === 'wmv' || ext === 'flv' || ext === 'webm' ? React__default.createElement(React__default.Fragment, null, !isPrevious ? React__default.createElement(VideoCont, {
     onClick: function onClick() {
-      return handleMediaItemClick && (attachmentCompilationState[attachment.attachmentId] ? attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.FAIL : true) && handleMediaItemClick(attachment);
+      return handleMediaItemClick && (attachmentCompilationState[attachment.attachmentId] ? attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.FAIL || attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.UPLOADING : true) && handleMediaItemClick(attachment);
     },
     isDetailsView: isDetailsView
-  }, attachmentCompilationState[attachment.attachmentId] && attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(UploadProgress, {
+  }, attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
     isRepliedMessage: isRepliedMessage,
     onClick: handlePauseResumeUpload
   }, React__default.createElement(UploadPercent, {
@@ -26280,7 +26282,7 @@ var Attachment = function Attachment(_ref) {
     maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : '240px',
     file: attachment,
     src: attachmentUrl,
-    uploading: attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING,
+    uploading: attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED),
     borderRadius: isRepliedMessage ? '4px' : borderRadius,
     isRepliedMessage: isRepliedMessage,
     isDetailsView: isDetailsView,
@@ -30188,7 +30190,7 @@ function SvgPicture(props) {
 }
 
 var _templateObject$D, _templateObject2$z, _templateObject3$q, _templateObject4$m;
-var Container$m = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 10;\n"])), function (props) {
+var Container$m = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
@@ -30223,7 +30225,7 @@ var EditChannel = function EditChannel(_ref) {
       newSubject = _useState4[0],
       setNewSubject = _useState4[1];
 
-  var _useState5 = React.useState(channel.metadata.d || channel.metadata),
+  var _useState5 = React.useState(channel.metadata && channel.metadata.d),
       newDescription = _useState5[0],
       setNewDescription = _useState5[1];
 
