@@ -13073,87 +13073,92 @@ function getMessageAttachments(action) {
 
         case 9:
           AttachmentByTypeQuery = _context10.sent;
+
+          if (forPopup) {
+            AttachmentByTypeQuery.reverse = true;
+          }
+
           result = {
             attachments: [],
             hasNext: true
           };
 
           if (!(direction === queryDirection.NEXT)) {
-            _context10.next = 17;
+            _context10.next = 18;
             break;
           }
 
-          _context10.next = 14;
+          _context10.next = 15;
           return effects.call(AttachmentByTypeQuery.loadPrevious);
 
-        case 14:
+        case 15:
           result = _context10.sent;
-          _context10.next = 26;
+          _context10.next = 27;
           break;
 
-        case 17:
+        case 18:
           if (!(direction === queryDirection.NEAR)) {
-            _context10.next = 23;
+            _context10.next = 24;
             break;
           }
 
-          _context10.next = 20;
+          _context10.next = 21;
           return effects.call(AttachmentByTypeQuery.loadNearMessageId, attachmentId);
 
-        case 20:
+        case 21:
           result = _context10.sent;
-          _context10.next = 26;
+          _context10.next = 27;
           break;
 
-        case 23:
-          _context10.next = 25;
+        case 24:
+          _context10.next = 26;
           return effects.call(AttachmentByTypeQuery.loadPrevious);
 
-        case 25:
+        case 26:
           result = _context10.sent;
 
-        case 26:
+        case 27:
           if (!forPopup) {
-            _context10.next = 34;
+            _context10.next = 35;
             break;
           }
 
           query.AttachmentByTypeQueryForPopup = AttachmentByTypeQuery;
-          _context10.next = 30;
+          _context10.next = 31;
           return effects.put(setAttachmentsForPopupAC(result.attachments));
 
-        case 30:
-          _context10.next = 32;
+        case 31:
+          _context10.next = 33;
           return effects.put(setAttachmentsCompleteForPopupAC(result.hasNext));
 
-        case 32:
-          _context10.next = 39;
+        case 33:
+          _context10.next = 40;
           break;
 
-        case 34:
+        case 35:
           query.AttachmentByTypeQuery = AttachmentByTypeQuery;
-          _context10.next = 37;
+          _context10.next = 38;
           return effects.put(setAttachmentsCompleteAC(result.hasNext));
 
-        case 37:
-          _context10.next = 39;
+        case 38:
+          _context10.next = 40;
           return effects.put(setAttachmentsAC(result.attachments));
 
-        case 39:
-          _context10.next = 44;
+        case 40:
+          _context10.next = 45;
           break;
 
-        case 41:
-          _context10.prev = 41;
+        case 42:
+          _context10.prev = 42;
           _context10.t0 = _context10["catch"](0);
           console.log('error in message attachment query');
 
-        case 44:
+        case 45:
         case "end":
           return _context10.stop();
       }
     }
-  }, _marked10$1, null, [[0, 41]]);
+  }, _marked10$1, null, [[0, 42]]);
 }
 
 function loadMoreMessageAttachments(action) {
@@ -27303,56 +27308,104 @@ var SliderPopup = function SliderPopup(_ref) {
       currentFile = _useState[0],
       setCurrentFile = _useState[1];
 
-  var _useState2 = React.useState(mediaFiles || [currentMediaFile]),
+  var _useState2 = React.useState(mediaFiles || []),
       attachmentsList = _useState2[0],
       setAttachmentsList = _useState2[1];
 
-  var _useState3 = React.useState({}),
-      downloadedFiles = _useState3[0],
-      setDownloadedFiles = _useState3[1];
+  var _useState3 = React.useState(true),
+      imageLoading = _useState3[0],
+      setImageLoading = _useState3[1];
+
+  var _useState4 = React.useState({}),
+      downloadedFiles = _useState4[0],
+      setDownloadedFiles = _useState4[1];
 
   var customUploader = getCustomUploader();
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var attachments = reactRedux.useSelector(attachmentsForPopupSelector, reactRedux.shallowEqual) || [];
-  var attachmentUserName = currentFile.user && createUserDisplayName(contactsMap[currentFile.user.id], currentFile.user);
-  React.useEffect(function () {
-    if (customUploader) {
+  var attachmentUserName = currentFile ? currentFile.user && createUserDisplayName(contactsMap[currentFile.user.id], currentFile.user) : '';
+
+  var handleClosePopup = function handleClosePopup() {
+    setAttachmentsList([]);
+    setIsSliderOpen(false);
+  };
+
+  useDidUpdate(function () {
+    if (customUploader && currentFile) {
       if (!downloadedFiles[currentFile.url]) {
         customUploader.download(currentFile.url).then(function (src) {
           var _extends2;
 
-          return setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.url] = src, _extends2)));
+          setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.url] = src, _extends2)));
+
+          if (currentFile.type === 'image') {
+            var image = new Image();
+            image.src = src;
+
+            image.onload = function () {
+              setImageLoading(false);
+            };
+          }
+        });
+      } else {
+        setImageLoading(false);
+      }
+    }
+  }, [currentFile]);
+  useDidUpdate(function () {
+    var currentMedia = attachments.find(function (att) {
+      return att.id === currentMediaFile.id;
+    });
+    setCurrentFile(currentMedia);
+    setAttachmentsList(attachments);
+  }, [attachments]);
+  React.useEffect(function () {
+    if (customUploader && currentMediaFile) {
+      if (!downloadedFiles[currentMediaFile.url]) {
+        customUploader.download(currentMediaFile.url).then(function (src) {
+          var _extends3;
+
+          setDownloadedFiles(_extends({}, downloadedFiles, (_extends3 = {}, _extends3[currentMediaFile.url] = src, _extends3)));
+
+          if (currentMediaFile.type === 'image') {
+            var image = new Image();
+            image.src = src;
+
+            image.onload = function () {
+              setImageLoading(false);
+            };
+          }
         });
       }
     }
 
-    if (currentFile && !mediaFiles) {
-      dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media, 35, queryDirection.NEAR, currentFile.id, true));
+    if (currentMediaFile && !mediaFiles) {
+      dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media, 35, queryDirection.NEAR, currentMediaFile.id, true));
     }
-  }, [currentFile]);
-  useDidUpdate(function () {
-    setAttachmentsList(attachments);
-  }, [attachments]);
+
+    return function () {
+      setAttachmentsList([]);
+    };
+  }, []);
   return React__default.createElement(Container$c, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
     name: attachmentUserName,
     setDefaultAvatar: true,
     size: 36,
-    image: currentFile.user && currentFile.user.avatarUrl
-  }), React__default.createElement(Info, null, React__default.createElement(UserName, null, attachmentUserName), React__default.createElement(FileDateAndSize, null, moment(currentFile.updatedAt).format('DD.MM.YYYY HH:mm'), ' ', React__default.createElement(FileSize, null, " ", currentFile.fileSize ? bytesToSize(currentFile.fileSize, 1) : '')))), React__default.createElement(ActionDownload, {
+    image: currentFile && currentFile.user && currentFile.user.avatarUrl
+  }), React__default.createElement(Info, null, React__default.createElement(UserName, null, attachmentUserName), React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.updatedAt).format('DD.MM.YYYY HH:mm'), ' ', React__default.createElement(FileSize, null, " ", currentFile && currentFile.fileSize ? bytesToSize(currentFile.fileSize, 1) : '')))), React__default.createElement(ActionDownload, {
     onClick: function onClick() {
       return downloadFile(currentFile);
     }
   }, React__default.createElement(SvgDownload, null)), React__default.createElement(Actions, null, React__default.createElement(ActionItem, {
-    onClick: function onClick() {
-      return setIsSliderOpen(null);
-    }
-  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, null, React__default.createElement(Carousel, {
+    onClick: handleClosePopup
+  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, null, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
     pagination: false,
     className: 'custom_carousel',
-    initialActiveIndex: attachmentsList.findIndex(function (item) {
+    initialActiveIndex: currentFile && attachmentsList.findIndex(function (item) {
       return item.url === currentFile.url;
     }),
     onChange: function onChange(_currentItem, pageIndex) {
+      setImageLoading(true);
       setCurrentFile(attachmentsList[pageIndex]);
     },
     renderArrow: function renderArrow(_ref2) {
@@ -27371,7 +27424,7 @@ var SliderPopup = function SliderPopup(_ref) {
   }, attachmentsList.map(function (file) {
     return React__default.createElement(CarouselItem, {
       key: file.url
-    }, downloadedFiles[file.url] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? React__default.createElement("img", {
+    }, downloadedFiles[file.url] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? imageLoading ? React__default.createElement(UploadingIcon, null) : React__default.createElement("img", {
       src: downloadedFiles[file.url],
       alt: file.name
     }) : React__default.createElement("video", {
@@ -27389,7 +27442,7 @@ var SliderPopup = function SliderPopup(_ref) {
       kind: 'captions',
       srcLang: 'en',
       src: '/media/examples/friday.vtt'
-    }), "Your browser does not support the video tag.")) : React__default.createElement(React__default.Fragment, null, "Loading"));
+    }), "Your browser does not support the video tag.")) : React__default.createElement(UploadingIcon, null));
   }))));
 };
 var Container$c = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
@@ -27403,7 +27456,7 @@ var FileSize = styled__default.span(_templateObject8$7 || (_templateObject8$7 = 
 var UserName = styled__default.h4(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled__default.span(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled__default.span(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  img,\n  video {\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n"])));
+var CarouselItem = styled__default.span(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  img,\n  video {\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n  video {\n    width: calc(100vw - 300px);\n  }\n"])));
 var ArrowButton = styled__default.button(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n"])), function (props) {
   return !props.leftButton && '24px';
 }, function (props) {
