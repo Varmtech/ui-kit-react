@@ -985,10 +985,7 @@ var initialState = {
   users: [],
   errorNotification: "",
   notifications: [],
-  typingIndicator: {
-    typingState: false,
-    from: {}
-  },
+  typingIndicator: {},
   searchValue: "",
   addedChannel: null,
   addedToChannel: null,
@@ -1246,11 +1243,25 @@ var ChannelReducer = (function (state, _temp) {
     case SWITCH_TYPING_INDICATOR:
       {
         var typingState = payload.typingState,
+            _channelId = payload.channelId,
             from = payload.from;
-        newState.typingIndicator = {
-          typingState: typingState,
-          from: from
-        };
+
+        if (typingState) {
+          var _extends2;
+
+          newState.typingIndicator = _extends({}, newState.typingIndicator, (_extends2 = {}, _extends2[_channelId] = {
+            from: from,
+            typingState: typingState
+          }, _extends2));
+        } else {
+          if (newState.typingIndicator[_channelId]) {
+            var copyData = _extends({}, newState.typingIndicator);
+
+            delete copyData[_channelId];
+            newState.typingIndicator = copyData;
+          }
+        }
+
         return newState;
       }
 
@@ -1598,7 +1609,7 @@ var hashCode = function hashCode(string) {
   return hash;
 };
 
-var GlobalStyles = styled.createGlobalStyle(_templateObject || (_templateObject = _taggedTemplateLiteralLoose(["\n\n  html, body {\n    font-family: 'Roboto', sans-serif;\n  }\n\n  .rc-mentions {\n    position: relative;\n\n    // ================= Input Area =================\n    > textarea {\n\n      resize: none;\n      //padding: 16px 45px 16px 108px;\n      padding: 16px 45px 16px 80px;\n      width: 100%;\n      display: block;\n      border: none;\n      font: inherit;\n      box-sizing: border-box;\n      border-radius: 6px;\n      font-size: 15px;\n      line-height: 17px;\n\n      &::placeholder {\n        font-size: 15px;\n        color: ", ";\n        opacity: 1;\n      }\n\n      & {\n        border: none;\n        outline: none !important;\n      }\n    }\n\n    & .rc-mentions-measure {\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      pointer-events: none;\n      // color: rgba(255, 0, 0, 0.3);\n      color: transparent;\n      z-index: -1;\n\n      font-size: inherit;\n      font-size-adjust: inherit;\n      font-style: inherit;\n      font-variant: inherit;\n      font-stretch: inherit;\n      font-weight: inherit;\n      font-family: inherit;\n\n      padding: 0;\n      margin: 0;\n      line-height: inherit;\n      vertical-align: top;\n      overflow: inherit;\n      word-break: inherit;\n      white-space: inherit;\n      word-wrap: break-word;\n      overflow-x: initial;\n      overflow-y: auto;\n      text-align: inherit;\n      letter-spacing: inherit;\n      white-space: inherit;\n      tab-size: inherit;\n      direction: inherit;\n    }\n\n    // ================== Dropdown ==================\n    & .rc-mentions-dropdown {\n      position: absolute;\n\n      & .rc-mentions-menu {\n        list-style: none;\n        margin: 0;\n        padding: 0;\n\n        & .rc-mentions-item {\n          cursor: pointer;\n        }\n      }\n    }\n  }\n\n  // Customize style\n  .rc-mentions-dropdown {\n    width: 300px;\n    height: 237px;\n    overflow-y: auto;\n    background: #FFFFFF;\n    border: 1px solid ", ";\n    box-sizing: border-box;\n    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n    border-radius: 6px;\n    & ul {\n      padding: 16px 0;\n      margin: 0;\n      list-style: none;\n    }\n  }\n\n  .mention_menu_item-active {\n    background: #e6f7ff;\n  }\n  /*.mention_menu_item {\n    display: flex;\n    align-items: center;\n    font-size: 15px;\n    padding: 6px 16px;\n    transition: all 0.2s;\n    cursor: pointer;\n\n    &:hover {\n      background-color: ", ";\n    }\n\n    & .dropdown-wrapper {\n      margin-left: auto;\n    }\n\n    & .dropdown-body {\n      bottom: -100px;\n      right: 0;\n    }\n  }*/\n  .rc-mentions-dropdown-menu-item-active {\n    background-color: ", ";\n  }\n\n  .rc-mentions-disabled {\n    opacity: 0.5;\n  }\n\n  .button {\n    display: inline-block;\n    box-sizing: border-box;\n    text-decoration: none;\n    outline: none;\n    cursor: pointer;\n    text-align: center;\n    font-family: 'Roboto', sans-serif;\n    font-style: normal;\n    border-radius: 4px;\n    font-weight: 500;\n    font-size: 0.875rem;\n    line-height: 1.25rem;\n    padding: 0.375rem 0.75rem;\n    background-color: white;\n    border: 1px solid ", ";\n    margin: 0;\n    user-select: none;\n    //border: none;\n    //transition: all 0.2s;\n    //box-shadow: 0 0 4px rgba(0,0,0,0.1);\n\n    //&:hover, &:focus {\n    //    box-shadow: 0 0 10px -2px rgba(0,0,0,0.25);\n    //}\n\n\n    &.blue {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n\n      &:disabled {\n        background-color: #D7D8E3;\n        border: 1px solid #D7D8E3;\n        pointer-events: none;\n      }\n    }\n\n    &.blue-dark {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.green {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.red {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.gray {\n      color: black;\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    @media ", " {\n      font-size: 0.812rem;\n      line-height: 1.25rem;\n      padding: 0.375rem 0.625rem;\n    }\n  }\n\n  @keyframes makeVisible {\n    0% {\n      opacity: 0;\n      visibility: visible;\n    }\n    100% {\n      opacity: 1;\n      visibility: visible;\n    }\n  }\n"])), colors.gray7, colors.gray1, colors.gray0, colors.gray0, colors.gray2, colors.blue1, colors.cobalt1, colors.cobalt1, colors.blue2, colors.blue5, colors.blue5, colors.blue5, colors.blue4, colors.green1, colors.green1, colors.green1, colors.green2, colors.red1, colors.red1, colors.red1, colors.red2, colors.gray2, colors.gray2, colors.gray2, device.tablet);
+var GlobalStyles = styled.createGlobalStyle(_templateObject || (_templateObject = _taggedTemplateLiteralLoose(["\n\n  .rc-mentions {\n    position: relative;\n\n    // ================= Input Area =================\n    > textarea {\n\n      resize: none;\n      //padding: 16px 45px 16px 108px;\n      padding: 16px 45px 16px 80px;\n      width: 100%;\n      display: block;\n      border: none;\n      font: inherit;\n      box-sizing: border-box;\n      border-radius: 6px;\n      font-size: 15px;\n      line-height: 17px;\n\n      &::placeholder {\n        font-size: 15px;\n        color: ", ";\n        opacity: 1;\n      }\n\n      & {\n        border: none;\n        outline: none !important;\n      }\n    }\n\n    & .rc-mentions-measure {\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      pointer-events: none;\n      // color: rgba(255, 0, 0, 0.3);\n      color: transparent;\n      z-index: -1;\n\n      font-size: inherit;\n      font-size-adjust: inherit;\n      font-style: inherit;\n      font-variant: inherit;\n      font-stretch: inherit;\n      font-weight: inherit;\n      font-family: inherit;\n\n      padding: 0;\n      margin: 0;\n      line-height: inherit;\n      vertical-align: top;\n      overflow: inherit;\n      word-break: inherit;\n      white-space: inherit;\n      word-wrap: break-word;\n      overflow-x: initial;\n      overflow-y: auto;\n      text-align: inherit;\n      letter-spacing: inherit;\n      white-space: inherit;\n      tab-size: inherit;\n      direction: inherit;\n    }\n\n    // ================== Dropdown ==================\n    & .rc-mentions-dropdown {\n      position: absolute;\n\n      & .rc-mentions-menu {\n        list-style: none;\n        margin: 0;\n        padding: 0;\n\n        & .rc-mentions-item {\n          cursor: pointer;\n        }\n      }\n    }\n  }\n\n  // Customize style\n  .rc-mentions-dropdown {\n    width: 300px;\n    height: 237px;\n    overflow-y: auto;\n    background: #FFFFFF;\n    border: 1px solid ", ";\n    box-sizing: border-box;\n    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n    border-radius: 6px;\n    & ul {\n      padding: 16px 0;\n      margin: 0;\n      list-style: none;\n    }\n  }\n\n  .mention_menu_item-active {\n    background: #e6f7ff;\n  }\n  /*.mention_menu_item {\n    display: flex;\n    align-items: center;\n    font-size: 15px;\n    padding: 6px 16px;\n    transition: all 0.2s;\n    cursor: pointer;\n\n    &:hover {\n      background-color: ", ";\n    }\n\n    & .dropdown-wrapper {\n      margin-left: auto;\n    }\n\n    & .dropdown-body {\n      bottom: -100px;\n      right: 0;\n    }\n  }*/\n  .rc-mentions-dropdown-menu-item-active {\n    background-color: ", ";\n  }\n\n  .rc-mentions-disabled {\n    opacity: 0.5;\n  }\n\n  .button {\n    display: inline-block;\n    box-sizing: border-box;\n    text-decoration: none;\n    outline: none;\n    cursor: pointer;\n    text-align: center;\n    font-style: normal;\n    border-radius: 4px;\n    font-weight: 500;\n    font-size: 0.875rem;\n    line-height: 1.25rem;\n    padding: 0.375rem 0.75rem;\n    background-color: white;\n    border: 1px solid ", ";\n    margin: 0;\n    user-select: none;\n    //border: none;\n    //transition: all 0.2s;\n    //box-shadow: 0 0 4px rgba(0,0,0,0.1);\n\n    //&:hover, &:focus {\n    //    box-shadow: 0 0 10px -2px rgba(0,0,0,0.25);\n    //}\n\n\n    &.blue {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n\n      &:disabled {\n        background-color: #D7D8E3;\n        border: 1px solid #D7D8E3;\n        pointer-events: none;\n      }\n    }\n\n    &.blue-dark {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.green {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.red {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.gray {\n      color: black;\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    @media ", " {\n      font-size: 0.812rem;\n      line-height: 1.25rem;\n      padding: 0.375rem 0.625rem;\n    }\n  }\n\n  @keyframes makeVisible {\n    0% {\n      opacity: 0;\n      visibility: visible;\n    }\n    100% {\n      opacity: 1;\n      visibility: visible;\n    }\n  }\n"])), colors.gray7, colors.gray1, colors.gray0, colors.gray0, colors.gray2, colors.blue1, colors.cobalt1, colors.cobalt1, colors.blue2, colors.blue5, colors.blue5, colors.blue5, colors.blue4, colors.green1, colors.green1, colors.green1, colors.green2, colors.red1, colors.red1, colors.red1, colors.red2, colors.gray2, colors.gray2, colors.gray2, device.tablet);
 function generateAvatarColor(itemName) {
   var avatarColors = getAvatarColors();
 
@@ -1629,7 +1640,7 @@ var DropdownOptionLi = styled__default.li(_templateObject3 || (_templateObject3 
 }, function (props) {
   return props.iconColor;
 });
-var CustomSelect = styled__default.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 40px;\n  min-height: 40px;\n  width: 100%;\n  min-width: ", ";\n  max-width: ", ";\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  font-family: 'Roboto', sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: ", ";\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  &:disabled {\n    background-color: ", ";\n  }\n\n  .dropdown-wrapper {\n    width: 100%;\n  }\n\n  .dropdown-body {\n    width: 100%;\n  }\n\n  .dropdown-trigger {\n    & .default-selection {\n      color: ", ";\n    }\n\n    //width: calc(100% - 20px);\n\n    &::after {\n      border-color: black;\n    }\n  }\n"])), function (props) {
+var CustomSelect = styled__default.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 40px;\n  min-height: 40px;\n  width: 100%;\n  min-width: ", ";\n  max-width: ", ";\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: ", ";\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  &:disabled {\n    background-color: ", ";\n  }\n\n  .dropdown-wrapper {\n    width: 100%;\n  }\n\n  .dropdown-body {\n    width: 100%;\n  }\n\n  .dropdown-trigger {\n    & .default-selection {\n      color: ", ";\n    }\n\n    //width: calc(100% - 20px);\n\n    &::after {\n      border-color: black;\n    }\n  }\n"])), function (props) {
   return props.minWidth;
 }, function (props) {
   return props.maxWidth;
@@ -1683,7 +1694,7 @@ var Row = styled__default.div(_templateObject15 || (_templateObject15 = _taggedT
 }, function (props) {
   return props.flexWrap;
 });
-var Button = styled__default.button(_templateObject16 || (_templateObject16 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  box-sizing: border-box;\n  text-decoration: none;\n  outline: none;\n  cursor: ", ";\n  text-align: center;\n  font-family: 'Roboto', sans-serif;\n  font-style: normal;\n  border-radius: ", ";\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  padding: 8px 16px;\n  background-color: ", ";\n  color: ", ";\n  border: 1px solid ", ";\n  margin: ", ";\n  user-select: none;\n  transition: opacity 0.1s;\n  opacity: ", ";\n  &:hover,\n  &:focus {\n    opacity: ", ";\n  }\n"])), function (props) {
+var Button = styled__default.button(_templateObject16 || (_templateObject16 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  box-sizing: border-box;\n  text-decoration: none;\n  outline: none;\n  cursor: ", ";\n  text-align: center;\n  font-style: normal;\n  border-radius: ", ";\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  padding: 8px 16px;\n  background-color: ", ";\n  color: ", ";\n  border: 1px solid ", ";\n  margin: ", ";\n  user-select: none;\n  transition: opacity 0.1s;\n  opacity: ", ";\n  &:hover,\n  &:focus {\n    opacity: ", ";\n  }\n"])), function (props) {
   return !props.disabled && 'pointer';
 }, function (props) {
   return props.borderRadius || '4px';
@@ -1700,7 +1711,7 @@ var Button = styled__default.button(_templateObject16 || (_templateObject16 = _t
 }, function (props) {
   return props.disabled ? 0.5 : 0.8;
 });
-var PopupName = styled__default.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-family: 'Roboto', sans-serif;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.blue6, function (props) {
+var PopupName = styled__default.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.blue6, function (props) {
   return props.marginTop;
 }, function (props) {
   return props.marginBottom;
@@ -1840,7 +1851,7 @@ var UploadProgress = styled__default.div(_templateObject40 || (_templateObject40
 }, function (props) {
   return props.whiteBackground && "\n    background-color: rgba(255,255,255,0.3);\n    border: 1px solid  " + colors.gray1 + ";\n\n    " + UploadingIcon + " {\n        border: 4px solid rgba(238,238,238,0.8);\n        border-top: 4px solid " + colors.cobalt1 + ";\n    }\n  ";
 });
-var AttachmentPreviewTitle = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
+var AttachmentPreviewTitle = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.blue10;
 });
 
@@ -8793,12 +8804,13 @@ function sendTypingAC(state) {
     }
   };
 }
-function switchTypingIndicatorAC(typingState, from) {
+function switchTypingIndicatorAC(typingState, channelId, from) {
   return {
     type: SWITCH_TYPING_INDICATOR,
     payload: {
       typingState: typingState,
-      from: from
+      from: from,
+      channelId: channelId
     }
   };
 }
@@ -9409,7 +9421,7 @@ var setContactsMap = function setContactsMap(contacts) {
 
 var _marked = /*#__PURE__*/_regeneratorRuntime().mark(watchForEvents);
 function watchForEvents() {
-  var SceytChatClient, channelListener, connectionListener, chan, _yield$take, type, args, createdChannel, channelExists, channel, _channel2, _channelExists, _channel3, removedMembers, _activeChannelId2, _channelExists2, activeChannel, _channel4, _activeChannelId3, _channelExists3, updatedChannel, _channelExists4, subject, avatarUrl, _channel5, message, _activeChannelId4, _channelExists5, channelForAdd, notificationStatus, _ret, _channel6, from, _activeChannelId5, _channel7, _from, _activeChannelId6, channelId, _activeChannelId7, _channel8, _activeChannel, _channel9, deletedMessage, _activeChannelId8, _channelExists6, _channel10, _message, _activeChannelId9, _channelExists7, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId11, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _channel19, status;
+  var SceytChatClient, channelListener, connectionListener, chan, _yield$take, type, args, createdChannel, channelExists, channel, _channel2, _channelExists, _channel3, removedMembers, _activeChannelId2, _channelExists2, activeChannel, _channel4, _activeChannelId3, _channelExists3, updatedChannel, _channelExists4, subject, avatarUrl, _channel5, message, _activeChannelId4, _channelExists5, channelForAdd, notificationStatus, _ret, _channel6, from, _channel7, _from, channelId, _activeChannelId5, _channel8, _activeChannel, _channel9, deletedMessage, _activeChannelId6, _channelExists6, _channel10, _message, _activeChannelId7, _channelExists7, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId9, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _channel19, status;
 
   return _regeneratorRuntime().wrap(function watchForEvents$(_context2) {
     while (1) {
@@ -9737,7 +9749,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context2.t0 = type;
-          _context2.next = _context2.t0 === CHANNEL_EVENT_TYPES.CREATE ? 13 : _context2.t0 === CHANNEL_EVENT_TYPES.JOIN ? 22 : _context2.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 29 : _context2.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 36 : _context2.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 43 : _context2.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 45 : _context2.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 71 : _context2.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 87 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 95 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 134 : _context2.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 138 : _context2.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 146 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE ? 155 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 175 : _context2.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 190 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 203 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 205 : _context2.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 210 : _context2.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 216 : _context2.t0 === CHANNEL_EVENT_TYPES.MUTE ? 231 : _context2.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 236 : _context2.t0 === CHANNEL_EVENT_TYPES.HIDE ? 241 : _context2.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 246 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 251 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 256 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 261 : _context2.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 268 : 272;
+          _context2.next = _context2.t0 === CHANNEL_EVENT_TYPES.CREATE ? 13 : _context2.t0 === CHANNEL_EVENT_TYPES.JOIN ? 22 : _context2.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 29 : _context2.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 36 : _context2.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 43 : _context2.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 45 : _context2.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 71 : _context2.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 87 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 95 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 134 : _context2.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 138 : _context2.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 142 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE ? 146 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 166 : _context2.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 181 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 194 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 196 : _context2.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 201 : _context2.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 207 : _context2.t0 === CHANNEL_EVENT_TYPES.MUTE ? 222 : _context2.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 227 : _context2.t0 === CHANNEL_EVENT_TYPES.HIDE ? 232 : _context2.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 237 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 242 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 247 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 252 : _context2.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 259 : 263;
           break;
 
         case 13:
@@ -9758,7 +9770,7 @@ function watchForEvents() {
           return effects.put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 21:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 22:
           channel = args.channel;
@@ -9768,7 +9780,7 @@ function watchForEvents() {
 
         case 26:
 
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 29:
           console.log('channel LEAVE ... ');
@@ -9777,7 +9789,7 @@ function watchForEvents() {
 
         case 33:
 
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 36:
           console.log('channel BLOCK ... ');
@@ -9793,11 +9805,11 @@ function watchForEvents() {
           return effects.put(removeChannelAC(_channel2.id));
 
         case 42:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 43:
           console.log('channel UNBLOCK ... ');
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 45:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -9860,7 +9872,7 @@ function watchForEvents() {
           }));
 
         case 70:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 71:
           _channel4 = args.channel;
@@ -9897,7 +9909,7 @@ function watchForEvents() {
           }));
 
         case 86:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 87:
           updatedChannel = args.updatedChannel;
@@ -9917,7 +9929,7 @@ function watchForEvents() {
           }));
 
         case 94:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 95:
           _channel5 = args.channel, message = args.message;
@@ -10018,7 +10030,7 @@ function watchForEvents() {
           return effects.put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 133:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 134:
           return _context2.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -10102,165 +10114,142 @@ function watchForEvents() {
             break;
           }
 
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 138:
           _channel6 = args.channel, from = args.from;
           _context2.next = 141;
-          return effects.call(getActiveChannelId);
+          return effects.put(switchTypingIndicatorAC(true, _channel6.id, from));
 
         case 141:
-          _activeChannelId5 = _context2.sent;
+          return _context2.abrupt("break", 264);
 
-          if (!(_activeChannelId5 === _channel6.id)) {
-            _context2.next = 145;
-            break;
-          }
-
+        case 142:
+          _channel7 = args.channel, _from = args.from;
           _context2.next = 145;
-          return effects.put(switchTypingIndicatorAC(true, from));
+          return effects.put(switchTypingIndicatorAC(false, _channel7.id, _from));
 
         case 145:
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
         case 146:
-          _channel7 = args.channel, _from = args.from;
-          console.log('stop typing.... channel..  ', _channel7, 'from ...', _from);
+          channelId = args.channelId;
+          console.log('channel DELETE ... ');
           _context2.next = 150;
           return effects.call(getActiveChannelId);
 
         case 150:
-          _activeChannelId6 = _context2.sent;
-
-          if (!(_activeChannelId6 === _channel7.id)) {
-            _context2.next = 154;
-            break;
-          }
-
-          _context2.next = 154;
-          return effects.put(switchTypingIndicatorAC(false, _from));
-
-        case 154:
-          return _context2.abrupt("break", 273);
-
-        case 155:
-          channelId = args.channelId;
-          console.log('channel DELETE ... ');
-          _context2.next = 159;
-          return effects.call(getActiveChannelId);
-
-        case 159:
-          _activeChannelId7 = _context2.sent;
+          _activeChannelId5 = _context2.sent;
           _channel8 = getChannelFromMap(channelId);
 
           if (!_channel8) {
-            _context2.next = 166;
+            _context2.next = 157;
             break;
           }
 
-          _context2.next = 164;
+          _context2.next = 155;
           return effects.put(removeChannelAC(channelId));
 
-        case 164:
-          _context2.next = 166;
+        case 155:
+          _context2.next = 157;
           return effects.call(removeChannelFromMap, channelId);
 
-        case 166:
-          _context2.next = 168;
+        case 157:
+          _context2.next = 159;
           return effects.put(setChannelToRemoveAC(_channel8));
 
-        case 168:
-          if (!(_activeChannelId7 === channelId)) {
-            _context2.next = 174;
+        case 159:
+          if (!(_activeChannelId5 === channelId)) {
+            _context2.next = 165;
             break;
           }
 
-          _context2.next = 171;
+          _context2.next = 162;
           return effects.call(getLastChannelFromMap);
 
-        case 171:
+        case 162:
           _activeChannel = _context2.sent;
-          _context2.next = 174;
+          _context2.next = 165;
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
-        case 174:
-          return _context2.abrupt("break", 273);
+        case 165:
+          return _context2.abrupt("break", 264);
 
-        case 175:
+        case 166:
           _channel9 = args.channel, deletedMessage = args.deletedMessage;
-          _activeChannelId8 = getActiveChannelId();
+          _activeChannelId6 = getActiveChannelId();
           console.log('channel DELETE_MESSAGE ... ');
           _channelExists6 = checkChannelExists(_channel9.id);
 
-          if (!(_channel9.id === _activeChannelId8)) {
-            _context2.next = 182;
+          if (!(_channel9.id === _activeChannelId6)) {
+            _context2.next = 173;
             break;
           }
 
-          _context2.next = 182;
+          _context2.next = 173;
           return effects.put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 182:
+        case 173:
           updateMessageOnMap(_channel9.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
 
           if (!_channelExists6) {
-            _context2.next = 189;
+            _context2.next = 180;
             break;
           }
 
-          _context2.next = 186;
+          _context2.next = 177;
           return effects.put(updateChannelDataAC(_channel9.id, {
             unreadMessageCount: _channel9.unreadMessageCount
           }));
 
-        case 186:
+        case 177:
           if (!(_channel9.lastMessage.id === deletedMessage.id)) {
-            _context2.next = 189;
+            _context2.next = 180;
             break;
           }
 
-          _context2.next = 189;
+          _context2.next = 180;
           return effects.put(updateChannelLastMessageAC(deletedMessage, _channel9));
 
-        case 189:
-          return _context2.abrupt("break", 273);
+        case 180:
+          return _context2.abrupt("break", 264);
 
-        case 190:
+        case 181:
           _channel10 = args.channel, _message = args.message;
           console.log('channel EDIT_MESSAGE ... ');
-          _activeChannelId9 = getActiveChannelId();
+          _activeChannelId7 = getActiveChannelId();
           _channelExists7 = checkChannelExists(_channel10.id);
 
-          if (!(_channel10.id === _activeChannelId9)) {
-            _context2.next = 197;
+          if (!(_channel10.id === _activeChannelId7)) {
+            _context2.next = 188;
             break;
           }
 
-          _context2.next = 197;
+          _context2.next = 188;
           return effects.put(updateMessageAC(_message.id, {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments
           }));
 
-        case 197:
+        case 188:
           if (!_channelExists7) {
-            _context2.next = 201;
+            _context2.next = 192;
             break;
           }
 
           if (!(_channel10.lastMessage.id === _message.id)) {
-            _context2.next = 201;
+            _context2.next = 192;
             break;
           }
 
-          _context2.next = 201;
+          _context2.next = 192;
           return effects.put(updateChannelLastMessageAC(_message, _channel10));
 
-        case 201:
+        case 192:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             updateMessageOnMap(_channel10.id, {
               messageId: _message.id,
@@ -10268,150 +10257,150 @@ function watchForEvents() {
             });
           }
 
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
-        case 203:
+        case 194:
           console.log('channel REACTION_ADDED ... ');
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
-        case 205:
+        case 196:
           console.log('channel REACTION_DELETED ... ');
 
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
-        case 210:
+        case 201:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context2.next = 215;
+          _context2.next = 206;
           return effects.put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 215:
-          return _context2.abrupt("break", 273);
+        case 206:
+          return _context2.abrupt("break", 264);
 
-        case 216:
+        case 207:
           _channel13 = args.channel;
           console.log('channel CLEAR_HISTORY ... ');
-          _context2.next = 220;
+          _context2.next = 211;
           return effects.call(getActiveChannelId);
 
-        case 220:
-          _activeChannelId11 = _context2.sent;
-          _context2.next = 223;
+        case 211:
+          _activeChannelId9 = _context2.sent;
+          _context2.next = 214;
           return effects.call(checkChannelExists, _channel13.id);
 
-        case 223:
+        case 214:
           channelExist = _context2.sent;
 
-          if (!(_channel13.id === _activeChannelId11)) {
-            _context2.next = 227;
+          if (!(_channel13.id === _activeChannelId9)) {
+            _context2.next = 218;
             break;
           }
 
-          _context2.next = 227;
+          _context2.next = 218;
           return effects.put(clearMessagesAC());
 
-        case 227:
+        case 218:
           if (!channelExist) {
-            _context2.next = 230;
+            _context2.next = 221;
             break;
           }
 
-          _context2.next = 230;
+          _context2.next = 221;
           return effects.put(updateChannelLastMessageAC({}, _channel13));
 
-        case 230:
-          return _context2.abrupt("break", 273);
+        case 221:
+          return _context2.abrupt("break", 264);
 
-        case 231:
+        case 222:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context2.next = 235;
+          _context2.next = 226;
           return effects.put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 235:
-          return _context2.abrupt("break", 273);
+        case 226:
+          return _context2.abrupt("break", 264);
 
-        case 236:
+        case 227:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context2.next = 240;
+          _context2.next = 231;
           return effects.put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 240:
-          return _context2.abrupt("break", 273);
+        case 231:
+          return _context2.abrupt("break", 264);
 
-        case 241:
+        case 232:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context2.next = 245;
+          _context2.next = 236;
           return effects.put(setChannelToHideAC(_channel16));
 
-        case 245:
-          return _context2.abrupt("break", 273);
+        case 236:
+          return _context2.abrupt("break", 264);
 
-        case 246:
+        case 237:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context2.next = 250;
+          _context2.next = 241;
           return effects.put(setChannelToUnHideAC(_channel17));
 
-        case 250:
-          return _context2.abrupt("break", 273);
+        case 241:
+          return _context2.abrupt("break", 264);
 
-        case 251:
+        case 242:
           _channel18 = args.channel;
           console.log('channel CHANNEL_MARKED_AS_UNREAD ... ', _channel18);
-          _context2.next = 255;
+          _context2.next = 246;
           return effects.put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 255:
-          return _context2.abrupt("break", 273);
+        case 246:
+          return _context2.abrupt("break", 264);
 
-        case 256:
+        case 247:
           _channel19 = args.channel;
           console.log('channel CHANNEL_MARKED_AS_READ ... ', _channel19);
-          _context2.next = 260;
+          _context2.next = 251;
           return effects.put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 260:
-          return _context2.abrupt("break", 273);
+        case 251:
+          return _context2.abrupt("break", 264);
 
-        case 261:
+        case 252:
           console.log('channel CHANGE_ROLE ... ');
-          _context2.next = 265;
+          _context2.next = 256;
           return effects.call(getActiveChannelId);
 
-        case 265:
+        case 256:
 
-          return _context2.abrupt("break", 273);
+          return _context2.abrupt("break", 264);
 
-        case 268:
+        case 259:
           status = args.status;
-          _context2.next = 271;
+          _context2.next = 262;
           return effects.put(setConnectionStatusAC(status));
 
-        case 271:
-          return _context2.abrupt("break", 273);
+        case 262:
+          return _context2.abrupt("break", 264);
 
-        case 272:
+        case 263:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 273:
+        case 264:
           _context2.next = 4;
           break;
 
-        case 275:
+        case 266:
         case "end":
           return _context2.stop();
       }
@@ -10968,25 +10957,21 @@ function switchChannel(action) {
           return effects.put(setActiveChannelAC(_extends({}, channel)));
 
         case 9:
-          _context7.next = 11;
-          return effects.put(switchTypingIndicatorAC(false));
 
-        case 11:
-
-          _context7.next = 17;
+          _context7.next = 15;
           break;
 
-        case 14:
-          _context7.prev = 14;
+        case 12:
+          _context7.prev = 12;
           _context7.t0 = _context7["catch"](0);
           console.log('error in switch channel');
 
-        case 17:
+        case 15:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7, null, [[0, 14]]);
+  }, _marked7, null, [[0, 12]]);
 }
 
 function notificationsTurnOff(action) {
@@ -14400,8 +14385,10 @@ var channelInfoIsOpenSelector = function channelInfoIsOpenSelector(store) {
 var channelEditModeSelector = function channelEditModeSelector(store) {
   return store.ChannelReducer.channelEditMode;
 };
-var typingIndicatorSelector = function typingIndicatorSelector(store) {
-  return store.ChannelReducer.typingIndicator;
+var typingIndicatorSelector = function typingIndicatorSelector(channelId) {
+  return function (store) {
+    return store.ChannelReducer.typingIndicator[channelId];
+  };
 };
 var channelListWidthSelector = function channelListWidthSelector(store) {
   return store.ChannelReducer.channelListWidth;
@@ -14426,18 +14413,18 @@ function _extends$7() {
   return _extends$7.apply(this, arguments);
 }
 
-function SvgTrash(props) {
+function SvgPicture(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$7({
-    width: 16,
-    height: 16,
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$6 || (_path$6 = /*#__PURE__*/React.createElement("path", {
-    d: "M1.5 3.89h13M5.111 3.889V2.444A1.444 1.444 0 016.556 1h2.888a1.444 1.444 0 011.445 1.444V3.89m2.167 0V14a1.444 1.444 0 01-1.445 1.444H4.39A1.444 1.444 0 012.944 14V3.889h10.112zM6.556 7.5v4.333M9.444 7.5v4.333",
-    stroke: "currentColor",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
+    fill: "#818C99"
   })));
 }
 
@@ -14460,18 +14447,16 @@ function _extends$8() {
   return _extends$8.apply(this, arguments);
 }
 
-function SvgPicture(props) {
+function SvgVideoCall(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$8({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
+    width: 16,
+    height: 16,
+    viewBox: "0 0 16.01 16.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$7 || (_path$7 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
-    fill: "#818C99"
+    d: "M.667 4.875C.667 3.839 1.507 3 2.542 3h6.875c1.036 0 1.875.84 1.875 1.875v6.25c0 1.036-.84 1.875-1.875 1.875H2.542a1.875 1.875 0 01-1.875-1.875v-6.25zM12.542 6.125l2.11-1.687a.625.625 0 011.015.488v6.149a.625.625 0 01-1.015.488l-2.11-1.688v-3.75z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -14494,20 +14479,22 @@ function _extends$9() {
   return _extends$9.apply(this, arguments);
 }
 
-function SvgVideoCall(props) {
+function SvgChoseFile(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$9({
-    width: 16,
-    height: 16,
-    viewBox: "0 0 16.01 16.01",
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$8 || (_path$8 = /*#__PURE__*/React.createElement("path", {
-    d: "M.667 4.875C.667 3.839 1.507 3 2.542 3h6.875c1.036 0 1.875.84 1.875 1.875v6.25c0 1.036-.84 1.875-1.875 1.875H2.542a1.875 1.875 0 01-1.875-1.875v-6.25zM12.542 6.125l2.11-1.687a.625.625 0 011.015.488v6.149a.625.625 0 01-1.015.488l-2.11-1.688v-3.75z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M3 3.75A2.25 2.25 0 015.25 1.5h7.5A2.25 2.25 0 0115 3.75v10.5a2.25 2.25 0 01-2.25 2.25h-7.5A2.25 2.25 0 013 14.25V3.75zm2.25 6.938c0-.311.252-.563.563-.563h6.375a.563.563 0 010 1.125H5.811a.563.563 0 01-.562-.563zm.563 2.062a.563.563 0 000 1.125h3.375a.563.563 0 000-1.125H5.812z",
+    fill: "#818C99"
   })));
 }
 
-var _path$9;
+var _path$9, _path2;
 
 function _extends$a() {
   _extends$a = Object.assign ? Object.assign.bind() : function (target) {
@@ -14526,22 +14513,23 @@ function _extends$a() {
   return _extends$a.apply(this, arguments);
 }
 
-function SvgChoseFile(props) {
+function SvgVoiceIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$a({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
+    width: 16,
+    height: 16,
+    viewBox: "0 0 17 17",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$9 || (_path$9 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M3 3.75A2.25 2.25 0 015.25 1.5h7.5A2.25 2.25 0 0115 3.75v10.5a2.25 2.25 0 01-2.25 2.25h-7.5A2.25 2.25 0 013 14.25V3.75zm2.25 6.938c0-.311.252-.563.563-.563h6.375a.563.563 0 010 1.125H5.811a.563.563 0 01-.562-.563zm.563 2.062a.563.563 0 000 1.125h3.375a.563.563 0 000-1.125H5.812z",
-    fill: "#818C99"
+    d: "M5.5 3.5a2.5 2.5 0 015 0v4a2.5 2.5 0 01-5 0v-4zM7.375 13.125a.625.625 0 111.25 0v1.25a.625.625 0 11-1.25 0v-1.25zM14 7.125a.625.625 0 11-1.25 0 .625.625 0 011.25 0zM3.25 7.125a.625.625 0 11-1.25 0 .625.625 0 011.25 0z",
+    fill: "CurrentColor"
+  })), _path2 || (_path2 = /*#__PURE__*/React.createElement("path", {
+    d: "M8 13a6 6 0 006-6h-1.25a4.75 4.75 0 11-9.5 0H2a6 6 0 006 6z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$a, _path2;
+var _path$a;
 
 function _extends$b() {
   _extends$b = Object.assign ? Object.assign.bind() : function (target) {
@@ -14560,18 +14548,17 @@ function _extends$b() {
   return _extends$b.apply(this, arguments);
 }
 
-function SvgVoiceIcon(props) {
+function SvgDevaultAvatar50(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$b({
-    width: 16,
-    height: 16,
-    viewBox: "0 0 17 17",
+    width: 48,
+    height: 48,
+    viewBox: "0 0 50 50",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$a || (_path$a = /*#__PURE__*/React.createElement("path", {
-    d: "M5.5 3.5a2.5 2.5 0 015 0v4a2.5 2.5 0 01-5 0v-4zM7.375 13.125a.625.625 0 111.25 0v1.25a.625.625 0 11-1.25 0v-1.25zM14 7.125a.625.625 0 11-1.25 0 .625.625 0 011.25 0zM3.25 7.125a.625.625 0 11-1.25 0 .625.625 0 011.25 0z",
-    fill: "CurrentColor"
-  })), _path2 || (_path2 = /*#__PURE__*/React.createElement("path", {
-    d: "M8 13a6 6 0 006-6h-1.25a4.75 4.75 0 11-9.5 0H2a6 6 0 006 6z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M38.978 45.73A24.885 24.885 0 0125 50a24.89 24.89 0 01-15-4.998C3.928 40.44 0 33.179 0 25 0 11.193 11.193 0 25 0s25 11.193 25 25c0 8.63-4.372 16.238-11.022 20.73zM25 26.25c4.142 0 7.5-3.638 7.5-8.125S29.142 10 25 10c-4.142 0-7.5 3.638-7.5 8.125s3.358 8.125 7.5 8.125zM25 45a19.934 19.934 0 0013.908-5.628C36.682 33.877 31.294 30 25 30s-11.682 3.877-13.908 9.372A19.933 19.933 0 0025 45z",
     fill: "CurrentColor"
   })));
 }
@@ -14595,48 +14582,14 @@ function _extends$c() {
   return _extends$c.apply(this, arguments);
 }
 
-function SvgDevaultAvatar50(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$c({
-    width: 48,
-    height: 48,
-    viewBox: "0 0 50 50",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$b || (_path$b = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M38.978 45.73A24.885 24.885 0 0125 50a24.89 24.89 0 01-15-4.998C3.928 40.44 0 33.179 0 25 0 11.193 11.193 0 25 0s25 11.193 25 25c0 8.63-4.372 16.238-11.022 20.73zM25 26.25c4.142 0 7.5-3.638 7.5-8.125S29.142 10 25 10c-4.142 0-7.5 3.638-7.5 8.125s3.358 8.125 7.5 8.125zM25 45a19.934 19.934 0 0013.908-5.628C36.682 33.877 31.294 30 25 30s-11.682 3.877-13.908 9.372A19.933 19.933 0 0025 45z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$c;
-
-function _extends$d() {
-  _extends$d = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$d.apply(this, arguments);
-}
-
 function SvgDevaultAvatar32(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$d({
+  return /*#__PURE__*/React.createElement("svg", _extends$c({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$c || (_path$c = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$b || (_path$b = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M24.946 29.267A15.926 15.926 0 0116 32c-3.602 0-6.926-1.19-9.6-3.199C2.514 25.882 0 21.235 0 16 0 7.163 7.163 0 16 0s16 7.163 16 16c0 5.523-2.798 10.392-7.054 13.267zM16 16.8c2.651 0 4.8-2.328 4.8-5.2 0-2.872-2.149-5.2-4.8-5.2s-4.8 2.328-4.8 5.2c0 2.872 2.149 5.2 4.8 5.2zm0 12c3.46 0 6.598-1.372 8.901-3.602A9.603 9.603 0 0016 19.2a9.603 9.603 0 00-8.901 5.998A12.758 12.758 0 0016 28.8z",
@@ -14750,8 +14703,8 @@ function useUpdatePresence(channel, isVisible) {
 
 var _g;
 
-function _extends$e() {
-  _extends$e = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$d() {
+  _extends$d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -14764,11 +14717,11 @@ function _extends$e() {
 
     return target;
   };
-  return _extends$e.apply(this, arguments);
+  return _extends$d.apply(this, arguments);
 }
 
 function SvgNotificationsOff3(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$e({
+  return /*#__PURE__*/React.createElement("svg", _extends$d({
     xmlns: "http://www.w3.org/2000/svg",
     width: 16,
     height: 16,
@@ -14785,7 +14738,7 @@ function SvgNotificationsOff3(props) {
   }))));
 }
 
-var _templateObject$4, _templateObject2$4, _templateObject3$3, _templateObject4$2, _templateObject5$1, _templateObject6$1, _templateObject7$1, _templateObject8$1, _templateObject9$1, _templateObject10$1, _templateObject11$1, _templateObject12$1;
+var _templateObject$4, _templateObject2$4, _templateObject3$3, _templateObject4$2, _templateObject5$1, _templateObject6$1, _templateObject7$1, _templateObject8$1, _templateObject9$1, _templateObject10$1, _templateObject11$1, _templateObject12$1, _templateObject13$1;
 
 var Channel = function Channel(_ref) {
   var channel = _ref.channel,
@@ -14800,7 +14753,12 @@ var Channel = function Channel(_ref) {
   var activeChannel = reactRedux.useSelector(activeChannelSelector) || {};
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var withAvatar = avatar === undefined ? true : avatar;
+  var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(channel.id));
   var lastMessage = channel.lastMessage;
+
+  var _useState = React.useState(0),
+      statusWidth = _useState[0],
+      setStatusWidth = _useState[1];
 
   var handleChangeActiveChannel = function handleChangeActiveChannel(chan) {
     if (activeChannel.id !== chan.id) {
@@ -14816,6 +14774,11 @@ var Channel = function Channel(_ref) {
     useUpdatePresence(channel, true);
   }
 
+  React.useEffect(function () {
+    if (messageTimeAndStatusRef.current) {
+      setStatusWidth(messageTimeAndStatusRef.current.offsetWidth);
+    }
+  }, [messageTimeAndStatusRef]);
   return React__default.createElement(Container$2, {
     selectedChannel: channel.id === activeChannel.id,
     selectedBorderColor: customColors && customColors.selectedChannelLeftBorder,
@@ -14837,18 +14800,24 @@ var Channel = function Channel(_ref) {
   })), React__default.createElement(ChannelInfo, {
     avatar: withAvatar,
     isMuted: channel.muted,
-    statusWidth: messageTimeAndStatusRef.current && messageTimeAndStatusRef.current.offsetWidth || 0
+    statusWidth: statusWidth
   }, React__default.createElement("h3", null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer) : '')), channel.muted && React__default.createElement(MutedIcon, {
     color: notificationsIsMutedIconColor
-  }, notificationsIsMutedIcon || React__default.createElement(SvgNotificationsOff3, null)), lastMessage && React__default.createElement(LastMessage, null, lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, notificationsIsMutedIcon || React__default.createElement(SvgNotificationsOff3, null)), (lastMessage || !!typingIndicator) && React__default.createElement(LastMessage, null, typingIndicator ? React__default.createElement(LastMessageAuthor, {
+    typing: typingIndicator,
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user && (lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id))), lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
+  }, typingIndicator ? contactsMap[typingIndicator.from.id] ? contactsMap[typingIndicator.from.id].firstName : typingIndicator.from.id : '')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+    minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
+  }, React__default.createElement("span", {
+    ref: messageAuthorRef
+  }, lastMessage.user && (lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id))), (!!typingIndicator || lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     authorWith: messageAuthorRef.current && messageAuthorRef.current.offsetWidth || 0,
     withAttachments: !!(lastMessage.attachments && lastMessage.attachments.length),
-    noBody: !lastMessage.body
-  }, lastMessage.state === MESSAGE_STATUS.DELETE ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgTrash, null), "Message was deleted.") : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice')), lastMessage.body)))), React__default.createElement(ChannelStatus, {
+    noBody: !lastMessage.body,
+    deletedMessage: lastMessage.state === MESSAGE_STATUS.DELETE
+  }, typingIndicator ? React__default.createElement(TypingIndicator, null, " is typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice')), lastMessage.body)))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, customColors && customColors.messageReadStatusTickColor)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), (!!channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
     backgroundColor: customColors && customColors.messageReadStatusTickColor,
@@ -14887,19 +14856,24 @@ var AvatarWrapper = styled__default.div(_templateObject4$2 || (_templateObject4$
 var UserStatus = styled__default.span(_templateObject5$1 || (_templateObject5$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 14px;\n  height: 14px;\n  right: 0;\n  bottom: 0;\n  border-radius: 50%;\n  background-color: ", ";\n  border: 2.5px solid #ffffff;\n  box-sizing: border-box;\n"])), function (props) {
   return props.backgroundColor || '#56E464';
 });
-var LastMessageAuthor = styled__default.div(_templateObject6$1 || (_templateObject6$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), colors.gray8);
+var LastMessageAuthor = styled__default.div(_templateObject6$1 || (_templateObject6$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  font-style: ", ";\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
+  return props.typing && 'italic';
+}, colors.gray8);
 var Points = styled__default.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 2px;\n"])));
-var LastMessageText = styled__default.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), function (props) {
+var LastMessageText = styled__default.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), function (props) {
   return "calc(100% - " + props.authorWith + "px)";
 }, colors.gray9, function (props) {
-  return props.withAttachments && 'translate(0px, -1.5px);';
+  return props.deletedMessage && 'italic';
+}, function (props) {
+  return props.withAttachments && 'translate(0px, -1.5px)';
 }, colors.gray4, function (props) {
   return props.withAttachments ? 'translate(0px, 4px)' : 'translate(0px, 2px)';
 });
 var ChannelStatus = styled__default.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 16px;\n  top: 15px;\n  display: flex;\n  flex-wrap: wrap;\n  height: 42px;\n  margin-left: auto;\n"])));
 var LastMessageDate = styled__default.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.gray9);
 var DeliveryIconCont = styled__default.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 6px;\n  line-height: 13px;\n"])));
-var UnreadCount = styled__default.span(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  margin-top: 7px;\n  box-sizing: border-box;\n\n  ", "\n"])), function (props) {
+var TypingIndicator = styled__default.span(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  font-style: italic;\n"])));
+var UnreadCount = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  margin-top: 7px;\n  box-sizing: border-box;\n\n  ", "\n"])), function (props) {
   return props.backgroundColor || colors.cobalt1;
 }, function (props) {
   return props.fontSize || '13px';
@@ -14915,7 +14889,7 @@ var UnreadCount = styled__default.span(_templateObject12$1 || (_templateObject12
 
 var _templateObject$5, _templateObject2$5;
 var SearchInputContainer = styled__default.div(_templateObject$5 || (_templateObject$5 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n"])));
-var SearchInput = styled__default.input(_templateObject2$5 || (_templateObject2$5 = _taggedTemplateLiteralLoose(["\n  padding: 0 32px 0 34px;\n  background: #ebedf0;\n  border-radius: 30px;\n  width: 100%;\n  border: none;\n  height: 36px;\n  outline: none;\n  box-sizing: border-box;\n  font-size: 15px;\n\n  &::placeholder {\n    font-family: Roboto, sans-serif;\n    font-style: normal;\n    font-weight: normal;\n    font-size: 15px;\n    //line-height: 22px;\n    color: #818c99;\n    opacity: 1;\n  }\n"])));
+var SearchInput = styled__default.input(_templateObject2$5 || (_templateObject2$5 = _taggedTemplateLiteralLoose(["\n  padding: 0 32px 0 34px;\n  background: #ebedf0;\n  border-radius: 30px;\n  width: 100%;\n  border: none;\n  height: 36px;\n  outline: none;\n  box-sizing: border-box;\n  font-size: 15px;\n\n  &::placeholder {\n    font-style: normal;\n    font-weight: normal;\n    font-size: 15px;\n    //line-height: 22px;\n    color: #818c99;\n    opacity: 1;\n  }\n"])));
 
 var ChannelSearch = function ChannelSearch(_ref) {
   var searchValue = _ref.searchValue,
@@ -15103,6 +15077,37 @@ var DropDown = function DropDown(_ref) {
   }, children));
 };
 
+var _path$c;
+
+function _extends$e() {
+  _extends$e = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$e.apply(this, arguments);
+}
+
+function SvgCreateChannel(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$e({
+    width: 18,
+    height: 18,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$c || (_path$c = /*#__PURE__*/React.createElement("path", {
+    d: "M4.5 11.245a3 3 0 010-6h4.77c.166 0 .227.017.288.05a.34.34 0 01.142.141c.033.061.05.122.05.29v5.038c0 .167-.017.228-.05.289a.34.34 0 01-.142.141c-.061.033-.122.05-.289.05H7.5c0 .588.227 1.216.49 1.53a1.125 1.125 0 11-1.73 1.44c-.599-.719-1.01-1.857-1.01-2.97H4.5zm11.104-7.857a.87.87 0 01.146.482v8.749a.87.87 0 01-1.353.724l-2.91-1.94a.628.628 0 01-.155-.127.33.33 0 01-.063-.118.48.48 0 01-.018-.138l-.001-5.49c0-.115.006-.155.02-.2a.331.331 0 01.062-.117.627.627 0 01.155-.126l2.91-1.94a.87.87 0 011.207.24z",
+    fill: "#818C99"
+  })));
+}
+
 var _path$d;
 
 function _extends$f() {
@@ -15122,19 +15127,19 @@ function _extends$f() {
   return _extends$f.apply(this, arguments);
 }
 
-function SvgCreateChannel(props) {
+function SvgCreateGroup(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$f({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$d || (_path$d = /*#__PURE__*/React.createElement("path", {
-    d: "M4.5 11.245a3 3 0 010-6h4.77c.166 0 .227.017.288.05a.34.34 0 01.142.141c.033.061.05.122.05.29v5.038c0 .167-.017.228-.05.289a.34.34 0 01-.142.141c-.061.033-.122.05-.289.05H7.5c0 .588.227 1.216.49 1.53a1.125 1.125 0 11-1.73 1.44c-.599-.719-1.01-1.857-1.01-2.97H4.5zm11.104-7.857a.87.87 0 01.146.482v8.749a.87.87 0 01-1.353.724l-2.91-1.94a.628.628 0 01-.155-.127.33.33 0 01-.063-.118.48.48 0 01-.018-.138l-.001-5.49c0-.115.006-.155.02-.2a.331.331 0 01.062-.117.627.627 0 01.155-.126l2.91-1.94a.87.87 0 011.207.24z",
+    d: "M12.75 9.375c1.72 0 4.875.643 4.875 3.214 0 1.125-.287 1.286-.86 1.286h-4.568a4.2 4.2 0 00.178-1.286c0-1.292-.473-2.3-1.254-3.046a8.303 8.303 0 011.629-.168zm-6.75 0c1.72 0 4.875.643 4.875 3.214 0 1.125-.287 1.286-.86 1.286h-8.03c-.573 0-.86-.16-.86-1.286 0-2.571 3.154-3.214 4.875-3.214zM6 3.75a2.25 2.25 0 11.001 4.499A2.25 2.25 0 016 3.75zm6.75 0a2.25 2.25 0 11.001 4.499 2.25 2.25 0 01-.001-4.499z",
     fill: "#818C99"
   })));
 }
 
-var _path$e;
+var _path$e, _g$1;
 
 function _extends$g() {
   _extends$g = Object.assign ? Object.assign.bind() : function (target) {
@@ -15153,19 +15158,38 @@ function _extends$g() {
   return _extends$g.apply(this, arguments);
 }
 
-function SvgCreateGroup(props) {
+function SvgCreateChat(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$g({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$e || (_path$e = /*#__PURE__*/React.createElement("path", {
-    d: "M12.75 9.375c1.72 0 4.875.643 4.875 3.214 0 1.125-.287 1.286-.86 1.286h-4.568a4.2 4.2 0 00.178-1.286c0-1.292-.473-2.3-1.254-3.046a8.303 8.303 0 011.629-.168zm-6.75 0c1.72 0 4.875.643 4.875 3.214 0 1.125-.287 1.286-.86 1.286h-8.03c-.573 0-.86-.16-.86-1.286 0-2.571 3.154-3.214 4.875-3.214zM6 3.75a2.25 2.25 0 11.001 4.499A2.25 2.25 0 016 3.75zm6.75 0a2.25 2.25 0 11.001 4.499 2.25 2.25 0 01-.001-4.499z",
+  }, props), /*#__PURE__*/React.createElement("mask", {
+    id: "createChat_svg__a",
+    style: {
+      maskType: "alpha"
+    },
+    maskUnits: "userSpaceOnUse",
+    x: 1,
+    y: 1,
+    width: 16,
+    height: 16
+  }, _path$e || (_path$e = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13.193 15.22A7.466 7.466 0 019 16.5 7.466 7.466 0 014.5 15a7.5 7.5 0 118.693.219zM9 9.374c1.243 0 2.25-1.091 2.25-2.438C11.25 5.591 10.243 4.5 9 4.5S6.75 5.591 6.75 6.938c0 1.346 1.007 2.437 2.25 2.437zM9 15a5.98 5.98 0 004.173-1.688 4.502 4.502 0 00-8.346 0A5.98 5.98 0 009 15z",
+    fill: "#fff"
+  }))), _g$1 || (_g$1 = /*#__PURE__*/React.createElement("g", {
+    mask: "url(#createChat_svg__a)"
+  }, /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13.193 15.22A7.466 7.466 0 019 16.5 7.466 7.466 0 014.5 15a7.5 7.5 0 118.693.219zM9 9.374c1.243 0 2.25-1.091 2.25-2.438C11.25 5.591 10.243 4.5 9 4.5S6.75 5.591 6.75 6.938c0 1.346 1.007 2.437 2.25 2.437zM9 15a5.98 5.98 0 004.173-1.688 4.502 4.502 0 00-8.346 0A5.98 5.98 0 009 15z",
     fill: "#818C99"
-  })));
+  }))));
 }
 
-var _path$f, _g$1;
+var _path$f, _path2$1, _path3;
 
 function _extends$h() {
   _extends$h = Object.assign ? Object.assign.bind() : function (target) {
@@ -15184,38 +15208,29 @@ function _extends$h() {
   return _extends$h.apply(this, arguments);
 }
 
-function SvgCreateChat(props) {
+function SvgAddChat(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$h({
-    width: 18,
-    height: 18,
+    width: 24,
+    height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), /*#__PURE__*/React.createElement("mask", {
-    id: "createChat_svg__a",
-    style: {
-      maskType: "alpha"
-    },
-    maskUnits: "userSpaceOnUse",
-    x: 1,
-    y: 1,
-    width: 16,
-    height: 16
-  }, _path$f || (_path$f = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$f || (_path$f = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M13.193 15.22A7.466 7.466 0 019 16.5 7.466 7.466 0 014.5 15a7.5 7.5 0 118.693.219zM9 9.374c1.243 0 2.25-1.091 2.25-2.438C11.25 5.591 10.243 4.5 9 4.5S6.75 5.591 6.75 6.938c0 1.346 1.007 2.437 2.25 2.437zM9 15a5.98 5.98 0 004.173-1.688 4.502 4.502 0 00-8.346 0A5.98 5.98 0 009 15z",
-    fill: "#fff"
-  }))), _g$1 || (_g$1 = /*#__PURE__*/React.createElement("g", {
-    mask: "url(#createChat_svg__a)"
-  }, /*#__PURE__*/React.createElement("path", {
+    d: "M4.128 2.179c.989-.529 1.962-.713 4.109-.713h7.66a1 1 0 110 2h-7.66c-2.041 0-2.615.182-3.165.476a2.86 2.86 0 00-1.196 1.196c-.294.55-.476 1.124-.476 3.165v7.66c0 2.041.182 2.615.476 3.165a2.86 2.86 0 001.196 1.196c.55.294 1.124.476 3.165.476h7.66c2.04 0 2.614-.182 3.165-.476a2.86 2.86 0 001.195-1.196c.295-.55.476-1.124.476-3.165v-7.66a1 1 0 012 0v7.66c0 2.147-.184 3.12-.712 4.108a4.86 4.86 0 01-2.016 2.016c-.989.53-1.962.713-4.109.713h-7.66c-2.146 0-3.12-.184-4.108-.713a4.86 4.86 0 01-2.016-2.016c-.528-.988-.712-1.961-.712-4.108v-7.66c0-2.147.184-3.12.712-4.108a4.86 4.86 0 012.016-2.016z",
+    fill: "#0DBD8B"
+  })), _path2$1 || (_path2$1 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M13.193 15.22A7.466 7.466 0 019 16.5 7.466 7.466 0 014.5 15a7.5 7.5 0 118.693.219zM9 9.374c1.243 0 2.25-1.091 2.25-2.438C11.25 5.591 10.243 4.5 9 4.5S6.75 5.591 6.75 6.938c0 1.346 1.007 2.437 2.25 2.437zM9 15a5.98 5.98 0 004.173-1.688 4.502 4.502 0 00-8.346 0A5.98 5.98 0 009 15z",
-    fill: "#818C99"
-  }))));
+    d: "M20.769 3.43c.397.398.397 1.042 0 1.439l-8.475 8.475c-.376.376-1.492.981-2.333 1.409a.38.38 0 01-.514-.514c.427-.84 1.033-1.957 1.409-2.333l8.475-8.475a1.017 1.017 0 011.438 0z",
+    fill: "#0DBD8B"
+  })), _path3 || (_path3 = /*#__PURE__*/React.createElement("path", {
+    d: "M23.4 1.8a1 1 0 11-2 0 1 1 0 012 0z",
+    fill: "#0DBD8B"
+  })));
 }
 
-var _path$g, _path2$1, _path3;
+var _path$g;
 
 function _extends$i() {
   _extends$i = Object.assign ? Object.assign.bind() : function (target) {
@@ -15234,25 +15249,15 @@ function _extends$i() {
   return _extends$i.apply(this, arguments);
 }
 
-function SvgAddChat(props) {
+function SvgCross(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$i({
-    width: 24,
-    height: 24,
+    width: 16,
+    height: 16,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$g || (_path$g = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M4.128 2.179c.989-.529 1.962-.713 4.109-.713h7.66a1 1 0 110 2h-7.66c-2.041 0-2.615.182-3.165.476a2.86 2.86 0 00-1.196 1.196c-.294.55-.476 1.124-.476 3.165v7.66c0 2.041.182 2.615.476 3.165a2.86 2.86 0 001.196 1.196c.55.294 1.124.476 3.165.476h7.66c2.04 0 2.614-.182 3.165-.476a2.86 2.86 0 001.195-1.196c.295-.55.476-1.124.476-3.165v-7.66a1 1 0 012 0v7.66c0 2.147-.184 3.12-.712 4.108a4.86 4.86 0 01-2.016 2.016c-.989.53-1.962.713-4.109.713h-7.66c-2.146 0-3.12-.184-4.108-.713a4.86 4.86 0 01-2.016-2.016c-.528-.988-.712-1.961-.712-4.108v-7.66c0-2.147.184-3.12.712-4.108a4.86 4.86 0 012.016-2.016z",
-    fill: "#0DBD8B"
-  })), _path2$1 || (_path2$1 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M20.769 3.43c.397.398.397 1.042 0 1.439l-8.475 8.475c-.376.376-1.492.981-2.333 1.409a.38.38 0 01-.514-.514c.427-.84 1.033-1.957 1.409-2.333l8.475-8.475a1.017 1.017 0 011.438 0z",
-    fill: "#0DBD8B"
-  })), _path3 || (_path3 = /*#__PURE__*/React.createElement("path", {
-    d: "M23.4 1.8a1 1 0 11-2 0 1 1 0 012 0z",
-    fill: "#0DBD8B"
+    d: "M7.114 8L4.85 5.736a.626.626 0 11.886-.886L8 7.114l2.264-2.264a.626.626 0 11.886.886L8.886 8l2.264 2.264a.626.626 0 01-.886.886L8 8.886 5.736 11.15a.626.626 0 01-.886-.886L7.114 8z",
+    fill: "#818C99"
   })));
 }
 
@@ -15275,45 +15280,14 @@ function _extends$j() {
   return _extends$j.apply(this, arguments);
 }
 
-function SvgCross(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$j({
-    width: 16,
-    height: 16,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$h || (_path$h = /*#__PURE__*/React.createElement("path", {
-    d: "M7.114 8L4.85 5.736a.626.626 0 11.886-.886L8 7.114l2.264-2.264a.626.626 0 11.886.886L8.886 8l2.264 2.264a.626.626 0 01-.886.886L8 8.886 5.736 11.15a.626.626 0 01-.886-.886L7.114 8z",
-    fill: "#818C99"
-  })));
-}
-
-var _path$i;
-
-function _extends$k() {
-  _extends$k = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$k.apply(this, arguments);
-}
-
 function SvgTick(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$k({
+  return /*#__PURE__*/React.createElement("svg", _extends$j({
     width: 11,
     height: 9,
     viewBox: "0 0 10 10",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$i || (_path$i = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$h || (_path$h = /*#__PURE__*/React.createElement("path", {
     d: "M1.28 4.775a.75.75 0 00-1.06 1.06l2.722 2.723a.75.75 0 001.06 0l6.445-6.445a.75.75 0 10-1.06-1.06L3.471 6.967 1.28 4.775z",
     fill: "#fff"
   })));
@@ -15362,10 +15336,10 @@ var CustomLabel = styled__default.label(_templateObject$7 || (_templateObject$7 
 });
 var Checkbox = styled__default.input(_templateObject2$7 || (_templateObject2$7 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _path$j;
+var _path$i;
 
-function _extends$l() {
-  _extends$l = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$k() {
+  _extends$k = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -15378,15 +15352,15 @@ function _extends$l() {
 
     return target;
   };
-  return _extends$l.apply(this, arguments);
+  return _extends$k.apply(this, arguments);
 }
 
 function SvgDevaultAvatar40(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$l({
+  return /*#__PURE__*/React.createElement("svg", _extends$k({
     xmlns: "http://www.w3.org/2000/svg",
     width: 40,
     height: 40
-  }, props), _path$j || (_path$j = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$i || (_path$i = /*#__PURE__*/React.createElement("path", {
     d: "M31.184 36.586A19.914 19.914 0 0120 40a19.906 19.906 0 01-12-4c-4.86-3.648-8-9.457-8-16C0 8.953 8.953 0 20 0s20 8.953 20 20c0 6.902-3.496 12.992-8.816 16.586zM20 21c3.313 0 6-2.91 6-6.5S23.312 8 20 8c-3.313 0-6 2.91-6 6.5s2.688 6.5 6 6.5zm0 15c4.324 0 8.246-1.715 11.125-4.504A12 12 0 0020 24a12 12 0 00-11.125 7.496A15.934 15.934 0 0020 36zm0 0",
     fillRule: "evenodd",
     fill: "#d0d8e3"
@@ -15644,7 +15618,7 @@ var ListRow = styled__default.div(_templateObject5$2 || (_templateObject5$2 = _t
   return !props.isAdd && colors.gray0;
 }, UserStatus);
 var UserNamePresence = styled__default.div(_templateObject6$2 || (_templateObject6$2 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  max-width: calc(100% - 70px);\n  margin: 0 auto 0 8px;\n  line-height: 10px;\n"])));
-var MemberName = styled__default.h4(_templateObject7$2 || (_templateObject7$2 = _taggedTemplateLiteralLoose(["\n  font-family: 'Roboto', sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 16px;\n  color: ", ";\n  margin: 0;\n  max-width: calc(100% - 10px);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n"])), colors.blue6);
+var MemberName = styled__default.h4(_templateObject7$2 || (_templateObject7$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 16px;\n  color: ", ";\n  margin: 0;\n  max-width: calc(100% - 10px);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n"])), colors.blue6);
 var SelectedMembersContainer = styled__default.div(_templateObject8$2 || (_templateObject8$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
 var SelectedMemberBuble = styled__default.div(_templateObject9$2 || (_templateObject9$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.gray5);
 var SelectedMemberName = styled__default.span(_templateObject10$2 || (_templateObject10$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
@@ -16745,10 +16719,10 @@ if (process.env.NODE_ENV !== 'production') {
 }
 });
 
-var _path$k;
+var _path$j;
 
-function _extends$m() {
-  _extends$m = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$l() {
+  _extends$l = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -16761,17 +16735,17 @@ function _extends$m() {
 
     return target;
   };
-  return _extends$m.apply(this, arguments);
+  return _extends$l.apply(this, arguments);
 }
 
 function SvgChosePicture(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$m({
+  return /*#__PURE__*/React.createElement("svg", _extends$l({
     width: 36,
     height: 36,
     viewBox: "0 0 37 37",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$k || (_path$k = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$j || (_path$j = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M7.228 4.104C8.732 3.3 10.214 3 13.596 3h8.808c3.382 0 4.864.3 6.368 1.104a7.529 7.529 0 013.124 3.124C32.7 8.732 33 10.214 33 13.596v8.808c0 3.382-.3 4.864-1.104 6.368a7.53 7.53 0 01-3.124 3.124C27.268 32.7 25.786 33 22.404 33h-8.808c-3.382 0-4.864-.3-6.368-1.104a7.529 7.529 0 01-3.124-3.124C3.3 27.268 3 25.786 3 22.404v-8.808c0-3.382.3-4.864 1.104-6.368a7.529 7.529 0 013.124-3.124zm14.319 14.14a.594.594 0 01.965.007l6.08 8.387a.643.643 0 01-.12.88.594.594 0 01-.365.125H8.964a.618.618 0 01-.607-.628c0-.14.045-.276.128-.386l4.442-5.907a.594.594 0 01.946-.016l3.056 3.723 4.618-6.186zm-9.976-4.53a2.143 2.143 0 100-4.285 2.143 2.143 0 000 4.285z",
@@ -17288,7 +17262,40 @@ var CreateDropdownButton = styled__default.div(_templateObject$b || (_templateOb
   return props.leftAuto ? 'auto' : '12px';
 });
 
-var _path$l;
+var _path$k;
+
+function _extends$m() {
+  _extends$m = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$m.apply(this, arguments);
+}
+
+function SvgArrowLeft(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$m({
+    width: 24,
+    height: 24,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$k || (_path$k = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.566 6.435a.8.8 0 010 1.13L7.93 11.2H18a.8.8 0 010 1.6H7.931l3.635 3.634a.8.8 0 01-1.132 1.132l-5-5a.8.8 0 010-1.132l5-5a.8.8 0 011.132 0z",
+    fill: "#818C99"
+  })));
+}
+
+var _g$2;
 
 function _extends$n() {
   _extends$n = Object.assign ? Object.assign.bind() : function (target) {
@@ -17307,21 +17314,22 @@ function _extends$n() {
   return _extends$n.apply(this, arguments);
 }
 
-function SvgArrowLeft(props) {
+function SvgNotifications(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$n({
-    width: 24,
-    height: 24,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$l || (_path$l = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.566 6.435a.8.8 0 010 1.13L7.93 11.2H18a.8.8 0 010 1.6H7.931l3.635 3.634a.8.8 0 01-1.132 1.132l-5-5a.8.8 0 010-1.132l5-5a.8.8 0 011.132 0z",
-    fill: "#818C99"
-  })));
+    xmlns: "http://www.w3.org/2000/svg",
+    width: 20,
+    height: 20
+  }, props), _g$2 || (_g$2 = /*#__PURE__*/React.createElement("g", {
+    fill: "CurrentColor"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M8.531 15.953a1.304 1.304 0 00-.094.496c0 .824.7 1.488 1.563 1.488s1.563-.664 1.563-1.488c0-.18-.043-.34-.094-.496zm0 0M16.344 13.223c-.625-.348-1.137-.93-1.137-1.836V8.016c0-2.739-2.457-4.961-5.207-4.961s-5.207 2.222-5.207 4.96v3.372c0 .894-.523 1.488-1.137 1.836-.418.238-.949.566-.949.964 0 .454.305.762.93.762h12.726c.625 0 .93-.316.93-.761 0-.399-.523-.727-.95-.965zm0 0",
+    fillRule: "evenodd"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10 4.047c.574 0 1.043-.442 1.043-.992 0-.547-.469-.993-1.043-.993s-1.043.446-1.043.993c0 .55.469.992 1.043.992zm0 0"
+  }))));
 }
 
-var _g$2;
+var _path$l;
 
 function _extends$o() {
   _extends$o = Object.assign ? Object.assign.bind() : function (target) {
@@ -17340,19 +17348,17 @@ function _extends$o() {
   return _extends$o.apply(this, arguments);
 }
 
-function SvgNotifications(props) {
+function SvgLock(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$o({
-    xmlns: "http://www.w3.org/2000/svg",
     width: 20,
-    height: 20
-  }, props), _g$2 || (_g$2 = /*#__PURE__*/React.createElement("g", {
+    height: 20,
+    viewBox: "0 0 21 21",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$l || (_path$l = /*#__PURE__*/React.createElement("path", {
+    d: "M10 2.5a4.167 4.167 0 014.166 4.167v1.666h.364c.743 0 1.012.078 1.284.223.271.145.485.358.63.63.145.272.222.541.222 1.284v4.893c0 .743-.077 1.013-.222 1.284a1.514 1.514 0 01-.63.63c-.272.146-.541.223-1.284.223H5.47c-.743 0-1.013-.077-1.284-.223a1.515 1.515 0 01-.63-.63c-.146-.271-.223-.54-.223-1.284V10.47c0-.743.077-1.012.223-1.284.145-.272.358-.485.63-.63.271-.145.54-.223 1.284-.223h.362l.001-1.666A4.167 4.167 0 0110 2.5zm0 1.667a2.5 2.5 0 00-2.5 2.5l-.001 1.666h5V6.667a2.5 2.5 0 00-2.5-2.5z",
     fill: "CurrentColor"
-  }, /*#__PURE__*/React.createElement("path", {
-    d: "M8.531 15.953a1.304 1.304 0 00-.094.496c0 .824.7 1.488 1.563 1.488s1.563-.664 1.563-1.488c0-.18-.043-.34-.094-.496zm0 0M16.344 13.223c-.625-.348-1.137-.93-1.137-1.836V8.016c0-2.739-2.457-4.961-5.207-4.961s-5.207 2.222-5.207 4.96v3.372c0 .894-.523 1.488-1.137 1.836-.418.238-.949.566-.949.964 0 .454.305.762.93.762h12.726c.625 0 .93-.316.93-.761 0-.399-.523-.727-.95-.965zm0 0",
-    fillRule: "evenodd"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M10 4.047c.574 0 1.043-.442 1.043-.992 0-.547-.469-.993-1.043-.993s-1.043.446-1.043.993c0 .55.469.992 1.043.992zm0 0"
-  }))));
+  })));
 }
 
 var _path$m;
@@ -17374,46 +17380,14 @@ function _extends$p() {
   return _extends$p.apply(this, arguments);
 }
 
-function SvgLock(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$p({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 21 21",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$m || (_path$m = /*#__PURE__*/React.createElement("path", {
-    d: "M10 2.5a4.167 4.167 0 014.166 4.167v1.666h.364c.743 0 1.012.078 1.284.223.271.145.485.358.63.63.145.272.222.541.222 1.284v4.893c0 .743-.077 1.013-.222 1.284a1.514 1.514 0 01-.63.63c-.272.146-.541.223-1.284.223H5.47c-.743 0-1.013-.077-1.284-.223a1.515 1.515 0 01-.63-.63c-.146-.271-.223-.54-.223-1.284V10.47c0-.743.077-1.012.223-1.284.145-.272.358-.485.63-.63.271-.145.54-.223 1.284-.223h.362l.001-1.666A4.167 4.167 0 0110 2.5zm0 1.667a2.5 2.5 0 00-2.5 2.5l-.001 1.666h5V6.667a2.5 2.5 0 00-2.5-2.5z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$n;
-
-function _extends$q() {
-  _extends$q = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$q.apply(this, arguments);
-}
-
 function SvgLeave(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$q({
+  return /*#__PURE__*/React.createElement("svg", _extends$p({
     width: 20,
     height: 21,
     viewBox: "0 0 21 22",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$n || (_path$n = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$m || (_path$m = /*#__PURE__*/React.createElement("path", {
     d: "M9.457 9.68h-7.03c-.47 0-.86.362-.86.82 0 .458.39.82.86.82h7.03l-1.56 1.477a.793.793 0 000 1.163.89.89 0 001.213 0l3.038-2.878h0l.006-.006h0a.799.799 0 00.248-.573v-.005a.784.784 0 00-.066-.313M9.457 9.68l2.88.505m-2.88-.505l-1.56-1.477a.793.793 0 010-1.163.89.89 0 011.213 0l3.038 2.878m-2.69-.238l2.69.238m.188.267s0 0 0 0l-.091.04.091-.04zm-.188-.267l-.069.073.069-.073h0zm-1.365 8.599h2.011c.82 0 1.488 0 2.03-.042.559-.043 1.06-.135 1.525-.36a3.805 3.805 0 001.705-1.616c.238-.443.336-.919.381-1.45.045-.514.045-1.146.045-1.923V7.874c0-.776 0-1.409-.045-1.923-.045-.53-.143-1.007-.381-1.45a3.805 3.805 0 00-1.705-1.615c-.466-.225-.966-.317-1.526-.36-.541-.043-1.208-.043-2.029-.042h-.003 0-2.008c-.47 0-.86.361-.86.82 0 .457.39.819.86.819h1.975c.865 0 1.462 0 1.926.036.454.036.704.1.888.19.41.197.744.513.952.9.093.173.16.408.198.837.038.438.038 1.003.038 1.823v5.182c0 .82 0 1.385-.038 1.824-.037.429-.105.664-.198.836-.208.387-.541.703-.952.901-.184.089-.434.154-.888.189-.464.036-1.061.036-1.926.036h-1.975c-.47 0-.86.362-.86.82 0 .458.39.82.86.82z",
     fill: "CurrentColor",
     stroke: "CurrentColor",
@@ -17890,6 +17864,40 @@ var Container$7 = styled__default.div(_templateObject$f || (_templateObject$f = 
   return props.widthOffset || props.channelDetailsIsOpen ? "calc(100% - " + (props.widthOffset + (props.channelDetailsIsOpen ? 362 : 0)) + "px)" : '';
 });
 
+var _path$n;
+
+function _extends$q() {
+  _extends$q = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$q.apply(this, arguments);
+}
+
+function SvgInfo(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$q({
+    width: 22,
+    height: 22,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$n || (_path$n = /*#__PURE__*/React.createElement("path", {
+    d: "M11 20.167a9.167 9.167 0 100-18.333 9.167 9.167 0 000 18.333zM11 14.667V11M11 7.334h.01",
+    stroke: "CurrentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })));
+}
+
 var _path$o;
 
 function _extends$r() {
@@ -17909,46 +17917,12 @@ function _extends$r() {
   return _extends$r.apply(this, arguments);
 }
 
-function SvgInfo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$r({
-    width: 22,
-    height: 22,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$o || (_path$o = /*#__PURE__*/React.createElement("path", {
-    d: "M11 20.167a9.167 9.167 0 100-18.333 9.167 9.167 0 000 18.333zM11 14.667V11M11 7.334h.01",
-    stroke: "CurrentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _path$p;
-
-function _extends$s() {
-  _extends$s = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$s.apply(this, arguments);
-}
-
 function SvgDevaultAvatar36(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$s({
+  return /*#__PURE__*/React.createElement("svg", _extends$r({
     xmlns: "http://www.w3.org/2000/svg",
     width: 36,
     height: 36
-  }, props), _path$p || (_path$p = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$o || (_path$o = /*#__PURE__*/React.createElement("path", {
     d: "M28.063 32.926A17.906 17.906 0 0118 36c-4.05 0-7.793-1.34-10.8-3.598C2.827 29.117 0 23.891 0 18 0 8.059 8.059 0 18 0s18 8.059 18 18c0 6.215-3.148 11.691-7.938 14.926zM18 18.898c2.984 0 5.398-2.617 5.398-5.847 0-3.23-2.414-5.852-5.398-5.852-2.984 0-5.398 2.621-5.398 5.852 0 3.23 2.414 5.847 5.398 5.847zm0 13.5c3.89 0 7.422-1.543 10.016-4.05C26.41 24.39 22.53 21.602 18 21.602S9.59 24.39 7.984 28.348A14.363 14.363 0 0018 32.398zm0 0",
     fillRule: "evenodd",
     fill: "#d0d8e3"
@@ -18003,7 +17977,7 @@ function ChatHeader(_ref) {
 }
 
 var _templateObject$h;
-var Container$9 = styled__default.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: 22px auto;\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-family: Roboto, sans-serif;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n    }\n  }\n"])), function (props) {
+var Container$9 = styled__default.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: 22px auto;\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n    }\n  }\n"])), function (props) {
   return props.dividerVisibility ? 'flex' : 'none';
 }, function (props) {
   return props.width || '100%';
@@ -18057,6 +18031,40 @@ function MessageDivider(_ref) {
     width: newMessagesSeparatorWidth,
     newMessagesSeparatorLeftRightSpaceWidth: newMessagesSeparatorLeftRightSpaceWidth
   }, React__default.createElement("div", null, React__default.createElement("span", null, dividerText)));
+}
+
+var _path$p;
+
+function _extends$s() {
+  _extends$s = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$s.apply(this, arguments);
+}
+
+function SvgTrash(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$s({
+    width: 16,
+    height: 16,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$p || (_path$p = /*#__PURE__*/React.createElement("path", {
+    d: "M1.5 3.89h13M5.111 3.889V2.444A1.444 1.444 0 016.556 1h2.888a1.444 1.444 0 011.445 1.444V3.89m2.167 0V14a1.444 1.444 0 01-1.445 1.444H4.39A1.444 1.444 0 012.944 14V3.889h10.112zM6.556 7.5v4.333M9.444 7.5v4.333",
+    stroke: "currentColor",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })));
 }
 
 var _path$q;
@@ -18907,7 +18915,7 @@ function EmojisPopup(_ref2) {
 var Container$a = styled__default.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  bottom: 46px;\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  background: ", ";\n  z-index: 35;\n"])), function (props) {
   return props.rightSide ? '-276px' : '-8px';
 }, colors.gray1, colors.white);
-var EmojiHeader = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  height: 32px;\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 18px;\n  color: ", ";\n  display: flex;\n  align-items: flex-end;\n  padding: 3px 18px;\n"])), colors.gray6);
+var EmojiHeader = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  height: 32px;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 18px;\n  color: ", ";\n  display: flex;\n  align-items: flex-end;\n  padding: 3px 18px;\n"])), colors.gray6);
 var EmojiSection = styled__default.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  height: 166px;\n  overflow-x: hidden;\n"])));
 var EmojiCollection = styled__default.span(_templateObject4$8 || (_templateObject4$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
   return props.activeCollection ? colors.green1 : colors.gray7;
@@ -26783,7 +26791,7 @@ function ForwardMessagePopup(_ref) {
 var ForwardChannelsCont = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose([""])));
 var Channel$1 = styled__default.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose([""])));
 
-var _templateObject$q, _templateObject2$n, _templateObject3$g, _templateObject4$d, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$5, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$1, _templateObject14$1, _templateObject15$1, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1;
+var _templateObject$q, _templateObject2$n, _templateObject3$g, _templateObject4$d, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$5, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$1, _templateObject15$1, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -27189,7 +27197,7 @@ var MessageStatusAndTime = styled__default.div(_templateObject12$3 || (_template
 }, function (props) {
   return props.withAttachment && "\n    position: absolute;\n    z-index: 3;\n    right: " + (props.fileAttachment ? '6px' : '10px') + ";\n    bottom: " + (props.fileAttachment ? '9px' : '14px') + ";\n  ";
 });
-var MessageStatusUpdated = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
+var MessageStatusUpdated = styled__default.span(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray4;
 });
 var MessageStatusDeleted = styled__default.span(_templateObject14$1 || (_templateObject14$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
@@ -27291,11 +27299,7 @@ function SvgSliderButtonLeft(props) {
   })));
 }
 
-function createUserDisplayName(contact, user) {
-  return contact ? contact.firstName ? contact.firstName + " " + contact.lastName : contact.id : user ? user.firstName ? user.firstName + " " + user.lastName : user.id : 'Deleted user';
-}
-
-var _templateObject$r, _templateObject2$o, _templateObject3$h, _templateObject4$e, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7, _templateObject9$6, _templateObject10$6, _templateObject11$5, _templateObject12$4, _templateObject13$2;
+var _templateObject$r, _templateObject2$o, _templateObject3$h, _templateObject4$e, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7, _templateObject9$6, _templateObject10$6, _templateObject11$5, _templateObject12$4, _templateObject13$3;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -27323,7 +27327,7 @@ var SliderPopup = function SliderPopup(_ref) {
   var customUploader = getCustomUploader();
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var attachments = reactRedux.useSelector(attachmentsForPopupSelector, reactRedux.shallowEqual) || [];
-  var attachmentUserName = currentFile ? currentFile.user && createUserDisplayName(contactsMap[currentFile.user.id], currentFile.user) : '';
+  var attachmentUserName = currentFile ? currentFile.user && makeUserName(contactsMap[currentFile.user.id], currentFile.user) : '';
 
   var handleClosePopup = function handleClosePopup() {
     setAttachmentsList([]);
@@ -27448,7 +27452,7 @@ var SliderPopup = function SliderPopup(_ref) {
 var Container$c = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
 var SliderHeader = styled__default.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
 var SliderBody = styled__default.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  background: rgba(6, 10, 38, 0.82);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
-var FileInfo = styled__default.div(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
+var FileInfo = styled__default.div(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
 var Info = styled__default.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
 var Actions = styled__default.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
 var FileDateAndSize = styled__default.span(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
@@ -27457,7 +27461,7 @@ var UserName = styled__default.h4(_templateObject9$6 || (_templateObject9$6 = _t
 var ActionItem = styled__default.span(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
 var CarouselItem = styled__default.span(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  img,\n  video {\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n  video {\n    width: calc(100vw - 300px);\n  }\n"])));
-var ArrowButton = styled__default.button(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n"])), function (props) {
+var ArrowButton = styled__default.button(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n"])), function (props) {
   return !props.leftButton && '24px';
 }, function (props) {
   return props.leftButton && '24px';
@@ -27925,7 +27929,7 @@ var Messages = function Messages(_ref2) {
 var Container$d = styled__default.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  overflow: auto;\n  //scroll-behavior: smooth;\n"])));
 var EmptyDiv = styled__default.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
 var MessagesBox = styled__default.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
-var MessageTopDate = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  span {\n    //display: ", ";\n    font-family: Roboto, sans-serif;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
+var MessageTopDate = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  span {\n    //display: ", ";\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
   return props.systemMessage ? '' : 'absolute';
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
@@ -28080,7 +28084,7 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _templateObject$t, _templateObject2$q, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$7, _templateObject11$6, _templateObject12$5, _templateObject13$3, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2;
+var _templateObject$t, _templateObject2$q, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$7, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2;
 
 var SendMessageInput = function SendMessageInput(_ref) {
   var handleAttachmentSelected = _ref.handleAttachmentSelected,
@@ -28148,7 +28152,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       attachments = _useState10[0],
       setAttachments = _useState10[1];
 
-  var typingIndicator = reactRedux.useSelector(typingIndicatorSelector);
+  var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var connectionStatus = reactRedux.useSelector(connectionStatusSelector, reactRedux.shallowEqual);
   var fileUploader = React.useRef(null);
@@ -28610,10 +28614,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
     border: border,
     borderRadius: borderRadius,
     ref: messageContRef
-  }, React__default.createElement(TypingIndicator, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
+  }, React__default.createElement(TypingIndicator$1, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
     typingState: typingIndicator.typingState
-  }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, makeUserName(contactsMap[typingIndicator.from.id], typingIndicator.from), " is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
+  }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName || typingIndicator.from.id, ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
     setMessageText: setMessageText,
     messageText: messageText,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
@@ -28622,7 +28626,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: handleCloseEditMode
   }, React__default.createElement(SvgClose, null)), React__default.createElement(EditReplyMessageHeader, null, React__default.createElement(SvgEdit, null), "Edit Message"), messageToEdit.body), messageForReply && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
     onClick: handleCloseReply
-  }, React__default.createElement(SvgClose, null)), React__default.createElement(EditReplyMessageHeader, null, replyMessageIcon || React__default.createElement(SvgReplyIcon, null), " Reply", ' ', createUserDisplayName(contactsMap[messageForReply.user.id], messageForReply.user)), MessageTextFormat({
+  }, React__default.createElement(SvgClose, null)), React__default.createElement(EditReplyMessageHeader, null, replyMessageIcon || React__default.createElement(SvgReplyIcon, null), " Reply", ' ', makeUserName(contactsMap[messageForReply.user.id], messageForReply.user)), MessageTextFormat({
     text: messageForReply.body,
     message: messageForReply
   })), !!attachments.length && React__default.createElement(ChosenAttachments, {
@@ -28734,8 +28738,8 @@ var SendMessageIcon = styled__default.span(_templateObject10$7 || (_templateObje
 var ChosenAttachments = styled__default.div(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: ", ";\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1, function (props) {
   return props.fileBoxWidth || '200px';
 });
-var TypingIndicator = styled__default.div(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
-var TypingIndicatorCont = styled__default.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
+var TypingIndicator$1 = styled__default.div(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
+var TypingIndicatorCont = styled__default.div(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
 var TypingFrom = styled__default.h5(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
 var sizeAnimation = styled.keyframes(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
 var DotOne = styled__default.span(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose([""])));
@@ -29581,7 +29585,7 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
 };
 
 var RolesSelect = styled__default.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled__default.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
+var RoleLabel = styled__default.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
 var RoleSpan = styled__default.span(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
 var _templateObject$w, _templateObject2$t, _templateObject3$m, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$b;
@@ -29927,7 +29931,7 @@ var FileThumb = styled__default.img(_templateObject5$f || (_templateObject5$f = 
 var FileItem = styled__default.div(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
-var FileSizeAndDate = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
+var FileSizeAndDate = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
@@ -30008,7 +30012,7 @@ var LinkInfoCont = styled__default.div(_templateObject3$o || (_templateObject3$o
 var FileItem$1 = styled__default.li(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled__default.span(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled__default.span(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
@@ -30041,55 +30045,214 @@ var Links = function Links(_ref) {
 };
 var Container$j = styled__default.ul(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$B, _templateObject2$x, _templateObject3$p, _templateObject4$l, _templateObject5$h, _templateObject6$g;
+var _rect$2, _circle$7, _path$13;
+
+function _extends$17() {
+  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$17.apply(this, arguments);
+}
+
+function SvgVoicePreview(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$17({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#F3F5F7"
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$3, _circle$8, _path$14;
+
+function _extends$18() {
+  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$18.apply(this, arguments);
+}
+
+function SvgVoicePreviewHoverIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$18({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#fff"
+  })), _circle$8 || (_circle$8 = /*#__PURE__*/React.createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _templateObject$B, _templateObject2$x, _templateObject3$p, _templateObject4$l, _templateObject5$h, _templateObject6$g, _templateObject7$d, _templateObject8$9;
+
+var VoiceItem = function VoiceItem(_ref) {
+  var file = _ref.file,
+      voicePreviewIcon = _ref.voicePreviewIcon,
+      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewTitleColor = _ref.voicePreviewTitleColor,
+      voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
+      voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor;
+
+  var _useState = React.useState(''),
+      fileUrl = _useState[0],
+      setFileUrl = _useState[1];
+
+  var _useState2 = React.useState(false),
+      audioIsPlaying = _useState2[0],
+      setAudioIsPlaying = _useState2[1];
+
+  var customDownloader = getCustomDownloader();
+  var contactsMap = reactRedux.useSelector(contactsMapSelector);
+  var audioRef = React.useRef();
+
+  var handlePlayPause = function handlePlayPause() {
+    if (audioRef && audioRef.current) {
+      if (audioRef.current.paused) {
+        var _audioRef$current;
+
+        setAudioIsPlaying(true);
+        (_audioRef$current = audioRef.current) === null || _audioRef$current === void 0 ? void 0 : _audioRef$current.play();
+      } else {
+        var _audioRef$current2;
+
+        setAudioIsPlaying(false);
+        (_audioRef$current2 = audioRef.current) === null || _audioRef$current2 === void 0 ? void 0 : _audioRef$current2.pause();
+      }
+    }
+  };
+
+  React.useEffect(function () {
+    if (customDownloader) {
+      customDownloader(file.url).then(function (url) {
+        console.log('set url ,,, ', url);
+        setFileUrl(url);
+      });
+    } else {
+      setFileUrl(file.url);
+    }
+  }, []);
+  return React__default.createElement(FileItem$2, {
+    onMouseEnter: function onMouseEnter(e) {
+      return e.currentTarget.classList.add('isHover');
+    },
+    onMouseLeave: function onMouseLeave(e) {
+      return e.currentTarget.classList.remove('isHover');
+    },
+    hoverBackgroundColor: voicePreviewHoverBackgroundColor
+  }, audioIsPlaying ? React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
+    onClick: handlePlayPause
+  }, voicePreviewIcon || React__default.createElement(SvgVoicePreview, null)), React__default.createElement(FileHoverIconCont$1, {
+    onClick: handlePlayPause
+  }, voicePreviewHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))) : React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
+    onClick: handlePlayPause
+  }, voicePreviewIcon || React__default.createElement(SvgVoicePreview, null)), React__default.createElement(FileHoverIconCont$1, {
+    onClick: handlePlayPause
+  }, voicePreviewHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
+    color: voicePreviewTitleColor
+  }, makeUserName(contactsMap[file.user.id], file.user)), React__default.createElement(AudioDate, {
+    color: voicePreviewDateAndTimeColor
+  }, moment(file.createdAt).format('DD MMMM, YYYY')), React__default.createElement(AudioSendTime, null, formatAudioVideoTime(file.metadata.dur, 0))), React__default.createElement(Audio, {
+    controls: true,
+    ref: audioRef,
+    src: fileUrl
+  }, React__default.createElement("source", {
+    src: fileUrl,
+    type: 'audio/ogg'
+  }), React__default.createElement("source", {
+    src: fileUrl,
+    type: 'audio/mpeg'
+  })));
+};
+var FileIconCont$1 = styled__default.span(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled__default.span(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled__default.li(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+  return props.hoverBackgroundColor || colors.gray0;
+}, FileIconCont$1, FileHoverIconCont$1);
+var AudioInfo = styled__default.div(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioTitle = styled__default.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.gray6;
+});
+var AudioDate = styled__default.span(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.gray9;
+});
+var AudioSendTime = styled__default.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
+  return props.color || colors.gray9;
+});
+var Audio = styled__default.audio(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+
+var _templateObject$C;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
-      linkPreviewIcon = _ref.linkPreviewIcon,
-      linkPreviewHoverIcon = _ref.linkPreviewHoverIcon,
-      linkPreviewTitleColor = _ref.linkPreviewTitleColor,
-      linkPreviewColor = _ref.linkPreviewColor,
-      linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor;
+      voicePreviewIcon = _ref.voicePreviewIcon,
+      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewTitleColor = _ref.voicePreviewTitleColor,
+      voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
+      voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor;
   var dispatch = reactRedux.useDispatch();
   var attachments = reactRedux.useSelector(activeTabAttachmentsSelector, reactRedux.shallowEqual) || [];
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
   return React__default.createElement(Container$k, null, attachments.map(function (file) {
-    return React__default.createElement(FileItem$2, {
+    return React__default.createElement(VoiceItem, {
       key: file.id,
-      onMouseEnter: function onMouseEnter(e) {
-        return e.currentTarget.classList.add('isHover');
-      },
-      onMouseLeave: function onMouseLeave(e) {
-        return e.currentTarget.classList.remove('isHover');
-      },
-      hoverBackgroundColor: linkPreviewHoverBackgroundColor
-    }, React__default.createElement("a", {
-      href: file.url,
-      target: '_blank',
-      rel: 'noreferrer'
-    }, React__default.createElement(LinkIconCont$1, null, linkPreviewIcon || React__default.createElement(SvgLinkIcon, null)), React__default.createElement(LinkHoverIconCont$1, null, linkPreviewHoverIcon || React__default.createElement(SvgLinkIcon, null)), React__default.createElement("div", null, React__default.createElement(LinkTitle, {
-      color: linkPreviewTitleColor
-    }, file.title), React__default.createElement(LinkUrl$1, {
-      color: linkPreviewColor
-    }, file.url))));
+      file: file,
+      voicePreviewDateAndTimeColor: voicePreviewDateAndTimeColor,
+      voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor,
+      voicePreviewHoverIcon: voicePreviewHoverIcon,
+      voicePreviewTitleColor: voicePreviewTitleColor,
+      voicePreviewIcon: voicePreviewIcon
+    });
   }));
 };
-var Container$k = styled__default.ul(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var LinkIconCont$1 = styled__default.span(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var LinkHoverIconCont$1 = styled__default.span(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var FileItem$2 = styled__default.li(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
-  return props.hoverBackgroundColor || colors.gray0;
-}, LinkIconCont$1, LinkHoverIconCont$1);
-var LinkTitle = styled__default.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.blue10;
-});
-var LinkUrl$1 = styled__default.span(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-family: Roboto, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray6;
-});
+var Container$k = styled__default.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$C, _templateObject2$y;
+var _templateObject$D, _templateObject2$y;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -30101,6 +30264,11 @@ var DetailsTab = function DetailsTab(_ref) {
       linkPreviewTitleColor = _ref.linkPreviewTitleColor,
       linkPreviewColor = _ref.linkPreviewColor,
       linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor,
+      voicePreviewIcon = _ref.voicePreviewIcon,
+      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewTitleColor = _ref.voicePreviewTitleColor,
+      voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
+      voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor,
       filePreviewIcon = _ref.filePreviewIcon,
       filePreviewHoverIcon = _ref.filePreviewHoverIcon,
       filePreviewTitleColor = _ref.filePreviewTitleColor,
@@ -30171,20 +30339,20 @@ var DetailsTab = function DetailsTab(_ref) {
     linkPreviewHoverBackgroundColor: linkPreviewHoverBackgroundColor
   }), activeTab === channelDetailsTabs.voice && React__default.createElement(Voices, {
     channelId: channel.id,
-    linkPreviewIcon: linkPreviewIcon,
-    linkPreviewHoverIcon: linkPreviewHoverIcon,
-    linkPreviewTitleColor: linkPreviewTitleColor,
-    linkPreviewColor: linkPreviewColor,
-    linkPreviewHoverBackgroundColor: linkPreviewHoverBackgroundColor
+    voicePreviewIcon: voicePreviewIcon,
+    voicePreviewHoverIcon: voicePreviewHoverIcon,
+    voicePreviewTitleColor: voicePreviewTitleColor,
+    voicePreviewDateAndTimeColor: voicePreviewDateAndTimeColor,
+    voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$l = styled__default.div(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-family: Roboto, sans-serif;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: #0dbd8b;\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6);
+var Container$l = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: #0dbd8b;\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6);
 
-var _path$13;
+var _path$15;
 
-function _extends$17() {
-  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$19() {
+  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30197,16 +30365,16 @@ function _extends$17() {
 
     return target;
   };
-  return _extends$17.apply(this, arguments);
+  return _extends$19.apply(this, arguments);
 }
 
 function SvgDefaultAvatar72(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$17({
+  return /*#__PURE__*/React.createElement("svg", _extends$19({
     width: 72,
     height: 72,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M56.128 65.852A35.834 35.834 0 0136 72a35.84 35.84 0 01-21.6-7.198C5.656 58.235 0 47.778 0 36 0 16.118 16.118 0 36 0s36 16.118 36 36c0 12.426-6.296 23.382-15.872 29.852zM36 37.8c5.965 0 10.8-5.238 10.8-11.7 0-6.462-4.835-11.7-10.8-11.7-5.965 0-10.8 5.238-10.8 11.7 0 6.462 4.835 11.7 10.8 11.7zm0 27a28.705 28.705 0 0020.028-8.104C52.823 48.782 45.063 43.2 36 43.2c-9.063 0-16.823 5.582-20.028 13.496A28.705 28.705 0 0036 64.8z",
@@ -30214,10 +30382,10 @@ function SvgDefaultAvatar72(props) {
   })));
 }
 
-var _path$14;
+var _path$16;
 
-function _extends$18() {
-  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1a() {
+  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30230,17 +30398,17 @@ function _extends$18() {
 
     return target;
   };
-  return _extends$18.apply(this, arguments);
+  return _extends$1a.apply(this, arguments);
 }
 
 function SvgCamera(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$18({
+  return /*#__PURE__*/React.createElement("svg", _extends$1a({
     width: 40,
     height: 40,
     viewBox: "0 0 41 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M16.86 6.667a4.167 4.167 0 00-4.084 3.342c-.058.288-.17.566-.363.787l-.837.954c-.263.3-.644.473-1.043.473H6.11A2.778 2.778 0 003.333 15v15.278a2.778 2.778 0 002.778 2.778H33.89a2.778 2.778 0 002.778-2.778V15a2.778 2.778 0 00-2.778-2.777h-4.422c-.4 0-.78-.173-1.043-.473l-.837-.954c-.194-.22-.305-.499-.363-.787a4.167 4.167 0 00-4.085-3.342h-6.278zm8.696 15.278a5.556 5.556 0 11-11.112 0 5.556 5.556 0 0111.112 0zM6.806 10.139a.694.694 0 000 1.39h2.777a.694.694 0 100-1.39H6.806z",
@@ -30248,8 +30416,8 @@ function SvgCamera(props) {
   })));
 }
 
-var _templateObject$D, _templateObject2$z, _templateObject3$q, _templateObject4$m;
-var Container$m = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
+var _templateObject$E, _templateObject2$z, _templateObject3$q, _templateObject4$m;
+var Container$m = styled__default.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
@@ -30450,7 +30618,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$E, _templateObject2$A, _templateObject3$r, _templateObject4$n, _templateObject5$i, _templateObject6$h, _templateObject7$d;
+var _templateObject$F, _templateObject2$A, _templateObject3$r, _templateObject4$n, _templateObject5$i, _templateObject6$h, _templateObject7$e;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -30505,6 +30673,11 @@ var Details = function Details(_ref) {
       linkPreviewTitleColor = _ref.linkPreviewTitleColor,
       linkPreviewColor = _ref.linkPreviewColor,
       linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor,
+      voicePreviewIcon = _ref.voicePreviewIcon,
+      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewTitleColor = _ref.voicePreviewTitleColor,
+      voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
+      voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor,
       filePreviewIcon = _ref.filePreviewIcon,
       filePreviewHoverIcon = _ref.filePreviewHoverIcon,
       filePreviewTitleColor = _ref.filePreviewTitleColor,
@@ -30647,6 +30820,11 @@ var Details = function Details(_ref) {
     linkPreviewTitleColor: linkPreviewTitleColor,
     linkPreviewColor: linkPreviewColor,
     linkPreviewHoverBackgroundColor: linkPreviewHoverBackgroundColor,
+    voicePreviewIcon: voicePreviewIcon,
+    voicePreviewHoverIcon: voicePreviewHoverIcon,
+    voicePreviewTitleColor: voicePreviewTitleColor,
+    voicePreviewDateAndTimeColor: voicePreviewDateAndTimeColor,
+    voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor,
     filePreviewIcon: filePreviewIcon,
     filePreviewHoverIcon: filePreviewHoverIcon,
     filePreviewTitleColor: filePreviewTitleColor,
@@ -30656,7 +30834,7 @@ var Details = function Details(_ref) {
     checkActionPermission: checkActionPermission
   })));
 };
-var Container$n = styled__default.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
+var Container$n = styled__default.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
   return props.mounted && ' width: 360px';
 });
 var ChannelDetailsHeader = styled__default.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
@@ -30668,7 +30846,7 @@ var DetailsHeader = styled__default.div(_templateObject5$i || (_templateObject5$
 var ChannelName$1 = styled__default(SectionHeader)(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
-var EditButton = styled__default.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+var EditButton = styled__default.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -30792,10 +30970,10 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var _path$15, _path2$9, _path3$4;
+var _path$17, _path2$9, _path3$4;
 
-function _extends$19() {
-  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1b() {
+  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30808,15 +30986,15 @@ function _extends$19() {
 
     return target;
   };
-  return _extends$19.apply(this, arguments);
+  return _extends$1b.apply(this, arguments);
 }
 
 function SvgChatLogo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$19({
+  return /*#__PURE__*/React.createElement("svg", _extends$1b({
     viewBox: "0 0 249 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
     d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
     fill: "#e17335"
   })), _path2$9 || (_path2$9 = /*#__PURE__*/React.createElement("path", {
@@ -30828,18 +31006,18 @@ function SvgChatLogo(props) {
   })));
 }
 
-var _templateObject$F, _templateObject2$B;
-var Container$o = styled__default.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
+var _templateObject$G, _templateObject2$B;
+var Container$o = styled__default.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
 var Logo = styled__default.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
 
 function SceytChatHeader() {
   return React__default.createElement(Container$o, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
-var _path$16;
+var _path$18;
 
-function _extends$1a() {
-  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30852,22 +31030,22 @@ function _extends$1a() {
 
     return target;
   };
-  return _extends$1a.apply(this, arguments);
+  return _extends$1c.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1a({
+  return /*#__PURE__*/React.createElement("svg", _extends$1c({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
 }
 
-var _templateObject$G;
+var _templateObject$H;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -30912,7 +31090,7 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled__default.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled__default.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";
 }, colors.white);
 

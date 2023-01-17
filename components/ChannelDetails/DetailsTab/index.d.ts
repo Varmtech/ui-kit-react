@@ -10,6 +10,11 @@ interface IProps {
     linkPreviewTitleColor?: string;
     linkPreviewColor?: string;
     linkPreviewHoverBackgroundColor?: string;
+    voicePreviewIcon?: JSX.Element;
+    voicePreviewHoverIcon?: JSX.Element;
+    voicePreviewTitleColor?: string;
+    voicePreviewDateAndTimeColor?: string;
+    voicePreviewHoverBackgroundColor?: string;
     filePreviewIcon?: JSX.Element;
     filePreviewHoverIcon?: JSX.Element;
     filePreviewTitleColor?: string;
@@ -17,5 +22,5 @@ interface IProps {
     filePreviewHoverBackgroundColor?: string;
     filePreviewDownloadIcon?: JSX.Element;
 }
-declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon }: IProps) => JSX.Element;
+declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewIcon, voicePreviewHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon }: IProps) => JSX.Element;
 export default DetailsTab;

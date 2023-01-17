@@ -13,11 +13,6 @@ interface IChannelProps {
 }
 declare const Channel: React.FC<IChannelProps>;
 export default Channel;
-interface LastMessageTextProps {
-    readonly authorWith: number;
-    withAttachments?: boolean;
-    noBody?: boolean;
-}
 interface UnreadCountProps {
     readonly isMuted: boolean;
     readonly backgroundColor?: string;
@@ -40,8 +35,14 @@ export declare const UserStatus: import("styled-components").StyledComponent<"sp
 }, never>;
 export declare const LastMessageAuthor: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const Points: import("styled-components").StyledComponent<"span", any, {}, never>;
-export declare const LastMessageText: import("styled-components").StyledComponent<"span", any, LastMessageTextProps, never>;
+export declare const LastMessageText: import("styled-components").StyledComponent<"span", any, {
+    readonly authorWith: number;
+    withAttachments?: boolean | undefined;
+    noBody?: boolean | undefined;
+    deletedMessage?: boolean | undefined;
+}, never>;
 export declare const ChannelStatus: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const LastMessageDate: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const DeliveryIconCont: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const TypingIndicator: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UnreadCount: import("styled-components").StyledComponent<"span", any, UnreadCountProps, never>;

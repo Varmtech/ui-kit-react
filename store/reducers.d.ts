@@ -13,8 +13,10 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
         errorNotification: string;
         notifications: [];
         typingIndicator: {
-            typingState: boolean;
-            from: {};
+            [key: string]: {
+                typingState: boolean;
+                from: {};
+            };
         };
         searchValue: string;
         addedChannel: import("../types").IChannel | null;

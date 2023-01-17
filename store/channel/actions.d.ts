@@ -177,11 +177,12 @@ export declare function sendTypingAC(state: boolean): {
         state: boolean;
     };
 };
-export declare function switchTypingIndicatorAC(typingState: boolean, from?: IUser): {
+export declare function switchTypingIndicatorAC(typingState: boolean, channelId: string, from?: IUser): {
     type: string;
     payload: {
         typingState: boolean;
         from: IUser | undefined;
+        channelId: string;
     };
 };
 export declare function turnOffNotificationsAC(expireTime?: number): {

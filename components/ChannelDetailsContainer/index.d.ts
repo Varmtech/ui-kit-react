@@ -54,6 +54,11 @@ export interface IDetailsProps {
     linkPreviewTitleColor?: string;
     linkPreviewColor?: string;
     linkPreviewHoverBackgroundColor?: string;
+    voicePreviewIcon?: JSX.Element;
+    voicePreviewHoverIcon?: JSX.Element;
+    voicePreviewTitleColor?: string;
+    voicePreviewDateAndTimeColor?: string;
+    voicePreviewHoverBackgroundColor?: string;
     filePreviewIcon?: JSX.Element;
     filePreviewHoverIcon?: JSX.Element;
     filePreviewTitleColor?: string;

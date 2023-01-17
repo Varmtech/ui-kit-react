@@ -13,8 +13,10 @@ declare const _default: (state?: {
     errorNotification: string;
     notifications: [];
     typingIndicator: {
-        typingState: boolean;
-        from: {};
+        [key: string]: {
+            typingState: boolean;
+            from: {};
+        };
     };
     searchValue: string;
     addedChannel: IChannel | null;
@@ -39,8 +41,10 @@ declare const _default: (state?: {
     errorNotification: string;
     notifications: [];
     typingIndicator: {
-        typingState: boolean;
-        from: {};
+        [key: string]: {
+            typingState: boolean;
+            from: {};
+        };
     };
     searchValue: string;
     addedChannel: IChannel | null;

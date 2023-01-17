@@ -108,6 +108,7 @@ export interface IReaction {
 export interface IAttachment {
     id?: string;
     attachmentId?: string;
+    createdAt: Date;
     url: any;
     attachmentUrl: string;
     type: string;
@@ -116,6 +117,7 @@ export interface IAttachment {
     fileSize: number;
     title?: string;
     metadata?: any;
+    user: IUser;
 }
 export interface IMedia extends IAttachment {
     user: IUser;

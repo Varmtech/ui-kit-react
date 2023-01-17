@@ -13,8 +13,10 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
         errorNotification: string;
         notifications: [];
         typingIndicator: {
-            typingState: boolean;
-            from: {};
+            [key: string]: {
+                typingState: boolean;
+                from: {};
+            };
         };
         searchValue: string;
         addedChannel: import("../types").IChannel | null;

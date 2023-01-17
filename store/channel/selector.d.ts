@@ -11,5 +11,5 @@ export declare const channelsHasNextSelector: (store: any) => any;
 export declare const searchValueSelector: (store: any) => any;
 export declare const channelInfoIsOpenSelector: (store: any) => any;
 export declare const channelEditModeSelector: (store: any) => any;
-export declare const typingIndicatorSelector: (store: any) => any;
+export declare const typingIndicatorSelector: (channelId: string) => (store: any) => any;
 export declare const channelListWidthSelector: (store: any) => any;
