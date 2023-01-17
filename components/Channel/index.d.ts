@@ -15,6 +15,8 @@ declare const Channel: React.FC<IChannelProps>;
 export default Channel;
 interface LastMessageTextProps {
     readonly authorWith: number;
+    withAttachments?: boolean;
+    noBody?: boolean;
 }
 interface UnreadCountProps {
     readonly isMuted: boolean;

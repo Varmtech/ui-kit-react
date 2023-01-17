@@ -11,7 +11,9 @@ export interface IMessageStore {
     };
     activeChannelNewMessage: IMessage | null;
     activeTabAttachments: any[];
+    attachmentsForPopup: any[];
     attachmentHasNext: boolean;
+    attachmentForPopupHasNext: boolean;
     messageToEdit: IMessage | null;
     messageForReply?: IMessage | null;
     activeChannelMessageUpdated: {

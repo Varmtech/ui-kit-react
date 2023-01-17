@@ -187,14 +187,24 @@ export declare function updateMessagesStatusAC(name: string, markersMap: {
 export declare function clearMessagesAC(): {
     type: string;
 };
-export declare function getAttachmentsAC(channelId: string, attachmentType: string): {
+export declare function getAttachmentsAC(channelId: string, attachmentType: string, limit?: number, direction?: string, attachmentId?: string, forPopup?: boolean): {
     type: string;
     payload: {
         channelId: string;
         attachmentType: string;
+        limit: number | undefined;
+        direction: string | undefined;
+        forPopup: boolean | undefined;
+        attachmentId: string | undefined;
     };
 };
 export declare function setAttachmentsAC(attachments: IAttachment[]): {
+    type: string;
+    payload: {
+        attachments: IAttachment[];
+    };
+};
+export declare function setAttachmentsForPopupAC(attachments: IAttachment[]): {
     type: string;
     payload: {
         attachments: IAttachment[];
@@ -212,7 +222,20 @@ export declare function addAttachmentsAC(attachments: IAttachment[]): {
         attachments: IAttachment[];
     };
 };
+export declare function addAttachmentsForPopupAC(attachments: IAttachment[], direction: string): {
+    type: string;
+    payload: {
+        attachments: IAttachment[];
+        direction: string;
+    };
+};
 export declare function setAttachmentsCompleteAC(hasPrev: boolean): {
+    type: string;
+    payload: {
+        hasPrev: boolean;
+    };
+};
+export declare function setAttachmentsCompleteForPopupAC(hasPrev: boolean): {
     type: string;
     payload: {
         hasPrev: boolean;

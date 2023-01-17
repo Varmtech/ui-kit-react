@@ -7,5 +7,5 @@ interface IProps {
     linkPreviewColor?: string;
     linkPreviewHoverBackgroundColor?: string;
 }
-declare const LinkItem: ({ link, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor }: IProps) => JSX.Element;
+declare const LinkItem: ({ link, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewColor, linkPreviewHoverBackgroundColor }: IProps) => JSX.Element;
 export default LinkItem;
