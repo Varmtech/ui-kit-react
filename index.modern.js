@@ -1623,12 +1623,14 @@ function generateAvatarColor(itemName) {
   return null;
 }
 var DropdownOptionsUl = styled.ul(_templateObject2 || (_templateObject2 = _taggedTemplateLiteralLoose(["\n  list-style: none;\n  margin: 0;\n  padding: 0;\n"])));
-var DropdownOptionLi = styled.li(_templateObject3 || (_templateObject3 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n  padding: 6px 6px 6px 16px;\n\n  &:hover {\n    background: ", ";\n  }\n\n  & > svg {\n    width: ", ";\n    height: ", ";\n    color: ", ";\n    margin-right: 10px;\n  }\n"])), function (props) {
+var DropdownOptionLi = styled.li(_templateObject3 || (_templateObject3 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n  padding: 6px 6px 6px 16px;\n\n  &:hover {\n    background: ", ";\n  }\n\n  & > svg {\n    width: ", ";\n    min-width: ", ";\n    height: ", ";\n    color: ", ";\n    margin-right: 10px;\n  }\n"])), function (props) {
   return props.textColor || colors.blue6;
 }, function (props) {
   return props.margin;
 }, function (props) {
   return props.hoverBackground || colors.gray0;
+}, function (props) {
+  return props.iconWidth;
 }, function (props) {
   return props.iconWidth;
 }, function (props) {
@@ -1718,7 +1720,7 @@ var PopupName = styled.h3(_templateObject17 || (_templateObject17 = _taggedTempl
 
   return '';
 });
-var PopupContainer = styled.div(_templateObject18 || (_templateObject18 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 200;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(23, 34, 104, 0.16);\n"])));
+var PopupContainer = styled.div(_templateObject18 || (_templateObject18 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 200;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(0, 0, 0, 0.4);\n"])));
 var ButtonBlock = styled.div(_templateObject19 || (_templateObject19 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: ", ";\n  padding-right: ", ";\n  justify-content: ", ";\n  height: ", ";\n  min-height: ", ";\n  background-color: ", ";\n\n  a {\n    width: 88px;\n    height: 40px;\n    margin: 0 4px;\n    font-size: 15px;\n    font-weight: 500;\n  }\n"])), function (props) {
   return props.marginTop || '10px';
 }, function (props) {
@@ -8353,6 +8355,7 @@ var MessageReducer = (function (state, _temp) {
 
 var GET_MEMBERS = 'GET_MEMBERS';
 var ADD_MEMBERS = 'ADD_MEMBERS';
+var SET_MEMBERS_TO_LIST = 'SET_MEMBERS_TO_LIST';
 var ADD_MEMBERS_TO_LIST = 'ADD_MEMBERS_TO_LIST';
 var UPDATE_MEMBERS = 'UPDATE_MEMBERS';
 var LOAD_MORE_MEMBERS = 'LOAD_MORE_MEMBERS';
@@ -8383,24 +8386,31 @@ var MembersReducer = (function (state, _ref) {
   var newState = _extends({}, state);
 
   switch (type) {
-    case ADD_MEMBERS_TO_LIST:
+    case SET_MEMBERS_TO_LIST:
       {
         var members = payload.members;
-        newState.activeChannelMembers = [].concat(newState.activeChannelMembers, members);
+        newState.activeChannelMembers = members;
+        return newState;
+      }
+
+    case ADD_MEMBERS_TO_LIST:
+      {
+        var _members = payload.members;
+        newState.activeChannelMembers = [].concat(newState.activeChannelMembers, _members);
         return newState;
       }
 
     case UPDATE_MEMBERS:
       {
-        var _members = payload.members;
+        var _members2 = payload.members;
         var updateMembers = [];
         var membersCopy = [].concat(newState.activeChannelMembers);
 
-        if (_members.length) {
+        if (_members2.length) {
           var updatedMembersMap = {};
 
-          for (var i = 0; i < _members.length; i++) {
-            updatedMembersMap[_members[i].id] = _members[i];
+          for (var i = 0; i < _members2.length; i++) {
+            updatedMembersMap[_members2[i].id] = _members2[i];
           }
 
           updateMembers = membersCopy.map(function (member) {
@@ -8424,17 +8434,17 @@ var MembersReducer = (function (state, _ref) {
 
     case REMOVE_MEMBER_FROM_LIST:
       {
-        var _members2 = payload.members;
+        var _members3 = payload.members;
 
-        if (_members2.length) {
+        if (_members3.length) {
           var _updateMembers = [];
 
           var _membersCopy = [].concat(newState.activeChannelMembers);
 
           var removedMembersMap = {};
 
-          for (var _i = 0; _i < _members2.length; _i++) {
-            removedMembersMap[_members2[_i].id] = _members2[_i];
+          for (var _i = 0; _i < _members3.length; _i++) {
+            removedMembersMap[_members3[_i].id] = _members3[_i];
           }
 
           _updateMembers = _membersCopy.filter(function (member) {
@@ -13367,6 +13377,14 @@ function getMembersAC(channelId) {
     }
   };
 }
+function setMembersToListAC(members) {
+  return {
+    type: SET_MEMBERS_TO_LIST,
+    payload: {
+      members: members
+    }
+  };
+}
 function addMembersToListAC(members) {
   return {
     type: ADD_MEMBERS_TO_LIST,
@@ -13397,11 +13415,6 @@ function setMembersLoadingStateAC(state) {
     payload: {
       state: state
     }
-  };
-}
-function clearMembersAC() {
-  return {
-    type: CLEAR_MEMBERS
   };
 }
 function addMembersAC(channelId, members) {
@@ -13501,32 +13514,29 @@ function getMembers(action) {
         case 14:
           _yield$call = _context.sent;
           members = _yield$call.members;
-          _context.next = 18;
-          return put(clearMembersAC());
+          console.log('members ... ', members);
+          _context.next = 19;
+          return put(setMembersToListAC(members));
 
-        case 18:
-          _context.next = 20;
-          return put(addMembersToListAC(members));
-
-        case 20:
-          _context.next = 22;
+        case 19:
+          _context.next = 21;
           return put(setMembersLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 22:
-          _context.next = 28;
+        case 21:
+          _context.next = 27;
           break;
 
-        case 24:
-          _context.prev = 24;
+        case 23:
+          _context.prev = 23;
           _context.t0 = _context["catch"](0);
           console.log('ERROR in get member - ', _context.t0.message);
 
-        case 28:
+        case 27:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$3, null, [[0, 24]]);
+  }, _marked$3, null, [[0, 23]]);
 }
 
 function loadMoreMembers(action) {
@@ -18939,6 +18949,7 @@ function usePermissions(myRole) {
 var _templateObject$j, _templateObject2$g, _templateObject3$c, _templateObject4$9;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
+      isDirectChannel = _ref.isDirectChannel,
       handleOpenDeleteMessage = _ref.handleOpenDeleteMessage,
       handleOpenForwardMessage = _ref.handleOpenForwardMessage,
       handleReportMessage = _ref.handleReportMessage,
@@ -19019,7 +19030,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgReact, null)), showEditMessage && editMessagePermitted && React__default.createElement(Action, {
+  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgReact, null)), showEditMessage && editMessagePermitted && (isDirectChannel ? !isIncoming : true) && React__default.createElement(Action, {
     order: editIconOrder || 1,
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
@@ -19055,7 +19066,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && deleteMessagePermitted && React__default.createElement(Action, {
+  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && deleteMessagePermitted && (isDirectChannel ? !isIncoming : true) && React__default.createElement(Action, {
     order: deleteIconOrder || 5,
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
@@ -26957,6 +26968,7 @@ var Message = function Message(_ref) {
     return useMemo(function () {
       return React__default.createElement(MessageActions, {
         messageFrom: message.user,
+        isDirectChannel: channel.type === 'Direct',
         editModeToggle: toggleEditMode,
         messageStatus: message.deliveryStatus || MESSAGE_DELIVERY_STATUS.PENDING,
         handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
@@ -27447,7 +27459,7 @@ var SliderPopup = function SliderPopup(_ref) {
 };
 var Container$c = styled.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
 var SliderHeader = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
-var SliderBody = styled.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  background: rgba(6, 10, 38, 0.82);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var SliderBody = styled.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
 var FileInfo = styled.div(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
 var Info = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
 var Actions = styled.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
@@ -28065,14 +28077,45 @@ function _extends$U() {
   return _extends$U.apply(this, arguments);
 }
 
-function SvgChoseMedia(props) {
+function SvgErrorCircle(props) {
   return /*#__PURE__*/createElement("svg", _extends$U({
+    width: 25,
+    height: 24,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
+    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
+    fill: "#FFB73D"
+  })));
+}
+
+var _path$S;
+
+function _extends$V() {
+  _extends$V = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$V.apply(this, arguments);
+}
+
+function SvgChoseMedia(props) {
+  return /*#__PURE__*/createElement("svg", _extends$V({
     width: 18,
     height: 18,
     viewBox: "0 0 19 19",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
+  }, props), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
@@ -28080,7 +28123,7 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _templateObject$t, _templateObject2$q, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$7, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2;
+var _templateObject$t, _templateObject2$q, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$7, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1;
 
 var SendMessageInput = function SendMessageInput(_ref) {
   var handleAttachmentSelected = _ref.handleAttachmentSelected,
@@ -28104,6 +28147,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       replyMessageIcon = _ref.replyMessageIcon;
   var dispatch = useDispatch();
   var activeChannel = useSelector(activeChannelSelector);
+  var isBlockedUserChat = activeChannel.peer && activeChannel.peer.blocked;
   var messageToEdit = useSelector(messageToEditSelector);
   var messageForReply = useSelector(messageForReplySelector);
   var messageContRef = useRef(null);
@@ -28545,7 +28589,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
   useEffect(function () {
     setMessageText('');
     setAttachments([]);
-    messageInput.current.focus();
+
+    if (!isBlockedUserChat) {
+      messageInput.current.focus();
+    }
+
     handleCloseEditMode();
     clearTimeout(typingTimout);
   }, [activeChannel.id]);
@@ -28589,7 +28637,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setEditMessageText(messageToEdit.body || '');
     }
 
-    messageInput.current.focus();
+    if (!isBlockedUserChat) {
+      messageInput.current.focus();
+    }
 
     if (messageContRef && messageContRef.current) {
       dispatch(setSendMessageInputHeightAC(messageContRef.current.getBoundingClientRect().height));
@@ -28610,7 +28660,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     border: border,
     borderRadius: borderRadius,
     ref: messageContRef
-  }, React__default.createElement(TypingIndicator$1, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
+  }, isBlockedUserChat ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), " You blocked this user.") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
     typingState: typingIndicator.typingState
   }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName || typingIndicator.from.id, ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
@@ -28692,7 +28742,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
-  }, React__default.createElement(SvgSend, null))));
+  }, React__default.createElement(SvgSend, null)))));
 };
 
 var Container$e = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
@@ -28742,40 +28792,7 @@ var DotOne = styled.span(_templateObject16$2 || (_templateObject16$2 = _taggedTe
 var DotTwo = styled.span(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled.span(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose([""])));
 var TypingAnimation = styled.div(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
-
-var _path$S;
-
-function _extends$V() {
-  _extends$V = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$V.apply(this, arguments);
-}
-
-function SvgBottom(props) {
-  return /*#__PURE__*/createElement("svg", _extends$V({
-    width: 12,
-    height: 7,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
+var BlockedUserInfo = styled.div(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.gray6);
 
 var _path$T;
 
@@ -28796,22 +28813,22 @@ function _extends$W() {
   return _extends$W.apply(this, arguments);
 }
 
-function SvgNotificationsOff2(props) {
+function SvgBottom(props) {
   return /*#__PURE__*/createElement("svg", _extends$W({
-    width: 16,
-    height: 16,
+    width: 12,
+    height: 7,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$T || (_path$T = /*#__PURE__*/createElement("path", {
-    d: "M9.259 14.3a1.454 1.454 0 01-2.517 0M12.821 9.007a13.013 13.013 0 01-.458-3.636M3.826 4.105c-.126.41-.19.837-.189 1.266 0 5.09-2.182 6.545-2.182 6.545h10.182M12.365 5.37a4.363 4.363 0 00-6.786-3.636M1 1l14 14",
-    stroke: "CurrentColor",
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
   })));
 }
 
-var _path$U, _circle$6;
+var _path$U;
 
 function _extends$X() {
   _extends$X = Object.assign ? Object.assign.bind() : function (target) {
@@ -28830,27 +28847,22 @@ function _extends$X() {
   return _extends$X.apply(this, arguments);
 }
 
-function SvgMarkAsUnRead(props) {
+function SvgNotificationsOff2(props) {
   return /*#__PURE__*/createElement("svg", _extends$X({
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$U || (_path$U = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M17.778 8.516a3.958 3.958 0 01-5.117-5.982 7.847 7.847 0 00-2.631-.451c-4.356 0-7.887 3.544-7.887 7.917 0 1.359.341 2.638.942 3.755l-.967 3.118a.732.732 0 00.912.919l3.043-.943a7.827 7.827 0 003.957 1.067c4.356 0 7.887-3.544 7.887-7.916 0-.507-.048-1.003-.139-1.484z",
-    fill: "CurrentColor"
-  })), _circle$6 || (_circle$6 = /*#__PURE__*/createElement("circle", {
-    cx: 15.542,
-    cy: 5.25,
-    r: 1.875,
-    fill: "CurrentColor",
-    stroke: "CurrentColor"
+    d: "M9.259 14.3a1.454 1.454 0 01-2.517 0M12.821 9.007a13.013 13.013 0 01-.458-3.636M3.826 4.105c-.126.41-.19.837-.189 1.266 0 5.09-2.182 6.545-2.182 6.545h10.182M12.365 5.37a4.363 4.363 0 00-6.786-3.636M1 1l14 14",
+    stroke: "CurrentColor",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$V;
+var _path$V, _circle$6;
 
 function _extends$Y() {
   _extends$Y = Object.assign ? Object.assign.bind() : function (target) {
@@ -28869,7 +28881,7 @@ function _extends$Y() {
   return _extends$Y.apply(this, arguments);
 }
 
-function SvgMarkAsRead(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$Y({
     width: 20,
     height: 20,
@@ -28878,8 +28890,14 @@ function SvgMarkAsRead(props) {
   }, props), _path$V || (_path$V = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M17.917 10c0 4.372-3.531 7.916-7.887 7.916a7.827 7.827 0 01-3.957-1.067l-3.043.943a.732.732 0 01-.913-.919l.968-3.118A7.904 7.904 0 012.143 10c0-4.373 3.531-7.917 7.887-7.917S17.917 5.627 17.917 10z",
-    fill: "#B2B6BE"
+    d: "M17.778 8.516a3.958 3.958 0 01-5.117-5.982 7.847 7.847 0 00-2.631-.451c-4.356 0-7.887 3.544-7.887 7.917 0 1.359.341 2.638.942 3.755l-.967 3.118a.732.732 0 00.912.919l3.043-.943a7.827 7.827 0 003.957 1.067c4.356 0 7.887-3.544 7.887-7.916 0-.507-.048-1.003-.139-1.484z",
+    fill: "CurrentColor"
+  })), _circle$6 || (_circle$6 = /*#__PURE__*/createElement("circle", {
+    cx: 15.542,
+    cy: 5.25,
+    r: 1.875,
+    fill: "CurrentColor",
+    stroke: "CurrentColor"
   })));
 }
 
@@ -28902,15 +28920,17 @@ function _extends$Z() {
   return _extends$Z.apply(this, arguments);
 }
 
-function SvgDeleteChannel(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$Z({
     width: 20,
-    height: 21,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$W || (_path$W = /*#__PURE__*/createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M17.917 10c0 4.372-3.531 7.916-7.887 7.916a7.827 7.827 0 01-3.957-1.067l-3.043.943a.732.732 0 01-.913-.919l.968-3.118A7.904 7.904 0 012.143 10c0-4.373 3.531-7.917 7.887-7.917S17.917 5.627 17.917 10z",
+    fill: "#B2B6BE"
   })));
 }
 
@@ -28933,19 +28953,19 @@ function _extends$_() {
   return _extends$_.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgDeleteChannel(props) {
   return /*#__PURE__*/createElement("svg", _extends$_({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$X || (_path$X = /*#__PURE__*/createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$Y, _path2$6;
+var _path$Y;
 
 function _extends$$() {
   _extends$$ = Object.assign ? Object.assign.bind() : function (target) {
@@ -28964,24 +28984,19 @@ function _extends$$() {
   return _extends$$.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgBlockChannel(props) {
   return /*#__PURE__*/createElement("svg", _extends$$({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Y || (_path$Y = /*#__PURE__*/createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$Z;
+var _path$Z, _path2$6;
 
 function _extends$10() {
   _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
@@ -29000,15 +29015,20 @@ function _extends$10() {
   return _extends$10.apply(this, arguments);
 }
 
-function SvgStar(props) {
+function SvgReport(props) {
   return /*#__PURE__*/createElement("svg", _extends$10({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Z || (_path$Z = /*#__PURE__*/createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -29031,13 +29051,44 @@ function _extends$11() {
   return _extends$11.apply(this, arguments);
 }
 
-function SvgPin(props) {
+function SvgStar(props) {
   return /*#__PURE__*/createElement("svg", _extends$11({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$_ || (_path$_ = /*#__PURE__*/createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
+  })));
+}
+
+var _path$$;
+
+function _extends$12() {
+  _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$12.apply(this, arguments);
+}
+
+function SvgPin(props) {
+  return /*#__PURE__*/createElement("svg", _extends$12({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$$ || (_path$$ = /*#__PURE__*/createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
@@ -29097,8 +29148,10 @@ var Actions$1 = function Actions(_ref) {
       _ref$showBlockAndLeav = _ref.showBlockAndLeaveChannel,
       showBlockAndLeaveChannel = _ref$showBlockAndLeav === void 0 ? true : _ref$showBlockAndLeav,
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
+      unblockUserIcon = _ref.unblockUserIcon,
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
-      blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor;
+      blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
+      unblockUserTextColor = _ref.unblockUserTextColor;
 
   var _useState = useState(false),
       leaveChannelPopupOpen = _useState[0],
@@ -29224,7 +29277,7 @@ var Actions$1 = function Actions(_ref) {
     iconColor: muteNotificationIconColor || colors.gray4,
     color: muteUnmuteNotificationTextColor || colors.gray6,
     hoverColor: muteUnmuteNotificationTextColor || colors.gray6
-  }, React__default.createElement(React__default.Fragment, null, muteNotificationIcon || React__default.createElement(DefaultMutedIcon, null), " Unmute notification")) : React__default.createElement(DropDown, {
+  }, React__default.createElement(React__default.Fragment, null, muteNotificationIcon || React__default.createElement(DefaultMutedIcon, null), " Unmute notifications")) : React__default.createElement(DropDown, {
     isSelect: true,
     height: 'auto',
     order: muteUnmuteNotificationsOrder,
@@ -29234,7 +29287,7 @@ var Actions$1 = function Actions(_ref) {
       iconColor: unmuteNotificationIconColor || colors.gray4,
       color: muteUnmuteNotificationTextColor || colors.gray6,
       hoverColor: muteUnmuteNotificationTextColor || colors.gray6
-    }, React__default.createElement(React__default.Fragment, null, unmuteNotificationIcon || React__default.createElement(SvgNotifications, null), " Mute notification"))
+    }, React__default.createElement(React__default.Fragment, null, unmuteNotificationIcon || React__default.createElement(SvgNotifications, null), " Mute notifications"))
   }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
     key: 1,
     hoverBackground: customColors.selectedChannelBackground,
@@ -29314,13 +29367,14 @@ var Actions$1 = function Actions(_ref) {
     }
   }, deleteChannelIcon || React__default.createElement(SvgDeleteChannel, null), " Delete ", channelType), isDirectChannel ? React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && (channel.peer.blocked ? React__default.createElement(ActionItem$1, {
     key: 6,
-    hoverColor: '#0DBD8B',
+    color: unblockUserTextColor || colors.gray6,
+    hoverColor: unblockUserTextColor || colors.gray6,
     onClick: function onClick() {
       setPopupButtonText('Unblock');
       setPopupTitle('UnblockUser ?');
       handleToggleUnblockUserPopupOpen();
     }
-  }, React__default.createElement(SvgBlockChannel, null), " Unblock User") : React__default.createElement(ActionItem$1, {
+  }, unblockUserIcon || React__default.createElement(SvgBlockChannel, null), " Unblock User") : React__default.createElement(ActionItem$1, {
     key: 6,
     color: deleteChannelTextColor || '#FA4C56',
     iconColor: deleteChannelIconColor || '#FA4C56',
@@ -29412,52 +29466,7 @@ var ActionItem$1 = styled.li(_templateObject6$d || (_templateObject6$d = _tagged
   return props.hoverColor || colors.blue2;
 });
 
-var _rect, _rect2, _path$$;
-
-function _extends$12() {
-  _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$12.apply(this, arguments);
-}
-
-function SvgAddMember(props) {
-  return /*#__PURE__*/createElement("svg", _extends$12({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect || (_rect = /*#__PURE__*/createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 20,
-    fill: "#F3F5F7"
-  })), _rect2 || (_rect2 = /*#__PURE__*/createElement("rect", {
-    x: 0.25,
-    y: 0.25,
-    width: 39.5,
-    height: 39.5,
-    rx: 19.75,
-    stroke: "#000",
-    strokeOpacity: 0.08,
-    strokeWidth: 0.5
-  })), _path$$ || (_path$$ = /*#__PURE__*/createElement("path", {
-    d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
-    fill: "#0DBD8B"
-  })));
-}
-
-var _path$10;
+var _rect, _rect2, _path$10;
 
 function _extends$13() {
   _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
@@ -29476,13 +29485,58 @@ function _extends$13() {
   return _extends$13.apply(this, arguments);
 }
 
-function SvgMoreVert(props) {
+function SvgAddMember(props) {
   return /*#__PURE__*/createElement("svg", _extends$13({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect || (_rect = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 20,
+    fill: "#F3F5F7"
+  })), _rect2 || (_rect2 = /*#__PURE__*/createElement("rect", {
+    x: 0.25,
+    y: 0.25,
+    width: 39.5,
+    height: 39.5,
+    rx: 19.75,
+    stroke: "#000",
+    strokeOpacity: 0.08,
+    strokeWidth: 0.5
+  })), _path$10 || (_path$10 = /*#__PURE__*/createElement("path", {
+    d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
+    fill: "#0DBD8B"
+  })));
+}
+
+var _path$11;
+
+function _extends$14() {
+  _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$14.apply(this, arguments);
+}
+
+function SvgMoreVert(props) {
+  return /*#__PURE__*/createElement("svg", _extends$14({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$10 || (_path$10 = /*#__PURE__*/createElement("path", {
+  }, props), _path$11 || (_path$11 = /*#__PURE__*/createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
@@ -29801,10 +29855,10 @@ var Media = function Media(_ref) {
 var Container$h = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 5px);\n  height: 110px;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$11, _path2$7, _path3$3;
+var _path$12, _path2$7, _path3$3;
 
-function _extends$14() {
-  _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$15() {
+  _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -29817,17 +29871,17 @@ function _extends$14() {
 
     return target;
   };
-  return _extends$14.apply(this, arguments);
+  return _extends$15.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/createElement("svg", _extends$14({
+  return /*#__PURE__*/createElement("svg", _extends$15({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$11 || (_path$11 = /*#__PURE__*/createElement("path", {
+  }, props), _path$12 || (_path$12 = /*#__PURE__*/createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -29847,10 +29901,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$12, _path2$8;
+var _path$13, _path2$8;
 
-function _extends$15() {
-  _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$16() {
+  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -29863,16 +29917,16 @@ function _extends$15() {
 
     return target;
   };
-  return _extends$15.apply(this, arguments);
+  return _extends$16.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/createElement("svg", _extends$15({
+  return /*#__PURE__*/createElement("svg", _extends$16({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$12 || (_path$12 = /*#__PURE__*/createElement("path", {
+  }, props), _path$13 || (_path$13 = /*#__PURE__*/createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -29933,8 +29987,8 @@ var FileSizeAndDate = styled.span(_templateObject7$c || (_templateObject7$c = _t
 
 var _rect$1, _rect2$1, _g$3, _defs;
 
-function _extends$16() {
-  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$17() {
+  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -29947,11 +30001,11 @@ function _extends$16() {
 
     return target;
   };
-  return _extends$16.apply(this, arguments);
+  return _extends$17.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$16({
+  return /*#__PURE__*/createElement("svg", _extends$17({
     width: 42,
     height: 42,
     fill: "none",
@@ -30041,48 +30095,7 @@ var Links = function Links(_ref) {
 };
 var Container$j = styled.ul(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$2, _circle$7, _path$13;
-
-function _extends$17() {
-  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$17.apply(this, arguments);
-}
-
-function SvgVoicePreview(props) {
-  return /*#__PURE__*/createElement("svg", _extends$17({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 8,
-    fill: "#F3F5F7"
-  })), _circle$7 || (_circle$7 = /*#__PURE__*/createElement("circle", {
-    cx: 20,
-    cy: 20,
-    r: 14,
-    fill: "#0DBD8B"
-  })), _path$13 || (_path$13 = /*#__PURE__*/createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$3, _circle$8, _path$14;
+var _rect$2, _circle$7, _path$14;
 
 function _extends$18() {
   _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30101,8 +30114,49 @@ function _extends$18() {
   return _extends$18.apply(this, arguments);
 }
 
-function SvgVoicePreviewHoverIcon(props) {
+function SvgVoicePreview(props) {
   return /*#__PURE__*/createElement("svg", _extends$18({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#F3F5F7"
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$14 || (_path$14 = /*#__PURE__*/createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$3, _circle$8, _path$15;
+
+function _extends$19() {
+  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$19.apply(this, arguments);
+}
+
+function SvgVoicePreviewHoverIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$19({
     width: 40,
     height: 40,
     fill: "none",
@@ -30117,7 +30171,7 @@ function SvgVoicePreviewHoverIcon(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$14 || (_path$14 = /*#__PURE__*/createElement("path", {
+  })), _path$15 || (_path$15 = /*#__PURE__*/createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
@@ -30144,6 +30198,7 @@ var VoiceItem = function VoiceItem(_ref) {
   var customDownloader = getCustomDownloader();
   var contactsMap = useSelector(contactsMapSelector);
   var audioRef = useRef();
+  var user = useSelector(userSelector);
 
   var handlePlayPause = function handlePlayPause() {
     if (audioRef && audioRef.current) {
@@ -30189,7 +30244,7 @@ var VoiceItem = function VoiceItem(_ref) {
     onClick: handlePlayPause
   }, voicePreviewHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
     color: voicePreviewTitleColor
-  }, makeUserName(contactsMap[file.user.id], file.user)), React__default.createElement(AudioDate, {
+  }, file.user.id === user.id ? 'You' : makeUserName(contactsMap[file.user.id], file.user)), React__default.createElement(AudioDate, {
     color: voicePreviewDateAndTimeColor
   }, moment(file.createdAt).format('DD MMMM, YYYY')), React__default.createElement(AudioSendTime, null, formatAudioVideoTime(file.metadata.dur, 0))), React__default.createElement(Audio, {
     controls: true,
@@ -30345,39 +30400,6 @@ var DetailsTab = function DetailsTab(_ref) {
 var Container$l = styled.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
 var DetailsTabHeader = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: #0dbd8b;\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6);
 
-var _path$15;
-
-function _extends$19() {
-  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$19.apply(this, arguments);
-}
-
-function SvgDefaultAvatar72(props) {
-  return /*#__PURE__*/createElement("svg", _extends$19({
-    width: 72,
-    height: 72,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$15 || (_path$15 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M56.128 65.852A35.834 35.834 0 0136 72a35.84 35.84 0 01-21.6-7.198C5.656 58.235 0 47.778 0 36 0 16.118 16.118 0 36 0s36 16.118 36 36c0 12.426-6.296 23.382-15.872 29.852zM36 37.8c5.965 0 10.8-5.238 10.8-11.7 0-6.462-4.835-11.7-10.8-11.7-5.965 0-10.8 5.238-10.8 11.7 0 6.462 4.835 11.7 10.8 11.7zm0 27a28.705 28.705 0 0020.028-8.104C52.823 48.782 45.063 43.2 36 43.2c-9.063 0-16.823 5.582-20.028 13.496A28.705 28.705 0 0036 64.8z",
-    fill: "#D0D8E3"
-  })));
-}
-
 var _path$16;
 
 function _extends$1a() {
@@ -30397,14 +30419,47 @@ function _extends$1a() {
   return _extends$1a.apply(this, arguments);
 }
 
-function SvgCamera(props) {
+function SvgDefaultAvatar72(props) {
   return /*#__PURE__*/createElement("svg", _extends$1a({
+    width: 72,
+    height: 72,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M56.128 65.852A35.834 35.834 0 0136 72a35.84 35.84 0 01-21.6-7.198C5.656 58.235 0 47.778 0 36 0 16.118 16.118 0 36 0s36 16.118 36 36c0 12.426-6.296 23.382-15.872 29.852zM36 37.8c5.965 0 10.8-5.238 10.8-11.7 0-6.462-4.835-11.7-10.8-11.7-5.965 0-10.8 5.238-10.8 11.7 0 6.462 4.835 11.7 10.8 11.7zm0 27a28.705 28.705 0 0020.028-8.104C52.823 48.782 45.063 43.2 36 43.2c-9.063 0-16.823 5.582-20.028 13.496A28.705 28.705 0 0036 64.8z",
+    fill: "#D0D8E3"
+  })));
+}
+
+var _path$17;
+
+function _extends$1b() {
+  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1b.apply(this, arguments);
+}
+
+function SvgCamera(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1b({
     width: 40,
     height: 40,
     viewBox: "0 0 41 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M16.86 6.667a4.167 4.167 0 00-4.084 3.342c-.058.288-.17.566-.363.787l-.837.954c-.263.3-.644.473-1.043.473H6.11A2.778 2.778 0 003.333 15v15.278a2.778 2.778 0 002.778 2.778H33.89a2.778 2.778 0 002.778-2.778V15a2.778 2.778 0 00-2.778-2.777h-4.422c-.4 0-.78-.173-1.043-.473l-.837-.954c-.194-.22-.305-.499-.363-.787a4.167 4.167 0 00-4.085-3.342h-6.278zm8.696 15.278a5.556 5.556 0 11-11.112 0 5.556 5.556 0 0111.112 0zM6.806 10.139a.694.694 0 000 1.39h2.777a.694.694 0 100-1.39H6.806z",
@@ -30664,6 +30719,7 @@ var Details = function Details(_ref) {
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
       blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
+      unblockUserIcon = _ref.unblockUserIcon,
       linkPreviewIcon = _ref.linkPreviewIcon,
       linkPreviewHoverIcon = _ref.linkPreviewHoverIcon,
       linkPreviewTitleColor = _ref.linkPreviewTitleColor,
@@ -30804,6 +30860,7 @@ var Details = function Details(_ref) {
     blockAndLeaveChannelIcon: blockAndLeaveChannelIcon,
     blockAndLeaveChannelIconColor: blockAndLeaveChannelIconColor,
     blockAndLeaveChannelTextColor: blockAndLeaveChannelTextColor,
+    unblockUserIcon: unblockUserIcon,
     muteNotificationIcon: muteNotificationIcon,
     channel: channel,
     toggleable: false
@@ -30892,6 +30949,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
       blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
+      unblockUserIcon = _ref.unblockUserIcon,
       linkPreviewIcon = _ref.linkPreviewIcon,
       linkPreviewHoverIcon = _ref.linkPreviewHoverIcon,
       linkPreviewTitleColor = _ref.linkPreviewTitleColor,
@@ -30952,6 +31010,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     blockAndLeaveChannelIcon: blockAndLeaveChannelIcon,
     blockAndLeaveChannelIconColor: blockAndLeaveChannelIconColor,
     blockAndLeaveChannelTextColor: blockAndLeaveChannelTextColor,
+    unblockUserIcon: unblockUserIcon,
     linkPreviewIcon: linkPreviewIcon,
     linkPreviewHoverIcon: linkPreviewHoverIcon,
     linkPreviewTitleColor: linkPreviewTitleColor,
@@ -30966,10 +31025,10 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var _path$17, _path2$9, _path3$4;
+var _path$18, _path2$9, _path3$4;
 
-function _extends$1b() {
-  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30982,15 +31041,15 @@ function _extends$1b() {
 
     return target;
   };
-  return _extends$1b.apply(this, arguments);
+  return _extends$1c.apply(this, arguments);
 }
 
 function SvgChatLogo(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1b({
+  return /*#__PURE__*/createElement("svg", _extends$1c({
     viewBox: "0 0 249 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
+  }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
     d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
     fill: "#e17335"
   })), _path2$9 || (_path2$9 = /*#__PURE__*/createElement("path", {
@@ -31010,10 +31069,10 @@ function SceytChatHeader() {
   return React__default.createElement(Container$o, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
-var _path$18;
+var _path$19;
 
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -31026,16 +31085,16 @@ function _extends$1c() {
 
     return target;
   };
-  return _extends$1c.apply(this, arguments);
+  return _extends$1d.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1c({
+  return /*#__PURE__*/createElement("svg", _extends$1d({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));

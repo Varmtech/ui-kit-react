@@ -5,6 +5,12 @@ export declare function getMembersAC(channelId: string): {
         channelId: string;
     };
 };
+export declare function setMembersToListAC(members: IMember[]): {
+    type: string;
+    payload: {
+        members: IMember[];
+    };
+};
 export declare function addMembersToListAC(members: IMember[]): {
     type: string;
     payload: {
