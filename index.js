@@ -1713,7 +1713,7 @@ var Button = styled__default.button(_templateObject16 || (_templateObject16 = _t
 }, function (props) {
   return props.disabled ? 0.5 : 0.8;
 });
-var PopupName = styled__default.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.blue6, function (props) {
+var PopupName = styled__default.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.gray6, function (props) {
   return props.marginTop;
 }, function (props) {
   return props.marginBottom;
@@ -1760,7 +1760,7 @@ var PopupBody = styled__default.div(_templateObject21 || (_templateObject21 = _t
 }, function (props) {
   return props.withFooter ? "calc(100% - (54px + " + props.padding + "px))" : 'calc(100% - 54px)';
 });
-var PopupDescription = styled__default.span(_templateObject22 || (_templateObject22 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 22px;\n  color: ", ";\n  cursor: default;\n  white-space: pre-line;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  .highlight {\n    text-decoration: underline;\n    font-weight: 500;\n    color: ", ";\n  }\n"])), colors.blue7, function (props) {
+var PopupDescription = styled__default.span(_templateObject22 || (_templateObject22 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 22px;\n  color: ", ";\n  cursor: default;\n  white-space: pre-line;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  .highlight {\n    text-decoration: underline;\n    font-weight: 500;\n    color: ", ";\n  }\n"])), colors.gray8, function (props) {
   return props.marginTop || '10px';
 }, function (props) {
   return props.marginBottom || '10px';
@@ -13518,29 +13518,28 @@ function getMembers(action) {
         case 14:
           _yield$call = _context.sent;
           members = _yield$call.members;
-          console.log('members ... ', members);
-          _context.next = 19;
+          _context.next = 18;
           return effects.put(setMembersToListAC(members));
 
-        case 19:
-          _context.next = 21;
+        case 18:
+          _context.next = 20;
           return effects.put(setMembersLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 21:
-          _context.next = 27;
+        case 20:
+          _context.next = 26;
           break;
 
-        case 23:
-          _context.prev = 23;
+        case 22:
+          _context.prev = 22;
           _context.t0 = _context["catch"](0);
           console.log('ERROR in get member - ', _context.t0.message);
 
-        case 27:
+        case 26:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$3, null, [[0, 23]]);
+  }, _marked$3, null, [[0, 22]]);
 }
 
 function loadMoreMembers(action) {
@@ -14992,7 +14991,7 @@ var DropDownTriggerContainer = styled__default.button(_templateObject2$6 || (_te
   return props.isOpen && "\n        &::after {\n            transform: translateY(-50%) rotate(-45deg);\n            top: calc(50% + 2px);\n        }\n        ";
 });
 var DropDownBody = styled__default.div(_templateObject3$4 || (_templateObject3$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 300;\n  min-width: 200px;\n  right: 0;\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: #ffffff;\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
-  return props.position === 'top' ? "\n    top: inherit;\n    bottom: 100%;\n        " : props.position === 'topRight' ? "\n    top: inherit;\n    right: inherit;\n    bottom: 100%" : props.position === 'right' ? "\n    right: inherit;\n    " : '';
+  return props.position === 'top' ? "top: inherit;\n         bottom: 100%;" : props.position === 'topRight' ? "top: inherit;\n         right: inherit;\n         bottom: 100%" : props.position === 'right' || props.position === 'center' ? "right: inherit;" : props.position === 'left' ? "right: inherit;\n          left: 0;" : '';
 });
 
 var DropDown = function DropDown(_ref) {
@@ -16944,7 +16943,8 @@ var Controls = styled__default.div(_templateObject2$9 || (_templateObject2$9 = _
 var _templateObject$a, _templateObject2$a, _templateObject3$6, _templateObject4$4, _templateObject5$3, _templateObject6$3, _templateObject7$3, _templateObject8$3, _templateObject9$3, _templateObject10$3;
 function CreateChannel(_ref) {
   var handleClose = _ref.handleClose,
-      channelType = _ref.channelType;
+      channelType = _ref.channelType,
+      uriPrefixOnCreateChannel = _ref.uriPrefixOnCreateChannel;
   var dispatch = reactRedux.useDispatch();
   var uriRegexp = new RegExp('^[A-Za-z0-9_]*$');
   var fileUploader = React.useRef(null);
@@ -17033,7 +17033,7 @@ function CreateChannel(_ref) {
       metadata: {
         d: metadataValue
       },
-      uri: "waafi.com/" + URIValue,
+      uri: URIValue,
       members: members,
       type: channelType === 'private' ? CHANNEL_TYPE.PRIVATE : CHANNEL_TYPE.PUBLIC,
       avatarFile: newAvatar.src.file
@@ -17154,7 +17154,7 @@ function CreateChannel(_ref) {
     value: metadataValue,
     onChange: handleTypeMetadata,
     placeholder: "Enter " + (createPrivateChannel ? 'group' : 'channel') + " description"
-  }), !createPrivateChannel && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, null, "URL"), React__default.createElement(UriInputWrapper, null, React__default.createElement(UriPrefix, null, "waafi.com/"), React__default.createElement(CustomInput, {
+  }), !createPrivateChannel && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, null, "URL"), React__default.createElement(UriInputWrapper, null, React__default.createElement(UriPrefix, null, uriPrefixOnCreateChannel), React__default.createElement(CustomInput, {
     type: 'text',
     value: URIValue,
     onChange: handleTypeURI,
@@ -17206,7 +17206,8 @@ var UriPrefix = styled__default.span(_templateObject10$3 || (_templateObject10$3
 var _templateObject$b;
 
 var CreateChannelButton = function CreateChannelButton(_ref) {
-  var showSearch = _ref.showSearch;
+  var showSearch = _ref.showSearch,
+      uriPrefixOnCreateChannel = _ref.uriPrefixOnCreateChannel;
 
   var _useState = React.useState(false),
       showAddMemberPopup = _useState[0],
@@ -17265,7 +17266,8 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
     handleClose: function handleClose() {
       return setShowCreateChannel('');
     },
-    channelType: showCreateChannel
+    channelType: showCreateChannel,
+    uriPrefixOnCreateChannel: uriPrefixOnCreateChannel
   }));
 };
 var CreateDropdownButton = styled__default.div(_templateObject$b || (_templateObject$b = _taggedTemplateLiteralLoose(["\n  //margin-left: 12px;\n  cursor: pointer;\n  line-height: 55px;\n  margin-left: ", ";\n  width: 40px;\n  height: 40px;\n  border-radius: 50%;\n  &:hover {\n    background-color: #ebf7f1;\n  }\n"])), function (props) {
@@ -17552,6 +17554,7 @@ var ChannelList = function ChannelList(_ref) {
       showSearch = _ref$showSearch === void 0 ? true : _ref$showSearch,
       _ref$showCreateChanne = _ref.showCreateChannelIcon,
       showCreateChannelIcon = _ref$showCreateChanne === void 0 ? true : _ref$showCreateChanne,
+      uriPrefixOnCreateChannel = _ref.uriPrefixOnCreateChannel,
       onChannelDeleted = _ref.onChannelDeleted,
       onChannelCreated = _ref.onChannelCreated,
       onChannelHidden = _ref.onChannelHidden,
@@ -17748,7 +17751,8 @@ var ChannelList = function ChannelList(_ref) {
     handleSearchValueChange: handleSearchValueChange,
     getMyChannels: getMyChannels
   }), showCreateChannelIcon && React__default.createElement(CreateChannelButton, {
-    showSearch: showSearch
+    showSearch: showSearch,
+    uriPrefixOnCreateChannel: uriPrefixOnCreateChannel
   })), List ? React__default.createElement(List, {
     channels: channels,
     loadMoreChannels: handleLoadMoreChannels
@@ -26643,8 +26647,8 @@ function DeletePopup(_ref) {
     setInitialRender(false);
   }, []);
   return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
-    maxWidth: '460px',
-    minWidth: '460px',
+    maxWidth: '520px',
+    minWidth: '520px',
     isLoading: loading,
     padding: '0'
   }, React__default.createElement(PopupBody, {
@@ -27067,7 +27071,7 @@ var Message = function Message(_ref) {
     ownMessageBackground: ownMessageBackground,
     incomingMessageBackground: incomingMessageBackground,
     borderRadius: borderRadius,
-    withAttachments: withAttachments,
+    withAttachments: withAttachments && message.attachments[0].type !== attachmentTypes.link,
     attachmentWidth: withAttachments ? message.attachments[0].type === attachmentTypes.image ? message.attachments[0].metadata && message.attachments[0].metadata.szw && calculateRenderedImageWidth(message.attachments[0].metadata.szw, message.attachments[0].metadata.szh)[0] : message.attachments[0].type === attachmentTypes.voice ? 254 : undefined : undefined,
     noBody: !message.body && !withAttachments,
     onMouseEnter: function onMouseEnter() {
@@ -27115,15 +27119,10 @@ var Message = function Message(_ref) {
   }, MessageTextFormat({
     text: message.body,
     message: message
-  }), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments && React__default.createElement(MessageStatusAndTime, {
-    withAttachment: withAttachments,
-    fileAttachment: withAttachments && message.attachments[0].type === 'file'
-  }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, {
-    color: withAttachments ? colors.white : ''
-  }, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
+  }), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
     iconColor: statusIconColor,
     lastMessage: !firstMessage
-  }, messageStatusIcon(message.deliveryStatus, withAttachments ? colors.white : '')))), withAttachments && React__default.createElement(MessageStatusAndTime, {
+  }, messageStatusIcon(message.deliveryStatus))) : null), withAttachments && message.attachments[0].type !== attachmentTypes.link && React__default.createElement(MessageStatusAndTime, {
     withAttachment: true,
     fileAttachment: message.attachments[0].type === 'file' || message.attachments[0].type === 'voice'
   }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, {
@@ -27776,7 +27775,7 @@ var Messages = function Messages(_ref2) {
       if (loadDirection !== 'next') {
         var lastVisibleMessage = document.getElementById(lastVisibleMessageId);
 
-        if (lastVisibleMessage.offsetTop >= scrollRef.current.scrollTop) {
+        if (lastVisibleMessage && lastVisibleMessage.offsetTop >= scrollRef.current.scrollTop) {
           lastVisibleMessage && (scrollRef.current.scrollTop = lastVisibleMessage.offsetTop);
         }
       } else {
@@ -28988,19 +28987,21 @@ function _extends$$() {
   return _extends$$.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgClear(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$$({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Y || (_path$Y = /*#__PURE__*/React.createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
+    fill: "#FA4C56"
   })));
 }
 
-var _path$Z, _path2$6;
+var _path$Z;
 
 function _extends$10() {
   _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
@@ -29019,24 +29020,19 @@ function _extends$10() {
   return _extends$10.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgBlockChannel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$10({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Z || (_path$Z = /*#__PURE__*/React.createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$_;
+var _path$_, _path2$6;
 
 function _extends$11() {
   _extends$11 = Object.assign ? Object.assign.bind() : function (target) {
@@ -29055,15 +29051,20 @@ function _extends$11() {
   return _extends$11.apply(this, arguments);
 }
 
-function SvgStar(props) {
+function SvgReport(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$11({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$_ || (_path$_ = /*#__PURE__*/React.createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -29086,13 +29087,44 @@ function _extends$12() {
   return _extends$12.apply(this, arguments);
 }
 
-function SvgPin(props) {
+function SvgStar(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$12({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$$ || (_path$$ = /*#__PURE__*/React.createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
+  })));
+}
+
+var _path$10;
+
+function _extends$13() {
+  _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$13.apply(this, arguments);
+}
+
+function SvgPin(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$13({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$10 || (_path$10 = /*#__PURE__*/React.createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
@@ -29113,6 +29145,7 @@ var Actions$1 = function Actions(_ref) {
       muteNotificationIconColor = _ref.muteNotificationIconColor,
       unmuteNotificationIconColor = _ref.unmuteNotificationIconColor,
       muteUnmuteNotificationTextColor = _ref.muteUnmuteNotificationTextColor,
+      timeOptionsToMuteNotifications = _ref.timeOptionsToMuteNotifications,
       _ref$showStarredMessa = _ref.showStarredMessages,
       showStarredMessages = _ref$showStarredMessa === void 0 ? false : _ref$showStarredMessa,
       starredMessagesOrder = _ref.starredMessagesOrder,
@@ -29151,50 +29184,96 @@ var Actions$1 = function Actions(_ref) {
       deleteChannelTextColor = _ref.deleteChannelTextColor,
       _ref$showBlockAndLeav = _ref.showBlockAndLeaveChannel,
       showBlockAndLeaveChannel = _ref$showBlockAndLeav === void 0 ? true : _ref$showBlockAndLeav,
+      _ref$showBlockUser = _ref.showBlockUser,
+      showBlockUser = _ref$showBlockUser === void 0 ? true : _ref$showBlockUser,
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
       unblockUserIcon = _ref.unblockUserIcon,
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
       blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
-      unblockUserTextColor = _ref.unblockUserTextColor;
+      unblockUserTextColor = _ref.unblockUserTextColor,
+      blockUserWarningText = _ref.blockUserWarningText,
+      blockAndLeavePublicChannelWarningText = _ref.blockAndLeavePublicChannelWarningText,
+      blockAndLeavePrivateChannelWarningText = _ref.blockAndLeavePrivateChannelWarningText,
+      leavePublicChannelWarningText = _ref.leavePublicChannelWarningText,
+      leavePrivateChannelWarningText = _ref.leavePrivateChannelWarningText,
+      deletePublicChannelWarningText = _ref.deletePublicChannelWarningText,
+      deletePrivateChannelWarningText = _ref.deletePrivateChannelWarningText,
+      deleteDirectChannelWarningText = _ref.deleteDirectChannelWarningText,
+      showClearHistoryForDirectChannel = _ref.showClearHistoryForDirectChannel,
+      showClearHistoryForPrivateChannel = _ref.showClearHistoryForPrivateChannel,
+      showClearHistoryForPublicChannel = _ref.showClearHistoryForPublicChannel,
+      clearHistoryOrder = _ref.clearHistoryOrder,
+      clearHistoryIcon = _ref.clearHistoryIcon,
+      clearHistoryTextColor = _ref.clearHistoryTextColor,
+      showDeleteAllMessagesForDirectChannel = _ref.showDeleteAllMessagesForDirectChannel,
+      showDeleteAllMessagesForPrivateChannel = _ref.showDeleteAllMessagesForPrivateChannel,
+      showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
+      deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
+      deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
+      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor,
+      clearHistoryPublicChannelWarningText = _ref.clearHistoryPublicChannelWarningText,
+      clearHistoryPrivateChannelWarningText = _ref.clearHistoryPrivateChannelWarningText,
+      clearHistoryDirectChannelWarningText = _ref.clearHistoryDirectChannelWarningText;
 
   var _useState = React.useState(false),
-      leaveChannelPopupOpen = _useState[0],
-      setLeaveChannelPopupOpen = _useState[1];
+      clearHistoryPopupOpen = _useState[0],
+      setClearHistoryPopupOpen = _useState[1];
 
   var _useState2 = React.useState(false),
-      deleteChannelPopupOpen = _useState2[0],
-      setDeleteChannelPopupOpen = _useState2[1];
+      deleteAllMessagesPopupOpen = _useState2[0],
+      setDeleteAllMessagesPopupOpenPopupOpen = _useState2[1];
 
   var _useState3 = React.useState(false),
-      blockChannelPopupOpen = _useState3[0],
-      setBlockChannelPopupOpen = _useState3[1];
+      leaveChannelPopupOpen = _useState3[0],
+      setLeaveChannelPopupOpen = _useState3[1];
 
   var _useState4 = React.useState(false),
-      blockUserPopupOpen = _useState4[0],
-      setBlockUserPopupOpen = _useState4[1];
+      deleteChannelPopupOpen = _useState4[0],
+      setDeleteChannelPopupOpen = _useState4[1];
 
   var _useState5 = React.useState(false),
-      unblockUserPopupOpen = _useState5[0],
-      setUnblockUserPopupOpen = _useState5[1];
+      blockChannelPopupOpen = _useState5[0],
+      setBlockChannelPopupOpen = _useState5[1];
 
   var _useState6 = React.useState(false),
-      reportUserPopupOpen = _useState6[0],
-      setReportUserPopupOpen = _useState6[1];
+      blockUserPopupOpen = _useState6[0],
+      setBlockUserPopupOpen = _useState6[1];
 
-  var _useState7 = React.useState(''),
-      popupButtonText = _useState7[0],
-      setPopupButtonText = _useState7[1];
+  var _useState7 = React.useState(false),
+      unblockUserPopupOpen = _useState7[0],
+      setUnblockUserPopupOpen = _useState7[1];
 
-  var _useState8 = React.useState(''),
-      popupTitle = _useState8[0],
-      setPopupTitle = _useState8[1];
+  var _useState8 = React.useState(false),
+      reportUserPopupOpen = _useState8[0],
+      setReportUserPopupOpen = _useState8[1];
+
+  var _usePermissions = usePermissions(channel.role),
+      checkActionPermission = _usePermissions[0];
+
+  var _useState9 = React.useState(''),
+      popupButtonText = _useState9[0],
+      setPopupButtonText = _useState9[1];
+
+  var _useState10 = React.useState(''),
+      popupTitle = _useState10[0],
+      setPopupTitle = _useState10[1];
 
   var dispatch = reactRedux.useDispatch();
   var oneHour = 60 * 60 * 1000;
   var twoHours = oneHour * 2;
   var oneDay = oneHour * 24;
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+  var isPublicChannel = channel.type === CHANNEL_TYPE.PUBLIC;
+  var isPrivateChannel = channel.type === CHANNEL_TYPE.PRIVATE;
   var channelType = channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : isDirectChannel ? 'chat' : 'group';
+
+  var handleToggleClearHistoryPopup = function handleToggleClearHistoryPopup() {
+    setClearHistoryPopupOpen(!clearHistoryPopupOpen);
+  };
+
+  var handleToggleDeleteAllMessagesPopup = function handleToggleDeleteAllMessagesPopup() {
+    setDeleteAllMessagesPopupOpenPopupOpen(!deleteAllMessagesPopupOpen);
+  };
 
   var handleToggleLeaveChannelPopupOpen = function handleToggleLeaveChannelPopupOpen() {
     setLeaveChannelPopupOpen(!leaveChannelPopupOpen);
@@ -29246,7 +29325,13 @@ var Actions$1 = function Actions(_ref) {
     dispatch(unblockUserAC([channel.peer.id]));
   };
 
+  var handleClearHistory = function handleClearHistory() {};
+
+  var handleDeleteAllMessagesHistory = function handleDeleteAllMessagesHistory() {};
+
   var handleNotificationOnOff = function handleNotificationOnOff(expTime) {
+    console.log('exp time ... ', expTime);
+
     if (channel.muted) {
       dispatch(turnOnNotificationsAC());
     } else {
@@ -29284,6 +29369,7 @@ var Actions$1 = function Actions(_ref) {
   }, React__default.createElement(React__default.Fragment, null, muteNotificationIcon || React__default.createElement(DefaultMutedIcon, null), " Unmute notifications")) : React__default.createElement(DropDown, {
     isSelect: true,
     height: 'auto',
+    position: 'left',
     order: muteUnmuteNotificationsOrder,
     trigger: React__default.createElement(ActionItem$1, {
       key: 0,
@@ -29292,7 +29378,15 @@ var Actions$1 = function Actions(_ref) {
       color: muteUnmuteNotificationTextColor || colors.gray6,
       hoverColor: muteUnmuteNotificationTextColor || colors.gray6
     }, React__default.createElement(React__default.Fragment, null, unmuteNotificationIcon || React__default.createElement(SvgNotifications, null), " Mute notifications"))
-  }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
+  }, React__default.createElement(DropdownOptionsUl, null, timeOptionsToMuteNotifications && timeOptionsToMuteNotifications.length ? timeOptionsToMuteNotifications.map(function (value, index) {
+    return React__default.createElement(DropdownOptionLi, {
+      key: value + index,
+      hoverBackground: customColors.selectedChannelBackground,
+      onClick: function onClick() {
+        return handleNotificationOnOff(value * oneHour);
+      }
+    }, "Mute for ", value < 24 ? value + " " + (value > 1 ? 'hours' : 'hour') + " " : '1 day');
+  }) : React__default.createElement(React__default.Fragment, null, React__default.createElement(DropdownOptionLi, {
     key: 1,
     hoverBackground: customColors.selectedChannelBackground,
     onClick: function onClick() {
@@ -29310,7 +29404,7 @@ var Actions$1 = function Actions(_ref) {
     onClick: function onClick() {
       return handleNotificationOnOff(oneDay);
     }
-  }, "Mute for 1 day"), React__default.createElement(DropdownOptionLi, {
+  }, "Mute for 1 day")), React__default.createElement(DropdownOptionLi, {
     key: 4,
     hoverBackground: customColors.selectedChannelBackground,
     onClick: function onClick() {
@@ -29351,105 +29445,137 @@ var Actions$1 = function Actions(_ref) {
   }, React__default.createElement(React__default.Fragment, null, markAsUnreadIcon || React__default.createElement(SvgMarkAsUnRead, null), " Mark as unread"))), !isDirectChannel && showLeaveChannel && React__default.createElement(ActionItem$1, {
     key: 4,
     order: leaveChannelOrder,
-    color: leaveChannelTextColor || '#FA4C56',
+    color: leaveChannelTextColor || colors.red1,
     iconColor: leaveChannelIconColor || colors.gray4,
-    hoverColor: leaveChannelTextColor || '#FA4C56',
+    hoverColor: leaveChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Leave');
-      setPopupTitle("Leave " + channelType + "?");
+      setPopupTitle("Leave " + channelType);
       handleToggleLeaveChannelPopupOpen();
     }
-  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave ", channelType), showDeleteChannel && React__default.createElement(ActionItem$1, {
+  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave ", channelType), isDirectChannel ? React__default.createElement(React__default.Fragment, null, showBlockUser && (channel.peer.blocked ? React__default.createElement(ActionItem$1, {
     key: 5,
-    color: deleteChannelTextColor || '#FA4C56',
-    iconColor: deleteChannelIconColor || '#FA4C56',
-    hoverColor: deleteChannelTextColor || '#FA4C56',
-    onClick: function onClick() {
-      setPopupButtonText('Delete');
-      setPopupTitle("Delete  " + channelType + "?");
-      handleToggleDeleteChannelPopupOpen();
-    }
-  }, deleteChannelIcon || React__default.createElement(SvgDeleteChannel, null), " Delete ", channelType), isDirectChannel ? React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && (channel.peer.blocked ? React__default.createElement(ActionItem$1, {
-    key: 6,
     color: unblockUserTextColor || colors.gray6,
     hoverColor: unblockUserTextColor || colors.gray6,
     onClick: function onClick() {
-      setPopupButtonText('Unblock');
-      setPopupTitle('UnblockUser ?');
-      handleToggleUnblockUserPopupOpen();
+      handleUnblockUser();
     }
   }, unblockUserIcon || React__default.createElement(SvgBlockChannel, null), " Unblock User") : React__default.createElement(ActionItem$1, {
     key: 6,
-    color: deleteChannelTextColor || '#FA4C56',
-    iconColor: deleteChannelIconColor || '#FA4C56',
-    hoverColor: deleteChannelTextColor || '#FA4C56',
+    color: deleteChannelTextColor || colors.red1,
+    iconColor: deleteChannelIconColor || colors.red1,
+    hoverColor: deleteChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Block');
-      setPopupTitle('Block User ?');
+      setPopupTitle('Block user');
       handleToggleBlockUserPopupOpen();
     }
   }, blockAndLeaveChannelIcon || React__default.createElement(SvgBlockChannel, null), " Block User")), showReportChannel && React__default.createElement(ActionItem$1, {
-    color: deleteChannelTextColor || '#FA4C56',
-    iconColor: deleteChannelIconColor || '#FA4C56',
-    hoverColor: deleteChannelTextColor || '#FA4C56',
+    color: deleteChannelTextColor || colors.red1,
+    iconColor: deleteChannelIconColor || colors.red1,
+    hoverColor: deleteChannelTextColor || colors.red1,
     key: 7,
     onClick: function onClick() {
       return toggleReportUserPopup();
     }
   }, React__default.createElement(SvgReport, null), "Report user")) : React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && React__default.createElement(ActionItem$1, {
     key: 8,
-    color: blockAndLeaveChannelTextColor || '#FA4C56',
-    iconColor: blockAndLeaveChannelIconColor || '#FA4C56',
-    hoverColor: blockAndLeaveChannelTextColor || '#FA4C56',
+    color: blockAndLeaveChannelTextColor || colors.red1,
+    iconColor: blockAndLeaveChannelIconColor || colors.red1,
+    hoverColor: blockAndLeaveChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Block');
-      setPopupTitle("Block and Leave " + channelType + " ?");
+      setPopupTitle("Block and Leave " + channelType);
       handleToggleBlockChannelPopupOpen();
     }
   }, blockAndLeaveChannelIcon || React__default.createElement(SvgBlockChannel, null), " Block and Leave ", channelType), showReportChannel && React__default.createElement(ActionItem$1, {
     key: 9,
     order: reportChannelOrder,
-    color: reportChannelTextColor || '#FA4C56',
-    iconColor: reportChannelIconColor || '#FA4C56',
-    hoverColor: reportChannelTextColor || '#FA4C56',
+    color: reportChannelTextColor || colors.red1,
+    iconColor: reportChannelIconColor || colors.red1,
+    hoverColor: reportChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Report');
       setPopupTitle('Report channel');
       console.log('Report channel');
     }
-  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat'))), leaveChannelPopupOpen && React__default.createElement(DeletePopup, {
+  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), (isDirectChannel && showClearHistoryForDirectChannel || isPrivateChannel && showClearHistoryForPrivateChannel || isPublicChannel && showClearHistoryForPublicChannel) && checkActionPermission('deleteAllMessagesForMe') && React__default.createElement(ActionItem$1, {
+    key: 10,
+    color: clearHistoryTextColor || colors.red1,
+    iconColor: clearHistoryTextColor || colors.red1,
+    order: clearHistoryOrder,
+    hoverColor: clearHistoryTextColor || colors.red1,
+    onClick: function onClick() {
+      setPopupButtonText('Delete');
+      setPopupTitle('Clear history');
+      handleToggleClearHistoryPopup();
+    }
+  }, clearHistoryIcon || React__default.createElement(SvgClear, null), " Clear history"), (isDirectChannel && showDeleteAllMessagesForDirectChannel || isPrivateChannel && showDeleteAllMessagesForPrivateChannel || isPublicChannel && showDeleteAllMessagesForPublicChannel) && checkActionPermission('deleteAllMessagesForAll') && React__default.createElement(ActionItem$1, {
+    key: 11,
+    color: deleteAllMessagesTextColor || colors.red1,
+    iconColor: deleteAllMessagesTextColor || colors.red1,
+    order: deleteAllMessagesOrder,
+    hoverColor: deleteAllMessagesTextColor || colors.red1,
+    onClick: function onClick() {
+      setPopupButtonText('Delete');
+      setPopupTitle("Delete all messages");
+      handleToggleDeleteAllMessagesPopup();
+    }
+  }, deleteAllMessagesIcon || React__default.createElement(SvgClear, null), " Delete all messages"), showDeleteChannel && checkActionPermission('deleteChannel') && React__default.createElement(ActionItem$1, {
+    key: 12,
+    color: deleteChannelTextColor || colors.red1,
+    iconColor: deleteChannelIconColor || colors.red1,
+    hoverColor: deleteChannelTextColor || colors.red1,
+    onClick: function onClick() {
+      setPopupButtonText('Delete');
+      setPopupTitle("Delete  " + channelType);
+      handleToggleDeleteChannelPopupOpen();
+    }
+  }, deleteChannelIcon || React__default.createElement(SvgDeleteChannel, null), " Delete ", channelType)), leaveChannelPopupOpen && React__default.createElement(DeletePopup, {
     deleteFunction: handleLeaveChannel,
     togglePopup: handleToggleLeaveChannelPopupOpen,
     buttonText: popupButtonText,
-    description: "Are you sure you want to leave the \"" + (channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '')) + "\"  channel?",
+    description: channel.type === CHANNEL_TYPE.PRIVATE && leavePrivateChannelWarningText ? leavePrivateChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && leavePublicChannelWarningText ? leavePublicChannelWarningText : "Are you sure you want to leave the \"" + (channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '')) + "\"  channel?",
     title: popupTitle
   }), deleteChannelPopupOpen && React__default.createElement(DeletePopup, {
     deleteFunction: handleDeleteChannel,
     togglePopup: handleToggleDeleteChannelPopupOpen,
     buttonText: popupButtonText,
-    description: "Are you sure you want to delete the " + (channel.type === CHANNEL_TYPE.DIRECT ? "channel with " + channel.peer.firstName : "\"" + channel.subject + "\" channel") + " ? This action cannot be undone.",
+    description: channel.type === CHANNEL_TYPE.DIRECT && deleteDirectChannelWarningText ? deleteDirectChannelWarningText : channel.type === CHANNEL_TYPE.PRIVATE && deletePrivateChannelWarningText ? deletePrivateChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && deletePublicChannelWarningText ? deletePublicChannelWarningText : "Are you sure you want to delete the " + (channel.type === CHANNEL_TYPE.DIRECT ? "channel with " + channel.peer.firstName : "\"" + channel.subject + "\" channel") + " ? This action cannot be undone.",
     title: popupTitle
   }), blockChannelPopupOpen && React__default.createElement(DeletePopup, {
     deleteFunction: handleBlockChannel,
     togglePopup: handleToggleBlockChannelPopupOpen,
     buttonText: popupButtonText,
-    description: "Are you sure you want to block the \"" + (channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '')) + "\"  channel?",
+    description: channel.type === CHANNEL_TYPE.PRIVATE && blockAndLeavePrivateChannelWarningText ? blockAndLeavePrivateChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && blockAndLeavePublicChannelWarningText ? blockAndLeavePublicChannelWarningText : "Are you sure you want to block the \"" + (channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '')) + "\"  channel?",
     title: popupTitle
   }), blockUserPopupOpen && React__default.createElement(DeletePopup, {
     deleteFunction: handleBlockUser,
     togglePopup: handleToggleBlockUserPopupOpen,
     buttonText: popupButtonText,
-    description: "Are you sure you want to block " + (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '') + " ?",
+    description: blockUserWarningText || "Are you sure you want to block " + (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '') + " ?",
     title: popupTitle
   }), unblockUserPopupOpen && React__default.createElement(DeletePopup, {
     deleteFunction: handleUnblockUser,
     togglePopup: handleToggleUnblockUserPopupOpen,
     buttonText: popupButtonText,
-    description: "Are you sure you want to unblock " + (channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.firstName : '') + " ?",
+    description: 'Are you sure you want to unblock?',
+    title: popupTitle
+  }), clearHistoryPopupOpen && React__default.createElement(DeletePopup, {
+    deleteFunction: handleClearHistory,
+    togglePopup: handleToggleClearHistoryPopup,
+    buttonText: popupButtonText,
+    description: channel.type === CHANNEL_TYPE.DIRECT && clearHistoryDirectChannelWarningText ? clearHistoryDirectChannelWarningText : channel.type === CHANNEL_TYPE.PRIVATE && clearHistoryPrivateChannelWarningText ? clearHistoryPrivateChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && clearHistoryPublicChannelWarningText ? clearHistoryPublicChannelWarningText : 'Are you sure you want to clear history? This action cannot be undone.',
+    title: popupTitle
+  }), deleteAllMessagesPopupOpen && React__default.createElement(DeletePopup, {
+    deleteFunction: handleDeleteAllMessagesHistory,
+    togglePopup: handleToggleDeleteAllMessagesPopup,
+    buttonText: popupButtonText,
+    description: channel.type === CHANNEL_TYPE.DIRECT && deleteDirectChannelWarningText ? deleteDirectChannelWarningText : channel.type === CHANNEL_TYPE.PRIVATE && deletePublicChannelWarningText ? deletePublicChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && deletePrivateChannelWarningText ? deletePrivateChannelWarningText : 'Are you sure you want to delete all messages? This action cannot be undone.',
     title: popupTitle
   }));
 };
-var Container$f = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
+var Container$f = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n    /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
   return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
 });
 var ActionHeader = styled__default.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
@@ -29458,7 +29584,7 @@ var MenuTriggerIcon = styled__default.span(_templateObject3$k || (_templateObjec
 });
 var ActionsMenu = styled__default.ul(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DefaultMutedIcon = styled__default(SvgNotificationsOff2)(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled__default.li(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionItem$1 = styled__default.li(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
   return props.order;
@@ -29470,52 +29596,7 @@ var ActionItem$1 = styled__default.li(_templateObject6$d || (_templateObject6$d 
   return props.hoverColor || colors.blue2;
 });
 
-var _rect, _rect2, _path$10;
-
-function _extends$13() {
-  _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$13.apply(this, arguments);
-}
-
-function SvgAddMember(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$13({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect || (_rect = /*#__PURE__*/React.createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 20,
-    fill: "#F3F5F7"
-  })), _rect2 || (_rect2 = /*#__PURE__*/React.createElement("rect", {
-    x: 0.25,
-    y: 0.25,
-    width: 39.5,
-    height: 39.5,
-    rx: 19.75,
-    stroke: "#000",
-    strokeOpacity: 0.08,
-    strokeWidth: 0.5
-  })), _path$10 || (_path$10 = /*#__PURE__*/React.createElement("path", {
-    d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
-    fill: "#0DBD8B"
-  })));
-}
-
-var _path$11;
+var _rect, _rect2, _path$11;
 
 function _extends$14() {
   _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
@@ -29534,13 +29615,58 @@ function _extends$14() {
   return _extends$14.apply(this, arguments);
 }
 
-function SvgMoreVert(props) {
+function SvgAddMember(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$14({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect || (_rect = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 20,
+    fill: "#F3F5F7"
+  })), _rect2 || (_rect2 = /*#__PURE__*/React.createElement("rect", {
+    x: 0.25,
+    y: 0.25,
+    width: 39.5,
+    height: 39.5,
+    rx: 19.75,
+    stroke: "#000",
+    strokeOpacity: 0.08,
+    strokeWidth: 0.5
+  })), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
+    d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
+    fill: "#0DBD8B"
+  })));
+}
+
+var _path$12;
+
+function _extends$15() {
+  _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$15.apply(this, arguments);
+}
+
+function SvgMoreVert(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$15({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
@@ -29859,10 +29985,10 @@ var Media = function Media(_ref) {
 var Container$h = styled__default.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled__default.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 5px);\n  height: 110px;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$12, _path2$7, _path3$3;
+var _path$13, _path2$7, _path3$3;
 
-function _extends$15() {
-  _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$16() {
+  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -29875,17 +30001,17 @@ function _extends$15() {
 
     return target;
   };
-  return _extends$15.apply(this, arguments);
+  return _extends$16.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$15({
+  return /*#__PURE__*/React.createElement("svg", _extends$16({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -29905,10 +30031,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$13, _path2$8;
+var _path$14, _path2$8;
 
-function _extends$16() {
-  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$17() {
+  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -29921,16 +30047,16 @@ function _extends$16() {
 
     return target;
   };
-  return _extends$16.apply(this, arguments);
+  return _extends$17.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$16({
+  return /*#__PURE__*/React.createElement("svg", _extends$17({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -29991,8 +30117,8 @@ var FileSizeAndDate = styled__default.span(_templateObject7$c || (_templateObjec
 
 var _rect$1, _rect2$1, _g$3, _defs;
 
-function _extends$17() {
-  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$18() {
+  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30005,11 +30131,11 @@ function _extends$17() {
 
     return target;
   };
-  return _extends$17.apply(this, arguments);
+  return _extends$18.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$17({
+  return /*#__PURE__*/React.createElement("svg", _extends$18({
     width: 42,
     height: 42,
     fill: "none",
@@ -30099,48 +30225,7 @@ var Links = function Links(_ref) {
 };
 var Container$j = styled__default.ul(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$2, _circle$7, _path$14;
-
-function _extends$18() {
-  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$18.apply(this, arguments);
-}
-
-function SvgVoicePreview(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$18({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/React.createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 8,
-    fill: "#F3F5F7"
-  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
-    cx: 20,
-    cy: 20,
-    r: 14,
-    fill: "#0DBD8B"
-  })), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$3, _circle$8, _path$15;
+var _rect$2, _circle$7, _path$15;
 
 function _extends$19() {
   _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30159,8 +30244,49 @@ function _extends$19() {
   return _extends$19.apply(this, arguments);
 }
 
-function SvgVoicePreviewHoverIcon(props) {
+function SvgVoicePreview(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$19({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#F3F5F7"
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$3, _circle$8, _path$16;
+
+function _extends$1a() {
+  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1a.apply(this, arguments);
+}
+
+function SvgVoicePreviewHoverIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1a({
     width: 40,
     height: 40,
     fill: "none",
@@ -30175,7 +30301,7 @@ function SvgVoicePreviewHoverIcon(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
+  })), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
@@ -30404,39 +30530,6 @@ var DetailsTab = function DetailsTab(_ref) {
 var Container$l = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
 var DetailsTabHeader = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: #0dbd8b;\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6);
 
-var _path$16;
-
-function _extends$1a() {
-  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1a.apply(this, arguments);
-}
-
-function SvgDefaultAvatar72(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1a({
-    width: 72,
-    height: 72,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M56.128 65.852A35.834 35.834 0 0136 72a35.84 35.84 0 01-21.6-7.198C5.656 58.235 0 47.778 0 36 0 16.118 16.118 0 36 0s36 16.118 36 36c0 12.426-6.296 23.382-15.872 29.852zM36 37.8c5.965 0 10.8-5.238 10.8-11.7 0-6.462-4.835-11.7-10.8-11.7-5.965 0-10.8 5.238-10.8 11.7 0 6.462 4.835 11.7 10.8 11.7zm0 27a28.705 28.705 0 0020.028-8.104C52.823 48.782 45.063 43.2 36 43.2c-9.063 0-16.823 5.582-20.028 13.496A28.705 28.705 0 0036 64.8z",
-    fill: "#D0D8E3"
-  })));
-}
-
 var _path$17;
 
 function _extends$1b() {
@@ -30456,14 +30549,47 @@ function _extends$1b() {
   return _extends$1b.apply(this, arguments);
 }
 
-function SvgCamera(props) {
+function SvgDefaultAvatar72(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1b({
+    width: 72,
+    height: 72,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M56.128 65.852A35.834 35.834 0 0136 72a35.84 35.84 0 01-21.6-7.198C5.656 58.235 0 47.778 0 36 0 16.118 16.118 0 36 0s36 16.118 36 36c0 12.426-6.296 23.382-15.872 29.852zM36 37.8c5.965 0 10.8-5.238 10.8-11.7 0-6.462-4.835-11.7-10.8-11.7-5.965 0-10.8 5.238-10.8 11.7 0 6.462 4.835 11.7 10.8 11.7zm0 27a28.705 28.705 0 0020.028-8.104C52.823 48.782 45.063 43.2 36 43.2c-9.063 0-16.823 5.582-20.028 13.496A28.705 28.705 0 0036 64.8z",
+    fill: "#D0D8E3"
+  })));
+}
+
+var _path$18;
+
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1c.apply(this, arguments);
+}
+
+function SvgCamera(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1c({
     width: 40,
     height: 40,
     viewBox: "0 0 41 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M16.86 6.667a4.167 4.167 0 00-4.084 3.342c-.058.288-.17.566-.363.787l-.837.954c-.263.3-.644.473-1.043.473H6.11A2.778 2.778 0 003.333 15v15.278a2.778 2.778 0 002.778 2.778H33.89a2.778 2.778 0 002.778-2.778V15a2.778 2.778 0 00-2.778-2.777h-4.422c-.4 0-.78-.173-1.043-.473l-.837-.954c-.194-.22-.305-.499-.363-.787a4.167 4.167 0 00-4.085-3.342h-6.278zm8.696 15.278a5.556 5.556 0 11-11.112 0 5.556 5.556 0 0111.112 0zM6.806 10.139a.694.694 0 000 1.39h2.777a.694.694 0 100-1.39H6.806z",
@@ -30689,6 +30815,7 @@ var Details = function Details(_ref) {
       unmuteNotificationIconColor = _ref.unmuteNotificationIconColor,
       muteUnmuteNotificationSwitcherColor = _ref.muteUnmuteNotificationSwitcherColor,
       muteUnmuteNotificationTextColor = _ref.muteUnmuteNotificationTextColor,
+      timeOptionsToMuteNotifications = _ref.timeOptionsToMuteNotifications,
       showStarredMessages = _ref.showStarredMessages,
       starredMessagesOrder = _ref.starredMessagesOrder,
       staredMessagesIcon = _ref.staredMessagesIcon,
@@ -30720,6 +30847,7 @@ var Details = function Details(_ref) {
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
       showBlockAndLeaveChannel = _ref.showBlockAndLeaveChannel,
+      showBlockUser = _ref.showBlockUser,
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
       blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
@@ -30739,7 +30867,30 @@ var Details = function Details(_ref) {
       filePreviewTitleColor = _ref.filePreviewTitleColor,
       filePreviewSizeColor = _ref.filePreviewSizeColor,
       filePreviewHoverBackgroundColor = _ref.filePreviewHoverBackgroundColor,
-      filePreviewDownloadIcon = _ref.filePreviewDownloadIcon;
+      filePreviewDownloadIcon = _ref.filePreviewDownloadIcon,
+      blockUserWarningText = _ref.blockUserWarningText,
+      blockAndLeavePublicChannelWarningText = _ref.blockAndLeavePublicChannelWarningText,
+      blockAndLeavePrivateChannelWarningText = _ref.blockAndLeavePrivateChannelWarningText,
+      leavePublicChannelWarningText = _ref.leavePublicChannelWarningText,
+      leavePrivateChannelWarningText = _ref.leavePrivateChannelWarningText,
+      deletePublicChannelWarningText = _ref.deletePublicChannelWarningText,
+      deletePrivateChannelWarningText = _ref.deletePrivateChannelWarningText,
+      deleteDirectChannelWarningText = _ref.deleteDirectChannelWarningText,
+      clearHistoryPublicChannelWarningText = _ref.clearHistoryPublicChannelWarningText,
+      clearHistoryPrivateChannelWarningText = _ref.clearHistoryPrivateChannelWarningText,
+      clearHistoryDirectChannelWarningText = _ref.clearHistoryDirectChannelWarningText,
+      showClearHistoryForDirectChannel = _ref.showClearHistoryForDirectChannel,
+      showClearHistoryForPrivateChannel = _ref.showClearHistoryForPrivateChannel,
+      showClearHistoryForPublicChannel = _ref.showClearHistoryForPublicChannel,
+      clearHistoryOrder = _ref.clearHistoryOrder,
+      clearHistoryIcon = _ref.clearHistoryIcon,
+      clearHistoryTextColor = _ref.clearHistoryTextColor,
+      showDeleteAllMessagesForDirectChannel = _ref.showDeleteAllMessagesForDirectChannel,
+      showDeleteAllMessagesForPrivateChannel = _ref.showDeleteAllMessagesForPrivateChannel,
+      showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
+      deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
+      deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
+      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor;
   var dispatch = reactRedux.useDispatch();
 
   var _useState = React.useState(false),
@@ -30834,6 +30985,18 @@ var Details = function Details(_ref) {
     staredMessagesIcon: staredMessagesIcon,
     staredMessagesIconColor: staredMessagesIconColor,
     staredMessagesTextColor: staredMessagesTextColor,
+    showClearHistoryForDirectChannel: showClearHistoryForDirectChannel,
+    showClearHistoryForPrivateChannel: showClearHistoryForPrivateChannel,
+    showClearHistoryForPublicChannel: showClearHistoryForPublicChannel,
+    clearHistoryOrder: clearHistoryOrder,
+    clearHistoryIcon: clearHistoryIcon,
+    clearHistoryTextColor: clearHistoryTextColor,
+    showDeleteAllMessagesForDirectChannel: showDeleteAllMessagesForDirectChannel,
+    showDeleteAllMessagesForPrivateChannel: showDeleteAllMessagesForPrivateChannel,
+    showDeleteAllMessagesForPublicChannel: showDeleteAllMessagesForPublicChannel,
+    deleteAllMessagesOrder: deleteAllMessagesOrder,
+    deleteAllMessagesIcon: deleteAllMessagesIcon,
+    deleteAllMessagesTextColor: deleteAllMessagesTextColor,
     showPinChannel: showPinChannel,
     pinChannelOrder: pinChannelOrder,
     pinChannelIcon: pinChannelIcon,
@@ -30861,13 +31024,26 @@ var Details = function Details(_ref) {
     deleteChannelIconColor: deleteChannelIconColor,
     deleteChannelTextColor: deleteChannelTextColor,
     showBlockAndLeaveChannel: showBlockAndLeaveChannel,
+    showBlockUser: showBlockUser,
     blockAndLeaveChannelIcon: blockAndLeaveChannelIcon,
     blockAndLeaveChannelIconColor: blockAndLeaveChannelIconColor,
     blockAndLeaveChannelTextColor: blockAndLeaveChannelTextColor,
     unblockUserIcon: unblockUserIcon,
     muteNotificationIcon: muteNotificationIcon,
     channel: channel,
-    toggleable: false
+    toggleable: false,
+    blockUserWarningText: blockUserWarningText,
+    blockAndLeavePublicChannelWarningText: blockAndLeavePublicChannelWarningText,
+    blockAndLeavePrivateChannelWarningText: blockAndLeavePrivateChannelWarningText,
+    leavePublicChannelWarningText: leavePublicChannelWarningText,
+    leavePrivateChannelWarningText: leavePrivateChannelWarningText,
+    deletePublicChannelWarningText: deletePublicChannelWarningText,
+    deletePrivateChannelWarningText: deletePrivateChannelWarningText,
+    deleteDirectChannelWarningText: deleteDirectChannelWarningText,
+    clearHistoryPublicChannelWarningText: clearHistoryPublicChannelWarningText,
+    clearHistoryPrivateChannelWarningText: clearHistoryPrivateChannelWarningText,
+    clearHistoryDirectChannelWarningText: clearHistoryDirectChannelWarningText,
+    timeOptionsToMuteNotifications: timeOptionsToMuteNotifications
   }), React__default.createElement(DetailsTab, {
     channel: channel,
     activeTab: activeTab,
@@ -30919,6 +31095,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       unmuteNotificationIconColor = _ref.unmuteNotificationIconColor,
       muteUnmuteNotificationSwitcherColor = _ref.muteUnmuteNotificationSwitcherColor,
       muteUnmuteNotificationTextColor = _ref.muteUnmuteNotificationTextColor,
+      timeOptionsToMuteNotifications = _ref.timeOptionsToMuteNotifications,
       showStarredMessages = _ref.showStarredMessages,
       starredMessagesOrder = _ref.starredMessagesOrder,
       staredMessagesIcon = _ref.staredMessagesIcon,
@@ -30950,6 +31127,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
       showBlockAndLeaveChannel = _ref.showBlockAndLeaveChannel,
+      showBlockUser = _ref.showBlockUser,
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
       blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
@@ -30964,7 +31142,30 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       filePreviewTitleColor = _ref.filePreviewTitleColor,
       filePreviewSizeColor = _ref.filePreviewSizeColor,
       filePreviewHoverBackgroundColor = _ref.filePreviewHoverBackgroundColor,
-      filePreviewDownloadIcon = _ref.filePreviewDownloadIcon;
+      filePreviewDownloadIcon = _ref.filePreviewDownloadIcon,
+      blockUserWarningText = _ref.blockUserWarningText,
+      blockAndLeavePublicChannelWarningText = _ref.blockAndLeavePublicChannelWarningText,
+      blockAndLeavePrivateChannelWarningText = _ref.blockAndLeavePrivateChannelWarningText,
+      leavePublicChannelWarningText = _ref.leavePublicChannelWarningText,
+      leavePrivateChannelWarningText = _ref.leavePrivateChannelWarningText,
+      deletePublicChannelWarningText = _ref.deletePublicChannelWarningText,
+      deletePrivateChannelWarningText = _ref.deletePrivateChannelWarningText,
+      deleteDirectChannelWarningText = _ref.deleteDirectChannelWarningText,
+      clearHistoryPublicChannelWarningText = _ref.clearHistoryPublicChannelWarningText,
+      clearHistoryPrivateChannelWarningText = _ref.clearHistoryPrivateChannelWarningText,
+      clearHistoryDirectChannelWarningText = _ref.clearHistoryDirectChannelWarningText,
+      showClearHistoryForDirectChannel = _ref.showClearHistoryForDirectChannel,
+      showClearHistoryForPrivateChannel = _ref.showClearHistoryForPrivateChannel,
+      showClearHistoryForPublicChannel = _ref.showClearHistoryForPublicChannel,
+      clearHistoryOrder = _ref.clearHistoryOrder,
+      clearHistoryIcon = _ref.clearHistoryIcon,
+      clearHistoryTextColor = _ref.clearHistoryTextColor,
+      showDeleteAllMessagesForDirectChannel = _ref.showDeleteAllMessagesForDirectChannel,
+      showDeleteAllMessagesForPrivateChannel = _ref.showDeleteAllMessagesForPrivateChannel,
+      showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
+      deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
+      deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
+      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor;
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
   return React__default.createElement(React__default.Fragment, null, channelDetailsIsOpen && React__default.createElement(Details, {
     channelEditIcon: channelEditIcon,
@@ -30980,6 +31181,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     unmuteNotificationIconColor: unmuteNotificationIconColor,
     muteUnmuteNotificationSwitcherColor: muteUnmuteNotificationSwitcherColor,
     muteUnmuteNotificationTextColor: muteUnmuteNotificationTextColor,
+    timeOptionsToMuteNotifications: timeOptionsToMuteNotifications,
     showStarredMessages: showStarredMessages,
     starredMessagesOrder: starredMessagesOrder,
     staredMessagesIcon: staredMessagesIcon,
@@ -31011,6 +31213,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     deleteChannelIconColor: deleteChannelIconColor,
     deleteChannelTextColor: deleteChannelTextColor,
     showBlockAndLeaveChannel: showBlockAndLeaveChannel,
+    showBlockUser: showBlockUser,
     blockAndLeaveChannelIcon: blockAndLeaveChannelIcon,
     blockAndLeaveChannelIconColor: blockAndLeaveChannelIconColor,
     blockAndLeaveChannelTextColor: blockAndLeaveChannelTextColor,
@@ -31025,14 +31228,37 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     filePreviewTitleColor: filePreviewTitleColor,
     filePreviewSizeColor: filePreviewSizeColor,
     filePreviewHoverBackgroundColor: filePreviewHoverBackgroundColor,
-    filePreviewDownloadIcon: filePreviewDownloadIcon
+    filePreviewDownloadIcon: filePreviewDownloadIcon,
+    blockUserWarningText: blockUserWarningText,
+    blockAndLeavePublicChannelWarningText: blockAndLeavePublicChannelWarningText,
+    blockAndLeavePrivateChannelWarningText: blockAndLeavePrivateChannelWarningText,
+    leavePublicChannelWarningText: leavePublicChannelWarningText,
+    leavePrivateChannelWarningText: leavePrivateChannelWarningText,
+    deletePublicChannelWarningText: deletePublicChannelWarningText,
+    deletePrivateChannelWarningText: deletePrivateChannelWarningText,
+    deleteDirectChannelWarningText: deleteDirectChannelWarningText,
+    clearHistoryPublicChannelWarningText: clearHistoryPublicChannelWarningText,
+    clearHistoryPrivateChannelWarningText: clearHistoryPrivateChannelWarningText,
+    clearHistoryDirectChannelWarningText: clearHistoryDirectChannelWarningText,
+    showClearHistoryForDirectChannel: showClearHistoryForDirectChannel,
+    showClearHistoryForPrivateChannel: showClearHistoryForPrivateChannel,
+    showClearHistoryForPublicChannel: showClearHistoryForPublicChannel,
+    clearHistoryOrder: clearHistoryOrder,
+    clearHistoryIcon: clearHistoryIcon,
+    clearHistoryTextColor: clearHistoryTextColor,
+    showDeleteAllMessagesForDirectChannel: showDeleteAllMessagesForDirectChannel,
+    showDeleteAllMessagesForPrivateChannel: showDeleteAllMessagesForPrivateChannel,
+    showDeleteAllMessagesForPublicChannel: showDeleteAllMessagesForPublicChannel,
+    deleteAllMessagesOrder: deleteAllMessagesOrder,
+    deleteAllMessagesIcon: deleteAllMessagesIcon,
+    deleteAllMessagesTextColor: deleteAllMessagesTextColor
   }));
 };
 
-var _path$18, _path2$9, _path3$4;
+var _path$19, _path2$9, _path3$4;
 
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -31045,15 +31271,15 @@ function _extends$1c() {
 
     return target;
   };
-  return _extends$1c.apply(this, arguments);
+  return _extends$1d.apply(this, arguments);
 }
 
 function SvgChatLogo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1c({
+  return /*#__PURE__*/React.createElement("svg", _extends$1d({
     viewBox: "0 0 249 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
     d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
     fill: "#e17335"
   })), _path2$9 || (_path2$9 = /*#__PURE__*/React.createElement("path", {
@@ -31073,10 +31299,10 @@ function SceytChatHeader() {
   return React__default.createElement(Container$o, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
-var _path$19;
+var _path$1a;
 
-function _extends$1d() {
-  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -31089,16 +31315,16 @@ function _extends$1d() {
 
     return target;
   };
-  return _extends$1d.apply(this, arguments);
+  return _extends$1e.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1d({
+  return /*#__PURE__*/React.createElement("svg", _extends$1e({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));

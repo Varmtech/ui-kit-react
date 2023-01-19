@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { IChannel } from '../../../types';
+import { IChannel, MuteTime } from '../../../types';
 interface IProps {
     channel: IChannel;
     actionMenuOpen?: () => void;
@@ -13,11 +13,24 @@ interface IProps {
     unmuteNotificationIconColor?: string;
     muteUnmuteNotificationSwitcherColor?: string;
     muteUnmuteNotificationTextColor?: string;
+    timeOptionsToMuteNotifications?: [MuteTime, ...MuteTime[]];
     showStarredMessages?: boolean;
     starredMessagesOrder?: number;
     staredMessagesIcon?: JSX.Element;
     staredMessagesIconColor?: string;
     staredMessagesTextColor?: string;
+    showClearHistoryForDirectChannel?: boolean;
+    showClearHistoryForPrivateChannel?: boolean;
+    showClearHistoryForPublicChannel?: boolean;
+    clearHistoryOrder?: number;
+    clearHistoryIcon?: JSX.Element;
+    clearHistoryTextColor?: string;
+    showDeleteAllMessagesForDirectChannel?: boolean;
+    showDeleteAllMessagesForPrivateChannel?: boolean;
+    showDeleteAllMessagesForPublicChannel?: boolean;
+    deleteAllMessagesOrder?: number;
+    deleteAllMessagesIcon?: JSX.Element;
+    deleteAllMessagesTextColor?: string;
     showPinChannel?: boolean;
     pinChannelOrder?: number;
     pinChannelIcon?: JSX.Element;
@@ -46,12 +59,24 @@ interface IProps {
     deleteChannelIconColor?: string;
     deleteChannelTextColor?: string;
     showBlockAndLeaveChannel?: boolean;
+    showBlockUser?: boolean;
     blockAndLeaveChannelOrder?: number;
     blockAndLeaveChannelIcon?: JSX.Element;
     unblockUserIcon?: JSX.Element;
     blockAndLeaveChannelIconColor?: string;
     blockAndLeaveChannelTextColor?: string;
     unblockUserTextColor?: string;
+    blockUserWarningText?: string;
+    blockAndLeavePublicChannelWarningText?: string;
+    blockAndLeavePrivateChannelWarningText?: string;
+    leavePublicChannelWarningText?: string;
+    leavePrivateChannelWarningText?: string;
+    deletePublicChannelWarningText?: string;
+    deletePrivateChannelWarningText?: string;
+    deleteDirectChannelWarningText?: string;
+    clearHistoryPublicChannelWarningText?: string;
+    clearHistoryPrivateChannelWarningText?: string;
+    clearHistoryDirectChannelWarningText?: string;
 }
-declare const Actions: ({ channel, actionMenuOpen, menuIsOpen, toggleable, showMuteUnmuteNotifications, muteUnmuteNotificationsOrder, muteNotificationIcon, unmuteNotificationIcon, muteNotificationIconColor, unmuteNotificationIconColor, muteUnmuteNotificationTextColor, showStarredMessages, starredMessagesOrder, staredMessagesIcon, staredMessagesIconColor, staredMessagesTextColor, showPinChannel, pinChannelOrder, pinChannelIcon, pinChannelIconColor, pinChannelTextColor, showMarkAsReadUnread, markAsReadUnreadOrder, markAsReadIcon, markAsUnreadIcon, markAsReadIconColor, markAsUnreadIconColor, markAsReadUnreadTextColor, showLeaveChannel, leaveChannelOrder, leaveChannelIcon, leaveChannelIconColor, leaveChannelTextColor, showReportChannel, reportChannelIcon, reportChannelOrder, reportChannelIconColor, reportChannelTextColor, showDeleteChannel, deleteChannelIcon, deleteChannelIconColor, deleteChannelTextColor, showBlockAndLeaveChannel, blockAndLeaveChannelIcon, unblockUserIcon, blockAndLeaveChannelIconColor, blockAndLeaveChannelTextColor, unblockUserTextColor }: IProps) => JSX.Element;
+declare const Actions: ({ channel, actionMenuOpen, menuIsOpen, toggleable, showMuteUnmuteNotifications, muteUnmuteNotificationsOrder, muteNotificationIcon, unmuteNotificationIcon, muteNotificationIconColor, unmuteNotificationIconColor, muteUnmuteNotificationTextColor, timeOptionsToMuteNotifications, showStarredMessages, starredMessagesOrder, staredMessagesIcon, staredMessagesIconColor, staredMessagesTextColor, showPinChannel, pinChannelOrder, pinChannelIcon, pinChannelIconColor, pinChannelTextColor, showMarkAsReadUnread, markAsReadUnreadOrder, markAsReadIcon, markAsUnreadIcon, markAsReadIconColor, markAsUnreadIconColor, markAsReadUnreadTextColor, showLeaveChannel, leaveChannelOrder, leaveChannelIcon, leaveChannelIconColor, leaveChannelTextColor, showReportChannel, reportChannelIcon, reportChannelOrder, reportChannelIconColor, reportChannelTextColor, showDeleteChannel, deleteChannelIcon, deleteChannelIconColor, deleteChannelTextColor, showBlockAndLeaveChannel, showBlockUser, blockAndLeaveChannelIcon, unblockUserIcon, blockAndLeaveChannelIconColor, blockAndLeaveChannelTextColor, unblockUserTextColor, blockUserWarningText, blockAndLeavePublicChannelWarningText, blockAndLeavePrivateChannelWarningText, leavePublicChannelWarningText, leavePrivateChannelWarningText, deletePublicChannelWarningText, deletePrivateChannelWarningText, deleteDirectChannelWarningText, showClearHistoryForDirectChannel, showClearHistoryForPrivateChannel, showClearHistoryForPublicChannel, clearHistoryOrder, clearHistoryIcon, clearHistoryTextColor, showDeleteAllMessagesForDirectChannel, showDeleteAllMessagesForPrivateChannel, showDeleteAllMessagesForPublicChannel, deleteAllMessagesOrder, deleteAllMessagesIcon, deleteAllMessagesTextColor, clearHistoryPublicChannelWarningText, clearHistoryPrivateChannelWarningText, clearHistoryDirectChannelWarningText }: IProps) => JSX.Element;
 export default Actions;

@@ -19,6 +19,7 @@ interface IChannelListProps {
     showSearch?: boolean;
     forceUpdateChannelList?: () => void;
     showCreateChannelIcon?: boolean;
+    uriPrefixOnCreateChannel?: string;
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;
     onChannelDeleted?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;

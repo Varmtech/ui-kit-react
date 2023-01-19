@@ -37,7 +37,7 @@ export interface IChannel {
     subject?: string;
     label?: string;
     metadata: any;
-    role: string | null;
+    role: string;
     avatarUrl?: string;
     unreadMessageCount?: number;
     delete: () => Promise<void>;
@@ -156,3 +156,4 @@ export interface IContact {
 export interface IContactsMap {
     [key: string]: IContact;
 }
+export declare type MuteTime = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 24;
