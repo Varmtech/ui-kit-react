@@ -891,6 +891,8 @@ var TOGGLE_EDIT_CHANNEL = 'TOGGLE_EDIT_CHANNEL';
 var CHECK_USER_STATUS = 'CHECK_USER_STATUS';
 var UPDATE_USER_STATUS_ON_CHANNEL = 'UPDATE_USER_STATUS_ON_CHANNEL';
 var SET_CHANNEL_LIST_WIDTH = 'SET_CHANNEL_LIST_WIDTH';
+var CLEAR_HISTORY = 'CLEAR_HISTORY';
+var DELETE_ALL_MESSAGES = 'DELETE_ALL_MESSAGES';
 var DESTROY_SESSION = 'DESTROY_SESSION';
 var CHANNEL_EVENT_TYPES = {
   CREATE: 'CREATE',
@@ -1490,7 +1492,8 @@ var colors = {
   red1: '#FA4C56',
   red2: '#d7596c',
   red3: '#F94C56',
-  yellow1: '#FCD36E'
+  yellow1: '#FCD36E',
+  purple: '#7A6EF6'
 };
 var size = {
   mobileS: '320px',
@@ -7873,6 +7876,9 @@ var updateMarkersOnAllMessages = function updateMarkersOnAllMessages(markersMap,
 var getAllMessages = function getAllMessages() {
   return [].concat(activeChannelAllMessages);
 };
+var removeAllMessages = function removeAllMessages() {
+  activeChannelAllMessages = [];
+};
 var setHasPrevCached = function setHasPrevCached(state) {
   return prevCached = state;
 };
@@ -7895,14 +7901,19 @@ var getFromAllMessagesByMessageId = function getFromAllMessagesByMessageId(messa
       return mes.id === messageId;
     });
 
-    if (direction === MESSAGE_LOAD_DIRECTION.PREV) {
-      messagesForAdd = activeChannelAllMessages.slice(fromMessageIndex <= LOAD_MAX_MESSAGE_COUNT ? 0 : fromMessageIndex - (LOAD_MAX_MESSAGE_COUNT + 1), fromMessageIndex - 1);
-      setHasPrevCached(!(messagesForAdd.length < LOAD_MAX_MESSAGE_COUNT || fromMessageIndex === 0));
-      setHasNextCached(true);
+    if (fromMessageIndex !== 0) {
+      if (direction === MESSAGE_LOAD_DIRECTION.PREV) {
+        var sliceFromIndex = fromMessageIndex <= LOAD_MAX_MESSAGE_COUNT ? 0 : fromMessageIndex - (LOAD_MAX_MESSAGE_COUNT + 1);
+        messagesForAdd = activeChannelAllMessages.slice(sliceFromIndex, fromMessageIndex - 1);
+        setHasPrevCached(!(messagesForAdd.length < LOAD_MAX_MESSAGE_COUNT || sliceFromIndex === 0));
+        setHasNextCached(true);
+      } else {
+        messagesForAdd = activeChannelAllMessages.slice(fromMessageIndex + 1, fromMessageIndex + LOAD_MAX_MESSAGE_COUNT + 1);
+        setHasPrevCached(true);
+        setHasNextCached(!(messagesForAdd.length < LOAD_MAX_MESSAGE_COUNT));
+      }
     } else {
-      messagesForAdd = activeChannelAllMessages.slice(fromMessageIndex + 1, fromMessageIndex + LOAD_MAX_MESSAGE_COUNT + 1);
-      setHasPrevCached(true);
-      setHasNextCached(!(messagesForAdd.length < LOAD_MAX_MESSAGE_COUNT));
+      setHasPrevCached(false);
     }
   }
 
@@ -7972,6 +7983,9 @@ function updateMessageStatusOnMap(channelId, newMarkers) {
 }
 function getMessagesFromMap(channelId) {
   return messagesMap[channelId];
+}
+function removeMessagesFromMap(channelId) {
+  delete messagesMap[channelId];
 }
 function checkChannelExistsOnMessagesMap(channelId) {
   return !!messagesMap[channelId];
@@ -8901,6 +8915,22 @@ function setChannelListWithAC(width) {
     }
   };
 }
+function clearHistoryAC(channelId) {
+  return {
+    type: CLEAR_HISTORY,
+    payload: {
+      channelId: channelId
+    }
+  };
+}
+function deleteAllMessagesAC(channelId) {
+  return {
+    type: DELETE_ALL_MESSAGES,
+    payload: {
+      channelId: channelId
+    }
+  };
+}
 function watchForEventsAC() {
   return {
     type: WATCH_FOR_EVENTS
@@ -9700,6 +9730,15 @@ function watchForEvents() {
               });
             };
 
+            channelListener.onDeletedAllMessages = function (channel) {
+              return emitter({
+                type: CHANNEL_EVENT_TYPES.CLEAR_HISTORY,
+                args: {
+                  channel: channel
+                }
+              });
+            };
+
             channelListener.onMembersRoleChanged = function (channel, members) {
               return emitter({
                 type: CHANNEL_EVENT_TYPES.CHANGE_ROLE,
@@ -9759,7 +9798,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context2.t0 = type;
-          _context2.next = _context2.t0 === CHANNEL_EVENT_TYPES.CREATE ? 13 : _context2.t0 === CHANNEL_EVENT_TYPES.JOIN ? 22 : _context2.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 29 : _context2.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 36 : _context2.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 43 : _context2.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 45 : _context2.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 71 : _context2.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 87 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 95 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 134 : _context2.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 138 : _context2.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 142 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE ? 146 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 166 : _context2.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 181 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 194 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 196 : _context2.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 201 : _context2.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 207 : _context2.t0 === CHANNEL_EVENT_TYPES.MUTE ? 222 : _context2.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 227 : _context2.t0 === CHANNEL_EVENT_TYPES.HIDE ? 232 : _context2.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 237 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 242 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 247 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 252 : _context2.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 259 : 263;
+          _context2.next = _context2.t0 === CHANNEL_EVENT_TYPES.CREATE ? 13 : _context2.t0 === CHANNEL_EVENT_TYPES.JOIN ? 22 : _context2.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 29 : _context2.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 36 : _context2.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 43 : _context2.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 45 : _context2.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 71 : _context2.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 87 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 95 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 134 : _context2.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 138 : _context2.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 142 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE ? 146 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 166 : _context2.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 181 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 194 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 196 : _context2.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 201 : _context2.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 207 : _context2.t0 === CHANNEL_EVENT_TYPES.MUTE ? 223 : _context2.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 228 : _context2.t0 === CHANNEL_EVENT_TYPES.HIDE ? 233 : _context2.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 238 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 243 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 248 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 253 : _context2.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 260 : 264;
           break;
 
         case 13:
@@ -9780,7 +9819,7 @@ function watchForEvents() {
           return effects.put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 21:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 22:
           channel = args.channel;
@@ -9790,7 +9829,7 @@ function watchForEvents() {
 
         case 26:
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 29:
           console.log('channel LEAVE ... ');
@@ -9799,7 +9838,7 @@ function watchForEvents() {
 
         case 33:
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 36:
           console.log('channel BLOCK ... ');
@@ -9815,11 +9854,11 @@ function watchForEvents() {
           return effects.put(removeChannelAC(_channel2.id));
 
         case 42:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 43:
           console.log('channel UNBLOCK ... ');
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 45:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -9882,7 +9921,7 @@ function watchForEvents() {
           }));
 
         case 70:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 71:
           _channel4 = args.channel;
@@ -9919,7 +9958,7 @@ function watchForEvents() {
           }));
 
         case 86:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 87:
           updatedChannel = args.updatedChannel;
@@ -9939,7 +9978,7 @@ function watchForEvents() {
           }));
 
         case 94:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 95:
           _channel5 = args.channel, message = args.message;
@@ -10040,7 +10079,7 @@ function watchForEvents() {
           return effects.put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 133:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 134:
           return _context2.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -10124,7 +10163,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 138:
           _channel6 = args.channel, from = args.from;
@@ -10132,7 +10171,7 @@ function watchForEvents() {
           return effects.put(switchTypingIndicatorAC(true, _channel6.id, from));
 
         case 141:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 142:
           _channel7 = args.channel, _from = args.from;
@@ -10140,7 +10179,7 @@ function watchForEvents() {
           return effects.put(switchTypingIndicatorAC(false, _channel7.id, _from));
 
         case 145:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 146:
           channelId = args.channelId;
@@ -10183,7 +10222,7 @@ function watchForEvents() {
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 165:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 166:
           _channel9 = args.channel, deletedMessage = args.deletedMessage;
@@ -10225,7 +10264,7 @@ function watchForEvents() {
           return effects.put(updateChannelLastMessageAC(deletedMessage, _channel9));
 
         case 180:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 181:
           _channel10 = args.channel, _message = args.message;
@@ -10267,16 +10306,16 @@ function watchForEvents() {
             });
           }
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 194:
           console.log('channel REACTION_ADDED ... ');
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 196:
           console.log('channel REACTION_DELETED ... ');
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 201:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
@@ -10286,20 +10325,19 @@ function watchForEvents() {
           return effects.put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
         case 206:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 207:
           _channel13 = args.channel;
-          console.log('channel CLEAR_HISTORY ... ');
-          _context2.next = 211;
+          _context2.next = 210;
           return effects.call(getActiveChannelId);
 
-        case 211:
+        case 210:
           _activeChannelId9 = _context2.sent;
-          _context2.next = 214;
+          _context2.next = 213;
           return effects.call(checkChannelExists, _channel13.id);
 
-        case 214:
+        case 213:
           channelExist = _context2.sent;
 
           if (!(_channel13.id === _activeChannelId9)) {
@@ -10307,110 +10345,115 @@ function watchForEvents() {
             break;
           }
 
-          _context2.next = 218;
+          _context2.next = 217;
           return effects.put(clearMessagesAC());
 
+        case 217:
+          removeAllMessages();
+
         case 218:
+          removeMessagesFromMap(_channel13.id);
+
           if (!channelExist) {
-            _context2.next = 221;
+            _context2.next = 222;
             break;
           }
 
-          _context2.next = 221;
+          _context2.next = 222;
           return effects.put(updateChannelLastMessageAC({}, _channel13));
 
-        case 221:
-          return _context2.abrupt("break", 264);
-
         case 222:
+          return _context2.abrupt("break", 265);
+
+        case 223:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context2.next = 226;
+          _context2.next = 227;
           return effects.put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 226:
-          return _context2.abrupt("break", 264);
-
         case 227:
+          return _context2.abrupt("break", 265);
+
+        case 228:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context2.next = 231;
+          _context2.next = 232;
           return effects.put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 231:
-          return _context2.abrupt("break", 264);
-
         case 232:
+          return _context2.abrupt("break", 265);
+
+        case 233:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context2.next = 236;
+          _context2.next = 237;
           return effects.put(setChannelToHideAC(_channel16));
 
-        case 236:
-          return _context2.abrupt("break", 264);
-
         case 237:
+          return _context2.abrupt("break", 265);
+
+        case 238:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context2.next = 241;
+          _context2.next = 242;
           return effects.put(setChannelToUnHideAC(_channel17));
 
-        case 241:
-          return _context2.abrupt("break", 264);
-
         case 242:
+          return _context2.abrupt("break", 265);
+
+        case 243:
           _channel18 = args.channel;
           console.log('channel CHANNEL_MARKED_AS_UNREAD ... ', _channel18);
-          _context2.next = 246;
+          _context2.next = 247;
           return effects.put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 246:
-          return _context2.abrupt("break", 264);
-
         case 247:
+          return _context2.abrupt("break", 265);
+
+        case 248:
           _channel19 = args.channel;
           console.log('channel CHANNEL_MARKED_AS_READ ... ', _channel19);
-          _context2.next = 251;
+          _context2.next = 252;
           return effects.put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 251:
-          return _context2.abrupt("break", 264);
-
         case 252:
+          return _context2.abrupt("break", 265);
+
+        case 253:
           console.log('channel CHANGE_ROLE ... ');
-          _context2.next = 256;
+          _context2.next = 257;
           return effects.call(getActiveChannelId);
 
-        case 256:
+        case 257:
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
-        case 259:
+        case 260:
           status = args.status;
-          _context2.next = 262;
+          _context2.next = 263;
           return effects.put(setConnectionStatusAC(status));
 
-        case 262:
-          return _context2.abrupt("break", 264);
-
         case 263:
-          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+          return _context2.abrupt("break", 265);
 
         case 264:
+          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+
+        case 265:
           _context2.next = 4;
           break;
 
-        case 266:
+        case 267:
         case "end":
           return _context2.stop();
       }
@@ -10435,8 +10478,10 @@ var _marked$1 = /*#__PURE__*/_regeneratorRuntime().mark(createChannel),
     _marked15 = /*#__PURE__*/_regeneratorRuntime().mark(updateChannel),
     _marked16 = /*#__PURE__*/_regeneratorRuntime().mark(checkUsersStatus),
     _marked17 = /*#__PURE__*/_regeneratorRuntime().mark(sendTyping),
-    _marked18 = /*#__PURE__*/_regeneratorRuntime().mark(watchForChannelEvents),
-    _marked19 = /*#__PURE__*/_regeneratorRuntime().mark(ChannelsSaga);
+    _marked18 = /*#__PURE__*/_regeneratorRuntime().mark(clearHistory),
+    _marked19 = /*#__PURE__*/_regeneratorRuntime().mark(deleteAllMessages),
+    _marked20 = /*#__PURE__*/_regeneratorRuntime().mark(watchForChannelEvents),
+    _marked21 = /*#__PURE__*/_regeneratorRuntime().mark(ChannelsSaga);
 
 function createChannel(action) {
   var payload, channelData, SceytChatClient, createChannelData, fileToUpload, createdChannel, checkChannelExist, messageToSend;
@@ -11527,104 +11572,234 @@ function sendTyping(action) {
   }, _marked17);
 }
 
-function watchForChannelEvents() {
-  return _regeneratorRuntime().wrap(function watchForChannelEvents$(_context18) {
+function clearHistory(action) {
+  var payload, channelId, channel, activeChannelId;
+  return _regeneratorRuntime().wrap(function clearHistory$(_context18) {
     while (1) {
       switch (_context18.prev = _context18.next) {
         case 0:
-          _context18.next = 2;
-          return effects.call(watchForEvents);
+          _context18.prev = 0;
+          payload = action.payload;
+          channelId = payload.channelId;
+          _context18.next = 5;
+          return effects.call(getChannelFromMap, channelId);
 
-        case 2:
+        case 5:
+          channel = _context18.sent;
+          _context18.next = 8;
+          return effects.call(getActiveChannelId);
+
+        case 8:
+          activeChannelId = _context18.sent;
+
+          if (!channel) {
+            _context18.next = 18;
+            break;
+          }
+
+          _context18.next = 12;
+          return effects.call(channel.deleteAllMessages, true);
+
+        case 12:
+          _context18.next = 14;
+          return effects.put(clearMessagesAC());
+
+        case 14:
+          removeMessagesFromMap(channelId);
+
+          if (channelId === activeChannelId) {
+            removeAllMessages();
+          }
+
+          _context18.next = 18;
+          return effects.put(updateChannelLastMessageAC({}, channel));
+
+        case 18:
+          _context18.next = 23;
+          break;
+
+        case 20:
+          _context18.prev = 20;
+          _context18.t0 = _context18["catch"](0);
+          console.log('ERROR in clear history');
+
+        case 23:
         case "end":
           return _context18.stop();
       }
     }
-  }, _marked18);
+  }, _marked18, null, [[0, 20]]);
 }
 
-function ChannelsSaga() {
-  return _regeneratorRuntime().wrap(function ChannelsSaga$(_context19) {
+function deleteAllMessages(action) {
+  var payload, channelId, channel, activeChannelId;
+  return _regeneratorRuntime().wrap(function deleteAllMessages$(_context19) {
     while (1) {
       switch (_context19.prev = _context19.next) {
         case 0:
-          _context19.next = 2;
-          return effects.takeLatest(CREATE_CHANNEL, createChannel);
+          _context19.prev = 0;
+          payload = action.payload;
+          channelId = payload.channelId;
+          _context19.next = 5;
+          return effects.call(getChannelFromMap, channelId);
 
-        case 2:
-          _context19.next = 4;
-          return effects.takeLatest(GET_CHANNELS, getChannels);
-
-        case 4:
-          _context19.next = 6;
-          return effects.takeLatest(GET_CHANNELS_FOR_FORWARD, getChannelsForForward);
-
-        case 6:
+        case 5:
+          channel = _context19.sent;
           _context19.next = 8;
-          return effects.takeLatest(LOAD_MORE_CHANNEL, channelsLoadMore);
+          return effects.call(getActiveChannelId);
 
         case 8:
-          _context19.next = 10;
-          return effects.takeEvery(SWITCH_CHANNEL, switchChannel);
+          activeChannelId = _context19.sent;
 
-        case 10:
+          if (!channel) {
+            _context19.next = 19;
+            break;
+          }
+
           _context19.next = 12;
-          return effects.takeLatest(LEAVE_CHANNEL, leaveChannel);
+          return effects.call(channel.deleteAllMessages);
 
         case 12:
-          _context19.next = 14;
-          return effects.takeLatest(DELETE_CHANNEL, deleteChannel);
+          removeMessagesFromMap(channelId);
 
-        case 14:
+          if (!(channelId === activeChannelId)) {
+            _context19.next = 17;
+            break;
+          }
+
           _context19.next = 16;
-          return effects.takeLatest(BLOCK_CHANNEL, blockChannel);
+          return effects.put(clearMessagesAC());
 
         case 16:
-          _context19.next = 18;
-          return effects.takeLatest(UPDATE_CHANNEL, updateChannel);
+          removeAllMessages();
 
-        case 18:
-          _context19.next = 20;
-          return effects.takeEvery(MARK_MESSAGES_AS_READ, markMessagesRead);
+        case 17:
+          _context19.next = 19;
+          return effects.put(updateChannelLastMessageAC({}, channel));
 
-        case 20:
-          _context19.next = 22;
-          return effects.takeLatest(MARK_MESSAGES_AS_DELIVERED, markMessagesDelivered);
-
-        case 22:
+        case 19:
           _context19.next = 24;
-          return effects.takeLatest(WATCH_FOR_EVENTS, watchForChannelEvents);
+          break;
+
+        case 21:
+          _context19.prev = 21;
+          _context19.t0 = _context19["catch"](0);
+          console.log('ERROR in clear history');
 
         case 24:
-          _context19.next = 26;
-          return effects.takeLatest(TURN_OFF_NOTIFICATION, notificationsTurnOff);
-
-        case 26:
-          _context19.next = 28;
-          return effects.takeLatest(TURN_ON_NOTIFICATION, notificationsTurnOn);
-
-        case 28:
-          _context19.next = 30;
-          return effects.takeLatest(MARK_CHANNEL_AS_READ, markChannelAsRead);
-
-        case 30:
-          _context19.next = 32;
-          return effects.takeLatest(MARK_CHANNEL_AS_UNREAD, markChannelAsUnRead);
-
-        case 32:
-          _context19.next = 34;
-          return effects.takeLatest(CHECK_USER_STATUS, checkUsersStatus);
-
-        case 34:
-          _context19.next = 36;
-          return effects.takeLatest(SEND_TYPING, sendTyping);
-
-        case 36:
         case "end":
           return _context19.stop();
       }
     }
-  }, _marked19);
+  }, _marked19, null, [[0, 21]]);
+}
+
+function watchForChannelEvents() {
+  return _regeneratorRuntime().wrap(function watchForChannelEvents$(_context20) {
+    while (1) {
+      switch (_context20.prev = _context20.next) {
+        case 0:
+          _context20.next = 2;
+          return effects.call(watchForEvents);
+
+        case 2:
+        case "end":
+          return _context20.stop();
+      }
+    }
+  }, _marked20);
+}
+
+function ChannelsSaga() {
+  return _regeneratorRuntime().wrap(function ChannelsSaga$(_context21) {
+    while (1) {
+      switch (_context21.prev = _context21.next) {
+        case 0:
+          _context21.next = 2;
+          return effects.takeLatest(CREATE_CHANNEL, createChannel);
+
+        case 2:
+          _context21.next = 4;
+          return effects.takeLatest(GET_CHANNELS, getChannels);
+
+        case 4:
+          _context21.next = 6;
+          return effects.takeLatest(GET_CHANNELS_FOR_FORWARD, getChannelsForForward);
+
+        case 6:
+          _context21.next = 8;
+          return effects.takeLatest(LOAD_MORE_CHANNEL, channelsLoadMore);
+
+        case 8:
+          _context21.next = 10;
+          return effects.takeEvery(SWITCH_CHANNEL, switchChannel);
+
+        case 10:
+          _context21.next = 12;
+          return effects.takeLatest(LEAVE_CHANNEL, leaveChannel);
+
+        case 12:
+          _context21.next = 14;
+          return effects.takeLatest(DELETE_CHANNEL, deleteChannel);
+
+        case 14:
+          _context21.next = 16;
+          return effects.takeLatest(BLOCK_CHANNEL, blockChannel);
+
+        case 16:
+          _context21.next = 18;
+          return effects.takeLatest(UPDATE_CHANNEL, updateChannel);
+
+        case 18:
+          _context21.next = 20;
+          return effects.takeEvery(MARK_MESSAGES_AS_READ, markMessagesRead);
+
+        case 20:
+          _context21.next = 22;
+          return effects.takeLatest(MARK_MESSAGES_AS_DELIVERED, markMessagesDelivered);
+
+        case 22:
+          _context21.next = 24;
+          return effects.takeLatest(WATCH_FOR_EVENTS, watchForChannelEvents);
+
+        case 24:
+          _context21.next = 26;
+          return effects.takeLatest(TURN_OFF_NOTIFICATION, notificationsTurnOff);
+
+        case 26:
+          _context21.next = 28;
+          return effects.takeLatest(TURN_ON_NOTIFICATION, notificationsTurnOn);
+
+        case 28:
+          _context21.next = 30;
+          return effects.takeLatest(MARK_CHANNEL_AS_READ, markChannelAsRead);
+
+        case 30:
+          _context21.next = 32;
+          return effects.takeLatest(MARK_CHANNEL_AS_UNREAD, markChannelAsUnRead);
+
+        case 32:
+          _context21.next = 34;
+          return effects.takeLatest(CHECK_USER_STATUS, checkUsersStatus);
+
+        case 34:
+          _context21.next = 36;
+          return effects.takeLatest(SEND_TYPING, sendTyping);
+
+        case 36:
+          _context21.next = 38;
+          return effects.takeLatest(CLEAR_HISTORY, clearHistory);
+
+        case 38:
+          _context21.next = 40;
+          return effects.takeLatest(DELETE_ALL_MESSAGES, deleteAllMessages);
+
+        case 40:
+        case "end":
+          return _context21.stop();
+      }
+    }
+  }, _marked21);
 }
 
 var MAX_WIDTH = 1920;
@@ -12944,7 +13119,7 @@ function loadMoreMessages(action) {
         case 44:
           _context7.prev = 44;
           _context7.t0 = _context7["catch"](0);
-          console.log('error in load more messages');
+          console.log('error in load more messages', _context7.t0);
 
         case 47:
         case "end":
@@ -13355,7 +13530,7 @@ function MessageSaga() {
 
         case 20:
           _context14.next = 22;
-          return effects.takeLatest(LOAD_MORE_MESSAGES, loadMoreMessages);
+          return effects.takeEvery(LOAD_MORE_MESSAGES, loadMoreMessages);
 
         case 22:
           _context14.next = 24;
@@ -14823,9 +14998,9 @@ var Channel = function Channel(_ref) {
     ref: messageAuthorRef
   }, lastMessage.user && (lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id))), (!!typingIndicator || lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     authorWith: messageAuthorRef.current && messageAuthorRef.current.offsetWidth || 0,
-    withAttachments: !!(lastMessage.attachments && lastMessage.attachments.length),
-    noBody: !lastMessage.body,
-    deletedMessage: lastMessage.state === MESSAGE_STATUS.DELETE
+    withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length),
+    noBody: lastMessage && !lastMessage.body,
+    deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
   }, typingIndicator ? React__default.createElement(TypingIndicator, null, " is typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice')), lastMessage.body)))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, customColors && customColors.messageReadStatusTickColor)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), (!!channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
@@ -17614,14 +17789,12 @@ var ChannelList = function ChannelList(_ref) {
   };
 
   var handleLoadMoreChannels = function handleLoadMoreChannels(count) {
-    if (channelsLoading === LOADING_STATE.LOADED) {
+    if (channelsLoading === LOADING_STATE.LOADED && !searchValue) {
       dispatch(loadMoreChannels(count));
     }
   };
 
   var handleAllChannelsListScroll = function handleAllChannelsListScroll(e) {
-    console.log(' e.target.scrollTop ... . ', e.target.scrollTop);
-
     if (!searchValue && channelsHasNext && e.target.scrollTop >= e.target.scrollHeight - e.target.offsetHeight - 200) {
       handleLoadMoreChannels();
     }
@@ -17648,7 +17821,6 @@ var ChannelList = function ChannelList(_ref) {
   };
 
   var handleOpenProfile = function handleOpenProfile() {
-    console.log('handle set open profile .... ', !profileIsOpen);
     setProfileIsOpen(!profileIsOpen);
   };
 
@@ -19590,8 +19762,8 @@ var VideoPlayer = function VideoPlayer(_ref) {
   }, !isPreview && loading && !uploading && React__default.createElement(UploadProgress, {
     onClick: handlePauseResumeDownload,
     isRepliedMessage: isRepliedMessage,
-    backgroundImage: "data:image/jpeg;base64," + file.metadata.tmb,
-    borderRadius: borderRadius
+    borderRadius: borderRadius,
+    backgroundImage: file.metadata && file.metadata.tmb ? file.metadata.tmb : ''
   }, React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
   }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
@@ -27482,6 +27654,7 @@ var _templateObject$s, _templateObject2$p, _templateObject3$i, _templateObject4$
 var loading = false;
 var loadDirection = '';
 var nextDisable = false;
+var prevDisable = false;
 
 var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
   var lastIndex = _ref.lastIndex,
@@ -27666,7 +27839,7 @@ var Messages = function Messages(_ref2) {
 
         var scrollHeightQuarter = target.scrollHeight * 20 / 100;
 
-        if (-target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightQuarter && !loading) {
+        if (!prevDisable && -target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightQuarter && !loading) {
           loadDirection = 'prev';
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.PREV, LOAD_MAX_MESSAGE_COUNT);
 
@@ -27675,12 +27848,19 @@ var Messages = function Messages(_ref2) {
           }
         }
 
-        if (lastVisibleMessagePos > target.scrollTop) {
+        if (lastVisibleMessagePos - 420 > target.scrollTop) {
           nextDisable = false;
+        } else {
+          prevDisable = false;
         }
 
         if (!nextDisable && -target.scrollTop <= 500 && !loading && !scrollToNewMessage.scrollToBottom) {
           loadDirection = 'next';
+
+          if (hasNextMessages && lastVisibleMessage) {
+            prevDisable = true;
+          }
+
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.NEXT, LOAD_MAX_MESSAGE_COUNT);
         }
       }
@@ -27769,6 +27949,7 @@ var Messages = function Messages(_ref2) {
     }
 
     nextDisable = false;
+    prevDisable = false;
   }, [channel.id]);
   React.useEffect(function () {
     if (loading) {
@@ -29325,9 +29506,13 @@ var Actions$1 = function Actions(_ref) {
     dispatch(unblockUserAC([channel.peer.id]));
   };
 
-  var handleClearHistory = function handleClearHistory() {};
+  var handleClearHistory = function handleClearHistory() {
+    dispatch(clearHistoryAC(channel.id));
+  };
 
-  var handleDeleteAllMessagesHistory = function handleDeleteAllMessagesHistory() {};
+  var handleDeleteAllMessagesHistory = function handleDeleteAllMessagesHistory() {
+    dispatch(deleteAllMessagesAC(channel.id));
+  };
 
   var handleNotificationOnOff = function handleNotificationOnOff(expTime) {
     console.log('exp time ... ', expTime);
@@ -29768,7 +29953,7 @@ var RolesSelect = styled__default.div(_templateObject$v || (_templateObject$v = 
 var RoleLabel = styled__default.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
 var RoleSpan = styled__default.span(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$w, _templateObject2$t, _templateObject3$m, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$b;
+var _templateObject$w, _templateObject2$t, _templateObject3$m, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$b, _templateObject8$9;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -29875,7 +30060,13 @@ var Members = function Members(_ref) {
       textSize: 14,
       setDefaultAvatar: true,
       defaultAvatarIcon: React__default.createElement(SvgDevaultAvatar40, null)
-    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$1, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member), React__default.createElement("span", null, member.role === 'owner' ? " (" + member.role + ")" : ''), React__default.createElement("span", null, member.id === user.id ? ' (you)' : '')), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && React__default.createElement(DropDown, {
+    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$1, null, member.id === user.id ? 'You' : makeUserName(member.id === user.id ? member : contactsMap[member.id], member), member.role === 'owner' ? React__default.createElement(RoleBadge, {
+      color: colors.green1,
+      backgroundColor: 'rgba(13, 189, 139, 0.1)'
+    }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
+      color: colors.purple,
+      backgroundColor: 'rgba(122, 110, 246, 0.1)'
+    }, "Admin") : ''), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && React__default.createElement(DropDown, {
       isSelect: true,
       forceClose: closeMenu,
       watchToggleState: watchDropdownState,
@@ -29932,12 +30123,17 @@ var Members = function Members(_ref) {
 var Container$g = styled__default.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose([""])));
 var ActionsMenu$1 = styled__default.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
 var MemberNamePresence = styled__default.div(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
-var MemberName$1 = styled__default.h4(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n\n  & > span {\n    color: ", ";\n  }\n"])), colors.gray6, colors.gray9);
+var MemberName$1 = styled__default.h4(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
 var EditMemberIcon = styled__default.span(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList = styled__default.ul(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var MemberItem = styled__default.li(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.hoverBackground || colors.gray0;
 }, EditMemberIcon, UserStatus);
+var RoleBadge = styled__default.span(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n  background-color: ", ";\n"])), function (props) {
+  return props.color;
+}, function (props) {
+  return props.backgroundColor;
+});
 
 var _templateObject$x, _templateObject2$u;
 
@@ -30307,7 +30503,7 @@ function SvgVoicePreviewHoverIcon(props) {
   })));
 }
 
-var _templateObject$B, _templateObject2$x, _templateObject3$p, _templateObject4$l, _templateObject5$h, _templateObject6$g, _templateObject7$d, _templateObject8$9;
+var _templateObject$B, _templateObject2$x, _templateObject3$p, _templateObject4$l, _templateObject5$h, _templateObject6$g, _templateObject7$d, _templateObject8$a;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -30403,7 +30599,7 @@ var AudioDate = styled__default.span(_templateObject6$g || (_templateObject6$g =
 var AudioSendTime = styled__default.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
   return props.color || colors.gray9;
 });
-var Audio = styled__default.audio(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var Audio = styled__default.audio(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
 var _templateObject$C;
 
@@ -30455,7 +30651,9 @@ var DetailsTab = function DetailsTab(_ref) {
       filePreviewTitleColor = _ref.filePreviewTitleColor,
       filePreviewSizeColor = _ref.filePreviewSizeColor,
       filePreviewHoverBackgroundColor = _ref.filePreviewHoverBackgroundColor,
-      filePreviewDownloadIcon = _ref.filePreviewDownloadIcon;
+      filePreviewDownloadIcon = _ref.filePreviewDownloadIcon,
+      publicChannelMembersTabName = _ref.publicChannelMembersTabName,
+      privateChannelMembersTabName = _ref.privateChannelMembersTabName;
   var dispatch = reactRedux.useDispatch();
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var showMembers = !isDirectChannel && checkActionPermission('getMembers');
@@ -30484,7 +30682,7 @@ var DetailsTab = function DetailsTab(_ref) {
             return handleTabClick(channelDetailsTabs[key]);
           },
           key: key
-        }, channelDetailsTabs[key]);
+        }, channelDetailsTabs[key] === channelDetailsTabs.member ? channel.type === CHANNEL_TYPE.PUBLIC && publicChannelMembersTabName ? publicChannelMembersTabName : channel.type === CHANNEL_TYPE.PRIVATE && privateChannelMembersTabName ? privateChannelMembersTabName : channelDetailsTabs[key] : channelDetailsTabs[key]);
       } else {
         return null;
       }
@@ -30890,7 +31088,9 @@ var Details = function Details(_ref) {
       showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
       deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
       deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
-      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor;
+      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor,
+      publicChannelMembersTabName = _ref.publicChannelMembersTabName,
+      privateChannelMembersTabName = _ref.privateChannelMembersTabName;
   var dispatch = reactRedux.useDispatch();
 
   var _useState = React.useState(false),
@@ -31064,7 +31264,9 @@ var Details = function Details(_ref) {
     filePreviewSizeColor: filePreviewSizeColor,
     filePreviewHoverBackgroundColor: filePreviewHoverBackgroundColor,
     filePreviewDownloadIcon: filePreviewDownloadIcon,
-    checkActionPermission: checkActionPermission
+    checkActionPermission: checkActionPermission,
+    publicChannelMembersTabName: publicChannelMembersTabName,
+    privateChannelMembersTabName: privateChannelMembersTabName
   })));
 };
 var Container$n = styled__default.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
@@ -31165,7 +31367,9 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
       deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
       deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
-      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor;
+      deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor,
+      publicChannelMembersTabName = _ref.publicChannelMembersTabName,
+      privateChannelMembersTabName = _ref.privateChannelMembersTabName;
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
   return React__default.createElement(React__default.Fragment, null, channelDetailsIsOpen && React__default.createElement(Details, {
     channelEditIcon: channelEditIcon,
@@ -31251,7 +31455,9 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     showDeleteAllMessagesForPublicChannel: showDeleteAllMessagesForPublicChannel,
     deleteAllMessagesOrder: deleteAllMessagesOrder,
     deleteAllMessagesIcon: deleteAllMessagesIcon,
-    deleteAllMessagesTextColor: deleteAllMessagesTextColor
+    deleteAllMessagesTextColor: deleteAllMessagesTextColor,
+    publicChannelMembersTabName: publicChannelMembersTabName,
+    privateChannelMembersTabName: privateChannelMembersTabName
   }));
 };
 

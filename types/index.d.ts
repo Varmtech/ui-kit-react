@@ -41,9 +41,7 @@ export interface IChannel {
     avatarUrl?: string;
     unreadMessageCount?: number;
     delete: () => Promise<void>;
-    clearHistory: () => Promise<{
-        cleared: boolean;
-    }>;
+    deleteAllMessages: (deleteForMe?: boolean) => Promise<void>;
     hide: () => Promise<boolean>;
     unhide: () => Promise<boolean>;
     markAsUnRead: () => Promise<IChannel>;

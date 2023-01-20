@@ -16,6 +16,7 @@ export declare const addAllMessages: (messages: IMessage[], direction: string) =
 export declare const updateMessageOnAllMessages: (messageId: string, updatedParams: any) => void;
 export declare const updateMarkersOnAllMessages: (markersMap: any, name: string) => void;
 export declare const getAllMessages: () => IMessage[];
+export declare const removeAllMessages: () => void;
 export declare const setHasPrevCached: (state: boolean) => boolean;
 export declare const getHasPrevCached: () => boolean;
 export declare const setHasNextCached: (state: boolean) => boolean;

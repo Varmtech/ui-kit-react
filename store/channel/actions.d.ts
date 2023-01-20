@@ -250,6 +250,18 @@ export declare function setChannelListWithAC(width: number): {
         width: number;
     };
 };
+export declare function clearHistoryAC(channelId: string): {
+    type: string;
+    payload: {
+        channelId: string;
+    };
+};
+export declare function deleteAllMessagesAC(channelId: string): {
+    type: string;
+    payload: {
+        channelId: string;
+    };
+};
 export declare function watchForEventsAC(): {
     type: string;
 };

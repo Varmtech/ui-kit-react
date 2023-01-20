@@ -38,6 +38,8 @@ export declare const TOGGLE_EDIT_CHANNEL = "TOGGLE_EDIT_CHANNEL";
 export declare const CHECK_USER_STATUS = "CHECK_USER_STATUS";
 export declare const UPDATE_USER_STATUS_ON_CHANNEL = "UPDATE_USER_STATUS_ON_CHANNEL";
 export declare const SET_CHANNEL_LIST_WIDTH = "SET_CHANNEL_LIST_WIDTH";
+export declare const CLEAR_HISTORY = "CLEAR_HISTORY";
+export declare const DELETE_ALL_MESSAGES = "DELETE_ALL_MESSAGES";
 export declare const DESTROY_SESSION = "DESTROY_SESSION";
 export declare const CHANNEL_EVENT_TYPES: {
     CREATE: string;

@@ -31,6 +31,7 @@ export declare const colors: {
     red2: string;
     red3: string;
     yellow1: string;
+    purple: string;
 };
 export declare const size: {
     mobileS: string;
