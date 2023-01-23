@@ -26,6 +26,14 @@ export interface IChatClientProps {
     children?: JSX.Element | JSX.Element[];
     logoSrc?: string;
     CustomUploader?: ICustomUploader;
+    customColors?: {
+        primaryColor?: string;
+        textColor1?: string;
+        textColor2?: string;
+        textColor3?: string;
+        deletedUserAvatarBackground?: string;
+        defaultAvatarBackground?: string;
+    };
 }
-declare const SceytChatContainer: ({ client, avatarColors, children, showContactInfoOnUserList, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader }: IChatClientProps) => JSX.Element;
+declare const SceytChatContainer: ({ client, avatarColors, children, showContactInfoOnUserList, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors }: IChatClientProps) => JSX.Element;
 export default SceytChatContainer;

@@ -22,6 +22,8 @@ interface IChannelListProps {
     uriPrefixOnCreateChannel?: string;
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;
+    createChannelIcon?: JSX.Element;
+    createChannelIconHoverBackground?: string;
     onChannelDeleted?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
     onChannelCreated?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
     onChannelHidden?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;

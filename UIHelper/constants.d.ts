@@ -15,7 +15,6 @@ export declare const colors: {
     gray0: string;
     gray1: string;
     gray2: string;
-    gray3: string;
     gray4: string;
     gray5: string;
     gray6: string;
@@ -25,13 +24,14 @@ export declare const colors: {
     pink1: string;
     purple1: string;
     cobalt1: string;
-    green1: string;
-    green2: string;
+    primary: string;
     red1: string;
     red2: string;
     red3: string;
     yellow1: string;
     purple: string;
+    defaultAvatarBackground: string;
+    deleteUserIconBackground: string;
 };
 export declare const size: {
     mobileS: string;

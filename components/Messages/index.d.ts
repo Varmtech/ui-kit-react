@@ -6,10 +6,8 @@ interface MessagesProps {
     messageTimePosition?: 'topOfMessage' | 'onMessage';
     ownMessageBackground?: string;
     incomingMessageBackground?: string;
-    statusIconColor?: string;
     showMessageStatus?: boolean;
     hoverBackground?: boolean;
-    senderNameColor?: string;
     showSenderNameOnDirectChannel?: boolean;
     showSenderNameOnOwnMessages?: boolean;
     showOwnAvatar?: boolean;
