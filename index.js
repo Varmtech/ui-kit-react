@@ -30178,8 +30178,6 @@ var _templateObject$w, _templateObject2$t, _templateObject3$n, _templateObject4$
 var Members = function Members(_ref) {
   var channel = _ref.channel,
       chekActionPermission = _ref.chekActionPermission,
-      publicChannelMembersTabName = _ref.publicChannelMembersTabName,
-      privateChannelMembersTabName = _ref.privateChannelMembersTabName,
       _ref$showChangeMember = _ref.showChangeMemberRole,
       showChangeMemberRole = _ref$showChangeMember === void 0 ? true : _ref$showChangeMember,
       _ref$showKickMember = _ref.showKickMember,
@@ -30326,7 +30324,7 @@ var Members = function Members(_ref) {
     deleteFunction: handleKickMember,
     togglePopup: toggleKickMemberPopup,
     buttonText: 'Remove',
-    title: "Remove " + (channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelMembersTabName || 'member' : publicChannelMembersTabName || 'member'),
+    title: "Remove " + (channel.type === CHANNEL_TYPE.PRIVATE ? ' member' : 'subscriber'),
     description: "Are you sure to remove  " + (selectedMember ? makeUserName(contactsMap[selectedMember.id], selectedMember) : '') + " from this channel?"
   }), blockMemberPopupOpen && React__default.createElement(DeletePopup, {
     deleteFunction: handleBlockMember,

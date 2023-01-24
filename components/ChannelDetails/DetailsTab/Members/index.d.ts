@@ -9,5 +9,5 @@ interface IProps {
     showKickMember?: boolean;
     showKickAndBlockMember?: boolean;
 }
-declare const Members: ({ channel, chekActionPermission, publicChannelMembersTabName, privateChannelMembersTabName, showChangeMemberRole, showKickMember, showKickAndBlockMember }: IProps) => JSX.Element;
+declare const Members: ({ channel, chekActionPermission, showChangeMemberRole, showKickMember, showKickAndBlockMember }: IProps) => JSX.Element;
 export default Members;
