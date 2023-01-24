@@ -16,6 +16,7 @@ export declare const setMessageTypeByAttachment: (attachmentType: string) => "fi
 export declare const getAttachmentType: (dataName: string) => string;
 export declare const doesTextHasLink: (text: string) => any[];
 export declare const makeUserName: (contact?: IContact | undefined, user?: IUser | undefined) => string;
+export declare const systemMessageUserName: (contact: IContact, userId: string) => string;
 export declare const getLinkTitle: (link: string) => string;
 export declare const getAttachmentsAndLinksFromMessages: (messages: IMessage[], messageType: string) => any[];
 export declare const downloadFile: (attachment: IAttachment) => Promise<void>;

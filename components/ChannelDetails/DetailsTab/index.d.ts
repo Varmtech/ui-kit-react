@@ -23,6 +23,9 @@ interface IProps {
     filePreviewDownloadIcon?: JSX.Element;
     publicChannelMembersTabName?: string;
     privateChannelMembersTabName?: string;
+    showChangeMemberRole?: boolean;
+    showKickMember?: boolean;
+    showKickAndBlockMember?: boolean;
 }
-declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewIcon, voicePreviewHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, publicChannelMembersTabName, privateChannelMembersTabName }: IProps) => JSX.Element;
+declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewIcon, voicePreviewHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, publicChannelMembersTabName, privateChannelMembersTabName, showChangeMemberRole, showKickMember, showKickAndBlockMember }: IProps) => JSX.Element;
 export default DetailsTab;

@@ -61,6 +61,12 @@ export declare function removeChannelAC(channelId: string): {
         channelId: string;
     };
 };
+export declare function removeChannelCachesAC(channelId: string): {
+    type: string;
+    payload: {
+        channelId: string;
+    };
+};
 export declare function setChannelToAddAC(channel: IChannel | null): {
     type: string;
     payload: {
@@ -257,6 +263,12 @@ export declare function clearHistoryAC(channelId: string): {
     };
 };
 export declare function deleteAllMessagesAC(channelId: string): {
+    type: string;
+    payload: {
+        channelId: string;
+    };
+};
+export declare function joinChannelAC(channelId: string): {
     type: string;
     payload: {
         channelId: string;
