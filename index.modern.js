@@ -8412,7 +8412,7 @@ var MembersReducer = (function (state, _ref) {
     case SET_MEMBERS_TO_LIST:
       {
         var members = payload.members;
-        newState.activeChannelMembers = members;
+        newState.activeChannelMembers = [].concat(members);
         return newState;
       }
 
@@ -30595,9 +30595,9 @@ var Members = function Members(_ref) {
   }, chekActionPermission('addMember') && React__default.createElement(MemberItem, {
     key: 1,
     onClick: handleAddMemberPopup
-  }, React__default.createElement(SvgAddMember, null), "Add member"), !!members.length && members.map(function (member) {
+  }, React__default.createElement(SvgAddMember, null), "Add member"), !!members.length && members.map(function (member, index) {
     return React__default.createElement(MemberItem, {
-      key: member.id,
+      key: member.id + index,
       hoverBackground: customColors.selectedChannelBackground
     }, React__default.createElement(Avatar, {
       name: member.firstName || member.id,
