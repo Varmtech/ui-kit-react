@@ -5,6 +5,36 @@ export declare function setConnectionStatusAC(status: string): {
         status: string;
     };
 };
+export declare function getUsersAC(params: any): {
+    type: string;
+    payload: {
+        params: any;
+    };
+};
+export declare function loadMoreUsersAC(limit: number): {
+    type: string;
+    payload: {
+        limit: number;
+    };
+};
+export declare function setUsersLoadingStateAC(state: number): {
+    type: string;
+    payload: {
+        state: number;
+    };
+};
+export declare function setUsersAC(users: IUser[]): {
+    type: string;
+    payload: {
+        users: IUser[];
+    };
+};
+export declare function addUsersAC(users: IUser[]): {
+    type: string;
+    payload: {
+        users: IUser[];
+    };
+};
 export declare function getContactsAC(): {
     type: string;
     payload: {};

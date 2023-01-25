@@ -9,7 +9,7 @@ interface IChannelListProps {
         children?: React.ReactNode;
     }>;
     ListItem?: FC<any>;
-    Profile?: FC;
+    Profile?: JSX.Element;
     filter?: {
         channelType: 'Public' | 'Private' | 'Direct';
     };

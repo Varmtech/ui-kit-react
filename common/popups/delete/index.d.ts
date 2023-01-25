@@ -3,10 +3,12 @@ interface IProps {
     title: string;
     description: string;
     buttonText: string;
+    buttonTextColor?: string;
+    buttonBackground?: string;
     togglePopup: () => void;
-    deleteFunction: (option?: any) => void;
+    handleFunction: (option?: any) => void;
     loading?: boolean;
     isDeleteMessage?: boolean;
 }
-declare function DeletePopup({ title, description, buttonText, togglePopup, deleteFunction, isDeleteMessage, loading }: IProps): JSX.Element;
-export default DeletePopup;
+declare function ConfirmPopup({ title, description, buttonText, buttonTextColor, buttonBackground, togglePopup, handleFunction, isDeleteMessage, loading }: IProps): JSX.Element;
+export default ConfirmPopup;
