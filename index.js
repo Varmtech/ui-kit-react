@@ -12189,7 +12189,7 @@ function sendMessage(action) {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
             szh: thumbnailMetas.imageHeight,
-            dur: thumbnailMetas.duration
+            dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments([]).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setMetadata(JSON.stringify(message.metadata));
@@ -15205,9 +15205,19 @@ var Avatar = function Avatar(_ref) {
     var splittedName = name.split(' ');
 
     if (splittedName.length > 1 && splittedName[1]) {
-      avatarText = "" + splittedName[0][0] + splittedName[1][0];
+      var firstWord = splittedName[0];
+      var secondWord = splittedName[1];
+      var firstCharOfFirstWord = firstWord.codePointAt(0);
+      var firstCharOfSecondWord = secondWord.codePointAt(0);
+      avatarText = "" + String.fromCodePoint(firstCharOfFirstWord) + String.fromCodePoint(firstCharOfSecondWord);
     } else {
-      avatarText = "" + splittedName[0][0] + (splittedName[0][1] || '');
+      var _firstCharOfFirstWord = name.codePointAt(0);
+
+      var _firstCharOfSecondWord = name.codePointAt(1);
+
+      var str1 = _firstCharOfFirstWord ? String.fromCodePoint(_firstCharOfFirstWord) : '';
+      var str2 = _firstCharOfSecondWord ? String.fromCodePoint(_firstCharOfSecondWord) : '';
+      avatarText = "" + str1 + str2;
     }
   }
 
@@ -29857,6 +29867,7 @@ var Actions$1 = function Actions(_ref) {
       deleteChannelIcon = _ref.deleteChannelIcon,
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
+      deleteChannelOrder = _ref.deleteChannelOrder,
       _ref$showBlockAndLeav = _ref.showBlockAndLeaveChannel,
       showBlockAndLeaveChannel = _ref$showBlockAndLeav === void 0 ? true : _ref$showBlockAndLeav,
       _ref$showBlockUser = _ref.showBlockUser,
@@ -30185,7 +30196,7 @@ var Actions$1 = function Actions(_ref) {
     order: clearHistoryOrder,
     hoverColor: clearHistoryTextColor || colors.red1,
     onClick: function onClick() {
-      setPopupButtonText('Delete');
+      setPopupButtonText('Clear');
       setPopupTitle('Clear history');
       handleToggleClearHistoryPopup();
     }
@@ -30196,12 +30207,13 @@ var Actions$1 = function Actions(_ref) {
     order: deleteAllMessagesOrder,
     hoverColor: deleteAllMessagesTextColor || colors.red1,
     onClick: function onClick() {
-      setPopupButtonText('Delete');
-      setPopupTitle("Delete all messages");
+      setPopupButtonText('Clear');
+      setPopupTitle("Clear history");
       handleToggleDeleteAllMessagesPopup();
     }
-  }, deleteAllMessagesIcon || React__default.createElement(SvgClear, null), " Delete all messages"), showDeleteChannel && checkActionPermission('deleteChannel') && React__default.createElement(ActionItem$1, {
+  }, deleteAllMessagesIcon || React__default.createElement(SvgClear, null), " Clear history"), showDeleteChannel && checkActionPermission('deleteChannel') && React__default.createElement(ActionItem$1, {
     key: 12,
+    order: deleteChannelOrder,
     color: deleteChannelTextColor || colors.red1,
     iconColor: deleteChannelIconColor || colors.red1,
     hoverColor: deleteChannelTextColor || colors.red1,
@@ -30250,7 +30262,7 @@ var Actions$1 = function Actions(_ref) {
     handleFunction: handleDeleteAllMessagesHistory,
     togglePopup: handleToggleDeleteAllMessagesPopup,
     buttonText: popupButtonText,
-    description: channel.type === CHANNEL_TYPE.DIRECT && deleteDirectChannelWarningText ? deleteDirectChannelWarningText : channel.type === CHANNEL_TYPE.PRIVATE && deletePublicChannelWarningText ? deletePublicChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && deletePrivateChannelWarningText ? deletePrivateChannelWarningText : 'Are you sure you want to delete all messages? This action cannot be undone.',
+    description: channel.type === CHANNEL_TYPE.DIRECT && clearHistoryDirectChannelWarningText ? clearHistoryDirectChannelWarningText : channel.type === CHANNEL_TYPE.PRIVATE && clearHistoryPrivateChannelWarningText ? clearHistoryPrivateChannelWarningText : channel.type === CHANNEL_TYPE.PUBLIC && clearHistoryPublicChannelWarningText ? clearHistoryPublicChannelWarningText : 'Are you sure you want to delete all messages? This action cannot be undone.',
     title: popupTitle
   }));
 };
@@ -31609,6 +31621,7 @@ var Details = function Details(_ref) {
       deleteChannelIcon = _ref.deleteChannelIcon,
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
+      deleteChannelOrder = _ref.deleteChannelOrder,
       showBlockAndLeaveChannel = _ref.showBlockAndLeaveChannel,
       showBlockUser = _ref.showBlockUser,
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
@@ -31796,6 +31809,7 @@ var Details = function Details(_ref) {
     deleteChannelIcon: deleteChannelIcon,
     deleteChannelIconColor: deleteChannelIconColor,
     deleteChannelTextColor: deleteChannelTextColor,
+    deleteChannelOrder: deleteChannelOrder,
     showBlockAndLeaveChannel: showBlockAndLeaveChannel,
     showBlockUser: showBlockUser,
     blockAndLeaveChannelIcon: blockAndLeaveChannelIcon,
@@ -31909,6 +31923,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       deleteChannelIcon = _ref.deleteChannelIcon,
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
+      deleteChannelOrder = _ref.deleteChannelOrder,
       showBlockAndLeaveChannel = _ref.showBlockAndLeaveChannel,
       showBlockUser = _ref.showBlockUser,
       blockAndLeaveChannelIcon = _ref.blockAndLeaveChannelIcon,
@@ -32004,6 +32019,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     deleteChannelIcon: deleteChannelIcon,
     deleteChannelIconColor: deleteChannelIconColor,
     deleteChannelTextColor: deleteChannelTextColor,
+    deleteChannelOrder: deleteChannelOrder,
     showBlockAndLeaveChannel: showBlockAndLeaveChannel,
     showBlockUser: showBlockUser,
     blockAndLeaveChannelIcon: blockAndLeaveChannelIcon,
