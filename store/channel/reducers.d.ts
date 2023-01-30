@@ -27,6 +27,11 @@ declare const _default: (state?: {
     channelInfoIsOpen: boolean;
     channelEditMode: boolean;
     channelListWidth: number;
+    isDragging: boolean;
+    draggedAttachments: {
+        attachment: File;
+        type: "file" | "media";
+    }[];
 }, { type, payload }?: IAction) => {
     channelsLoadingState: string | null;
     channelsForForwardLoadingState: string | null;
@@ -55,5 +60,10 @@ declare const _default: (state?: {
     channelInfoIsOpen: boolean;
     channelEditMode: boolean;
     channelListWidth: number;
+    isDragging: boolean;
+    draggedAttachments: {
+        attachment: File;
+        type: "file" | "media";
+    }[];
 };
 export default _default;

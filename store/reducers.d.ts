@@ -27,6 +27,11 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
         channelInfoIsOpen: boolean;
         channelEditMode: boolean;
         channelListWidth: number;
+        isDragging: boolean;
+        draggedAttachments: {
+            attachment: File;
+            type: "file" | "media";
+        }[];
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;

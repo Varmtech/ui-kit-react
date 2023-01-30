@@ -873,6 +873,8 @@ var MARK_MESSAGES_AS_DELIVERED = 'MARK_MESSAGES_AS_DELIVERED';
 var SEND_TYPING = 'SEND_TYPING';
 var SWITCH_TYPING_INDICATOR = 'SWITCH_TYPING_INDICATOR';
 var JOIN_TO_CHANNEL = 'JOIN_TO_CHANNEL';
+var SET_IS_DRAGGING = 'SET_IS_DRAGGING';
+var SET_DRAGGED_ATTACHMENTS = 'SET_DRAGGED_ATTACHMENTS';
 var WATCH_FOR_EVENTS = 'WATCH_FOR_EVENTS';
 var SET_CHANNEL_TO_REMOVE = 'SET_CHANNEL_TO_REMOVE';
 var SET_CHANNEL_TO_ADD = 'SET_CHANNEL_TO_ADD';
@@ -994,7 +996,9 @@ var initialState = {
   visibleChannel: null,
   channelInfoIsOpen: false,
   channelEditMode: false,
-  channelListWidth: 0
+  channelListWidth: 0,
+  isDragging: false,
+  draggedAttachments: []
 };
 var ChannelReducer = (function (state, _temp) {
   if (state === void 0) {
@@ -1029,7 +1033,6 @@ var ChannelReducer = (function (state, _temp) {
 
     case SET_CHANNELS_FOR_FORWARD:
       {
-        console.log('set channels for forward . ... ');
         newState.channelsForForward = [].concat(payload.channels);
         return newState;
       }
@@ -1265,6 +1268,34 @@ var ChannelReducer = (function (state, _temp) {
         return newState;
       }
 
+    case SET_IS_DRAGGING:
+      {
+        var isDragging = payload.isDragging;
+        newState.isDragging = isDragging;
+        return newState;
+      }
+
+    case SET_DRAGGED_ATTACHMENTS:
+      {
+        var attachments = payload.attachments,
+            _type = payload.type;
+
+        if (attachments.length && attachments.length > 0) {
+          newState.draggedAttachments = attachments.map(function (attachment) {
+            return {
+              data: attachment.data,
+              name: attachment.name,
+              type: attachment.type,
+              attachmentType: _type
+            };
+          });
+        } else {
+          newState.draggedAttachments = [];
+        }
+
+        return newState;
+      }
+
     case SET_CHANNEL_LIST_WIDTH:
       {
         var width = payload.width;
@@ -1475,8 +1506,9 @@ var colors = {
   gray0: '#F3F5F8',
   gray1: '#EDEDED',
   gray2: '#ecedf0',
+  gray3: '#B2B6BE',
   gray4: '#818C99',
-  gray5: '#F3F5F7',
+  gray5: '#F0F2F5',
   gray6: '#17191C',
   gray7: '#898B99',
   gray8: '#3A3C3E',
@@ -1833,7 +1865,7 @@ var UploadPercent = styled.span(_templateObject39 || (_templateObject39 = _tagge
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
-var UploadProgress = styled.div(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n\n  ", "\n  ", "\n"])), function (props) {
+var UploadProgress = styled.div(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n\n  border: ", ";\n  box-sizing: border-box;\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
   return props.fileAttachment ? '9px' : '0';
@@ -1849,6 +1881,8 @@ var UploadProgress = styled.div(_templateObject40 || (_templateObject40 = _tagge
   return 'data:image/jpeg;base64,' + props.backgroundImage;
 }, function (props) {
   return props.fileAttachment ? '8px' : props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
+}, function (props) {
+  return props.isRepliedMessage ? '0.5px solid rgba(0, 0, 0, 0.1)' : props.withBorder && "2px solid " + props.backgroundColor;
 }, function (props) {
   return props.isFailedAttachment && 'background-color: rgba(237, 77, 96, 0.1);';
 }, function (props) {
@@ -7766,7 +7800,7 @@ var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, he
   var aspectRatio = width / height;
 
   if (aspectRatio >= maxWidth / maxHeight) {
-    return [Math.max(minWidth, Math.min(maxWidth, maxWidth)), Math.min(maxHeight, maxWidth / aspectRatio)];
+    return [Math.max(minWidth, Math.min(maxWidth, maxWidth)), Math.min(maxHeight, maxWidth / aspectRatio) + 2];
   } else {
     return [Math.min(maxWidth, maxHeight * aspectRatio), Math.min(maxHeight, maxHeight)];
   }
@@ -8977,6 +9011,23 @@ function joinChannelAC(channelId) {
     }
   };
 }
+function setIsDragging(isDragging) {
+  return {
+    type: SET_IS_DRAGGING,
+    payload: {
+      isDragging: isDragging
+    }
+  };
+}
+function setDraggedAttachments(attachments, type) {
+  return {
+    type: SET_DRAGGED_ATTACHMENTS,
+    payload: {
+      attachments: attachments,
+      type: type
+    }
+  };
+}
 function watchForEventsAC() {
   return {
     type: WATCH_FOR_EVENTS
@@ -9885,7 +9936,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context2.t0 = type;
-          _context2.next = _context2.t0 === CHANNEL_EVENT_TYPES.CREATE ? 13 : _context2.t0 === CHANNEL_EVENT_TYPES.JOIN ? 22 : _context2.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 29 : _context2.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 36 : _context2.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 43 : _context2.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 45 : _context2.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 70 : _context2.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 86 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 94 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 133 : _context2.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 137 : _context2.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 141 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE ? 145 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 165 : _context2.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 180 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 193 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 195 : _context2.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 200 : _context2.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 206 : _context2.t0 === CHANNEL_EVENT_TYPES.MUTE ? 222 : _context2.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 227 : _context2.t0 === CHANNEL_EVENT_TYPES.HIDE ? 232 : _context2.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 237 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 242 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 247 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 252 : _context2.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 259 : 263;
+          _context2.next = _context2.t0 === CHANNEL_EVENT_TYPES.CREATE ? 13 : _context2.t0 === CHANNEL_EVENT_TYPES.JOIN ? 22 : _context2.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 29 : _context2.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 36 : _context2.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 43 : _context2.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 45 : _context2.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 70 : _context2.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 86 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 94 : _context2.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 133 : _context2.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 137 : _context2.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 141 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE ? 145 : _context2.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 165 : _context2.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 181 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 194 : _context2.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 196 : _context2.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 201 : _context2.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 207 : _context2.t0 === CHANNEL_EVENT_TYPES.MUTE ? 223 : _context2.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 228 : _context2.t0 === CHANNEL_EVENT_TYPES.HIDE ? 233 : _context2.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 238 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 243 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 248 : _context2.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 253 : _context2.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 260 : 264;
           break;
 
         case 13:
@@ -9906,7 +9957,7 @@ function watchForEvents() {
           return put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 21:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 22:
           channel = args.channel;
@@ -9916,7 +9967,7 @@ function watchForEvents() {
 
         case 26:
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 29:
           console.log('channel LEAVE ... ');
@@ -9925,7 +9976,7 @@ function watchForEvents() {
 
         case 33:
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 36:
           console.log('channel BLOCK ... ');
@@ -9941,11 +9992,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 42:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 43:
           console.log('channel UNBLOCK ... ');
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 45:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -10007,7 +10058,7 @@ function watchForEvents() {
           }));
 
         case 69:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 70:
           _channel4 = args.channel;
@@ -10044,7 +10095,7 @@ function watchForEvents() {
           }));
 
         case 85:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 86:
           updatedChannel = args.updatedChannel;
@@ -10064,7 +10115,7 @@ function watchForEvents() {
           }));
 
         case 93:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 94:
           _channel5 = args.channel, message = args.message;
@@ -10165,7 +10216,7 @@ function watchForEvents() {
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 132:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 133:
           return _context2.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -10249,7 +10300,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 137:
           _channel6 = args.channel, from = args.from;
@@ -10257,7 +10308,7 @@ function watchForEvents() {
           return put(switchTypingIndicatorAC(true, _channel6.id, from));
 
         case 140:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 141:
           _channel7 = args.channel, _from = args.from;
@@ -10265,7 +10316,7 @@ function watchForEvents() {
           return put(switchTypingIndicatorAC(false, _channel7.id, _from));
 
         case 144:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 145:
           channelId = args.channelId;
@@ -10308,7 +10359,7 @@ function watchForEvents() {
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 164:
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
         case 165:
           _channel9 = args.channel, deletedMessage = args.deletedMessage;
@@ -10317,74 +10368,75 @@ function watchForEvents() {
           _channelExists6 = checkChannelExists(_channel9.id);
 
           if (!(_channel9.id === _activeChannelId6)) {
-            _context2.next = 172;
+            _context2.next = 173;
             break;
           }
 
-          _context2.next = 172;
+          updateMessageOnAllMessages(deletedMessage.id, deletedMessage);
+          _context2.next = 173;
           return put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 172:
+        case 173:
           updateMessageOnMap(_channel9.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
 
           if (!_channelExists6) {
-            _context2.next = 179;
+            _context2.next = 180;
             break;
           }
 
-          _context2.next = 176;
+          _context2.next = 177;
           return put(updateChannelDataAC(_channel9.id, {
             unreadMessageCount: _channel9.unreadMessageCount
           }));
 
-        case 176:
+        case 177:
           if (!(_channel9.lastMessage.id === deletedMessage.id)) {
-            _context2.next = 179;
+            _context2.next = 180;
             break;
           }
 
-          _context2.next = 179;
+          _context2.next = 180;
           return put(updateChannelLastMessageAC(deletedMessage, _channel9));
 
-        case 179:
-          return _context2.abrupt("break", 264);
-
         case 180:
+          return _context2.abrupt("break", 265);
+
+        case 181:
           _channel10 = args.channel, _message = args.message;
           console.log('channel EDIT_MESSAGE ... ');
           _activeChannelId7 = getActiveChannelId();
           _channelExists7 = checkChannelExists(_channel10.id);
 
           if (!(_channel10.id === _activeChannelId7)) {
-            _context2.next = 187;
+            _context2.next = 188;
             break;
           }
 
-          _context2.next = 187;
+          _context2.next = 188;
           return put(updateMessageAC(_message.id, {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments
           }));
 
-        case 187:
+        case 188:
           if (!_channelExists7) {
-            _context2.next = 191;
+            _context2.next = 192;
             break;
           }
 
           if (!(_channel10.lastMessage.id === _message.id)) {
-            _context2.next = 191;
+            _context2.next = 192;
             break;
           }
 
-          _context2.next = 191;
+          _context2.next = 192;
           return put(updateChannelLastMessageAC(_message, _channel10));
 
-        case 191:
+        case 192:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             updateMessageOnMap(_channel10.id, {
               messageId: _message.id,
@@ -10392,154 +10444,154 @@ function watchForEvents() {
             });
           }
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
-        case 193:
+        case 194:
           console.log('channel REACTION_ADDED ... ');
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
-        case 195:
+        case 196:
           console.log('channel REACTION_DELETED ... ');
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
-        case 200:
+        case 201:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context2.next = 205;
+          _context2.next = 206;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 205:
-          return _context2.abrupt("break", 264);
-
         case 206:
+          return _context2.abrupt("break", 265);
+
+        case 207:
           _channel13 = args.channel;
-          _context2.next = 209;
+          _context2.next = 210;
           return call(getActiveChannelId);
 
-        case 209:
+        case 210:
           _activeChannelId9 = _context2.sent;
-          _context2.next = 212;
+          _context2.next = 213;
           return call(checkChannelExists, _channel13.id);
 
-        case 212:
+        case 213:
           channelExist = _context2.sent;
 
           if (!(_channel13.id === _activeChannelId9)) {
-            _context2.next = 217;
+            _context2.next = 218;
             break;
           }
 
-          _context2.next = 216;
+          _context2.next = 217;
           return put(clearMessagesAC());
 
-        case 216:
+        case 217:
           removeAllMessages();
 
-        case 217:
+        case 218:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context2.next = 221;
+            _context2.next = 222;
             break;
           }
 
-          _context2.next = 221;
+          _context2.next = 222;
           return put(updateChannelLastMessageAC({}, _channel13));
 
-        case 221:
-          return _context2.abrupt("break", 264);
-
         case 222:
+          return _context2.abrupt("break", 265);
+
+        case 223:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context2.next = 226;
+          _context2.next = 227;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 226:
-          return _context2.abrupt("break", 264);
-
         case 227:
+          return _context2.abrupt("break", 265);
+
+        case 228:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context2.next = 231;
+          _context2.next = 232;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 231:
-          return _context2.abrupt("break", 264);
-
         case 232:
+          return _context2.abrupt("break", 265);
+
+        case 233:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context2.next = 236;
+          _context2.next = 237;
           return put(setChannelToHideAC(_channel16));
 
-        case 236:
-          return _context2.abrupt("break", 264);
-
         case 237:
+          return _context2.abrupt("break", 265);
+
+        case 238:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context2.next = 241;
+          _context2.next = 242;
           return put(setChannelToUnHideAC(_channel17));
 
-        case 241:
-          return _context2.abrupt("break", 264);
-
         case 242:
+          return _context2.abrupt("break", 265);
+
+        case 243:
           _channel18 = args.channel;
           console.log('channel CHANNEL_MARKED_AS_UNREAD ... ', _channel18);
-          _context2.next = 246;
+          _context2.next = 247;
           return put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 246:
-          return _context2.abrupt("break", 264);
-
         case 247:
+          return _context2.abrupt("break", 265);
+
+        case 248:
           _channel19 = args.channel;
           console.log('channel CHANNEL_MARKED_AS_READ ... ', _channel19);
-          _context2.next = 251;
+          _context2.next = 252;
           return put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 251:
-          return _context2.abrupt("break", 264);
-
         case 252:
+          return _context2.abrupt("break", 265);
+
+        case 253:
           console.log('channel CHANGE_ROLE ... ');
-          _context2.next = 256;
+          _context2.next = 257;
           return call(getActiveChannelId);
 
-        case 256:
+        case 257:
 
-          return _context2.abrupt("break", 264);
+          return _context2.abrupt("break", 265);
 
-        case 259:
+        case 260:
           status = args.status;
-          _context2.next = 262;
+          _context2.next = 263;
           return put(setConnectionStatusAC(status));
 
-        case 262:
-          return _context2.abrupt("break", 264);
-
         case 263:
-          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+          return _context2.abrupt("break", 265);
 
         case 264:
+          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+
+        case 265:
           _context2.next = 4;
           break;
 
-        case 266:
+        case 267:
         case "end":
           return _context2.stop();
       }
@@ -11962,6 +12014,7 @@ var THUMBNAIL_QUALITY = 0.7;
 function resizeImage(file, maxWidth, maxHeight, quality) {
   return new Promise(function (resolve) {
     var blobURL = URL.createObjectURL(file);
+    console.log('blob url .. ', blobURL);
     var img = new Image();
     img.src = blobURL;
 
@@ -12188,7 +12241,7 @@ function sendMessage(action) {
             dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
           messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody(message.body).setAttachments([]).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setMetadata(JSON.stringify(message.metadata));
+          messageBuilder.setBody(message.body).setAttachments([]).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parent) {
             messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
@@ -12379,7 +12432,7 @@ function sendMessage(action) {
           });
           _messageBuilder = channel.createMessageBuilder();
 
-          _messageBuilder.setBody(message.body).setAttachments(message.attachments).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setMetadata(JSON.stringify(message.metadata));
+          _messageBuilder.setBody(message.body).setAttachments(message.attachments).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parent) {
             _messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
@@ -12598,7 +12651,7 @@ function sendTextMessage(action) {
           }
 
           messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody(_message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(_message.type).setDisplayCount(_message.type === 'system' ? 0 : 1).setMetadata(JSON.stringify(_message.metadata));
+          messageBuilder.setBody(_message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(_message.type).setDisplayCount(_message.type === 'system' ? 0 : 1).setSilent(_message.type === 'system').setMetadata(JSON.stringify(_message.metadata));
 
           if (_message.parent) {
             messageBuilder.setParentMessageId(_message.parent ? _message.parent.id : null);
@@ -13935,15 +13988,14 @@ function addMembers(action) {
           _context3.prev = 0;
           payload = action.payload;
           members = payload.members, channelId = payload.channelId;
-          console.log('add members ..... ');
-          _context3.next = 6;
+          _context3.next = 5;
           return call(getChannelFromMap, channelId);
 
-        case 6:
+        case 5:
           channel = _context3.sent;
 
           if (!channel) {
-            _context3.next = 22;
+            _context3.next = 21;
             break;
           }
 
@@ -13951,14 +14003,14 @@ function addMembers(action) {
             var memberBuilder = channel.createMemberBuilder(mem.id);
             return memberBuilder.setRole(mem.role).create();
           });
-          _context3.next = 11;
+          _context3.next = 10;
           return call(channel.addMembers, membersToAdd);
 
-        case 11:
+        case 10:
           addedMembers = _context3.sent;
 
           if (!(channel.type === CHANNEL_TYPE.PRIVATE)) {
-            _context3.next = 18;
+            _context3.next = 17;
             break;
           }
 
@@ -13975,34 +14027,34 @@ function addMembers(action) {
             attachments: [],
             type: 'system'
           };
-          _context3.next = 18;
+          _context3.next = 17;
           return put(sendTextMessageAC(messageToSend, channelId, CONNECTION_STATUS.CONNECTED));
 
-        case 18:
-          _context3.next = 20;
+        case 17:
+          _context3.next = 19;
           return put(addMembersToListAC(addedMembers));
 
-        case 20:
-          _context3.next = 22;
+        case 19:
+          _context3.next = 21;
           return put(updateChannelDataAC(channel.id, {
             memberCount: channel.memberCount
           }));
 
-        case 22:
-          _context3.next = 27;
+        case 21:
+          _context3.next = 26;
           break;
 
-        case 24:
-          _context3.prev = 24;
+        case 23:
+          _context3.prev = 23;
           _context3.t0 = _context3["catch"](0);
           console.log('error on add members... ', _context3.t0);
 
-        case 27:
+        case 26:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3$2, null, [[0, 24]]);
+  }, _marked3$2, null, [[0, 23]]);
 }
 
 function kickMemberFromChannel(action) {
@@ -14971,6 +15023,12 @@ var typingIndicatorSelector = function typingIndicatorSelector(channelId) {
 var channelListWidthSelector = function channelListWidthSelector(store) {
   return store.ChannelReducer.channelListWidth;
 };
+var isDraggingSelector = function isDraggingSelector(store) {
+  return store.ChannelReducer.isDragging;
+};
+var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
+  return store.ChannelReducer.draggedAttachments;
+};
 
 var _path$6;
 
@@ -15068,7 +15126,7 @@ function SvgChoseFile(props) {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3 3.75A2.25 2.25 0 015.25 1.5h7.5A2.25 2.25 0 0115 3.75v10.5a2.25 2.25 0 01-2.25 2.25h-7.5A2.25 2.25 0 013 14.25V3.75zm2.25 6.938c0-.311.252-.563.563-.563h6.375a.563.563 0 010 1.125H5.811a.563.563 0 01-.562-.563zm.563 2.062a.563.563 0 000 1.125h3.375a.563.563 0 000-1.125H5.812z",
-    fill: "#818C99"
+    fill: "CurrentColor"
   })));
 }
 
@@ -15403,7 +15461,9 @@ var Channel = function Channel(_ref) {
     statusWidth: statusWidth
   }, React__default.createElement("h3", null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), channel.muted && React__default.createElement(MutedIcon, {
     color: notificationsIsMutedIconColor
-  }, notificationsIsMutedIcon || React__default.createElement(SvgNotificationsOff3, null)), (lastMessage || !!typingIndicator) && React__default.createElement(LastMessage, null, typingIndicator ? !isDirectChannel ? React__default.createElement(LastMessageAuthor, {
+  }, notificationsIsMutedIcon || React__default.createElement(SvgNotificationsOff3, null)), (lastMessage || !!typingIndicator) && React__default.createElement(LastMessage, {
+    markedAsUnread: channel.markedAsUnread
+  }, typingIndicator ? !isDirectChannel ? React__default.createElement(LastMessageAuthor, {
     typing: typingIndicator,
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
@@ -15412,8 +15472,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)), (!!typingIndicator && !isDirectChannel || lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
-    authorWith: messageAuthorRef.current && messageAuthorRef.current.offsetWidth || 0,
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted user')), (typingIndicator ? !isDirectChannel : lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length),
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
@@ -15441,17 +15500,17 @@ var Container$2 = styled.div({
     padding: selectedChannel ? '8px 16px 8px 13px' : '8px 16px'
   };
 });
-var ChannelInfo = styled.div(_templateObject$4 || (_templateObject$4 = _taggedTemplateLiteralLoose(["\n  text-align: left;\n  margin-left: ", ";\n  width: 100%;\n  max-width: ", ";\n\n  h3 {\n    display: inline-block;\n    margin: 0;\n    font-size: 15px;\n    font-weight: 500;\n    text-overflow: ellipsis;\n    line-height: 18px;\n    letter-spacing: -0.2px;\n    max-width: ", ";\n    overflow: hidden;\n    white-space: nowrap;\n    color: ", ";\n  }\n"])), function (props) {
+var ChannelInfo = styled.div(_templateObject$4 || (_templateObject$4 = _taggedTemplateLiteralLoose(["\n  text-align: left;\n  margin-left: ", ";\n  width: 100%;\n  max-width: calc(100% - 62px);\n\n  h3 {\n    display: inline-block;\n    margin: 0;\n    font-size: 15px;\n    font-weight: 500;\n    text-overflow: ellipsis;\n    line-height: 18px;\n    letter-spacing: -0.2px;%;\n    max-width: ", ";\n    overflow: hidden;\n    white-space: nowrap;\n    color: ", ";\n  }\n"])), function (props) {
   return props.avatar && '12px';
 }, function (props) {
-  return "calc(100% - " + (props.statusWidth + 62) + "px)";
-}, function (props) {
-  return props.isMuted ? 'calc(100% - 30px)' : '100%';
+  return "calc(100% - " + (props.statusWidth + (props.isMuted ? 20 : 0)) + "px)";
 }, colors.gray6);
 var MutedIcon = styled.span(_templateObject2$4 || (_templateObject2$4 = _taggedTemplateLiteralLoose(["\n  & > svg {\n    height: 16px;\n    width: 16px;\n    margin-left: 5px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || '#818C99';
 });
-var LastMessage = styled.div(_templateObject3$4 || (_templateObject3$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  color: ", ";\n"])), colors.gray6);
+var LastMessage = styled.div(_templateObject3$4 || (_templateObject3$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  color: ", ";\n  max-width: ", ";\n"])), colors.gray6, function (props) {
+  return props.markedAsUnread ? 'calc(100% - 24px)' : '100%';
+});
 var AvatarWrapper = styled.div(_templateObject4$3 || (_templateObject4$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n"])));
 var UserStatus = styled.span(_templateObject5$1 || (_templateObject5$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 14px;\n  height: 14px;\n  right: 0;\n  bottom: 0;\n  border-radius: 50%;\n  background-color: ", ";\n  border: 2.5px solid #ffffff;\n  box-sizing: border-box;\n"])), function (props) {
   return props.backgroundColor || '#56E464';
@@ -15460,9 +15519,7 @@ var LastMessageAuthor = styled.div(_templateObject6$1 || (_templateObject6$1 = _
   return props.typing && 'italic';
 }, colors.gray8);
 var Points = styled.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 2px;\n"])));
-var LastMessageText = styled.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  height: 19px;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), function (props) {
-  return "calc(100% - " + props.authorWith + "px)";
-}, colors.gray9, function (props) {
+var LastMessageText = styled.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  height: 19px;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), colors.gray9, function (props) {
   return props.deletedMessage && 'italic';
 }, function (props) {
   return props.withAttachments && 'translate(0px, -1.5px)';
@@ -16122,7 +16179,7 @@ var UsersPopup = function UsersPopup(_ref) {
     withFooter: actionType !== 'createChat'
   }, React__default.createElement(CloseIcon, {
     onClick: handleClosePopup
-  }), React__default.createElement(PopupName, null, actionType === 'createChat' ? 'Creat a new chat' : 'Add members'), React__default.createElement(SearchUserCont, {
+  }), React__default.createElement(PopupName, null, actionType === 'createChat' ? 'Creat a new chat' : (channel === null || channel === void 0 ? void 0 : channel.type) === CHANNEL_TYPE.PUBLIC ? 'Add subscribers' : 'Add members'), React__default.createElement(SearchUserCont, {
     className: 'p-relative'
   }, React__default.createElement(StyledSearchSvg, null), React__default.createElement(SearchUsersInput, {
     height: '40px',
@@ -18506,12 +18563,19 @@ var ChannelListHeader = styled.div(_templateObject7$4 || (_templateObject7$4 = _
 var _templateObject$f;
 function Chat$1(_ref) {
   var children = _ref.children;
+  var dispatch = useDispatch();
   var channelListWidth = useSelector(channelListWidthSelector, shallowEqual);
   var channelDetailsIsOpen = useSelector(channelInfoIsOpenSelector, shallowEqual);
+
+  var handleDragIn = function handleDragIn() {
+    dispatch(setIsDragging(true));
+  };
+
   useEffect(function () {});
   return React__default.createElement(Container$7, {
     widthOffset: channelListWidth,
-    channelDetailsIsOpen: channelDetailsIsOpen
+    channelDetailsIsOpen: channelDetailsIsOpen,
+    onDragEnter: handleDragIn
   }, children);
 }
 var Container$7 = styled.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
@@ -19566,7 +19630,7 @@ function usePermissions(myRole) {
 var _templateObject$j, _templateObject2$g, _templateObject3$d, _templateObject4$a;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
-      isDirectChannel = _ref.isDirectChannel,
+      channelType = _ref.channelType,
       handleOpenDeleteMessage = _ref.handleOpenDeleteMessage,
       handleOpenForwardMessage = _ref.handleOpenForwardMessage,
       handleReportMessage = _ref.handleReportMessage,
@@ -19616,9 +19680,9 @@ function MessageActions(_ref) {
   var _usePermissions = usePermissions(myRole),
       checkActionPermission = _usePermissions[0];
 
+  var isDirectChannel = channelType === CHANNEL_TYPE.DIRECT;
   var editMessagePermitted = isIncoming ? checkActionPermission('editAnyMessage') : checkActionPermission('editOwnMessage');
   var replyMessagePermitted = isIncoming ? checkActionPermission('replyAnyMessage') : checkActionPermission('replyOwnMessage');
-  var deleteMessagePermitted = isIncoming ? checkActionPermission('deleteAnyMessage') : checkActionPermission('deleteOwnMessage');
   var forwardMessagePermitted = checkActionPermission('forwardMessage');
 
   var handleClick = function handleClick(e) {
@@ -19683,7 +19747,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && deleteMessagePermitted && (isDirectChannel ? !isIncoming : true) && React__default.createElement(Action, {
+  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && (channelType === CHANNEL_TYPE.PUBLIC ? myRole === 'owner' || myRole === 'admin' : true) && React__default.createElement(Action, {
     order: deleteIconOrder || 5,
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
@@ -20137,7 +20201,7 @@ var VideoPlayer = function VideoPlayer(_ref) {
   useEffect(function () {
     var checkVideoInterval;
 
-    if (file.type === 'video' && videoRef.current) {
+    if (videoRef.current) {
       checkVideoInterval = setInterval(function () {
         try {
           var _temp4 = function () {
@@ -27030,7 +27094,9 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     onClick: handlePauseResumeDownload,
     width: renderWidth,
-    height: renderHeight
+    height: renderHeight,
+    withBorder: !isPrevious && !isDetailsView,
+    backgroundColor: backgroundColor
   }, React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
   }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
@@ -27094,7 +27160,7 @@ var Attachment = function Attachment(_ref) {
     border: selectedFileAttachmentsBoxBorder
   }, attachment.metadata && attachment.metadata.tmb ? React__default.createElement(FileThumbnail, {
     src: "data:image/jpeg;base64," + attachment.metadata.tmb
-  }) : React__default.createElement(AttachmentIconCont, null, selectedFileAttachmentsIcon || React__default.createElement(SvgFileIcon, null)), !isRepliedMessage && React__default.createElement(DownloadFile$1, {
+  }) : React__default.createElement(AttachmentIconCont, null, selectedFileAttachmentsIcon || React__default.createElement(SvgFileIcon, null)), !isRepliedMessage && !isPrevious && React__default.createElement(DownloadFile$1, {
     onClick: function onClick() {
       return downloadFile(attachment);
     }
@@ -27141,8 +27207,8 @@ var AttachmentImgCont = styled.div(_templateObject2$j || (_templateObject2$j = _
   return props.isPrevious && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
 });
 var FileThumbnail = styled.img(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
-var DownloadFile$1 = styled.span(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), colors.primary);
-var AttachmentFile$1 = styled.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  &:hover ", " {\n    display: none;\n  }\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var DownloadFile$1 = styled.span(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), colors.primary);
+var AttachmentFile$1 = styled.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
   return !props.isRepliedMessage && '350px';
@@ -27155,8 +27221,8 @@ var AttachmentFile$1 = styled.div(_templateObject5$9 || (_templateObject5$9 = _t
 }, function (props) {
   return props.borderRadius || '6px';
 }, function (props) {
-  return !props.isRepliedMessage && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n  ";
-}, AttachmentIconCont, AttachmentIconCont);
+  return !props.isRepliedMessage && !props.isPrevious && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
+}, AttachmentIconCont);
 var RemoveChosenFile = styled(SvgDeleteUpload)(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
 var RemoveFailed = styled(SvgDeleteFailed)(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: calc(50% - 11px);\n  right: 18px;\n  padding: 2px;\n  cursor: pointer;\n"])));
 var AttachmentName = styled.h3(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 262px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  margin: 0;\n"])), function (props) {
@@ -27194,7 +27260,8 @@ var CustomRadio$1 = function CustomRadio(_ref) {
       checkedBorder = _ref.checkedBorder,
       border = _ref.border,
       borderRadius = _ref.borderRadius,
-      size = _ref.size;
+      size = _ref.size,
+      disabled = _ref.disabled;
   return React__default.createElement(React__default.Fragment, null, React__default.createElement(CustomLabel$1, {
     isChecked: state,
     size: size,
@@ -27203,6 +27270,7 @@ var CustomRadio$1 = function CustomRadio(_ref) {
     borderRadius: borderRadius,
     htmlFor: "radio-" + index
   }), React__default.createElement(Radio, {
+    disabled: disabled,
     type: 'radio',
     id: "radio-" + index,
     checked: state,
@@ -27233,13 +27301,22 @@ function ConfirmPopup(_ref) {
       togglePopup = _ref.togglePopup,
       handleFunction = _ref.handleFunction,
       isDeleteMessage = _ref.isDeleteMessage,
+      isIncomingMessage = _ref.isIncomingMessage,
+      isDirectChannel = _ref.isDirectChannel,
+      _ref$myRole = _ref.myRole,
+      myRole = _ref$myRole === void 0 ? '' : _ref$myRole,
       loading = _ref.loading;
+
+  var _usePermissions = usePermissions(myRole),
+      checkActionPermission = _usePermissions[0];
 
   var _useState = useState(true),
       initialRender = _useState[0],
       setInitialRender = _useState[1];
 
-  var _useState2 = useState('forEveryone'),
+  var deleteForEveryoneIsPermitted = isIncomingMessage ? !isDirectChannel && checkActionPermission('deleteAnyMessage') : checkActionPermission('deleteOwnMessage');
+
+  var _useState2 = useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
       deleteMessageOption = _useState2[0],
       setDeleteMessageOption = _useState2[1];
 
@@ -27271,7 +27348,7 @@ function ConfirmPopup(_ref) {
   }), React__default.createElement(PopupName, {
     isDelete: true,
     marginBottom: '20px'
-  }, title), React__default.createElement(PopupDescription, null, description), isDeleteMessage && React__default.createElement(DeleteMessageOptions, null, React__default.createElement(DeleteOptionItem, {
+  }, title), React__default.createElement(PopupDescription, null, description), isDeleteMessage && React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && React__default.createElement(DeleteOptionItem, {
     onClick: function onClick() {
       return setDeleteMessageOption('forEveryone');
     }
@@ -27527,9 +27604,9 @@ var Message = function Message(_ref) {
   var firstMessageInInterval = prevMessage ? message.createdAt - prevMessage.createdAt > 300000 : false;
   var lastMessageInInterval = nextMessage ? nextMessage.createdAt - message.createdAt > 300000 : false;
   var withAttachments = message.attachments && message.attachments.length > 0;
-  var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === 'Direct' && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
+  var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
   var borderRadius = !message.incoming ? prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 4px 16px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '16px 4px 16px 16px' : '16px 4px 4px 16px' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 16px 4px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '4px 16px 16px 16px' : '4px 16px 16px 4px';
-  var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === 'Direct' && !showSenderNameOnDirectChannel) && (message.incoming || showSenderNameOnOwnMessages);
+  var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && (message.incoming || showSenderNameOnOwnMessages);
 
   var toggleEditMode = function toggleEditMode() {
     dispatch(setMessageToEditAC(message));
@@ -27587,7 +27664,7 @@ var Message = function Message(_ref) {
     return useMemo(function () {
       return React__default.createElement(MessageActions, {
         messageFrom: message.user,
-        isDirectChannel: channel.type === 'Direct',
+        channelType: channel.type,
         editModeToggle: toggleEditMode,
         messageStatus: message.deliveryStatus || MESSAGE_DELIVERY_STATUS.PENDING,
         handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
@@ -27773,6 +27850,9 @@ var Message = function Message(_ref) {
     buttonText: 'Delete',
     description: 'Who do you want to remove this message for?',
     isDeleteMessage: true,
+    isIncomingMessage: message.incoming,
+    myRole: channel.role,
+    isDirectChannel: channel.type === CHANNEL_TYPE.DIRECT,
     title: 'Delete message'
   }), forwardPopupOpen && React__default.createElement(ForwardMessagePopup, {
     handleForward: function handleForward() {
@@ -28089,7 +28169,41 @@ var ArrowButton = styled.button(_templateObject13$3 || (_templateObject13$3 = _t
   return props.leftButton && '24px';
 }, colors.gray6);
 
-var _templateObject$s, _templateObject2$p, _templateObject3$j, _templateObject4$g;
+var _path$N;
+
+function _extends$Q() {
+  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$Q.apply(this, arguments);
+}
+
+function SvgChoseMedia(props) {
+  return /*#__PURE__*/createElement("svg", _extends$Q({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 19 19",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$N || (_path$N = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _templateObject$s, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a;
 var loading = false;
 var loadDirection = '';
 var nextDisable = false;
@@ -28202,6 +28316,7 @@ var Messages = function Messages(_ref2) {
   var dispatch = useDispatch();
   var getFromContacts = getUserDisplayNameFromContact();
   var channel = useSelector(activeChannelSelector);
+  var isDragging = useSelector(isDraggingSelector);
   var contactsMap = useSelector(contactsMapSelector);
   var scrollToNewMessage = useSelector(scrollToNewMessageSelector, shallowEqual);
   var scrollToRepliedMessage = useSelector(scrollToMessageSelector, shallowEqual);
@@ -28350,6 +28465,90 @@ var Messages = function Messages(_ref2) {
     }
   };
 
+  var handleDragIn = function handleDragIn(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.target && e.target.classList.add('dragover');
+  };
+
+  var handleDragOut = function handleDragOut(e) {
+    if (e.target.classList.contains('dragover')) {
+      e.target.classList.remove('dragover');
+    }
+
+    if (!e.relatedTarget || !e.relatedTarget.draggable) {
+      dispatch(setIsDragging(false));
+    }
+  };
+
+  var handleDropFile = function handleDropFile(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(setIsDragging(false));
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      var fileList = Object.values(e.dataTransfer.files);
+      var attachmentsFiles = [];
+      new Promise(function (resolve) {
+        fileList.map(function (attachment, index) {
+          var fileReader = new FileReader();
+
+          fileReader.onload = function (event) {
+            var file = event.target.result;
+            attachmentsFiles.push({
+              name: attachment.name,
+              data: file,
+              type: attachment.type
+            });
+
+            if (fileList.length - 1 === index) {
+              resolve();
+            }
+          };
+
+          fileReader.readAsDataURL(attachment);
+        });
+      }).then(function () {
+        dispatch(setDraggedAttachments(attachmentsFiles, 'file'));
+      });
+      e.dataTransfer.clearData();
+    }
+  };
+
+  var handleDropMedia = function handleDropMedia(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(setIsDragging(false));
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      var fileList = Object.values(e.dataTransfer.files);
+      var attachmentsFiles = [];
+      new Promise(function (resolve) {
+        fileList.map(function (attachment, index) {
+          var fileReader = new FileReader();
+
+          fileReader.onload = function (event) {
+            var file = event.target.result;
+            attachmentsFiles.push({
+              name: attachment.name,
+              data: file,
+              type: attachment.type
+            });
+
+            if (fileList.length - 1 === index) {
+              resolve();
+            }
+          };
+
+          fileReader.readAsDataURL(attachment);
+        });
+      }).then(function () {
+        dispatch(setDraggedAttachments(attachmentsFiles, 'media'));
+      });
+      e.dataTransfer.clearData();
+    }
+  };
+
   useEffect(function () {
     if (scrollToRepliedMessage) {
       var repliedMessage = document.getElementById(scrollToRepliedMessage);
@@ -28389,6 +28588,11 @@ var Messages = function Messages(_ref2) {
     nextDisable = false;
     prevDisable = false;
   }, [channel.id]);
+  useDidUpdate(function () {
+    if (!isDragging) {
+      renderTopDate();
+    }
+  }, [isDragging]);
   useEffect(function () {
     if (loading) {
       if (loadDirection !== 'next') {
@@ -28423,7 +28627,26 @@ var Messages = function Messages(_ref2) {
       }
     }
   });
-  return React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
+  return React__default.createElement(React__default.Fragment, null, isDragging && React__default.createElement(DragAndDropContainer, {
+    id: 'draggingContainer',
+    draggable: true,
+    onDragLeave: handleDragOut,
+    topOffset: scrollRef && scrollRef.current && scrollRef.current.offsetTop,
+    height: scrollRef && scrollRef.current && scrollRef.current.offsetHeight
+  }, React__default.createElement(DropAttachmentArea, {
+    margin: '32px 32px 12px',
+    draggable: true,
+    onDrop: handleDropFile,
+    onDragOver: handleDragIn
+  }, React__default.createElement(IconWrapper, {
+    draggable: true
+  }, React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), React__default.createElement(DropAttachmentArea, {
+    draggable: true,
+    onDrop: handleDropMedia,
+    onDragOver: handleDragIn
+  }, React__default.createElement(IconWrapper, {
+    draggable: true
+  }, React__default.createElement(SvgChoseMedia, null)), "Drag & drop to add picture or video")), React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
     dateDividerFontSize: dateDividerFontSize,
     dateDividerTextColor: dateDividerTextColor,
     dateDividerBorder: dateDividerBorder,
@@ -28556,7 +28779,7 @@ var Messages = function Messages(_ref2) {
     channelId: channel.id,
     setIsSliderOpen: setMediaFile,
     currentMediaFile: mediaFile
-  })));
+  }))));
 };
 var Container$d = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  overflow: auto;\n  //scroll-behavior: smooth;\n"])));
 var EmptyDiv = styled.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
@@ -28582,44 +28805,17 @@ var MessageTopDate = styled.div(_templateObject4$g || (_templateObject4$g = _tag
 }, function (props) {
   return props.dateDividerBorderRadius || '14px';
 });
+var DragAndDropContainer = styled.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin-bottom: -31px;\n  margin-top: -2px;\n\n  position: absolute;\n  left: 0;\n  top: ", ";\n  width: 100%;\n  height: ", ";\n  background-color: ", ";\n  z-index: 999;\n"])), function (props) {
+  return props.topOffset ? props.topOffset + 2 + "px" : 0;
+}, function (props) {
+  return props.height ? props.height + 30 + "px" : '100%';
+}, colors.white);
+var IconWrapper = styled.span(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, colors.primary);
+var DropAttachmentArea = styled.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    border: 1px dashed ", ";\n  }\n"])), colors.gray3, function (props) {
+  return props.margin || '12px 32px 32px';
+}, colors.gray6, colors.primary);
 
-var _circle$5, _path$N;
-
-function _extends$Q() {
-  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$Q.apply(this, arguments);
-}
-
-function SvgSend(props) {
-  return /*#__PURE__*/createElement("svg", _extends$Q({
-    width: 32,
-    height: 32,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$N || (_path$N = /*#__PURE__*/createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
-  })));
-}
-
-var _path$O;
+var _circle$5, _path$O;
 
 function _extends$R() {
   _extends$R = Object.assign ? Object.assign.bind() : function (target) {
@@ -28638,15 +28834,20 @@ function _extends$R() {
   return _extends$R.apply(this, arguments);
 }
 
-function SvgEye(props) {
+function SvgSend(props) {
   return /*#__PURE__*/createElement("svg", _extends$R({
-    width: 25,
-    height: 24,
+    width: 32,
+    height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$O || (_path$O = /*#__PURE__*/createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
-    fill: "CurrentColor"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$O || (_path$O = /*#__PURE__*/createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
   })));
 }
 
@@ -28669,15 +28870,14 @@ function _extends$S() {
   return _extends$S.apply(this, arguments);
 }
 
-function SvgEdit(props) {
+function SvgEye(props) {
   return /*#__PURE__*/createElement("svg", _extends$S({
-    width: 24,
+    width: 25,
     height: 24,
-    viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$P || (_path$P = /*#__PURE__*/createElement("path", {
-    d: "M13.92 6.768l3.312 3.312-7.934 7.925a6.229 6.229 0 01-2.586 1.554l-2.71.827a.312.312 0 01-.388-.389l.827-2.71a6.231 6.231 0 011.553-2.586l7.926-7.933zm4.746-2.758l1.324 1.324a1.4 1.4 0 01.096 1.874l-.096.106-1.414 1.41-3.3-3.3 1.41-1.414a1.4 1.4 0 011.98 0z",
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
     fill: "CurrentColor"
   })));
 }
@@ -28701,15 +28901,16 @@ function _extends$T() {
   return _extends$T.apply(this, arguments);
 }
 
-function SvgAttachment(props) {
+function SvgEdit(props) {
   return /*#__PURE__*/createElement("svg", _extends$T({
     width: 24,
     height: 24,
+    viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Q || (_path$Q = /*#__PURE__*/createElement("path", {
-    d: "M12.162 9.34a.857.857 0 011.212 1.213l-3.576 3.576a1.29 1.29 0 000 1.818 1.29 1.29 0 001.818 0l6.667-6.667c1.373-1.373 1.298-3.55 0-4.849-1.298-1.297-3.476-1.372-4.849 0l-6.667 6.667c-2.186 2.187-2.145 5.734 0 7.88 2.146 2.145 5.693 2.186 7.88 0l3.575-3.576a.857.857 0 111.213 1.212l-3.576 3.576c-2.862 2.862-7.495 2.809-10.304 0-2.809-2.81-2.862-7.442 0-10.304l6.667-6.667c2.062-2.061 5.324-1.949 7.273 0 1.95 1.95 2.062 5.212 0 7.273l-6.667 6.667c-1.137 1.138-3.04 1.203-4.242 0-1.203-1.203-1.138-3.105 0-4.242L12.16 9.34z",
-    fill: "currentColor"
+    d: "M13.92 6.768l3.312 3.312-7.934 7.925a6.229 6.229 0 01-2.586 1.554l-2.71.827a.312.312 0 01-.388-.389l.827-2.71a6.231 6.231 0 011.553-2.586l7.926-7.933zm4.746-2.758l1.324 1.324a1.4 1.4 0 01.096 1.874l-.096.106-1.414 1.41-3.3-3.3 1.41-1.414a1.4 1.4 0 011.98 0z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -28732,15 +28933,15 @@ function _extends$U() {
   return _extends$U.apply(this, arguments);
 }
 
-function SvgErrorCircle(props) {
+function SvgAttachment(props) {
   return /*#__PURE__*/createElement("svg", _extends$U({
-    width: 25,
+    width: 24,
     height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
-    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
-    fill: "#FFB73D"
+    d: "M12.162 9.34a.857.857 0 011.212 1.213l-3.576 3.576a1.29 1.29 0 000 1.818 1.29 1.29 0 001.818 0l6.667-6.667c1.373-1.373 1.298-3.55 0-4.849-1.298-1.297-3.476-1.372-4.849 0l-6.667 6.667c-2.186 2.187-2.145 5.734 0 7.88 2.146 2.145 5.693 2.186 7.88 0l3.575-3.576a.857.857 0 111.213 1.212l-3.576 3.576c-2.862 2.862-7.495 2.809-10.304 0-2.809-2.81-2.862-7.442 0-10.304l6.667-6.667c2.062-2.061 5.324-1.949 7.273 0 1.95 1.95 2.062 5.212 0 7.273l-6.667 6.667c-1.137 1.138-3.04 1.203-4.242 0-1.203-1.203-1.138-3.105 0-4.242L12.16 9.34z",
+    fill: "currentColor"
   })));
 }
 
@@ -28763,22 +28964,19 @@ function _extends$V() {
   return _extends$V.apply(this, arguments);
 }
 
-function SvgChoseMedia(props) {
+function SvgErrorCircle(props) {
   return /*#__PURE__*/createElement("svg", _extends$V({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 19 19",
+    width: 25,
+    height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
-    fill: "#818C99"
+    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
+    fill: "#FFB73D"
   })));
 }
 
-var _templateObject$t, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$7, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
+var _templateObject$t, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$8, _templateObject9$7, _templateObject10$7, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var SendMessageInput = function SendMessageInput(_ref) {
   var handleAttachmentSelected = _ref.handleAttachmentSelected,
@@ -28806,6 +29004,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var isBlockedUserChat = activeChannel.peer && activeChannel.peer.blocked;
   var messageToEdit = useSelector(messageToEditSelector);
   var messageForReply = useSelector(messageForReplySelector);
+  var draggedAttachments = useSelector(draggedAttachmentsSelector);
   var messageContRef = useRef(null);
 
   var _usePermissions = usePermissions(activeChannel.role),
@@ -28985,7 +29184,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
         fileUploader.current.value = '';
 
         if (inTypingState) {
-          console.log('send message and stop typing . .. ');
           handleSendTypingState(false);
         }
 
@@ -29067,7 +29265,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleFileUpload = function handleFileUpload(e) {
-    console.log('handle upload file');
     var isMediaAttachment = e.target.accept === mediaExtensions;
     var fileList = Object.values(e.target.files);
     var customUploader = getCustomUploader();
@@ -29166,11 +29363,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                       var thumb = _ref3.thumb,
                           width = _ref3.width,
                           height = _ref3.height;
-                      console.log('thumb, . . ', {
-                        thumb: thumb,
-                        width: width,
-                        height: height
-                      });
                       setAttachments(function (prevState) {
                         return [].concat(prevState, [{
                           data: file,
@@ -29244,10 +29436,164 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   useEffect(function () {
     if (typingTimout === 0) {
-      console.log('timeout is expire send strop typing....  .');
       handleSendTypingState(false);
     }
   }, [typingTimout]);
+  useDidUpdate(function () {
+    if (draggedAttachments.length > 0) {
+      var attachmentsFiles = draggedAttachments.map(function (draggedData) {
+        var arr = draggedData.data.split(',');
+        var bstr = atob(arr[1]);
+        var n = bstr.length;
+        var u8arr = new Uint8Array(n);
+
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], draggedData.name, {
+          type: draggedData.type
+        });
+      });
+      var customUploader = getCustomUploader();
+      attachmentsFiles.forEach(function (file) {
+        try {
+          var fileType = file.type.split('/')[0];
+          var isMediaAttachment = draggedAttachments[0].attachmentType === 'media';
+
+          var _temp10 = function () {
+            if (customUploader) {
+              if (fileType === 'image') {
+                resizeImage(file, 700, 500).then(function (resizedFile) {
+                  try {
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        upload: false,
+                        type: isMediaAttachment ? fileType : 'file',
+                        attachmentUrl: URL.createObjectURL(resizedFile.blob),
+                        attachmentId: v4(),
+                        size: file.size
+                      }]);
+                    });
+                    return Promise.resolve();
+                  } catch (e) {
+                    return Promise.reject(e);
+                  }
+                });
+              } else if (fileType === 'video') {
+                setAttachments(function (prevState) {
+                  return [].concat(prevState, [{
+                    data: file,
+                    upload: false,
+                    type: isMediaAttachment ? fileType : 'file',
+                    attachmentUrl: URL.createObjectURL(file),
+                    attachmentId: v4(),
+                    size: file.size
+                  }]);
+                });
+              } else {
+                setAttachments(function (prevState) {
+                  return [].concat(prevState, [{
+                    data: file,
+                    upload: false,
+                    type: isMediaAttachment ? fileType : 'file',
+                    attachmentUrl: URL.createObjectURL(file),
+                    attachmentId: v4(),
+                    size: file.size
+                  }]);
+                });
+              }
+            } else {
+              var _temp11 = function () {
+                if (fileType === 'image') {
+                  if (isMediaAttachment) {
+                    resizeImage(file).then(function (resizedFile) {
+                      try {
+                        return Promise.resolve(createImageThumbnail(file)).then(function (_ref4) {
+                          var thumbnail = _ref4.thumbnail;
+                          setAttachments(function (prevState) {
+                            return [].concat(prevState, [{
+                              data: new File([resizedFile.blob], resizedFile.file.name),
+                              attachmentUrl: URL.createObjectURL(file),
+                              attachmentId: v4(),
+                              type: fileType,
+                              metadata: JSON.stringify({
+                                tmb: thumbnail,
+                                szw: resizedFile.newWidth,
+                                szh: resizedFile.newHeight
+                              })
+                            }]);
+                          });
+                        });
+                      } catch (e) {
+                        return Promise.reject(e);
+                      }
+                    });
+                  } else {
+                    createFileImageThumbnail(file).then(function (thumbnail) {
+                      setAttachments(function (prevState) {
+                        return [].concat(prevState, [{
+                          data: file,
+                          type: 'file',
+                          attachmentUrl: URL.createObjectURL(file),
+                          attachmentId: v4(),
+                          metadata: JSON.stringify({
+                            tmb: thumbnail
+                          })
+                        }]);
+                      });
+                    });
+                  }
+                } else {
+                  var _temp12 = function () {
+                    if (fileType === 'video') {
+                      return Promise.resolve(getFrame(URL.createObjectURL(file), 1)).then(function (_ref5) {
+                        var thumb = _ref5.thumb,
+                            width = _ref5.width,
+                            height = _ref5.height;
+                        setAttachments(function (prevState) {
+                          return [].concat(prevState, [{
+                            data: file,
+                            type: 'video',
+                            attachmentUrl: URL.createObjectURL(file),
+                            attachmentId: v4(),
+                            metadata: JSON.stringify({
+                              tmb: thumb,
+                              szw: width,
+                              szh: height
+                            })
+                          }]);
+                        });
+                      });
+                    } else {
+                      setAttachments(function (prevState) {
+                        return [].concat(prevState, [{
+                          data: file,
+                          type: 'file',
+                          attachmentUrl: URL.createObjectURL(file),
+                          attachmentId: v4()
+                        }]);
+                      });
+                    }
+                  }();
+
+                  if (_temp12 && _temp12.then) return _temp12.then(function () {});
+                }
+              }();
+
+              if (_temp11 && _temp11.then) return _temp11.then(function () {});
+            }
+          }();
+
+          return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      });
+      dispatch(setDraggedAttachments([], ''));
+    }
+  }, [draggedAttachments]);
   useEffect(function () {
     setMessageText('');
     setAttachments([]);
@@ -29390,7 +29736,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: function onClick() {
       return onOpenFileUploader(mediaExtensions);
     },
-    iconWidth: '20px'
+    iconWidth: '20px',
+    iconColor: colors.gray4
   }, React__default.createElement(SvgChoseMedia, null), "Photo or video"), React__default.createElement(DropdownOptionLi, {
     key: 2,
     textColor: colors.gray6,
@@ -29398,7 +29745,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: function onClick() {
       return onOpenFileUploader('');
     },
-    iconWidth: '20px'
+    iconWidth: '20px',
+    iconColor: colors.gray4
   }, React__default.createElement(SvgChoseFile, null), "File"))), !hideEmojis && React__default.createElement(EmojiButton, {
     order: emojiIcoOrder,
     isEmojisOpened: isEmojisOpened,
@@ -29436,13 +29784,13 @@ var Container$e = styled.div(_templateObject$t || (_templateObject$t = _taggedTe
 var EditReplyMessageCont = styled.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
 var CloseEditMode = styled.span(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n"])));
 var EditReplyMessageHeader = styled.h4(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), colors.primary);
-var SendMessageInputContainer = styled.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n  min-height: 48px;\n  box-sizing: border-box;\n  border-radius: ", ";\n"])), function (props) {
+var SendMessageInputContainer = styled.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n  min-height: 48px;\n  box-sizing: border-box;\n  border-radius: ", ";\n"])), function (props) {
   return props.messageForReply ? '0 0 4px 4px' : '4px';
 });
-var MessageInput = styled.textarea(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  resize: none;\n  padding: 14px 12px 0 12px;\n  //padding: 16px 45px 0 80px;\n  width: 100%;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  border-radius: 6px;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 17px;\n  order: ", ";\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), function (props) {
+var MessageInput = styled.textarea(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  resize: none;\n  padding: 14px 12px 0 12px;\n  //padding: 16px 45px 0 80px;\n  width: 100%;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  border-radius: 6px;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 17px;\n  order: ", ";\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 3;
 }, colors.gray7);
-var AddAttachmentIcon = styled.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 1;
 }, function (props) {
   return props.isActive ? "color: " + (props.iconHoverColor || colors.cobalt1) + ";" : 'color: #898B99;';
@@ -29811,7 +30159,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$u, _templateObject2$r, _templateObject3$l, _templateObject4$i, _templateObject5$d, _templateObject6$d;
+var _templateObject$u, _templateObject2$r, _templateObject3$l, _templateObject4$i, _templateObject5$e, _templateObject6$e;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -30270,8 +30618,8 @@ var MenuTriggerIcon = styled.span(_templateObject3$l || (_templateObject3$l = _t
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
 var ActionsMenu = styled.ul(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled.li(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose([""])));
+var ActionItem$1 = styled.li(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
   return props.order;
@@ -30452,7 +30800,7 @@ var RolesSelect = styled.div(_templateObject$v || (_templateObject$v = _taggedTe
 var RoleLabel = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
 var RoleSpan = styled.span(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$w, _templateObject2$t, _templateObject3$n, _templateObject4$j, _templateObject5$e, _templateObject6$e, _templateObject7$b, _templateObject8$9;
+var _templateObject$w, _templateObject2$t, _templateObject3$n, _templateObject4$j, _templateObject5$f, _templateObject6$f, _templateObject7$c, _templateObject8$9;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -30607,7 +30955,7 @@ var Members = function Members(_ref) {
   }, chekActionPermission('addMember') && React__default.createElement(MemberItem, {
     key: 1,
     onClick: handleAddMemberPopup
-  }, React__default.createElement(SvgAddMember, null), "Add member"), !!members.length && members.map(function (member, index) {
+  }, React__default.createElement(SvgAddMember, null), (channel === null || channel === void 0 ? void 0 : channel.type) === CHANNEL_TYPE.PUBLIC ? 'Add subscribers' : 'Add members'), !!members.length && members.map(function (member, index) {
     return React__default.createElement(MemberItem, {
       key: member.id + index,
       hoverBackground: customColors.selectedChannelBackground
@@ -30709,9 +31057,9 @@ var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTe
 var ActionsMenu$1 = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
 var MemberNamePresence = styled.div(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
 var MemberName$1 = styled.h4(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
-var EditMemberIcon = styled.span(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled.ul(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem = styled.li(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
+var EditMemberIcon = styled.span(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList = styled.ul(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var MemberItem = styled.li(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.hoverBackground || colors.gray0;
 }, EditMemberIcon, UserStatus);
 var RoleBadge = styled.span(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n  background-color: ", ";\n"])), function (props) {
@@ -30852,7 +31200,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$y, _templateObject2$v, _templateObject3$o, _templateObject4$k, _templateObject5$f, _templateObject6$f, _templateObject7$c;
+var _templateObject$y, _templateObject2$v, _templateObject3$o, _templateObject4$k, _templateObject5$g, _templateObject6$g, _templateObject7$d;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -30888,11 +31236,11 @@ var Container$i = styled.ul(_templateObject$y || (_templateObject$y = _taggedTem
 var DownloadWrapper = styled.a(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
 var FileIconCont = styled.span(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileHoverIconCont = styled.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled.img(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled.div(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var FileThumb = styled.img(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var FileItem = styled.div(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
-var FileSizeAndDate = styled.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
+var FileSizeAndDate = styled.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
@@ -30949,7 +31297,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$z, _templateObject2$w, _templateObject3$p, _templateObject4$l, _templateObject5$g;
+var _templateObject$z, _templateObject2$w, _templateObject3$p, _templateObject4$l, _templateObject5$h;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -30973,7 +31321,7 @@ var LinkInfoCont = styled.div(_templateObject3$p || (_templateObject3$p = _tagge
 var FileItem$1 = styled.li(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled.span(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
@@ -31088,7 +31436,7 @@ function SvgVoicePreviewHoverIcon(props) {
   })));
 }
 
-var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$h, _templateObject6$g, _templateObject7$d, _templateObject8$a;
+var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$a;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -31176,13 +31524,13 @@ var FileItem$2 = styled.li(_templateObject3$q || (_templateObject3$q = _taggedTe
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
 var AudioInfo = styled.div(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioTitle = styled.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
-var AudioDate = styled.span(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+var AudioDate = styled.span(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray9;
 });
-var AudioSendTime = styled.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
+var AudioSendTime = styled.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
   return props.color || colors.gray9;
 });
 var Audio = styled.audio(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
@@ -31570,7 +31918,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$F, _templateObject2$A, _templateObject3$s, _templateObject4$o, _templateObject5$i, _templateObject6$h, _templateObject7$e;
+var _templateObject$F, _templateObject2$A, _templateObject3$s, _templateObject4$o, _templateObject5$j, _templateObject6$i, _templateObject7$f;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -31868,11 +32216,11 @@ var ChatDetails = styled.div(_templateObject3$s || (_templateObject3$s = _tagged
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
 var ChannelInfo$2 = styled.div(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
-var DetailsHeader = styled.div(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
-var ChannelName$1 = styled(SectionHeader)(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
+var DetailsHeader = styled.div(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
+var ChannelName$1 = styled(SectionHeader)(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
-var EditButton = styled.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+var EditButton = styled.span(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var channelEditIcon = _ref.channelEditIcon,

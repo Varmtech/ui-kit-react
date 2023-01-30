@@ -28,7 +28,9 @@ export declare const ChannelInfo: import("styled-components").StyledComponent<"d
     statusWidth: number;
 }, never>;
 export declare const MutedIcon: import("styled-components").StyledComponent<"span", any, {}, never>;
-export declare const LastMessage: import("styled-components").StyledComponent<"div", any, {}, never>;
+export declare const LastMessage: import("styled-components").StyledComponent<"div", any, {
+    markedAsUnread?: boolean | undefined;
+}, never>;
 export declare const AvatarWrapper: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const UserStatus: import("styled-components").StyledComponent<"span", any, {
     backgroundColor?: string | undefined;
@@ -36,7 +38,6 @@ export declare const UserStatus: import("styled-components").StyledComponent<"sp
 export declare const LastMessageAuthor: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const Points: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const LastMessageText: import("styled-components").StyledComponent<"span", any, {
-    readonly authorWith: number;
     withAttachments?: boolean | undefined;
     noBody?: boolean | undefined;
     deletedMessage?: boolean | undefined;

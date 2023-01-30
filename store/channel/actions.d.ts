@@ -274,6 +274,19 @@ export declare function joinChannelAC(channelId: string): {
         channelId: string;
     };
 };
+export declare function setIsDragging(isDragging: boolean): {
+    type: string;
+    payload: {
+        isDragging: boolean;
+    };
+};
+export declare function setDraggedAttachments(attachments: File[], type: string): {
+    type: string;
+    payload: {
+        attachments: File[];
+        type: string;
+    };
+};
 export declare function watchForEventsAC(): {
     type: string;
 };

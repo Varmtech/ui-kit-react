@@ -74,3 +74,11 @@ export default Messages;
 export declare const Container: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const EmptyDiv: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const MessageTopDate: import("styled-components").StyledComponent<"div", any, any, never>;
+export declare const DragAndDropContainer: import("styled-components").StyledComponent<"div", any, {
+    topOffset?: number | undefined;
+    height?: number | undefined;
+}, never>;
+export declare const IconWrapper: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const DropAttachmentArea: import("styled-components").StyledComponent<"div", any, {
+    margin?: string | undefined;
+}, never>;

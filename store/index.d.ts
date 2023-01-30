@@ -27,6 +27,11 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
         channelInfoIsOpen: boolean;
         channelEditMode: boolean;
         channelListWidth: number;
+        isDragging: boolean;
+        draggedAttachments: {
+            attachment: File;
+            type: "file" | "media";
+        }[];
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;
