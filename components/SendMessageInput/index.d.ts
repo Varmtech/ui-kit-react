@@ -7,7 +7,6 @@ interface SendMessageProps {
     emojiIcoOrder?: number;
     attachmentIcoOrder?: number;
     sendIconOrder?: number;
-    iconsHoverColor?: string;
     inputOrder?: number;
     CustomTypingIndicator?: FC<{
         from: IUser;

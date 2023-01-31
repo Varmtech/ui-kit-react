@@ -33,6 +33,7 @@ interface MessagesProps {
     replyInThreadIconOrder?: number;
     forwardIconOrder?: number;
     deleteIconOrder?: number;
+    allowEditDeleteIncomingMessage?: boolean;
     starIconOrder?: number;
     reportIconOrder?: number;
     reactionIconTooltipText?: string;
@@ -53,7 +54,6 @@ interface MessagesProps {
     showTopFixedDate?: boolean;
     inlineReactionIcon?: JSX.Element;
     reactionsBorderColor?: string;
-    selfReactionsBorderColor?: string;
     newMessagesSeparatorText?: string;
     newMessagesSeparatorFontSize?: string;
     newMessagesSeparatorTextColor?: string;

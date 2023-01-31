@@ -1861,24 +1861,24 @@ var UploadingIcon = styled__default.span(_templateObject38 || (_templateObject38
   return props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px';
 });
 var UploadPercent = styled__default.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  background-color: rgba(0,0,0,0.4);\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
-  return props.fileAttachment ? '36px' : props.isRepliedMessage ? '40px' : '56px';
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
 }, function (props) {
-  return props.fileAttachment ? '36px' : props.isRepliedMessage ? '40px' : '56px';
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
 }, function (props) {
-  return props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
+  return props.borderRadius ? props.borderRadius : props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
 var UploadProgress = styled__default.div(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n\n  border: ", ";\n  box-sizing: border-box;\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
-  return props.fileAttachment ? '9px' : '0';
+  return props.fileAttachment ? '8px' : '0';
 }, function (props) {
   return props.fileAttachment ? '12px' : '0';
 }, function (props) {
-  return props.fileAttachment ? '36px' : props.isRepliedMessage ? '40px' : props.width ? props.width + "px" : '100%';
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : props.width ? props.width + "px" : '100%';
 }, function (props) {
-  return props.fileAttachment ? '36px' : props.isRepliedMessage ? '40px' : props.height ? props.height + "px" : '100%';
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : props.height ? props.height + "px" : '100%';
 }, function (props) {
   return props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
 }, function (props) {
@@ -8030,6 +8030,9 @@ function getMessagesFromMap(channelId) {
 function removeMessagesFromMap(channelId) {
   delete messagesMap[channelId];
 }
+function clearMessagesMap() {
+  messagesMap = {};
+}
 function checkChannelExistsOnMessagesMap(channelId) {
   return !!messagesMap[channelId];
 }
@@ -9012,14 +9015,6 @@ function joinChannelAC(channelId) {
     type: JOIN_TO_CHANNEL,
     payload: {
       channelId: channelId
-    }
-  };
-}
-function setIsDragging(isDragging) {
-  return {
-    type: SET_IS_DRAGGING,
-    payload: {
-      isDragging: isDragging
     }
   };
 }
@@ -12018,7 +12013,6 @@ var THUMBNAIL_QUALITY = 0.7;
 function resizeImage(file, maxWidth, maxHeight, quality) {
   return new Promise(function (resolve) {
     var blobURL = URL.createObjectURL(file);
-    console.log('blob url .. ', blobURL);
     var img = new Image();
     img.src = blobURL;
 
@@ -13361,32 +13355,34 @@ function addReaction(action) {
 
         case 5:
           channel = _context8.sent;
-          _context8.next = 8;
+          console.log('add reaction saga.... ');
+          _context8.next = 9;
           return effects.call(channel.addReaction, messageId, key, score, reason, enforceUnique);
 
-        case 8:
+        case 9:
           _yield$call = _context8.sent;
           _message4 = _yield$call.message;
           reaction = _yield$call.reaction;
-          _context8.next = 13;
+          console.log('add reaction saga response .... ', _message4, reaction);
+          _context8.next = 15;
           return effects.put(addReactionToMessageAC(_message4, reaction, true));
 
-        case 13:
+        case 15:
           addReactionToMessageOnMap(channelId, _message4, reaction, true);
-          _context8.next = 19;
+          _context8.next = 21;
           break;
 
-        case 16:
-          _context8.prev = 16;
+        case 18:
+          _context8.prev = 18;
           _context8.t0 = _context8["catch"](0);
           console.log('ERROR in add reaction', _context8.t0.message);
 
-        case 19:
+        case 21:
         case "end":
           return _context8.stop();
       }
     }
-  }, _marked8$1, null, [[0, 16]]);
+  }, _marked8$1, null, [[0, 18]]);
 }
 
 function deleteReaction(action) {
@@ -15027,9 +15023,6 @@ var typingIndicatorSelector = function typingIndicatorSelector(channelId) {
 var channelListWidthSelector = function channelListWidthSelector(store) {
   return store.ChannelReducer.channelListWidth;
 };
-var isDraggingSelector = function isDraggingSelector(store) {
-  return store.ChannelReducer.isDragging;
-};
 var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
   return store.ChannelReducer.draggedAttachments;
 };
@@ -15476,7 +15469,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted user')), (typingIndicator ? !isDirectChannel : lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (typingIndicator ? !isDirectChannel : lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length),
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
@@ -18366,6 +18359,9 @@ var ChannelList = function ChannelList(_ref) {
         sort: sort,
         search: ''
       }, false));
+      clearMessagesMap();
+      removeAllMessages();
+      dispatch(switchChannelActionAC(activeChannel.id));
 
       if (getFromContacts) {
         dispatch(getContactsAC());
@@ -18567,19 +18563,12 @@ var ChannelListHeader = styled__default.div(_templateObject7$4 || (_templateObje
 var _templateObject$f;
 function Chat$1(_ref) {
   var children = _ref.children;
-  var dispatch = reactRedux.useDispatch();
   var channelListWidth = reactRedux.useSelector(channelListWidthSelector, reactRedux.shallowEqual);
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
-
-  var handleDragIn = function handleDragIn() {
-    dispatch(setIsDragging(true));
-  };
-
   React.useEffect(function () {});
   return React__default.createElement(Container$7, {
     widthOffset: channelListWidth,
-    channelDetailsIsOpen: channelDetailsIsOpen,
-    onDragEnter: handleDragIn
+    channelDetailsIsOpen: channelDetailsIsOpen
   }, children);
 }
 var Container$7 = styled__default.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
@@ -18653,7 +18642,7 @@ function ChatHeader(_ref) {
       }, 90);
     }
   }, [channelDetailsOpen]);
-  return React__default.createElement(Container$8, null, React__default.createElement(ChannelInfo$1, null, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+  return React__default.createElement(Container$8, null, React__default.createElement(ChannelInfo$1, null, React__default.createElement(AvatarWrapper, null, (activeChannel.subject || isDirectChannel && activeChannel.peer) && React__default.createElement(Avatar, {
     name: activeChannel.subject || (isDirectChannel ? activeChannel.peer.firstName || activeChannel.peer.id : ''),
     image: activeChannel.avatarUrl || (isDirectChannel ? activeChannel.peer.avatarUrl : ''),
     size: 36,
@@ -19539,7 +19528,6 @@ function EmojisPopup(_ref2) {
 
   var chooseEmoji = function chooseEmoji(selectedEmoji) {
     if (setMessageText) {
-      console.log('select emoji ... ');
       setMessageText(messageText + selectedEmoji);
       handleEmojiPopupToggle(false);
     } else {
@@ -19634,7 +19622,7 @@ function usePermissions(myRole) {
 var _templateObject$j, _templateObject2$g, _templateObject3$d, _templateObject4$a;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
-      channelType = _ref.channelType,
+      channel = _ref.channel,
       handleOpenDeleteMessage = _ref.handleOpenDeleteMessage,
       handleOpenForwardMessage = _ref.handleOpenForwardMessage,
       handleReportMessage = _ref.handleReportMessage,
@@ -19654,6 +19642,7 @@ function MessageActions(_ref) {
       replyIcon = _ref.replyIcon,
       replyInThreadIcon = _ref.replyInThreadIcon,
       deleteIcon = _ref.deleteIcon,
+      allowEditDeleteIncomingMessage = _ref.allowEditDeleteIncomingMessage,
       reportIcon = _ref.reportIcon,
       reactionIconOrder = _ref.reactionIconOrder,
       editIconOrder = _ref.editIconOrder,
@@ -19684,7 +19673,7 @@ function MessageActions(_ref) {
   var _usePermissions = usePermissions(myRole),
       checkActionPermission = _usePermissions[0];
 
-  var isDirectChannel = channelType === CHANNEL_TYPE.DIRECT;
+  var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var editMessagePermitted = isIncoming ? checkActionPermission('editAnyMessage') : checkActionPermission('editOwnMessage');
   var replyMessagePermitted = isIncoming ? checkActionPermission('replyAnyMessage') : checkActionPermission('replyOwnMessage');
   var forwardMessagePermitted = checkActionPermission('forwardMessage');
@@ -19715,7 +19704,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgReact, null)), showEditMessage && editMessagePermitted && (isDirectChannel ? !isIncoming : true) && React__default.createElement(Action, {
+  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgReact, null)), showEditMessage && (isIncoming ? allowEditDeleteIncomingMessage : true) && editMessagePermitted && (isDirectChannel ? !isIncoming && channel.peer.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
     order: editIconOrder || 1,
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
@@ -19724,7 +19713,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditSquare, null)), !isThreadMessage && React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && React__default.createElement(Action, {
+  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditSquare, null)), !isThreadMessage && React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
     order: replyIconOrder || 2,
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
@@ -19751,7 +19740,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && (channelType === CHANNEL_TYPE.PUBLIC ? myRole === 'owner' || myRole === 'admin' : true) && React__default.createElement(Action, {
+  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && (channel.type === CHANNEL_TYPE.PUBLIC ? myRole === 'owner' || myRole === 'admin' : true) && React__default.createElement(Action, {
     order: deleteIconOrder || 5,
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
@@ -19785,7 +19774,7 @@ var MessageActionsWrapper = styled__default.div(_templateObject$j || (_templateO
   var rtlDirection = _ref3.rtlDirection;
   return rtlDirection && '0';
 });
-var EditMessageContainer = styled__default.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled__default.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, colors.gray1);
 var Action = styled__default.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 9px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n\n  &:hover {\n    color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
@@ -19795,7 +19784,7 @@ var Action = styled__default.div(_templateObject3$d || (_templateObject3$d = _ta
 }, function (props) {
   return props.hoverIconColor || colors.cobalt1;
 }, ItemNote);
-var EmojiContainer = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -202px;\n  z-index: 9998;\n"])), function (props) {
+var EmojiContainer = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  bottom: 0;\n  z-index: 99;\n"])), function (props) {
   return props.rtlDirection ? '-84px' : '';
 }, function (props) {
   return props.rtlDirection ? '' : '-84px';
@@ -27114,7 +27103,7 @@ var Attachment = function Attachment(_ref) {
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
-  })) : ext === 'mp4' || ext === 'mov' || ext === 'avi' || ext === 'wmv' || ext === 'flv' || ext === 'webm' ? React__default.createElement(React__default.Fragment, null, !isPrevious ? React__default.createElement(VideoCont, {
+  })) : ext === 'mp4' || ext === 'MP4' || ext === 'mov' || ext === 'avi' || ext === 'wmv' || ext === 'flv' || ext === 'webm' ? React__default.createElement(React__default.Fragment, null, !isPrevious ? React__default.createElement(VideoCont, {
     onClick: function onClick() {
       return handleMediaItemClick && (attachmentCompilationState[attachment.attachmentId] ? attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.FAIL || attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.UPLOADING : true) && handleMediaItemClick(attachment);
     },
@@ -27171,7 +27160,8 @@ var Attachment = function Attachment(_ref) {
   }, React__default.createElement(SvgDownload, null)), !isPrevious && attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(UploadProgress, {
     fileAttachment: true
   }, React__default.createElement(UploadPercent, {
-    fileAttachment: true
+    fileAttachment: true,
+    borderRadius: attachment.metadata && attachment.metadata.tmb ? undefined : '50%'
   }, React__default.createElement(SvgCancel, null)), React__default.createElement(UploadingIcon, {
     fileAttachment: true,
     className: 'rotate_cont'
@@ -27186,7 +27176,7 @@ var Attachment = function Attachment(_ref) {
   }, React__default.createElement(AttachmentName, {
     color: selectedFileAttachmentsTitleColor,
     ref: fileNameRef
-  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, 28)), React__default.createElement(AttachmentSize, {
+  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, isPrevious ? 25 : 36)), React__default.createElement(AttachmentSize, {
     color: selectedFileAttachmentsSizeColor
   }, (attachment.data && attachment.data.size || attachment.fileSize) && bytesToSize(isPrevious ? attachment.data.size : +attachment.fileSize), React__default.createElement("span", null, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.FAIL && 'Upload error'))), isPrevious && React__default.createElement(RemoveChosenFile, {
     onClick: function onClick() {
@@ -27225,11 +27215,11 @@ var AttachmentFile$1 = styled__default.div(_templateObject5$9 || (_templateObjec
 }, function (props) {
   return props.borderRadius || '6px';
 }, function (props) {
-  return !props.isRepliedMessage && !props.isPrevious && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
+  return !props.isRepliedMessage && !props.isPrevious && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
 var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
 var RemoveFailed = styled__default(SvgDeleteFailed)(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: calc(50% - 11px);\n  right: 18px;\n  padding: 2px;\n  cursor: pointer;\n"])));
-var AttachmentName = styled__default.h3(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 262px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  margin: 0;\n"])), function (props) {
+var AttachmentName = styled__default.h3(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  margin: 0;\n"])), function (props) {
   return props.color || colors.blue6;
 });
 var AttachmentSize = styled__default.span(_templateObject9$4 || (_templateObject9$4 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
@@ -27306,6 +27296,7 @@ function ConfirmPopup(_ref) {
       handleFunction = _ref.handleFunction,
       isDeleteMessage = _ref.isDeleteMessage,
       isIncomingMessage = _ref.isIncomingMessage,
+      allowDeleteIncoming = _ref.allowDeleteIncoming,
       isDirectChannel = _ref.isDirectChannel,
       _ref$myRole = _ref.myRole,
       myRole = _ref$myRole === void 0 ? '' : _ref$myRole,
@@ -27318,7 +27309,7 @@ function ConfirmPopup(_ref) {
       initialRender = _useState[0],
       setInitialRender = _useState[1];
 
-  var deleteForEveryoneIsPermitted = isIncomingMessage ? !isDirectChannel && checkActionPermission('deleteAnyMessage') : checkActionPermission('deleteOwnMessage');
+  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : checkActionPermission('deleteOwnMessage');
 
   var _useState2 = React.useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
       deleteMessageOption = _useState2[0],
@@ -27544,6 +27535,7 @@ var Message = function Message(_ref) {
       replyMessageInThread = _ref$replyMessageInTh === void 0 ? true : _ref$replyMessageInTh,
       _ref$deleteMessage = _ref.deleteMessage,
       deleteMessage = _ref$deleteMessage === void 0 ? true : _ref$deleteMessage,
+      allowEditDeleteIncomingMessage = _ref.allowEditDeleteIncomingMessage,
       _ref$forwardMessage = _ref.forwardMessage,
       forwardMessage = _ref$forwardMessage === void 0 ? true : _ref$forwardMessage,
       _ref$reportMessage = _ref.reportMessage,
@@ -27575,7 +27567,6 @@ var Message = function Message(_ref) {
       reportIconTooltipText = _ref.reportIconTooltipText,
       messageActionIconsHoverColor = _ref.messageActionIconsHoverColor,
       messageActionIconsColor = _ref.messageActionIconsColor,
-      selfReactionsBorderColor = _ref.selfReactionsBorderColor,
       reactionsBorderColor = _ref.reactionsBorderColor,
       fileAttachmentsIcon = _ref.fileAttachmentsIcon,
       fileAttachmentsBoxBorder = _ref.fileAttachmentsBoxBorder,
@@ -27668,7 +27659,7 @@ var Message = function Message(_ref) {
     return React.useMemo(function () {
       return React__default.createElement(MessageActions, {
         messageFrom: message.user,
-        channelType: channel.type,
+        channel: channel,
         editModeToggle: toggleEditMode,
         messageStatus: message.deliveryStatus || MESSAGE_DELIVERY_STATUS.PENDING,
         handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
@@ -27692,6 +27683,7 @@ var Message = function Message(_ref) {
         replyInThreadIcon: replyInThreadIcon,
         forwardIcon: forwardIcon,
         deleteIcon: deleteIcon,
+        allowEditDeleteIncomingMessage: allowEditDeleteIncomingMessage,
         starIcon: starIcon,
         staredIcon: staredIcon,
         reportIcon: reportIcon,
@@ -27842,7 +27834,6 @@ var Message = function Message(_ref) {
       onClick: function onClick() {
         return handleReactionAddDelete(key);
       },
-      selfBorderColor: selfReactionsBorderColor,
       borderColor: reactionsBorderColor,
       self: message.selfReactions.find(function (selfReaction) {
         return selfReaction.key === key;
@@ -27856,6 +27847,7 @@ var Message = function Message(_ref) {
     isDeleteMessage: true,
     isIncomingMessage: message.incoming,
     myRole: channel.role,
+    allowDeleteIncoming: allowEditDeleteIncomingMessage,
     isDirectChannel: channel.type === CHANNEL_TYPE.DIRECT,
     title: 'Delete message'
   }), forwardPopupOpen && React__default.createElement(ForwardMessagePopup, {
@@ -27868,9 +27860,9 @@ var Message = function Message(_ref) {
   }));
 };
 var MessageReaction = styled__default.span(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  cursor: pointer;\n  margin-right: 6px;\n  border: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: 16px;\n  font-size: 13px;\n  padding: 2px 6px;\n  white-space: nowrap;\n"])), function (props) {
-  return props.self ? "1px solid " + (props.selfBorderColor || '#4F6AFF') : "1px solid " + (props.borderColor || '#CDCDCF');
+  return props.self ? "1px solid " + colors.primary : "1px solid " + (props.borderColor || '#CDCDCF');
 }, function (props) {
-  return props.self ? "" + (props.selfBorderColor || '#4F6AFF') : '';
+  return props.self ? colors.primary : '';
 });
 var ThreadMessageCountContainer = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
 var FailedMessageIcon = styled__default.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
@@ -28013,6 +28005,8 @@ var SliderPopup = function SliderPopup(_ref) {
       currentMediaFile = _ref.currentMediaFile;
   var dispatch = reactRedux.useDispatch();
   var getFromContacts = getUserDisplayNameFromContact();
+  var ChatClient = getClient();
+  var user = ChatClient.user;
 
   var _useState = React.useState(currentMediaFile),
       currentFile = _useState[0],
@@ -28033,7 +28027,7 @@ var SliderPopup = function SliderPopup(_ref) {
   var customUploader = getCustomUploader();
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var attachments = reactRedux.useSelector(attachmentsForPopupSelector, reactRedux.shallowEqual) || [];
-  var attachmentUserName = currentFile ? currentFile.user && makeUserName(contactsMap[currentFile.user.id], currentFile.user, getFromContacts) : '';
+  var attachmentUserName = currentFile ? currentFile.user && makeUserName(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
 
   var handleClosePopup = function handleClosePopup() {
     setAttachmentsList([]);
@@ -28272,6 +28266,8 @@ var Messages = function Messages(_ref2) {
       replyInThreadIcon = _ref2.replyInThreadIcon,
       forwardIcon = _ref2.forwardIcon,
       deleteIcon = _ref2.deleteIcon,
+      _ref2$allowEditDelete = _ref2.allowEditDeleteIncomingMessage,
+      allowEditDeleteIncomingMessage = _ref2$allowEditDelete === void 0 ? true : _ref2$allowEditDelete,
       starIcon = _ref2.starIcon,
       staredIcon = _ref2.staredIcon,
       reportIcon = _ref2.reportIcon,
@@ -28302,7 +28298,6 @@ var Messages = function Messages(_ref2) {
       showTopFixedDate = _ref2$showTopFixedDat === void 0 ? true : _ref2$showTopFixedDat,
       inlineReactionIcon = _ref2.inlineReactionIcon,
       reactionsBorderColor = _ref2.reactionsBorderColor,
-      selfReactionsBorderColor = _ref2.selfReactionsBorderColor,
       newMessagesSeparatorText = _ref2.newMessagesSeparatorText,
       newMessagesSeparatorFontSize = _ref2.newMessagesSeparatorFontSize,
       newMessagesSeparatorTextColor = _ref2.newMessagesSeparatorTextColor,
@@ -28320,7 +28315,6 @@ var Messages = function Messages(_ref2) {
   var dispatch = reactRedux.useDispatch();
   var getFromContacts = getUserDisplayNameFromContact();
   var channel = reactRedux.useSelector(activeChannelSelector);
-  var isDragging = reactRedux.useSelector(isDraggingSelector);
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var scrollToNewMessage = reactRedux.useSelector(scrollToNewMessageSelector, reactRedux.shallowEqual);
   var scrollToRepliedMessage = reactRedux.useSelector(scrollToMessageSelector, reactRedux.shallowEqual);
@@ -28335,13 +28329,17 @@ var Messages = function Messages(_ref2) {
       mediaFile = _useState2[0],
       setMediaFile = _useState2[1];
 
-  var _useState3 = React.useState(''),
-      lastVisibleMessageId = _useState3[0],
-      _setLastVisibleMessageId = _useState3[1];
+  var _useState3 = React.useState(null),
+      isDragging = _useState3[0],
+      setIsDragging = _useState3[1];
 
-  var _useState4 = React.useState(null),
-      scrollToReply = _useState4[0],
-      setScrollToReply = _useState4[1];
+  var _useState4 = React.useState(''),
+      lastVisibleMessageId = _useState4[0],
+      _setLastVisibleMessageId = _useState4[1];
+
+  var _useState5 = React.useState(null),
+      scrollToReply = _useState5[0],
+      setScrollToReply = _useState5[1];
 
   var messages = reactRedux.useSelector(activeChannelMessagesSelector) || [];
   var currentChannelPendingMessages = [];
@@ -28469,7 +28467,11 @@ var Messages = function Messages(_ref2) {
     }
   };
 
-  var handleDragIn = function handleDragIn(e) {
+  var handleDragIn = function handleDragIn() {
+    setIsDragging(true);
+  };
+
+  var handleDragOver = function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
     e.target && e.target.classList.add('dragover');
@@ -28481,20 +28483,20 @@ var Messages = function Messages(_ref2) {
     }
 
     if (!e.relatedTarget || !e.relatedTarget.draggable) {
-      dispatch(setIsDragging(false));
+      setIsDragging(false);
     }
   };
 
   var handleDropFile = function handleDropFile(e) {
     e.preventDefault();
     e.stopPropagation();
-    dispatch(setIsDragging(false));
+    setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       var fileList = Object.values(e.dataTransfer.files);
       var attachmentsFiles = [];
       new Promise(function (resolve) {
-        fileList.map(function (attachment, index) {
+        fileList.forEach(function (attachment, index) {
           var fileReader = new FileReader();
 
           fileReader.onload = function (event) {
@@ -28522,13 +28524,13 @@ var Messages = function Messages(_ref2) {
   var handleDropMedia = function handleDropMedia(e) {
     e.preventDefault();
     e.stopPropagation();
-    dispatch(setIsDragging(false));
+    setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       var fileList = Object.values(e.dataTransfer.files);
       var attachmentsFiles = [];
       new Promise(function (resolve) {
-        fileList.map(function (attachment, index) {
+        fileList.forEach(function (attachment, index) {
           var fileReader = new FileReader();
 
           fileReader.onload = function (event) {
@@ -28641,16 +28643,16 @@ var Messages = function Messages(_ref2) {
     margin: '32px 32px 12px',
     draggable: true,
     onDrop: handleDropFile,
-    onDragOver: handleDragIn
+    onDragOver: handleDragOver
   }, React__default.createElement(IconWrapper, {
     draggable: true
   }, React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), React__default.createElement(DropAttachmentArea, {
     draggable: true,
     onDrop: handleDropMedia,
-    onDragOver: handleDragIn
+    onDragOver: handleDragOver
   }, React__default.createElement(IconWrapper, {
     draggable: true
-  }, React__default.createElement(SvgChoseMedia, null)), "Drag & drop to add picture or video")), React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
+  }, React__default.createElement(SvgChoseMedia, null)), "Drag & drop to send as media")), React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
     dateDividerFontSize: dateDividerFontSize,
     dateDividerTextColor: dateDividerTextColor,
     dateDividerBorder: dateDividerBorder,
@@ -28662,7 +28664,8 @@ var Messages = function Messages(_ref2) {
   })), React__default.createElement(Container$d, {
     id: 'scrollableDiv',
     ref: scrollRef,
-    onScroll: handleMessagesListScroll
+    onScroll: handleMessagesListScroll,
+    onDragEnter: handleDragIn
   }, React__default.createElement(MessagesBox, {
     enableResetScrollToCoords: false,
     replyMessage: messageForReply && messageForReply.id,
@@ -28730,6 +28733,7 @@ var Messages = function Messages(_ref2) {
       replyMessage: replyMessage,
       replyMessageInThread: replyMessageInThread,
       deleteMessage: deleteMessage,
+      allowEditDeleteIncomingMessage: allowEditDeleteIncomingMessage,
       reportMessage: reportMessage,
       reactionIcon: reactionIcon,
       editIcon: editIcon,
@@ -28761,7 +28765,6 @@ var Messages = function Messages(_ref2) {
       messageActionIconsColor: messageActionIconsColor,
       inlineReactionIcon: inlineReactionIcon,
       reactionsBorderColor: reactionsBorderColor,
-      selfReactionsBorderColor: selfReactionsBorderColor,
       fileAttachmentsIcon: fileAttachmentsIcon,
       fileAttachmentsBoxWidth: fileAttachmentsBoxWidth,
       fileAttachmentsBoxBackground: fileAttachmentsBoxBackground,
@@ -28814,10 +28817,10 @@ var DragAndDropContainer = styled__default.div(_templateObject5$c || (_templateO
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper = styled__default.span(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, colors.primary);
-var DropAttachmentArea = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    border: 1px dashed ", ";\n  }\n"])), colors.gray3, function (props) {
+var IconWrapper = styled__default.span(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, colors.primary);
+var DropAttachmentArea = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
   return props.margin || '12px 32px 32px';
-}, colors.gray6, colors.primary);
+}, colors.gray6, colors.gray5, IconWrapper, colors.white);
 
 var _circle$5, _path$O;
 
@@ -28989,7 +28992,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       sendIconOrder = _ref.sendIconOrder,
       inputOrder = _ref.inputOrder,
       hideEmojis = _ref.hideEmojis,
-      iconsHoverColor = _ref.iconsHoverColor,
       CustomTypingIndicator = _ref.CustomTypingIndicator,
       margin = _ref.margin,
       border = _ref.border,
@@ -29006,6 +29008,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var getFromContacts = getUserDisplayNameFromContact();
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
   var isBlockedUserChat = activeChannel.peer && activeChannel.peer.blocked;
+  var isDeletedUserChat = activeChannel.peer && activeChannel.peer.activityState === 'Deleted';
   var messageToEdit = reactRedux.useSelector(messageToEditSelector);
   var messageForReply = reactRedux.useSelector(messageForReplySelector);
   var draggedAttachments = reactRedux.useSelector(draggedAttachmentsSelector);
@@ -29060,7 +29063,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var fileUploader = React.useRef(null);
   var messageInput = React.useRef(null);
   var emojiBtnRef = React.useRef(null);
-  var mediaExtensions = '.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.wmv,.flv,.webm';
+  var mediaExtensions = '.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.wmv,.flv,.webm,.jfif';
 
   var handleSendTypingState = function handleSendTypingState(typingState) {
     setInTypingState(typingState);
@@ -29068,6 +29071,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleTyping = function handleTyping(e) {
+    console.log('on change. .. ');
+
     if (messageToEdit) {
       setEditMessageText(e.currentTarget.value);
     } else {
@@ -29124,10 +29129,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                   if (urlRegex.test(part)) {
                     if (!firstUrl) {
                       firstUrl = part;
-
-                      try {} catch (error) {
-                        console.error(error);
-                      }
                     }
                   }
 
@@ -29415,6 +29416,17 @@ var SendMessageInput = function SendMessageInput(_ref) {
     fileUploader.current.click();
   };
 
+  var handlePastAttachments = function handlePastAttachments(e) {
+    if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+      e.preventDefault();
+      var fileList = Object.values(e.clipboardData.files);
+      fileList.forEach(function (file) {
+        handleAddAttachment(file, true);
+        return Promise.resolve();
+      });
+    }
+  };
+
   var handleEmojiPopupToggle = function handleEmojiPopupToggle(bool) {
     setIsEmojisOpened(bool);
     messageInput.current.focus();
@@ -29435,6 +29447,142 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     if (emojisContainer && !emojisContainer.contains(e.target) && emojiBtnRef.current && !emojiBtnRef.current.contains(e.target)) {
       setIsEmojisOpened(false);
+    }
+  };
+
+  var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
+    try {
+      var customUploader = getCustomUploader();
+      var fileType = file.type.split('/')[0];
+
+      var _temp10 = function () {
+        if (customUploader) {
+          if (fileType === 'image') {
+            resizeImage(file, 700, 500).then(function (resizedFile) {
+              try {
+                setAttachments(function (prevState) {
+                  return [].concat(prevState, [{
+                    data: file,
+                    upload: false,
+                    type: isMediaAttachment ? fileType : 'file',
+                    attachmentUrl: URL.createObjectURL(resizedFile.blob),
+                    attachmentId: uuid.v4(),
+                    size: file.size
+                  }]);
+                });
+                return Promise.resolve();
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            });
+          } else if (fileType === 'video') {
+            setAttachments(function (prevState) {
+              return [].concat(prevState, [{
+                data: file,
+                upload: false,
+                type: isMediaAttachment ? fileType : 'file',
+                attachmentUrl: URL.createObjectURL(file),
+                attachmentId: uuid.v4(),
+                size: file.size
+              }]);
+            });
+          } else {
+            setAttachments(function (prevState) {
+              return [].concat(prevState, [{
+                data: file,
+                upload: false,
+                type: isMediaAttachment ? fileType : 'file',
+                attachmentUrl: URL.createObjectURL(file),
+                attachmentId: uuid.v4(),
+                size: file.size
+              }]);
+            });
+          }
+        } else {
+          var _temp11 = function () {
+            if (fileType === 'image') {
+              if (isMediaAttachment) {
+                resizeImage(file).then(function (resizedFile) {
+                  try {
+                    return Promise.resolve(createImageThumbnail(file)).then(function (_ref4) {
+                      var thumbnail = _ref4.thumbnail;
+                      setAttachments(function (prevState) {
+                        return [].concat(prevState, [{
+                          data: new File([resizedFile.blob], resizedFile.file.name),
+                          attachmentUrl: URL.createObjectURL(file),
+                          attachmentId: uuid.v4(),
+                          type: fileType,
+                          metadata: JSON.stringify({
+                            tmb: thumbnail,
+                            szw: resizedFile.newWidth,
+                            szh: resizedFile.newHeight
+                          })
+                        }]);
+                      });
+                    });
+                  } catch (e) {
+                    return Promise.reject(e);
+                  }
+                });
+              } else {
+                createFileImageThumbnail(file).then(function (thumbnail) {
+                  setAttachments(function (prevState) {
+                    return [].concat(prevState, [{
+                      data: file,
+                      type: 'file',
+                      attachmentUrl: URL.createObjectURL(file),
+                      attachmentId: uuid.v4(),
+                      metadata: JSON.stringify({
+                        tmb: thumbnail
+                      })
+                    }]);
+                  });
+                });
+              }
+            } else {
+              var _temp12 = function () {
+                if (fileType === 'video') {
+                  return Promise.resolve(getFrame(URL.createObjectURL(file), 1)).then(function (_ref5) {
+                    var thumb = _ref5.thumb,
+                        width = _ref5.width,
+                        height = _ref5.height;
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        type: 'video',
+                        attachmentUrl: URL.createObjectURL(file),
+                        attachmentId: uuid.v4(),
+                        metadata: JSON.stringify({
+                          tmb: thumb,
+                          szw: width,
+                          szh: height
+                        })
+                      }]);
+                    });
+                  });
+                } else {
+                  setAttachments(function (prevState) {
+                    return [].concat(prevState, [{
+                      data: file,
+                      type: 'file',
+                      attachmentUrl: URL.createObjectURL(file),
+                      attachmentId: uuid.v4()
+                    }]);
+                  });
+                }
+              }();
+
+              if (_temp12 && _temp12.then) return _temp12.then(function () {});
+            }
+          }();
+
+          if (_temp11 && _temp11.then) return _temp11.then(function () {});
+        }
+      }();
+
+      return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
     }
   };
 
@@ -29459,138 +29607,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
           type: draggedData.type
         });
       });
-      var customUploader = getCustomUploader();
       attachmentsFiles.forEach(function (file) {
         try {
-          var fileType = file.type.split('/')[0];
-          var isMediaAttachment = draggedAttachments[0].attachmentType === 'media';
-
-          var _temp10 = function () {
-            if (customUploader) {
-              if (fileType === 'image') {
-                resizeImage(file, 700, 500).then(function (resizedFile) {
-                  try {
-                    setAttachments(function (prevState) {
-                      return [].concat(prevState, [{
-                        data: file,
-                        upload: false,
-                        type: isMediaAttachment ? fileType : 'file',
-                        attachmentUrl: URL.createObjectURL(resizedFile.blob),
-                        attachmentId: uuid.v4(),
-                        size: file.size
-                      }]);
-                    });
-                    return Promise.resolve();
-                  } catch (e) {
-                    return Promise.reject(e);
-                  }
-                });
-              } else if (fileType === 'video') {
-                setAttachments(function (prevState) {
-                  return [].concat(prevState, [{
-                    data: file,
-                    upload: false,
-                    type: isMediaAttachment ? fileType : 'file',
-                    attachmentUrl: URL.createObjectURL(file),
-                    attachmentId: uuid.v4(),
-                    size: file.size
-                  }]);
-                });
-              } else {
-                setAttachments(function (prevState) {
-                  return [].concat(prevState, [{
-                    data: file,
-                    upload: false,
-                    type: isMediaAttachment ? fileType : 'file',
-                    attachmentUrl: URL.createObjectURL(file),
-                    attachmentId: uuid.v4(),
-                    size: file.size
-                  }]);
-                });
-              }
-            } else {
-              var _temp11 = function () {
-                if (fileType === 'image') {
-                  if (isMediaAttachment) {
-                    resizeImage(file).then(function (resizedFile) {
-                      try {
-                        return Promise.resolve(createImageThumbnail(file)).then(function (_ref4) {
-                          var thumbnail = _ref4.thumbnail;
-                          setAttachments(function (prevState) {
-                            return [].concat(prevState, [{
-                              data: new File([resizedFile.blob], resizedFile.file.name),
-                              attachmentUrl: URL.createObjectURL(file),
-                              attachmentId: uuid.v4(),
-                              type: fileType,
-                              metadata: JSON.stringify({
-                                tmb: thumbnail,
-                                szw: resizedFile.newWidth,
-                                szh: resizedFile.newHeight
-                              })
-                            }]);
-                          });
-                        });
-                      } catch (e) {
-                        return Promise.reject(e);
-                      }
-                    });
-                  } else {
-                    createFileImageThumbnail(file).then(function (thumbnail) {
-                      setAttachments(function (prevState) {
-                        return [].concat(prevState, [{
-                          data: file,
-                          type: 'file',
-                          attachmentUrl: URL.createObjectURL(file),
-                          attachmentId: uuid.v4(),
-                          metadata: JSON.stringify({
-                            tmb: thumbnail
-                          })
-                        }]);
-                      });
-                    });
-                  }
-                } else {
-                  var _temp12 = function () {
-                    if (fileType === 'video') {
-                      return Promise.resolve(getFrame(URL.createObjectURL(file), 1)).then(function (_ref5) {
-                        var thumb = _ref5.thumb,
-                            width = _ref5.width,
-                            height = _ref5.height;
-                        setAttachments(function (prevState) {
-                          return [].concat(prevState, [{
-                            data: file,
-                            type: 'video',
-                            attachmentUrl: URL.createObjectURL(file),
-                            attachmentId: uuid.v4(),
-                            metadata: JSON.stringify({
-                              tmb: thumb,
-                              szw: width,
-                              szh: height
-                            })
-                          }]);
-                        });
-                      });
-                    } else {
-                      setAttachments(function (prevState) {
-                        return [].concat(prevState, [{
-                          data: file,
-                          type: 'file',
-                          attachmentUrl: URL.createObjectURL(file),
-                          attachmentId: uuid.v4()
-                        }]);
-                      });
-                    }
-                  }();
-
-                  if (_temp12 && _temp12.then) return _temp12.then(function () {});
-                }
-              }();
-
-              if (_temp11 && _temp11.then) return _temp11.then(function () {});
-            }
-          }();
-
-          return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(function () {}) : void 0);
+          handleAddAttachment(file, draggedAttachments[0].attachmentType === 'media');
+          return Promise.resolve();
         } catch (e) {
           return Promise.reject(e);
         }
@@ -29689,7 +29709,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     border: border,
     borderRadius: borderRadius,
     ref: messageContRef
-  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), " You blocked this user.") : !activeChannel.role ? React__default.createElement(JoinChannelCont, {
+  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), " ", isDeletedUserChat ? 'This user has been deleted.' : 'You blocked this user.') : !activeChannel.role ? React__default.createElement(JoinChannelCont, {
     onClick: handleJoinToChannel
   }, "Join") : !checkActionPermission('sendMessage') ? React__default.createElement(ReadOnlyCont, null, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
@@ -29729,10 +29749,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     forceClose: showChooseAttachmentType,
     position: 'top',
     order: attachmentIcoOrder,
-    trigger: React__default.createElement(AddAttachmentIcon, {
-      isActive: !!attachments.length,
-      iconHoverColor: iconsHoverColor
-    }, React__default.createElement(SvgAttachment, null))
+    trigger: React__default.createElement(AddAttachmentIcon, null, React__default.createElement(SvgAttachment, null))
   }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
     key: 1,
     textColor: colors.gray6,
@@ -29755,7 +29772,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     order: emojiIcoOrder,
     isEmojisOpened: isEmojisOpened,
     ref: emojiBtnRef,
-    iconHoverColor: iconsHoverColor,
     onClick: function onClick() {
       setIsEmojisOpened(!isEmojisOpened);
     }
@@ -29767,6 +29783,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }), React__default.createElement(MessageInput, {
     order: inputOrder,
     onChange: handleTyping,
+    onPaste: handlePastAttachments,
     onKeyPress: handleSendEditMessage,
     value: editMessageText || messageText,
     ref: messageInput,
@@ -29788,26 +29805,22 @@ var Container$e = styled__default.div(_templateObject$t || (_templateObject$t = 
 var EditReplyMessageCont = styled__default.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
 var CloseEditMode = styled__default.span(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n"])));
 var EditReplyMessageHeader = styled__default.h4(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), colors.primary);
-var SendMessageInputContainer = styled__default.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n  min-height: 48px;\n  box-sizing: border-box;\n  border-radius: ", ";\n"])), function (props) {
-  return props.messageForReply ? '0 0 4px 4px' : '4px';
-});
-var MessageInput = styled__default.textarea(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  resize: none;\n  padding: 14px 12px 0 12px;\n  //padding: 16px 45px 0 80px;\n  width: 100%;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  border-radius: 6px;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 17px;\n  order: ", ";\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), function (props) {
-  return props.order === 0 || props.order ? props.order : 3;
-}, colors.gray7);
-var AddAttachmentIcon = styled__default.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled__default.span(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 1;
 }, function (props) {
-  return props.isActive ? "color: " + (props.iconHoverColor || colors.cobalt1) + ";" : 'color: #898B99;';
-}, function (props) {
-  return props.iconHoverColor || colors.cobalt1;
-});
+  return props.isActive ? "color: " + colors.primary + ";" : 'color: #898B99;';
+}, colors.primary);
+var SendMessageInputContainer = styled__default.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n  min-height: 48px;\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n    & ", " {\n      & > svg {\n        color: ", "\n        };\n      }\n    }\n  }\n"])), function (props) {
+  return props.messageForReply ? '0 0 4px 4px' : '4px';
+}, AddAttachmentIcon, colors.primary);
+var MessageInput = styled__default.textarea(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  resize: none;\n  padding: 14px 12px 0 12px;\n  //padding: 16px 45px 0 80px;\n  width: 100%;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  border-radius: 6px;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 17px;\n  order: ", ";\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), function (props) {
+  return props.order === 0 || props.order ? props.order : 3;
+}, colors.gray7);
 var EmojiButton = styled__default.span(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 2;
 }, function (props) {
-  return props.isEmojisOpened ? "color: " + (props.iconHoverColor || colors.cobalt1) + ";" : 'color: #898B99;';
-}, function (props) {
-  return props.iconHoverColor || colors.cobalt1;
-});
+  return props.isEmojisOpened ? "color: " + colors.primary + ";" : 'color: #898B99;';
+}, colors.primary);
 var MentionsContainer = styled__default.span(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
 var SendMessageIcon = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n\n  color: ", ";\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 4;
@@ -30395,7 +30408,7 @@ var Actions$1 = function Actions(_ref) {
     isOpen: menuIsOpen
   }, React__default.createElement(SvgBottom, null))), React__default.createElement(ActionsMenu, {
     isOpen: menuIsOpen
-  }, showMuteUnmuteNotifications && (channel.muted ? React__default.createElement(ActionItem$1, {
+  }, showMuteUnmuteNotifications && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && (channel.muted ? React__default.createElement(ActionItem$1, {
     key: 0,
     order: muteUnmuteNotificationsOrder,
     onClick: function onClick() {
@@ -30457,7 +30470,7 @@ var Actions$1 = function Actions(_ref) {
     iconColor: staredMessagesIconColor || colors.gray4,
     color: staredMessagesTextColor || colors.gray6,
     hoverColor: staredMessagesTextColor || colors.gray6
-  }, React__default.createElement(React__default.Fragment, null, staredMessagesIcon || React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && React__default.createElement(ActionItem$1, {
+  }, React__default.createElement(React__default.Fragment, null, staredMessagesIcon || React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && React__default.createElement(ActionItem$1, {
     key: 2,
     onClick: function onClick() {
       return console.log('pin channel');
@@ -30466,7 +30479,7 @@ var Actions$1 = function Actions(_ref) {
     iconColor: pinChannelIconColor || colors.gray4,
     color: pinChannelTextColor || colors.gray6,
     hoverColor: pinChannelTextColor || colors.gray6
-  }, React__default.createElement(React__default.Fragment, null, pinChannelIcon || React__default.createElement(SvgPin, null), " Pin ", channelType)), showMarkAsReadUnread && (channel.markedAsUnread ? React__default.createElement(ActionItem$1, {
+  }, React__default.createElement(React__default.Fragment, null, pinChannelIcon || React__default.createElement(SvgPin, null), " Pin ", channelType)), showMarkAsReadUnread && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && (channel.markedAsUnread ? React__default.createElement(ActionItem$1, {
     key: 3,
     onClick: handleToggleChannelMarkAs,
     order: markAsReadUnreadOrder,
@@ -30491,7 +30504,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Leave " + channelType);
       handleToggleLeaveChannelPopupOpen();
     }
-  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave ", channelType), isDirectChannel ? React__default.createElement(React__default.Fragment, null, showBlockUser && (channel.peer.blocked ? React__default.createElement(ActionItem$1, {
+  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave ", channelType), isDirectChannel ? React__default.createElement(React__default.Fragment, null, showBlockUser && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && (channel.peer.blocked ? React__default.createElement(ActionItem$1, {
     key: 5,
     color: unblockUserTextColor || colors.gray6,
     hoverColor: unblockUserTextColor || colors.gray6,
@@ -30537,7 +30550,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Report channel');
       console.log('Report channel');
     }
-  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), (isDirectChannel && showClearHistoryForDirectChannel || isPrivateChannel && showClearHistoryForPrivateChannel || isPublicChannel && showClearHistoryForPublicChannel) && checkActionPermission('deleteAllMessagesForMe') && React__default.createElement(ActionItem$1, {
+  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), (isDirectChannel && showClearHistoryForDirectChannel && channel.peer.activityState !== 'Deleted' || isPrivateChannel && showClearHistoryForPrivateChannel || isPublicChannel && showClearHistoryForPublicChannel) && checkActionPermission('deleteAllMessagesForMe') && React__default.createElement(ActionItem$1, {
     key: 10,
     color: clearHistoryTextColor || colors.red1,
     iconColor: clearHistoryTextColor || colors.red1,
@@ -30614,7 +30627,7 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$f = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n    /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
+var Container$f = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
   return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
 });
 var ActionHeader = styled__default.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
