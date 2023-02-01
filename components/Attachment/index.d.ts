@@ -15,12 +15,14 @@ interface AttachmentPops {
     selectedFileAttachmentsTitleColor?: string;
     selectedFileAttachmentsSizeColor?: string;
     selectedFileAttachmentsIcon?: JSX.Element;
+    fileNameMaxLength?: number;
 }
-declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView }: AttachmentPops) => JSX.Element;
+declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, fileNameMaxLength }: AttachmentPops) => JSX.Element;
 export default Attachment;
 export declare const AttachmentFile: import("styled-components").StyledComponent<"div", any, {
     isPrevious?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
+    isUploading?: boolean | undefined;
     borderRadius?: string | undefined;
     background?: string | undefined;
     border?: string | undefined;

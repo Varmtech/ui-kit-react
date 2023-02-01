@@ -1,6 +1,7 @@
 /// <reference types="react" />
 import SceytChatClient from 'sceyt-chat';
 import { ICustomAvatarColors } from '../Channel/types';
+import { IAttachment } from '../../types';
 export interface IProgress {
     loaded: number;
     total: number;
@@ -15,7 +16,7 @@ export interface IUploadTask {
     resume: () => void;
 }
 export interface ICustomUploader {
-    upload: (file: File, uploadTask: IUploadTask) => void;
+    upload: (attachment: IAttachment, uploadTask: IUploadTask) => void;
     download: (uri: string, progressCallback?: (progress: any) => void) => Promise<string>;
 }
 export interface IChatClientProps {
