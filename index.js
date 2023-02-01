@@ -12221,12 +12221,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 110;
+            _context.next = 108;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 78;
+            _context.next = 76;
             break;
           }
 
@@ -12276,7 +12276,7 @@ function sendMessage(action) {
 
         case 28:
           if (!customUploader) {
-            _context.next = 76;
+            _context.next = 74;
             break;
           }
 
@@ -12382,18 +12382,16 @@ function sendMessage(action) {
           }));
 
         case 64:
-          _context.next = 76;
+          _context.next = 74;
           break;
 
         case 66:
           _context.prev = 66;
           _context.t0 = _context["catch"](31);
-          console.log('failed upload attachment ...', messageAttachment);
-          console.log('set uploading state FAIL for .. ', messageAttachment.attachmentId);
-          _context.next = 72;
+          _context.next = 70;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 72:
+        case 70:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -12403,16 +12401,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 76;
+          _context.next = 74;
           return effects.put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 76:
-          _context.next = 110;
+        case 74:
+          _context.next = 108;
           break;
 
-        case 78:
+        case 76:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -12450,7 +12448,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 96;
+            _context.next = 94;
             break;
           }
 
@@ -12501,12 +12499,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 90;
+          _context.next = 88;
           return effects.call(uploadAllAttachments);
 
-        case 90:
+        case 88:
           uploadedAttachments = _context.sent;
-          _context.next = 93;
+          _context.next = 91;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -12549,12 +12547,12 @@ function sendMessage(action) {
             }
           });
 
-        case 93:
+        case 91:
           attachmentsToSend = _context.sent;
-          _context.next = 99;
+          _context.next = 97;
           break;
 
-        case 96:
+        case 94:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -12566,24 +12564,24 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 99;
+          _context.next = 97;
           return effects.put(addMessageAC(JSON.parse(JSON.stringify(_extends({}, _messageCopy2, {
             createdAt: new Date(Date.now()),
             parent: message.parent
           })))));
 
-        case 99:
+        case 97:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 110;
+            _context.next = 108;
             break;
           }
 
-          _context.next = 103;
+          _context.next = 101;
           return effects.call(channel.sendMessage, _messageToSend);
 
-        case 103:
+        case 101:
           _messageResponse = _context.sent;
           _messageUpdateData = {
             id: _messageResponse.id,
@@ -12595,38 +12593,38 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 107;
+          _context.next = 105;
           return effects.put(updateMessageAC(_messageToSend.tid, _messageUpdateData));
 
-        case 107:
+        case 105:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData
           });
-          _context.next = 110;
+          _context.next = 108;
           return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
             id: channel.id
           }));
 
-        case 110:
-          _context.next = 112;
+        case 108:
+          _context.next = 110;
           return effects.put(scrollToNewMessageAC(true, true));
 
-        case 112:
-          _context.next = 117;
+        case 110:
+          _context.next = 115;
           break;
 
-        case 114:
-          _context.prev = 114;
+        case 112:
+          _context.prev = 112;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 117:
+        case 115:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 114], [31, 66]]);
+  }, _marked$2, null, [[0, 112], [31, 66]]);
 }
 
 function sendTextMessage(action) {
@@ -27065,7 +27063,6 @@ var Attachment = function Attachment(_ref) {
       }
     }
   }, []);
-  console.log('attachment ... ', attachment);
   return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
     onClick: function onClick() {
       return handleMediaItemClick && handleMediaItemClick(attachment);
