@@ -11,6 +11,7 @@ export interface IUserStore {
         [key: string]: IContact;
     };
     user: IUser;
+    browserTabIsActive: boolean;
 }
 declare const _default: (state: IUserStore | undefined, { type, payload }: IAction) => IUserStore;
 export default _default;

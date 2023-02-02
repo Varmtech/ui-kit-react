@@ -10,8 +10,10 @@ interface IProps {
     linkPreviewTitleColor?: string;
     linkPreviewColor?: string;
     linkPreviewHoverBackgroundColor?: string;
-    voicePreviewIcon?: JSX.Element;
-    voicePreviewHoverIcon?: JSX.Element;
+    voicePreviewPlayIcon?: JSX.Element;
+    voicePreviewPlayHoverIcon?: JSX.Element;
+    voicePreviewPauseIcon?: JSX.Element;
+    voicePreviewPauseHoverIcon?: JSX.Element;
     voicePreviewTitleColor?: string;
     voicePreviewDateAndTimeColor?: string;
     voicePreviewHoverBackgroundColor?: string;
@@ -36,5 +38,5 @@ interface IProps {
     privateChannelMakeAdminPopupTitle?: string;
     privateChannelMakeAdminPopupDescription?: string;
 }
-declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewIcon, voicePreviewHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, showChangeMemberRole, showKickMember, showKickAndBlockMember, showMakeMemberAdmin, publicChannelDeleteMemberPopupDescription, privateChannelDeleteMemberPopupDescription, publicChannelRevokeAdminPopupDescription, privateChannelRevokeAdminPopupDescription, publicChannelMakeAdminPopupDescription, privateChannelMakeAdminPopupDescription }: IProps) => JSX.Element;
+declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewPlayIcon, voicePreviewPlayHoverIcon, voicePreviewPauseIcon, voicePreviewPauseHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, showChangeMemberRole, showKickMember, showKickAndBlockMember, showMakeMemberAdmin, publicChannelDeleteMemberPopupDescription, privateChannelDeleteMemberPopupDescription, publicChannelRevokeAdminPopupDescription, privateChannelRevokeAdminPopupDescription, publicChannelMakeAdminPopupDescription, privateChannelMakeAdminPopupDescription }: IProps) => JSX.Element;
 export default DetailsTab;

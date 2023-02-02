@@ -85,6 +85,12 @@ export declare function updateUserProfileAC(profile: any): {
         profile: any;
     };
 };
+export declare function browserTabIsActiveAC(state: boolean): {
+    type: string;
+    payload: {
+        state: boolean;
+    };
+};
 export declare function updateProfileAC(user: IUser, firstName?: string, lastName?: string, avatarUrl?: string, metadata?: string, avatarFile?: File, presence?: string): {
     type: string;
     payload: {

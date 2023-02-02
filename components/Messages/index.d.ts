@@ -81,5 +81,4 @@ export declare const DragAndDropContainer: import("styled-components").StyledCom
 export declare const IconWrapper: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const DropAttachmentArea: import("styled-components").StyledComponent<"div", any, {
     margin?: string | undefined;
-    disabled?: boolean | undefined;
 }, never>;

@@ -89,6 +89,7 @@ export declare const UploadProgress: import("styled-components").StyledComponent
     width?: number | undefined;
     height?: number | undefined;
     withBorder?: boolean | undefined;
+    isDetailsView?: boolean | undefined;
     backgroundColor?: string | undefined;
 }, never>;
 export declare const AttachmentPreviewTitle: import("styled-components").StyledComponent<"span", any, {

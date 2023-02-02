@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { MuteTime } from "../../types";
+import { MuteTime } from '../../types';
 export interface IDetailsProps {
     channelEditIcon?: JSX.Element;
     editChannelSaveButtonBackgroundColor?: string;
@@ -71,8 +71,10 @@ export interface IDetailsProps {
     linkPreviewTitleColor?: string;
     linkPreviewColor?: string;
     linkPreviewHoverBackgroundColor?: string;
-    voicePreviewIcon?: JSX.Element;
-    voicePreviewHoverIcon?: JSX.Element;
+    voicePreviewPlayIcon?: JSX.Element;
+    voicePreviewPlayHoverIcon?: JSX.Element;
+    voicePreviewPauseIcon?: JSX.Element;
+    voicePreviewPauseHoverIcon?: JSX.Element;
     voicePreviewTitleColor?: string;
     voicePreviewDateAndTimeColor?: string;
     voicePreviewHoverBackgroundColor?: string;

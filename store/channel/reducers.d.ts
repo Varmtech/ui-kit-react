@@ -1,4 +1,4 @@
-import { IAction, IChannel } from "../../types";
+import { IAction, IChannel } from '../../types';
 declare const _default: (state?: {
     channelsLoadingState: string | null;
     channelsForForwardLoadingState: string | null;

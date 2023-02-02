@@ -1,5 +1,5 @@
 import React__default, { createElement, Children, useState, useEffect, useRef, useLayoutEffect, useCallback, createRef, useMemo } from 'react';
-import { useDispatch, useSelector, Provider, shallowEqual } from 'react-redux';
+import { useDispatch, useSelector, shallowEqual, Provider } from 'react-redux';
 import createSagaMiddleware, { eventChannel } from 'redux-saga';
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
@@ -985,10 +985,10 @@ var initialState = {
   activeChannel: {},
   roles: [],
   users: [],
-  errorNotification: "",
+  errorNotification: '',
   notifications: [],
   typingIndicator: {},
-  searchValue: "",
+  searchValue: '',
   addedChannel: null,
   addedToChannel: null,
   deletedChannel: null,
@@ -1006,7 +1006,7 @@ var ChannelReducer = (function (state, _temp) {
   }
 
   var _ref = _temp === void 0 ? {
-    type: ""
+    type: ''
   } : _temp,
       type = _ref.type,
       payload = _ref.payload;
@@ -1018,7 +1018,7 @@ var ChannelReducer = (function (state, _temp) {
       {
         var search = payload.params.search;
 
-        if (search === "" || search) {
+        if (search === '' || search) {
           newState.searchValue = search;
         }
 
@@ -1181,7 +1181,7 @@ var ChannelReducer = (function (state, _temp) {
           return chan.id === _channel5.id;
         });
 
-        if (message.state === "Deleted" || message.state === "Edited") {
+        if (message.state === 'Deleted' || message.state === 'Edited') {
           var _updateChannel;
 
           if (((_updateChannel = updateChannel) === null || _updateChannel === void 0 ? void 0 : _updateChannel.lastMessage.id) === message.id) {
@@ -1332,6 +1332,7 @@ var EDIT_MESSAGE = 'EDIT_MESSAGE';
 var SET_MESSAGE_TO_EDIT = 'SET_MESSAGE_TO_EDIT';
 var SET_MESSAGE_FOR_REPLY = 'SET_MESSAGE_FOR_REPLY';
 var DELETE_MESSAGE = 'DELETE_MESSAGE';
+var DELETE_MESSAGE_FROM_LIST = 'DELETE_MESSAGE_FROM_LIST';
 var RESEND_MESSAGE = 'RESEND_MESSAGE';
 var UPLOAD_ATTACHMENT_COMPILATION = 'UPLOAD_ATTACHMENT_COMPILATION';
 var GET_MESSAGES_ATTACHMENTS = 'GET_MESSAGES_ATTACHMENTS';
@@ -1824,7 +1825,7 @@ var MessageOwner = styled.h3(_templateObject31 || (_templateObject31 = _taggedTe
 }, function (props) {
   return props.fontSize || '15px';
 });
-var MessageText = styled.pre(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & > a {\n    color: ", ";\n  }\n"])), function (props) {
+var MessageText = styled.pre(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & > a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'Inter, sans-serif';
 }, function (props) {
   return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
@@ -1858,7 +1859,7 @@ var UploadPercent = styled.span(_templateObject39 || (_templateObject39 = _tagge
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
-var UploadProgress = styled.div(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  ", "\n  ", "\n"])), function (props) {
+var UploadProgress = styled.div(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  ", "\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
   return props.fileAttachment ? '8px' : '0';
@@ -1884,6 +1885,8 @@ var UploadProgress = styled.div(_templateObject40 || (_templateObject40 = _tagge
   return props.isFailedAttachment && 'background-color: rgba(237, 77, 96, 0.1);';
 }, function (props) {
   return props.whiteBackground && "\n    background-color: rgba(255,255,255,0.3);\n    border: 1px solid  " + colors.gray1 + ";\n\n    " + UploadingIcon + " {\n        border: 4px solid rgba(238,238,238,0.8);\n        border-top: 4px solid " + colors.cobalt1 + ";\n    }\n  ";
+}, function (props) {
+  return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
 });
 var AttachmentPreviewTitle = styled.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.blue10;
@@ -7639,6 +7642,9 @@ var resumeUpload = function resumeUpload(attachmentId) {
     return false;
   }
 };
+var cancelUpload = function cancelUpload(attachmentId) {
+  return pendingUploaders[attachmentId].cancel();
+};
 
 var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1;
 var ReadIconWrapper = styled(SvgTicksRead)(_templateObject$1 || (_templateObject$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
@@ -7899,6 +7905,11 @@ var updateMessageOnAllMessages = function updateMessageOnAllMessages(messageId, 
     return message;
   });
 };
+var removeMessageFromAllMessages = function removeMessageFromAllMessages(messageId) {
+  activeChannelAllMessages = [].concat(activeChannelAllMessages).filter(function (msg) {
+    return !(msg.id === messageId || msg.tid === messageId);
+  });
+};
 var updateMarkersOnAllMessages = function updateMarkersOnAllMessages(markersMap, name) {
   activeChannelAllMessages = activeChannelAllMessages.map(function (message) {
     if (markersMap[message.id] && (message.deliveryStatus === MESSAGE_DELIVERY_STATUS.SENT || name === MESSAGE_DELIVERY_STATUS.READ)) {
@@ -8028,6 +8039,11 @@ function getMessagesFromMap(channelId) {
 function removeMessagesFromMap(channelId) {
   delete messagesMap[channelId];
 }
+function removeMessageFromMap(channelId, messageId) {
+  messagesMap[channelId] = [].concat(messagesMap[channelId]).filter(function (msg) {
+    return !(msg.id === messageId || msg.tid === messageId);
+  });
+}
 function clearMessagesMap() {
   messagesMap = {};
 }
@@ -8099,6 +8115,14 @@ var MessageReducer = (function (state, _temp) {
           newState.activeChannelMessages = [].concat(messagesCopy, [payload.message]);
         }
 
+        return newState;
+      }
+
+    case DELETE_MESSAGE_FROM_LIST:
+      {
+        newState.activeChannelMessages = [].concat(newState.activeChannelMessages).filter(function (msg) {
+          return !(msg.id === payload.messageId || msg.tid === payload.messageId);
+        });
         return newState;
       }
 
@@ -8557,6 +8581,7 @@ var UNBLOCK_USERS = 'UNBLOCK_USERS';
 var SET_USER = 'SET_USER';
 var UPDATE_PROFILE = 'UPDATE_PROFILE';
 var UPDATE_USER_PROFILE = 'UPDATE_USER_PROFILE';
+var BROWSER_TAB_IS_ACTIVE = 'BROWSER_TAB_IS_ACTIVE';
 var CONNECTION_EVENT_TYPES = {
   TOKEN_WILL_EXPIRE: 'TOKEN_WILL_EXPIRE',
   CONNECTION_STATUS_CHANGED: 'CONNECTION_STATUS_CHANGED',
@@ -8580,7 +8605,8 @@ var initialState$3 = {
     id: '',
     firstName: '',
     lastName: ''
-  }
+  },
+  browserTabIsActive: true
 };
 var UserReducer = (function (state, _ref) {
   if (state === void 0) {
@@ -8651,6 +8677,12 @@ var UserReducer = (function (state, _ref) {
       {
         console.log('update user.... ');
         newState.user = _extends({}, newState.user, payload.profile);
+        return newState;
+      }
+
+    case BROWSER_TAB_IS_ACTIVE:
+      {
+        newState.browserTabIsActive = payload.state;
         return newState;
       }
 
@@ -9016,6 +9048,14 @@ function joinChannelAC(channelId) {
     }
   };
 }
+function setIsDraggingAC(isDragging) {
+  return {
+    type: SET_IS_DRAGGING,
+    payload: {
+      isDragging: isDragging
+    }
+  };
+}
 function setDraggedAttachments(attachments, type) {
   return {
     type: SET_DRAGGED_ATTACHMENTS,
@@ -9133,6 +9173,14 @@ function deleteMessageAC(channelId, messageId, deleteOption) {
       channelId: channelId,
       messageId: messageId,
       deleteOption: deleteOption
+    }
+  };
+}
+function deleteMessageFromListAC(messageId) {
+  return {
+    type: DELETE_MESSAGE_FROM_LIST,
+    payload: {
+      messageId: messageId
     }
   };
 }
@@ -9538,6 +9586,14 @@ function updateUserProfileAC(profile) {
     type: UPDATE_USER_PROFILE,
     payload: {
       profile: profile
+    }
+  };
+}
+function browserTabIsActiveAC(state) {
+  return {
+    type: BROWSER_TAB_IS_ACTIVE,
+    payload: {
+      state: state
     }
   };
 }
@@ -14783,7 +14839,7 @@ sagaMiddleware.run(rootSaga);
 
 var _templateObject$2, _templateObject2$2, _templateObject3$2;
 var Container = styled.div(_templateObject$2 || (_templateObject$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 100vh;\n"])));
-var ChatContainer = styled.div(_templateObject2$2 || (_templateObject2$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  //height: ", ";\n  height: 100%;\n"])), function (props) {
+var ChatContainer = styled.div(_templateObject2$2 || (_templateObject2$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  //height: ", ";\n  height: 100%;\n  min-width: 1200px;\n"])), function (props) {
   return props.withHeader ? 'calc(100vh - 60px)' : '100vh';
 });
 var Chat = styled.div(_templateObject3$2 || (_templateObject3$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
@@ -14806,6 +14862,63 @@ var userSelector = function userSelector(store) {
 var usersListSelector = function usersListSelector(store) {
   return store.UserReducer.usersList;
 };
+var browserTabIsActiveSelector = function browserTabIsActiveSelector(store) {
+  return store.UserReducer.browserTabIsActive;
+};
+
+var channelsSelector = function channelsSelector(store) {
+  return store.ChannelReducer.channels;
+};
+var channelsForForwardSelector = function channelsForForwardSelector(store) {
+  return store.ChannelReducer.channelsForForward;
+};
+var deletedChannelSelector = function deletedChannelSelector(store) {
+  return store.ChannelReducer.deletedChannel;
+};
+var addedChannelSelector = function addedChannelSelector(store) {
+  return store.ChannelReducer.addedChannel;
+};
+var addedToChannelSelector = function addedToChannelSelector(store) {
+  return store.ChannelReducer.addedToChannel;
+};
+var hiddenChannelSelector = function hiddenChannelSelector(store) {
+  return store.ChannelReducer.hiddenChannel;
+};
+var visibleChannelSelector = function visibleChannelSelector(store) {
+  return store.ChannelReducer.visibleChannel;
+};
+var activeChannelSelector = function activeChannelSelector(store) {
+  return store.ChannelReducer.activeChannel;
+};
+var channelsLoadingState = function channelsLoadingState(store) {
+  return store.ChannelReducer.channelsLoadingState;
+};
+var channelsHasNextSelector = function channelsHasNextSelector(store) {
+  return store.ChannelReducer.channelsHasNext;
+};
+var searchValueSelector = function searchValueSelector(store) {
+  return store.ChannelReducer.searchValue;
+};
+var channelInfoIsOpenSelector = function channelInfoIsOpenSelector(store) {
+  return store.ChannelReducer.channelInfoIsOpen;
+};
+var channelEditModeSelector = function channelEditModeSelector(store) {
+  return store.ChannelReducer.channelEditMode;
+};
+var typingIndicatorSelector = function typingIndicatorSelector(channelId) {
+  return function (store) {
+    return store.ChannelReducer.typingIndicator[channelId];
+  };
+};
+var channelListWidthSelector = function channelListWidthSelector(store) {
+  return store.ChannelReducer.channelListWidth;
+};
+var isDraggingSelector = function isDraggingSelector(store) {
+  return store.ChannelReducer.isDragging;
+};
+var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
+  return store.ChannelReducer.draggedAttachments;
+};
 
 var SceytChat = function SceytChat(_ref) {
   var client = _ref.client,
@@ -14819,6 +14932,7 @@ var SceytChat = function SceytChat(_ref) {
   var dispatch = useDispatch();
   var contactsMap = useSelector(contactsMapSelector);
   var childrenArr = Children.toArray(children);
+  var draggingSelector = useSelector(isDraggingSelector, shallowEqual);
   var OtherChildren = childrenArr.filter(function (_ref2) {
     var type = _ref2.type;
     return type.name !== 'SceytChatHeader';
@@ -14850,11 +14964,27 @@ var SceytChat = function SceytChat(_ref) {
     visibilityChange = 'webkitvisibilitychange';
   }
 
+  var handleDropFile = function handleDropFile(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(setIsDraggingAC(false));
+  };
+
+  var handleDragOver = function handleDragOver(e) {
+    e.preventDefault();
+
+    if (!draggingSelector) {
+      dispatch(setIsDraggingAC(true));
+    }
+  };
+
   var handleVisibilityChange = function handleVisibilityChange() {
     if (document[hidden]) {
       setTabIsActive(false);
+      dispatch(browserTabIsActiveAC(false));
     } else {
       setTabIsActive(true);
+      dispatch(browserTabIsActiveAC(true));
     }
   };
 
@@ -14948,6 +15078,8 @@ var SceytChat = function SceytChat(_ref) {
     }
   }, [contactsMap]);
   return React__default.createElement(React__default.Fragment, null, SceytChatClient ? React__default.createElement(React__default.Fragment, null, SceytChatHeader, React__default.createElement(ChatContainer, {
+    onDrop: handleDropFile,
+    onDragOver: handleDragOver,
     className: 'sceyt-chat-container',
     withHeader: SceytChatHeader
   }, OtherChildren)) : '');
@@ -14974,57 +15106,6 @@ var SceytChatContainer = function SceytChatContainer(_ref) {
     sendAttachmentsAsSeparateMessages: sendAttachmentsAsSeparateMessages,
     customColors: customColors
   }));
-};
-
-var channelsSelector = function channelsSelector(store) {
-  return store.ChannelReducer.channels;
-};
-var channelsForForwardSelector = function channelsForForwardSelector(store) {
-  return store.ChannelReducer.channelsForForward;
-};
-var deletedChannelSelector = function deletedChannelSelector(store) {
-  return store.ChannelReducer.deletedChannel;
-};
-var addedChannelSelector = function addedChannelSelector(store) {
-  return store.ChannelReducer.addedChannel;
-};
-var addedToChannelSelector = function addedToChannelSelector(store) {
-  return store.ChannelReducer.addedToChannel;
-};
-var hiddenChannelSelector = function hiddenChannelSelector(store) {
-  return store.ChannelReducer.hiddenChannel;
-};
-var visibleChannelSelector = function visibleChannelSelector(store) {
-  return store.ChannelReducer.visibleChannel;
-};
-var activeChannelSelector = function activeChannelSelector(store) {
-  return store.ChannelReducer.activeChannel;
-};
-var channelsLoadingState = function channelsLoadingState(store) {
-  return store.ChannelReducer.channelsLoadingState;
-};
-var channelsHasNextSelector = function channelsHasNextSelector(store) {
-  return store.ChannelReducer.channelsHasNext;
-};
-var searchValueSelector = function searchValueSelector(store) {
-  return store.ChannelReducer.searchValue;
-};
-var channelInfoIsOpenSelector = function channelInfoIsOpenSelector(store) {
-  return store.ChannelReducer.channelInfoIsOpen;
-};
-var channelEditModeSelector = function channelEditModeSelector(store) {
-  return store.ChannelReducer.channelEditMode;
-};
-var typingIndicatorSelector = function typingIndicatorSelector(channelId) {
-  return function (store) {
-    return store.ChannelReducer.typingIndicator[channelId];
-  };
-};
-var channelListWidthSelector = function channelListWidthSelector(store) {
-  return store.ChannelReducer.channelListWidth;
-};
-var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
-  return store.ChannelReducer.draggedAttachments;
 };
 
 var _path$6;
@@ -15473,7 +15554,11 @@ var Channel = function Channel(_ref) {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length),
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
-  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice')), lastMessage.body)))), React__default.createElement(ChannelStatus, {
+  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
+    return " " + systemMessageUserName(contactsMap[mem], mem);
+  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
+    return " " + systemMessageUserName(contactsMap[mem], mem);
+  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice')), lastMessage.body)))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), (!!channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
     backgroundColor: colors.primary,
@@ -19622,8 +19707,10 @@ function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
       channel = _ref.channel,
       handleOpenDeleteMessage = _ref.handleOpenDeleteMessage,
+      handleDeletePendingMessage = _ref.handleDeletePendingMessage,
       handleOpenForwardMessage = _ref.handleOpenForwardMessage,
       handleReportMessage = _ref.handleReportMessage,
+      messageStatus = _ref.messageStatus,
       handleAddReaction = _ref.handleAddReaction,
       handleReplyMessage = _ref.handleReplyMessage,
       isThreadMessage = _ref.isThreadMessage,
@@ -19743,7 +19830,7 @@ function MessageActions(_ref) {
     iconColor: messageActionIconsColor,
     hoverIconColor: messageActionIconsHoverColor,
     onClick: function onClick() {
-      return handleOpenDeleteMessage();
+      return messageStatus === MESSAGE_DELIVERY_STATUS.PENDING ? handleDeletePendingMessage() : handleOpenDeleteMessage();
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
@@ -20253,6 +20340,7 @@ var VideoPlayer = function VideoPlayer(_ref) {
     backgroundColor: backgroundColor,
     isDetailsView: isDetailsView
   }, !isPreview && loading && !uploading && React__default.createElement(UploadProgress, {
+    isDetailsView: isDetailsView,
     onClick: handlePauseResumeDownload,
     isRepliedMessage: isRepliedMessage,
     borderRadius: borderRadius,
@@ -27089,7 +27177,8 @@ var Attachment = function Attachment(_ref) {
     width: renderWidth,
     height: renderHeight,
     withBorder: !isPrevious && !isDetailsView,
-    backgroundColor: backgroundColor
+    backgroundColor: backgroundColor,
+    isDetailsView: isDetailsView
   }, React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
   }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
@@ -27109,6 +27198,7 @@ var Attachment = function Attachment(_ref) {
     },
     isDetailsView: isDetailsView
   }, attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
+    isDetailsView: isDetailsView,
     isRepliedMessage: isRepliedMessage,
     onClick: handlePauseResumeUpload
   }, React__default.createElement(UploadPercent, {
@@ -27639,6 +27729,21 @@ var Message = function Message(_ref) {
     console.log('remove attachment .. ', attachmentId);
   };
 
+  var handleDeletePendingMessage = function handleDeletePendingMessage() {
+    if (message.attachments && message.attachments.length) {
+      var customUploader = getCustomUploader();
+      message.attachments.forEach(function (att) {
+        if (customUploader) {
+          cancelUpload(att.attachmentId);
+        }
+      });
+    }
+
+    removeMessageFromMap(channel.id, message.id || message.tid);
+    removeMessageFromAllMessages(message.id || message.tid);
+    dispatch(deleteMessageFromListAC(message.id || message.tid));
+  };
+
   var handleReactionAddDelete = function handleReactionAddDelete(selectedEmoji) {
     if (message.selfReactions && message.selfReactions.some(function (item) {
       return item.key === selectedEmoji;
@@ -27669,6 +27774,7 @@ var Message = function Message(_ref) {
         editModeToggle: toggleEditMode,
         messageStatus: message.deliveryStatus || MESSAGE_DELIVERY_STATUS.PENDING,
         handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
+        handleDeletePendingMessage: handleDeletePendingMessage,
         handleOpenForwardMessage: handleToggleForwardMessagePopup,
         handleReplyMessage: handleReplyMessage,
         handleReportMessage: handleToggleReportPopupOpen,
@@ -28030,6 +28136,10 @@ var SliderPopup = function SliderPopup(_ref) {
       downloadedFiles = _useState4[0],
       setDownloadedFiles = _useState4[1];
 
+  var _useState5 = useState(),
+      playedVideo = _useState5[0],
+      setPlayedVideo = _useState5[1];
+
   var customUploader = getCustomUploader();
   var contactsMap = useSelector(contactsMapSelector);
   var attachments = useSelector(attachmentsForPopupSelector, shallowEqual) || [];
@@ -28040,8 +28150,28 @@ var SliderPopup = function SliderPopup(_ref) {
     setIsSliderOpen(false);
   };
 
+  var handleBodyClick = function handleBodyClick() {
+    handleClosePopup();
+  };
+
+  var handleCarouselClick = function handleCarouselClick(e, handler) {
+    e.stopPropagation();
+
+    if (handler) {
+      handler();
+    }
+  };
+
   useDidUpdate(function () {
     if (customUploader && currentFile) {
+      if (playedVideo) {
+        var videoElem = document.getElementById(playedVideo);
+
+        if (videoElem) {
+          videoElem.pause();
+        }
+      }
+
       if (!downloadedFiles[currentFile.url]) {
         customUploader.download(currentFile.url).then(function (src) {
           var _extends2;
@@ -28055,11 +28185,17 @@ var SliderPopup = function SliderPopup(_ref) {
             image.onload = function () {
               setImageLoading(false);
             };
+          } else {
+            setPlayedVideo(currentFile.url);
           }
         })["catch"](function (e) {
           console.log('error on download... ', e);
         });
       } else {
+        if (currentFile.type === 'video') {
+          setPlayedVideo(currentFile.url);
+        }
+
         setImageLoading(false);
       }
     }
@@ -28110,7 +28246,9 @@ var SliderPopup = function SliderPopup(_ref) {
     }
   }, React__default.createElement(SvgDownload, null)), React__default.createElement(Actions, null, React__default.createElement(ActionItem, {
     onClick: handleClosePopup
-  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, null, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
+  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, {
+    onClick: handleBodyClick
+  }, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
     pagination: false,
     className: 'custom_carousel',
     initialActiveIndex: currentFile && attachmentsList.findIndex(function (item) {
@@ -28122,26 +28260,30 @@ var SliderPopup = function SliderPopup(_ref) {
     },
     renderArrow: function renderArrow(_ref2) {
       var type = _ref2.type,
-          onClick = _ref2.onClick,
+          _onClick = _ref2.onClick,
           isEdge = _ref2.isEdge;
       var pointer = type === 'PREV' ? React__default.createElement(SvgSliderButtonLeft, null) : React__default.createElement(SvgSliderButtonRight, null);
       return React__default.createElement(ArrowButton, {
         leftButton: type === 'PREV',
         type: 'button',
-        onClick: onClick,
-        disabled: isEdge
+        onClick: function onClick(e) {
+          handleCarouselClick(e, _onClick);
+        },
+        hidden: isEdge
       }, pointer);
     },
     isRTL: false
   }, attachmentsList.map(function (file) {
     return React__default.createElement(CarouselItem, {
-      key: file.url
+      key: file.url,
+      onClick: handleCarouselClick
     }, downloadedFiles[file.url] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? imageLoading ? React__default.createElement(UploadingIcon, null) : React__default.createElement("img", {
       src: downloadedFiles[file.url],
       alt: file.name
     }) : React__default.createElement("video", {
       controls: true,
       autoPlay: true,
+      id: file.url,
       src: downloadedFiles[file.url]
     }, React__default.createElement("source", {
       src: downloadedFiles[file.url],
@@ -28326,8 +28468,10 @@ var Messages = function Messages(_ref2) {
   var contactsMap = useSelector(contactsMapSelector);
   var scrollToNewMessage = useSelector(scrollToNewMessageSelector, shallowEqual);
   var scrollToRepliedMessage = useSelector(scrollToMessageSelector, shallowEqual);
+  var browserTabIsActive = useSelector(browserTabIsActiveSelector, shallowEqual);
   var hasNextMessages = useSelector(messagesHasNextSelector, shallowEqual);
   var hasPrevMessages = useSelector(messagesHasPrevSelector, shallowEqual);
+  var draggingSelector = useSelector(isDraggingSelector, shallowEqual);
 
   var _useState = useState(''),
       unreadMessageId = _useState[0],
@@ -28598,6 +28742,16 @@ var Messages = function Messages(_ref2) {
       }
     }
   }, [scrollToNewMessage]);
+  useDidUpdate(function () {
+    if (isDragging) {
+      setIsDragging(false);
+    }
+  }, [browserTabIsActive]);
+  useDidUpdate(function () {
+    if (!draggingSelector) {
+      setIsDragging(false);
+    }
+  }, [draggingSelector]);
   useEffect(function () {
     setHasNextCached(false);
     setHasPrevCached(false);
@@ -28666,8 +28820,7 @@ var Messages = function Messages(_ref2) {
     onDragOver: handleDragOver
   }, React__default.createElement(IconWrapper, {
     draggable: true
-  }, React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), React__default.createElement(DropAttachmentArea, {
-    disabled: isDragging !== 'media',
+  }, React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), isDragging === 'media' && React__default.createElement(DropAttachmentArea, {
     draggable: true,
     onDrop: handleDropMedia,
     onDragOver: handleDragOver
@@ -28722,7 +28875,7 @@ var Messages = function Messages(_ref2) {
       return " " + systemMessageUserName(contactsMap[mem], mem);
     })) + " " + (message.metadata && message.metadata.m && message.metadata.m.length > 5 ? "and " + (message.metadata.m.length - 5) + " more" : '') : message.body === 'RM' ? " removed " + (message.metadata && message.metadata.m && message.metadata.m.slice(0, 5).map(function (mem) {
       return " " + systemMessageUserName(contactsMap[mem], mem);
-    })) + " " + (message.metadata && message.metadata.m && message.metadata.m.length > 5 ? "and " + (message.metadata.m.length - 5) + " more" : '') : '')) : React__default.createElement(Message, {
+    })) + " " + (message.metadata && message.metadata.m && message.metadata.m.length > 5 ? "and " + (message.metadata.m.length - 5) + " more" : '') : message.body === 'LG' ? ' left the group' : '')) : React__default.createElement(Message, {
       message: message,
       channel: channel,
       handleMediaItemClick: function handleMediaItemClick(attachment) {
@@ -28840,11 +28993,9 @@ var DragAndDropContainer = styled.div(_templateObject5$c || (_templateObject5$c 
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
 var IconWrapper = styled.span(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, colors.primary);
-var DropAttachmentArea = styled.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n  pointer-events: ", ";\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
+var DropAttachmentArea = styled.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
   return props.margin || '12px 32px 32px';
-}, colors.gray6, function (props) {
-  return props.disabled && 'none';
-}, colors.gray5, IconWrapper, colors.white);
+}, colors.gray6, colors.gray5, IconWrapper, colors.white);
 
 var _circle$5, _path$O;
 
@@ -30909,7 +31060,7 @@ var Members = function Members(_ref) {
       textColor: colors.red1,
       key: 3,
       hoverBackground: customColors.selectedChannelBackground
-    }, "Remove member"), showKickAndBlockMember && chekActionPermission('kickAndBlockMember') && React__default.createElement(DropdownOptionLi, {
+    }, "Remove"), showKickAndBlockMember && chekActionPermission('kickAndBlockMember') && React__default.createElement(DropdownOptionLi, {
       textColor: colors.red1,
       key: 4,
       hoverBackground: customColors.selectedChannelBackground,
@@ -31249,7 +31400,6 @@ var Links = function Links(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
-  console.log('attachments. . . ', attachments);
   return React__default.createElement(Container$j, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
@@ -31324,7 +31474,7 @@ function _extends$1a() {
   return _extends$1a.apply(this, arguments);
 }
 
-function SvgVoicePreviewHoverIcon(props) {
+function SvgVoicePreviewPause(props) {
   return /*#__PURE__*/createElement("svg", _extends$1a({
     width: 40,
     height: 40,
@@ -31334,14 +31484,96 @@ function SvgVoicePreviewHoverIcon(props) {
     width: 40,
     height: 40,
     rx: 8,
-    fill: "#fff"
+    fill: "#F3F5F7"
   })), _circle$8 || (_circle$8 = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
   })), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
+    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$4, _circle$9, _path$17;
+
+function _extends$1b() {
+  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1b.apply(this, arguments);
+}
+
+function SvgVoicePreviewHoverIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1b({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#fff"
+  })), _circle$9 || (_circle$9 = /*#__PURE__*/createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$5, _circle$a, _path$18;
+
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1c.apply(this, arguments);
+}
+
+function SvgVoicePreviewPauseHover(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1c({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#fff"
+  })), _circle$a || (_circle$a = /*#__PURE__*/createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
+    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
@@ -31350,8 +31582,10 @@ var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
-      voicePreviewIcon = _ref.voicePreviewIcon,
-      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewPlayIcon = _ref.voicePreviewPlayIcon,
+      voicePreviewPlayHoverIcon = _ref.voicePreviewPlayHoverIcon,
+      voicePreviewPauseIcon = _ref.voicePreviewPauseIcon,
+      voicePreviewPauseHoverIcon = _ref.voicePreviewPauseHoverIcon,
       voicePreviewTitleColor = _ref.voicePreviewTitleColor,
       voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
       voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor;
@@ -31406,13 +31640,13 @@ var VoiceItem = function VoiceItem(_ref) {
     hoverBackgroundColor: voicePreviewHoverBackgroundColor
   }, audioIsPlaying ? React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewIcon || React__default.createElement(SvgVoicePreview, null)), React__default.createElement(FileHoverIconCont$1, {
+  }, voicePreviewPauseIcon || React__default.createElement(SvgVoicePreviewPause, null)), React__default.createElement(FileHoverIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))) : React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
+  }, voicePreviewPauseHoverIcon || React__default.createElement(SvgVoicePreviewPauseHover, null))) : React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewIcon || React__default.createElement(SvgVoicePreview, null)), React__default.createElement(FileHoverIconCont$1, {
+  }, voicePreviewPlayIcon || React__default.createElement(SvgVoicePreview, null)), React__default.createElement(FileHoverIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
+  }, voicePreviewPlayHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
     color: voicePreviewTitleColor
   }, file.user.id === user.id ? 'You' : makeUserName(contactsMap[file.user.id], file.user, getFromContacts)), React__default.createElement(AudioDate, {
     color: voicePreviewDateAndTimeColor
@@ -31449,8 +31683,10 @@ var _templateObject$C;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
-      voicePreviewIcon = _ref.voicePreviewIcon,
-      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewPlayIcon = _ref.voicePreviewPlayIcon,
+      voicePreviewPlayHoverIcon = _ref.voicePreviewPlayHoverIcon,
+      voicePreviewPauseIcon = _ref.voicePreviewPauseIcon,
+      voicePreviewPauseHoverIcon = _ref.voicePreviewPauseHoverIcon,
       voicePreviewTitleColor = _ref.voicePreviewTitleColor,
       voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
       voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor;
@@ -31465,9 +31701,11 @@ var Voices = function Voices(_ref) {
       file: file,
       voicePreviewDateAndTimeColor: voicePreviewDateAndTimeColor,
       voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor,
-      voicePreviewHoverIcon: voicePreviewHoverIcon,
-      voicePreviewTitleColor: voicePreviewTitleColor,
-      voicePreviewIcon: voicePreviewIcon
+      voicePreviewPlayHoverIcon: voicePreviewPlayIcon,
+      voicePreviewPlayIcon: voicePreviewPlayHoverIcon,
+      voicePreviewPauseIcon: voicePreviewPauseIcon,
+      voicePreviewPauseHoverIcon: voicePreviewPauseHoverIcon,
+      voicePreviewTitleColor: voicePreviewTitleColor
     });
   }));
 };
@@ -31485,8 +31723,10 @@ var DetailsTab = function DetailsTab(_ref) {
       linkPreviewTitleColor = _ref.linkPreviewTitleColor,
       linkPreviewColor = _ref.linkPreviewColor,
       linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor,
-      voicePreviewIcon = _ref.voicePreviewIcon,
-      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewPlayIcon = _ref.voicePreviewPlayIcon,
+      voicePreviewPlayHoverIcon = _ref.voicePreviewPlayHoverIcon,
+      voicePreviewPauseIcon = _ref.voicePreviewPauseIcon,
+      voicePreviewPauseHoverIcon = _ref.voicePreviewPauseHoverIcon,
       voicePreviewTitleColor = _ref.voicePreviewTitleColor,
       voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
       voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor,
@@ -31580,8 +31820,10 @@ var DetailsTab = function DetailsTab(_ref) {
     linkPreviewHoverBackgroundColor: linkPreviewHoverBackgroundColor
   }), activeTab === channelDetailsTabs.voice && React__default.createElement(Voices, {
     channelId: channel.id,
-    voicePreviewIcon: voicePreviewIcon,
-    voicePreviewHoverIcon: voicePreviewHoverIcon,
+    voicePreviewPlayHoverIcon: voicePreviewPlayIcon,
+    voicePreviewPlayIcon: voicePreviewPlayHoverIcon,
+    voicePreviewPauseIcon: voicePreviewPauseIcon,
+    voicePreviewPauseHoverIcon: voicePreviewPauseHoverIcon,
     voicePreviewTitleColor: voicePreviewTitleColor,
     voicePreviewDateAndTimeColor: voicePreviewDateAndTimeColor,
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
@@ -31592,10 +31834,10 @@ var DetailsTabHeader = styled.div(_templateObject2$y || (_templateObject2$y = _t
   return props.activeTabColor || colors.primary;
 });
 
-var _path$17;
+var _path$19;
 
-function _extends$1b() {
-  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -31608,17 +31850,17 @@ function _extends$1b() {
 
     return target;
   };
-  return _extends$1b.apply(this, arguments);
+  return _extends$1d.apply(this, arguments);
 }
 
 function SvgCamera(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1b({
+  return /*#__PURE__*/createElement("svg", _extends$1d({
     width: 40,
     height: 40,
     viewBox: "0 0 41 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M16.86 6.667a4.167 4.167 0 00-4.084 3.342c-.058.288-.17.566-.363.787l-.837.954c-.263.3-.644.473-1.043.473H6.11A2.778 2.778 0 003.333 15v15.278a2.778 2.778 0 002.778 2.778H33.89a2.778 2.778 0 002.778-2.778V15a2.778 2.778 0 00-2.778-2.777h-4.422c-.4 0-.78-.173-1.043-.473l-.837-.954c-.194-.22-.305-.499-.363-.787a4.167 4.167 0 00-4.085-3.342h-6.278zm8.696 15.278a5.556 5.556 0 11-11.112 0 5.556 5.556 0 0111.112 0zM6.806 10.139a.694.694 0 000 1.39h2.777a.694.694 0 100-1.39H6.806z",
@@ -31887,8 +32129,10 @@ var Details = function Details(_ref) {
       linkPreviewTitleColor = _ref.linkPreviewTitleColor,
       linkPreviewColor = _ref.linkPreviewColor,
       linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor,
-      voicePreviewIcon = _ref.voicePreviewIcon,
-      voicePreviewHoverIcon = _ref.voicePreviewHoverIcon,
+      voicePreviewPlayIcon = _ref.voicePreviewPlayIcon,
+      voicePreviewPlayHoverIcon = _ref.voicePreviewPlayHoverIcon,
+      voicePreviewPauseIcon = _ref.voicePreviewPauseIcon,
+      voicePreviewPauseHoverIcon = _ref.voicePreviewPauseHoverIcon,
       voicePreviewTitleColor = _ref.voicePreviewTitleColor,
       voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
       voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor,
@@ -32094,8 +32338,10 @@ var Details = function Details(_ref) {
     linkPreviewTitleColor: linkPreviewTitleColor,
     linkPreviewColor: linkPreviewColor,
     linkPreviewHoverBackgroundColor: linkPreviewHoverBackgroundColor,
-    voicePreviewIcon: voicePreviewIcon,
-    voicePreviewHoverIcon: voicePreviewHoverIcon,
+    voicePreviewPlayHoverIcon: voicePreviewPlayIcon,
+    voicePreviewPlayIcon: voicePreviewPlayHoverIcon,
+    voicePreviewPauseIcon: voicePreviewPauseIcon,
+    voicePreviewPauseHoverIcon: voicePreviewPauseHoverIcon,
     voicePreviewTitleColor: voicePreviewTitleColor,
     voicePreviewDateAndTimeColor: voicePreviewDateAndTimeColor,
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor,
@@ -32326,10 +32572,10 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var _path$18, _path2$a, _path3$5;
+var _path$1a, _path2$a, _path3$5;
 
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32342,15 +32588,15 @@ function _extends$1c() {
 
     return target;
   };
-  return _extends$1c.apply(this, arguments);
+  return _extends$1e.apply(this, arguments);
 }
 
 function SvgChatLogo(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1c({
+  return /*#__PURE__*/createElement("svg", _extends$1e({
     viewBox: "0 0 249 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
+  }, props), _path$1a || (_path$1a = /*#__PURE__*/createElement("path", {
     d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
     fill: "#e17335"
   })), _path2$a || (_path2$a = /*#__PURE__*/createElement("path", {
@@ -32370,10 +32616,10 @@ function SceytChatHeader() {
   return React__default.createElement(Container$o, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
-var _path$19;
+var _path$1b;
 
-function _extends$1d() {
-  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1f() {
+  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32386,16 +32632,16 @@ function _extends$1d() {
 
     return target;
   };
-  return _extends$1d.apply(this, arguments);
+  return _extends$1f.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1d({
+  return /*#__PURE__*/createElement("svg", _extends$1f({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
+  }, props), _path$1b || (_path$1b = /*#__PURE__*/createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));

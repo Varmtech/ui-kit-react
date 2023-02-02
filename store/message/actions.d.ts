@@ -33,6 +33,12 @@ export declare function deleteMessageAC(channelId: string, messageId: string, de
         deleteOption: "forEveryone" | "forMe";
     };
 };
+export declare function deleteMessageFromListAC(messageId: string): {
+    type: string;
+    payload: {
+        messageId: string;
+    };
+};
 export declare function editMessageAC(channelId: string, message: IMessage): {
     type: string;
     payload: {

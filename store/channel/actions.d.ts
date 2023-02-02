@@ -274,7 +274,7 @@ export declare function joinChannelAC(channelId: string): {
         channelId: string;
     };
 };
-export declare function setIsDragging(isDragging: boolean): {
+export declare function setIsDraggingAC(isDragging: boolean): {
     type: string;
     payload: {
         isDragging: boolean;

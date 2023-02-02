@@ -14,6 +14,7 @@ export declare type IAttachmentMeta = {
 export declare const setAllMessages: (messages: IMessage[]) => void;
 export declare const addAllMessages: (messages: IMessage[], direction: string) => void;
 export declare const updateMessageOnAllMessages: (messageId: string, updatedParams: any) => void;
+export declare const removeMessageFromAllMessages: (messageId: string) => void;
 export declare const updateMarkersOnAllMessages: (markersMap: any, name: string) => void;
 export declare const getAllMessages: () => IMessage[];
 export declare const removeAllMessages: () => void;
@@ -36,6 +37,7 @@ export declare function updateMessageStatusOnMap(channelId: string, newMarkers: 
 }): void;
 export declare function getMessagesFromMap(channelId: string): IMessage[];
 export declare function removeMessagesFromMap(channelId: string): void;
+export declare function removeMessageFromMap(channelId: string, messageId: string): void;
 export declare function clearMessagesMap(): void;
 export declare function checkChannelExistsOnMessagesMap(channelId: string): boolean;
 export declare function destroyChannelsMap(): void;
