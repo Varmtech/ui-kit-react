@@ -1,11 +1,17 @@
 import React, { FC } from 'react';
 import { ICustomColors } from '../Channel/types';
 import { IChannel } from '../../types';
+interface IChannelGroup {
+    groupName: string;
+    channelList: IChannel[];
+}
 interface IChannelListProps {
     customColors?: ICustomColors;
     List?: FC<{
         channels: IChannel[];
         loadMoreChannels: (count?: number) => void;
+        searchValue?: string;
+        handleSetChannelListWithGroups?: (channelListGroups: IChannelGroup[]) => void;
         children?: React.ReactNode;
     }>;
     ListItem?: FC<any>;
@@ -17,6 +23,7 @@ interface IChannelListProps {
     sort?: 'byLastMessage' | 'byCreationDate';
     avatar?: boolean;
     showSearch?: boolean;
+    searchOption?: 'custom' | 'default';
     forceUpdateChannelList?: () => void;
     showCreateChannelIcon?: boolean;
     uriPrefixOnCreateChannel?: string;

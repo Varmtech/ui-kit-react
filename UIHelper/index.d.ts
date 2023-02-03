@@ -63,6 +63,12 @@ export declare const MessageText: import("styled-components").StyledComponent<"p
     showMessageSenderName?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
 }, never>;
+export declare const ReplyMessageText: import("styled-components").StyledComponent<"span", any, {
+    withAttachment?: boolean | undefined;
+    fontSize?: string | undefined;
+    lineHeight?: string | undefined;
+    showMessageSenderName?: boolean | undefined;
+}, never>;
 export declare const CloseIcon: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
 export declare const ClearTypedText: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
 export declare const StyledSearchSvg: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
@@ -91,6 +97,7 @@ export declare const UploadProgress: import("styled-components").StyledComponent
     withBorder?: boolean | undefined;
     isDetailsView?: boolean | undefined;
     backgroundColor?: string | undefined;
+    imageMinWidth?: string | undefined;
 }, never>;
 export declare const AttachmentPreviewTitle: import("styled-components").StyledComponent<"span", any, {
     color?: string | undefined;

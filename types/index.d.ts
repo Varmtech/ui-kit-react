@@ -24,7 +24,6 @@ export interface IChannel {
     id: string;
     createdAt: Date | number;
     updatedAt: Date | number;
-    unreadCount: number;
     lastReadMessageId: string;
     lastDeliveredMessageId: string;
     lastMessage: any | null;

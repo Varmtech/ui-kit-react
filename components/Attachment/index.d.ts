@@ -16,8 +16,9 @@ interface AttachmentPops {
     selectedFileAttachmentsSizeColor?: string;
     selectedFileAttachmentsIcon?: JSX.Element;
     fileNameMaxLength?: number;
+    imageMinWidth?: string;
 }
-declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, fileNameMaxLength }: AttachmentPops) => JSX.Element;
+declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, fileNameMaxLength, imageMinWidth }: AttachmentPops) => JSX.Element;
 export default Attachment;
 export declare const AttachmentFile: import("styled-components").StyledComponent<"div", any, {
     isPrevious?: boolean | undefined;
@@ -36,4 +37,5 @@ export declare const AttachmentImg: import("styled-components").StyledComponent<
     isRepliedMessage?: boolean | undefined;
     fitTheContainer?: boolean | undefined;
     backgroundColor: string;
+    imageMinWidth?: string | undefined;
 }, never>;
