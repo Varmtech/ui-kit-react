@@ -1587,7 +1587,7 @@ function SvgClose(props) {
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$4 || (_path$4 = /*#__PURE__*/createElement("path", {
     d: "M11 1L1 11M1 1l10 10",
-    stroke: "#676A7C",
+    stroke: "CurrentColor",
     strokeWidth: 1.6,
     strokeLinecap: "round",
     strokeLinejoin: "round"
@@ -27004,7 +27004,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
         },
         barWidth: 1.5,
         audioRate: audioRate,
-        barHeight: 2,
+        barHeight: 3,
         hideScrollbar: true,
         barRadius: 1.5,
         cursorWidth: 0,
@@ -28180,18 +28180,6 @@ var SliderPopup = function SliderPopup(_ref) {
     setIsSliderOpen(false);
   };
 
-  var handleBodyClick = function handleBodyClick() {
-    handleClosePopup();
-  };
-
-  var handleCarouselClick = function handleCarouselClick(e, handler) {
-    e.stopPropagation();
-
-    if (handler) {
-      handler();
-    }
-  };
-
   useDidUpdate(function () {
     if (customUploader && currentFile) {
       if (playedVideo) {
@@ -28276,9 +28264,7 @@ var SliderPopup = function SliderPopup(_ref) {
     }
   }, React__default.createElement(SvgDownload, null)), React__default.createElement(Actions, null, React__default.createElement(ActionItem, {
     onClick: handleClosePopup
-  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, {
-    onClick: handleBodyClick
-  }, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
+  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, null, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
     pagination: false,
     className: 'custom_carousel',
     initialActiveIndex: currentFile && attachmentsList.findIndex(function (item) {
@@ -28290,23 +28276,20 @@ var SliderPopup = function SliderPopup(_ref) {
     },
     renderArrow: function renderArrow(_ref2) {
       var type = _ref2.type,
-          _onClick = _ref2.onClick,
+          onClick = _ref2.onClick,
           isEdge = _ref2.isEdge;
       var pointer = type === 'PREV' ? React__default.createElement(SvgSliderButtonLeft, null) : React__default.createElement(SvgSliderButtonRight, null);
       return React__default.createElement(ArrowButton, {
         leftButton: type === 'PREV',
         type: 'button',
-        onClick: function onClick(e) {
-          handleCarouselClick(e, _onClick);
-        },
-        hidden: isEdge
+        onClick: onClick,
+        disabled: isEdge
       }, pointer);
     },
     isRTL: false
   }, attachmentsList.map(function (file) {
     return React__default.createElement(CarouselItem, {
-      key: file.url,
-      onClick: handleCarouselClick
+      key: file.url
     }, downloadedFiles[file.url] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? imageLoading ? React__default.createElement(UploadingIcon, null) : React__default.createElement("img", {
       src: downloadedFiles[file.url],
       alt: file.name
@@ -28340,7 +28323,7 @@ var FileSize = styled.span(_templateObject8$7 || (_templateObject8$7 = _taggedTe
 var UserName = styled.h4(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled.span(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled.span(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  img,\n  video {\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n  video {\n    width: calc(100vw - 300px);\n  }\n"])));
+var CarouselItem = styled.span(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  pointer-events: none;\n  img,\n  video {\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n  video {\n    width: calc(100vw - 300px);\n  }\n"])));
 var ArrowButton = styled.button(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n"])), function (props) {
   return !props.leftButton && '24px';
 }, function (props) {
@@ -28868,7 +28851,6 @@ var Messages = function Messages(_ref2) {
   })), React__default.createElement(Container$d, {
     id: 'scrollableDiv',
     ref: scrollRef,
-    draggable: true,
     onScroll: handleMessagesListScroll,
     onDragEnter: handleDragIn
   }, React__default.createElement(MessagesBox, {
@@ -31620,7 +31602,9 @@ var VoiceItem = function VoiceItem(_ref) {
       voicePreviewPauseHoverIcon = _ref.voicePreviewPauseHoverIcon,
       voicePreviewTitleColor = _ref.voicePreviewTitleColor,
       voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
-      voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor;
+      voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor,
+      setVoiceIsPlaying = _ref.setVoiceIsPlaying,
+      playingVoiceId = _ref.playingVoiceId;
   var getFromContacts = getUserDisplayNameFromContact();
 
   var _useState = useState(''),
@@ -31642,6 +31626,11 @@ var VoiceItem = function VoiceItem(_ref) {
         var _audioRef$current;
 
         setAudioIsPlaying(true);
+
+        if (setVoiceIsPlaying) {
+          setVoiceIsPlaying(file.id);
+        }
+
         (_audioRef$current = audioRef.current) === null || _audioRef$current === void 0 ? void 0 : _audioRef$current.play();
       } else {
         var _audioRef$current2;
@@ -31652,6 +31641,14 @@ var VoiceItem = function VoiceItem(_ref) {
     }
   };
 
+  useDidUpdate(function () {
+    if (playingVoiceId && playingVoiceId !== file.id) {
+      var _audioRef$current3;
+
+      setAudioIsPlaying(false);
+      (_audioRef$current3 = audioRef.current) === null || _audioRef$current3 === void 0 ? void 0 : _audioRef$current3.pause();
+    }
+  }, [playingVoiceId]);
   useEffect(function () {
     if (customDownloader) {
       customDownloader(file.url).then(function (url) {
@@ -31723,6 +31720,11 @@ var Voices = function Voices(_ref) {
       voicePreviewDateAndTimeColor = _ref.voicePreviewDateAndTimeColor,
       voicePreviewHoverBackgroundColor = _ref.voicePreviewHoverBackgroundColor;
   var dispatch = useDispatch();
+
+  var _useState = useState(''),
+      payingVoiceId = _useState[0],
+      setPlayingVoiceId = _useState[1];
+
   var attachments = useSelector(activeTabAttachmentsSelector, shallowEqual) || [];
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
@@ -31737,7 +31739,11 @@ var Voices = function Voices(_ref) {
       voicePreviewPlayIcon: voicePreviewPlayHoverIcon,
       voicePreviewPauseIcon: voicePreviewPauseIcon,
       voicePreviewPauseHoverIcon: voicePreviewPauseHoverIcon,
-      voicePreviewTitleColor: voicePreviewTitleColor
+      voicePreviewTitleColor: voicePreviewTitleColor,
+      setVoiceIsPlaying: function setVoiceIsPlaying(voiceId) {
+        return setPlayingVoiceId(voiceId);
+      },
+      playingVoiceId: payingVoiceId
     });
   }));
 };
@@ -31972,20 +31978,25 @@ var EditChannel = function EditChannel(_ref) {
   };
 
   var handleImageCrop = function handleImageCrop(image) {
-    setNewAvatar({
-      src: {
-        file: image
-      },
-      url: URL.createObjectURL(image)
-    });
+    try {
+      return Promise.resolve(resizeImage(image, undefined, undefined, 0.9)).then(function (_ref2) {
+        var blob = _ref2.blob;
+        var file = new File([blob], image.name);
+        setNewAvatar({
+          src: {
+            file: file
+          },
+          url: URL.createObjectURL(file)
+        });
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
   };
 
   var handleFileUpload = function handleFileUpload() {
     var file = fileUploader.current.files[0];
-
-    if (file.size < 1000000) {
-      handleSelectImage(file);
-    }
+    handleSelectImage(file);
   };
 
   var handleRemoveAvatar = function handleRemoveAvatar() {
