@@ -82,3 +82,4 @@ export declare const IconWrapper: import("styled-components").StyledComponent<"s
 export declare const DropAttachmentArea: import("styled-components").StyledComponent<"div", any, {
     margin?: string | undefined;
 }, never>;
+export declare const NoMessagesContainer: import("styled-components").StyledComponent<"div", any, {}, never>;
