@@ -1,3 +1,6 @@
+export declare function md5(inputString: string): string;
+export declare const BKDRHash: (str: string) => number;
+export declare const hashCode: (str: string) => number;
 export declare const GlobalStyles: import("styled-components").GlobalStyleComponent<{}, import("styled-components").DefaultTheme>;
 export declare function generateAvatarColor(itemName: any): string | null;
 export declare const DropdownOptionsUl: import("styled-components").StyledComponent<"ul", any, {}, never>;

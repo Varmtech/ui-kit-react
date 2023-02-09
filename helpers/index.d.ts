@@ -27,3 +27,5 @@ export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;
 export declare const getMetadataFromUrl: (url: string) => Promise<any>;
 export declare const formatAudioVideoTime: (duration: number, currentTime: number) => string;
 export declare const formatLargeText: (text: string, maxLength: number) => any;
+export declare const getCaretPosition: (editableDiv: any) => number;
+export declare const placeCaretAtEnd: (el: any) => void;
