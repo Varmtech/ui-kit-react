@@ -8031,7 +8031,7 @@ var getCaretPosition = function getCaretPosition(editableDiv) {
     if (sel.rangeCount) {
       range = sel.getRangeAt(0);
 
-      if (range.commonAncestorContainer.parentNode == editableDiv) {
+      if (range.commonAncestorContainer.parentNode === editableDiv) {
         caretPos = range.endOffset;
       }
     }
@@ -8052,6 +8052,30 @@ var getCaretPosition = function getCaretPosition(editableDiv) {
 
   return caretPos;
 };
+var setCursorPosition = function setCursorPosition(element, position) {
+  var range = document.createRange();
+  var sel = window.getSelection();
+  var node = element.childNodes[0];
+  var offset = 0;
+
+  for (var i = 0; i < element.childNodes.length; i++) {
+    if (offset + element.childNodes[i].textContent.length >= position) {
+      node = element.childNodes[i];
+      offset = position - offset;
+      break;
+    }
+
+    offset += element.childNodes[i].textContent.length;
+  }
+
+  range.setStart(node, offset);
+  range.collapse(true);
+
+  if (sel) {
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+};
 var placeCaretAtEnd = function placeCaretAtEnd(el) {
   el.focus();
 
@@ -8070,6 +8094,48 @@ var placeCaretAtEnd = function placeCaretAtEnd(el) {
       textRange.select();
     }
   }
+};
+var detectOS = function detectOS() {
+  var userAgent = window.navigator.userAgent;
+  var platform = window.navigator.platform;
+  var macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+  var windowsPlatforms = ['Win32', 'Win64', 'Windows', 'WinCE'];
+  var iosPlatforms = ['iPhone', 'iPad', 'iPod'];
+  var os = null;
+
+  if (macosPlatforms.includes(platform)) {
+    os = 'Mac OS';
+  } else if (iosPlatforms.includes(platform)) {
+    os = 'iOS';
+  } else if (windowsPlatforms.includes(platform)) {
+    os = 'Windows';
+  } else if (/Android/.test(userAgent)) {
+    os = 'Android';
+  } else if (!os && /Linux/.test(platform)) {
+    os = 'Linux';
+  }
+
+  return os;
+};
+var detectBrowser = function detectBrowser() {
+  var userAgent = window.navigator.userAgent;
+  var browser;
+
+  if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+    browser = 'Opera';
+  } else if (userAgent.includes('Edge')) {
+    browser = 'Edge';
+  } else if (userAgent.includes('Chrome')) {
+    browser = 'Chrome';
+  } else if (userAgent.includes('Safari')) {
+    browser = 'Safari';
+  } else if (userAgent.includes('Firefox')) {
+    browser = 'Firefox';
+  } else if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) {
+    browser = 'Internet Explorer';
+  }
+
+  return browser;
 };
 
 var MESSAGES_MAX_LENGTH = 50;
@@ -8310,6 +8376,8 @@ var MessageReducer = (function (state, _temp) {
   switch (type) {
     case ADD_MESSAGE:
       {
+        console.log('add message ... ');
+        console.log('newState.activeChannelMessages ... ', newState.activeChannelMessages);
         var messagesCopy = [].concat(newState.activeChannelMessages);
 
         if (newState.activeChannelMessages.length >= MESSAGES_MAX_LENGTH) {
@@ -9833,7 +9901,6 @@ var setNotification = function setNotification(body, user, channel) {
     body: body,
     icon: logoSrc
   });
-  console.log('should show notification: ', notification);
 
   notification.onclick = function (event) {
     event.preventDefault();
@@ -10200,7 +10267,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 39 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 46 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 48 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 73 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 89 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 97 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 133 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 137 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 141 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 146 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 166 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 182 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 195 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 197 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 202 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 208 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 224 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 229 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 234 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 239 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 244 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 249 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 254 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 261 : 265;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 39 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 46 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 48 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 73 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 89 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 97 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 132 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 136 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 140 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 145 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 165 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 181 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 196 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 201 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 207 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 224 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 229 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 234 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 239 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 244 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 249 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 254 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 261 : 265;
           break;
 
         case 14:
@@ -10394,61 +10461,60 @@ function watchForEvents() {
           _activeChannelId4 = _context3.sent;
           _channelExists5 = checkChannelExists(_channel5.id);
           channelForAdd = JSON.parse(JSON.stringify(_channel5));
-          console.log('message received: channel ', _channel5, '  -- - Message: ', message);
 
           if (_channelExists5) {
-            _context3.next = 111;
+            _context3.next = 110;
             break;
           }
 
-          _context3.next = 107;
+          _context3.next = 106;
           return call(setChannelInMap, _channel5);
 
-        case 107:
-          _context3.next = 109;
+        case 106:
+          _context3.next = 108;
           return put(addChannelAC(channelForAdd));
 
-        case 109:
-          _context3.next = 114;
+        case 108:
+          _context3.next = 113;
           break;
 
-        case 111:
+        case 110:
           if (message.repliedInThread) {
-            _context3.next = 114;
+            _context3.next = 113;
             break;
           }
 
-          _context3.next = 114;
+          _context3.next = 113;
           return put(updateChannelLastMessageAC(message, channelForAdd));
 
-        case 114:
+        case 113:
           if (!(_channel5.id === _activeChannelId4)) {
-            _context3.next = 120;
+            _context3.next = 119;
             break;
           }
 
           if (getHasNextCached()) {
-            _context3.next = 118;
+            _context3.next = 117;
             break;
           }
 
-          _context3.next = 118;
+          _context3.next = 117;
           return put(addMessageAC(message));
 
-        case 118:
+        case 117:
           addAllMessages([message], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 120:
+        case 119:
           if (getMessagesFromMap(_channel5.id) && getMessagesFromMap(_channel5.id).length) {
             addMessageToMap(_channel5.id, message);
           }
 
-          _context3.next = 123;
+          _context3.next = 122;
           return put(updateChannelDataAC(_channel5.id, _extends({}, channelForAdd)));
 
-        case 123:
+        case 122:
           if (!(message.user.id !== SceytChatClient.chatClient.user.id)) {
-            _context3.next = 132;
+            _context3.next = 131;
             break;
           }
 
@@ -10459,25 +10525,25 @@ function watchForEvents() {
           }
 
           if (!(message.repliedInThread && message.parent.id)) {
-            _context3.next = 130;
+            _context3.next = 129;
             break;
           }
 
-          _context3.next = 128;
+          _context3.next = 127;
           return put(markMessagesAsDeliveredAC(message.parent.id, [message.id]));
 
-        case 128:
-          _context3.next = 132;
+        case 127:
+          _context3.next = 131;
           break;
 
-        case 130:
-          _context3.next = 132;
+        case 129:
+          _context3.next = 131;
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
-        case 132:
+        case 131:
           return _context3.abrupt("break", 266);
 
-        case 133:
+        case 132:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
             var channelId, markerList, channel, activeChannelId, lastMessage, updateLastMessage, markersMap;
             return _regeneratorRuntime().wrap(function _callee$(_context) {
@@ -10550,19 +10616,19 @@ function watchForEvents() {
                 }
               }
             }, _callee);
-          })(), "t1", 134);
+          })(), "t1", 133);
 
-        case 134:
+        case 133:
           _ret = _context3.t1;
 
           if (!(_ret === "break")) {
-            _context3.next = 137;
+            _context3.next = 136;
             break;
           }
 
           return _context3.abrupt("break", 266);
 
-        case 137:
+        case 136:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
             var channel, from;
             return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -10590,150 +10656,150 @@ function watchForEvents() {
                 }
               }
             }, _callee2);
-          })(), "t2", 138);
+          })(), "t2", 137);
 
-        case 138:
+        case 137:
           _ret2 = _context3.t2;
 
           if (!(_ret2 === "break")) {
-            _context3.next = 141;
+            _context3.next = 140;
             break;
           }
 
           return _context3.abrupt("break", 266);
 
-        case 141:
+        case 140:
           _channel6 = args.channel, from = args.from;
 
           if (typingUsersTimeout[from.id]) {
             clearTimeout(typingUsersTimeout[from.id]);
           }
 
-          _context3.next = 145;
+          _context3.next = 144;
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
-        case 145:
+        case 144:
           return _context3.abrupt("break", 266);
 
-        case 146:
+        case 145:
           channelId = args.channelId;
           console.log('channel DELETE ... ');
-          _context3.next = 150;
+          _context3.next = 149;
           return call(getActiveChannelId);
 
-        case 150:
+        case 149:
           _activeChannelId5 = _context3.sent;
           _channel7 = getChannelFromMap(channelId);
 
           if (!_channel7) {
-            _context3.next = 157;
+            _context3.next = 156;
             break;
           }
 
-          _context3.next = 155;
+          _context3.next = 154;
           return put(removeChannelAC(channelId));
 
-        case 155:
-          _context3.next = 157;
+        case 154:
+          _context3.next = 156;
           return call(removeChannelFromMap, channelId);
 
-        case 157:
-          _context3.next = 159;
+        case 156:
+          _context3.next = 158;
           return put(setChannelToRemoveAC(_channel7));
 
-        case 159:
+        case 158:
           if (!(_activeChannelId5 === channelId)) {
-            _context3.next = 165;
+            _context3.next = 164;
             break;
           }
 
-          _context3.next = 162;
+          _context3.next = 161;
           return call(getLastChannelFromMap);
 
-        case 162:
+        case 161:
           _activeChannel = _context3.sent;
-          _context3.next = 165;
+          _context3.next = 164;
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
-        case 165:
+        case 164:
           return _context3.abrupt("break", 266);
 
-        case 166:
+        case 165:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
           _activeChannelId6 = getActiveChannelId();
           console.log('channel DELETE_MESSAGE ... ');
           _channelExists6 = checkChannelExists(_channel8.id);
 
           if (!(_channel8.id === _activeChannelId6)) {
-            _context3.next = 174;
+            _context3.next = 173;
             break;
           }
 
           updateMessageOnAllMessages(deletedMessage.id, deletedMessage);
-          _context3.next = 174;
+          _context3.next = 173;
           return put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 174:
+        case 173:
           updateMessageOnMap(_channel8.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
 
           if (!_channelExists6) {
-            _context3.next = 181;
+            _context3.next = 180;
             break;
           }
 
-          _context3.next = 178;
+          _context3.next = 177;
           return put(updateChannelDataAC(_channel8.id, {
             unreadMessageCount: _channel8.unreadMessageCount
           }));
 
-        case 178:
+        case 177:
           if (!(_channel8.lastMessage.id === deletedMessage.id)) {
-            _context3.next = 181;
+            _context3.next = 180;
             break;
           }
 
-          _context3.next = 181;
+          _context3.next = 180;
           return put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
-        case 181:
+        case 180:
           return _context3.abrupt("break", 266);
 
-        case 182:
+        case 181:
           _channel9 = args.channel, _message = args.message;
           console.log('channel EDIT_MESSAGE ... ');
           _activeChannelId7 = getActiveChannelId();
           _channelExists7 = checkChannelExists(_channel9.id);
 
           if (!(_channel9.id === _activeChannelId7)) {
-            _context3.next = 189;
+            _context3.next = 188;
             break;
           }
 
-          _context3.next = 189;
+          _context3.next = 188;
           return put(updateMessageAC(_message.id, {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments
           }));
 
-        case 189:
+        case 188:
           if (!_channelExists7) {
-            _context3.next = 193;
+            _context3.next = 192;
             break;
           }
 
           if (!(_channel9.lastMessage.id === _message.id)) {
-            _context3.next = 193;
+            _context3.next = 192;
             break;
           }
 
-          _context3.next = 193;
+          _context3.next = 192;
           return put(updateChannelLastMessageAC(_message, _channel9));
 
-        case 193:
+        case 192:
           if (checkChannelExistsOnMessagesMap(_channel9.id)) {
             updateMessageOnMap(_channel9.id, {
               messageId: _message.id,
@@ -10743,27 +10809,28 @@ function watchForEvents() {
 
           return _context3.abrupt("break", 266);
 
-        case 195:
+        case 194:
           console.log('channel REACTION_ADDED ... ');
           return _context3.abrupt("break", 266);
 
-        case 197:
+        case 196:
           console.log('channel REACTION_DELETED ... ');
 
           return _context3.abrupt("break", 266);
 
-        case 202:
+        case 201:
           _channel11 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel11));
-          _context3.next = 207;
+          _context3.next = 206;
           return put(updateChannelDataAC(_channel11.id, _updatedChannel));
 
-        case 207:
+        case 206:
           return _context3.abrupt("break", 266);
 
-        case 208:
+        case 207:
           _channel12 = args.channel;
+          console.log('CLEAR_HISTORY: ', _channel12);
           _context3.next = 211;
           return call(getActiveChannelId);
 
@@ -10795,7 +10862,10 @@ function watchForEvents() {
           }
 
           _context3.next = 223;
-          return put(updateChannelLastMessageAC({}, _channel12));
+          return put(updateChannelDataAC(_channel12.id, {
+            lastMessage: {},
+            unreadMessageCount: 0
+          }));
 
         case 223:
           return _context3.abrupt("break", 266);
@@ -12172,7 +12242,10 @@ function clearHistory(action) {
           }
 
           _context19.next = 18;
-          return put(updateChannelLastMessageAC({}, channel));
+          return put(updateChannelDataAC(channel.id, {
+            lastMessage: {},
+            unreadMessageCount: 0
+          }));
 
         case 18:
           _context19.next = 23;
@@ -12625,12 +12698,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 110;
+            _context.next = 108;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 78;
+            _context.next = 76;
             break;
           }
 
@@ -12680,7 +12753,7 @@ function sendMessage(action) {
 
         case 28:
           if (!customUploader) {
-            _context.next = 76;
+            _context.next = 74;
             break;
           }
 
@@ -12745,17 +12818,15 @@ function sendMessage(action) {
           messageToSend.attachments = [attachmentToSend];
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 66;
+            _context.next = 64;
             break;
           }
 
-          console.log('message to send ... ', messageToSend);
-          _context.next = 55;
+          _context.next = 54;
           return call(channel.sendMessage, messageToSend);
 
-        case 55:
+        case 54:
           messageResponse = _context.sent;
-          console.log('messageResponse ... ', messageResponse);
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -12769,10 +12840,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 61;
+          _context.next = 59;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 61:
+        case 59:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -12782,22 +12853,22 @@ function sendMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context.next = 66;
+          _context.next = 64;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 66:
-          _context.next = 76;
+        case 64:
+          _context.next = 74;
           break;
 
-        case 68:
-          _context.prev = 68;
+        case 66:
+          _context.prev = 66;
           _context.t0 = _context["catch"](31);
-          _context.next = 72;
+          _context.next = 70;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 72:
+        case 70:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -12807,16 +12878,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 76;
+          _context.next = 74;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 76:
-          _context.next = 110;
+        case 74:
+          _context.next = 108;
           break;
 
-        case 78:
+        case 76:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -12854,7 +12925,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 96;
+            _context.next = 94;
             break;
           }
 
@@ -12905,12 +12976,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 90;
+          _context.next = 88;
           return call(uploadAllAttachments);
 
-        case 90:
+        case 88:
           uploadedAttachments = _context.sent;
-          _context.next = 93;
+          _context.next = 91;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -12953,12 +13024,12 @@ function sendMessage(action) {
             }
           });
 
-        case 93:
+        case 91:
           attachmentsToSend = _context.sent;
-          _context.next = 99;
+          _context.next = 97;
           break;
 
-        case 96:
+        case 94:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -12970,24 +13041,24 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 99;
+          _context.next = 97;
           return put(addMessageAC(JSON.parse(JSON.stringify(_extends({}, _messageCopy2, {
             createdAt: new Date(Date.now()),
             parent: message.parent
           })))));
 
-        case 99:
+        case 97:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 110;
+            _context.next = 108;
             break;
           }
 
-          _context.next = 103;
+          _context.next = 101;
           return call(channel.sendMessage, _messageToSend);
 
-        case 103:
+        case 101:
           _messageResponse = _context.sent;
           _messageUpdateData = {
             id: _messageResponse.id,
@@ -12999,38 +13070,38 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 107;
+          _context.next = 105;
           return put(updateMessageAC(_messageToSend.tid, _messageUpdateData));
 
-        case 107:
+        case 105:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData
           });
-          _context.next = 110;
+          _context.next = 108;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
             id: channel.id
           }));
 
-        case 110:
-          _context.next = 112;
-          return put(scrollToNewMessageAC(true, true));
+        case 108:
+          _context.next = 110;
+          return put(scrollToNewMessageAC(true));
 
-        case 112:
-          _context.next = 117;
+        case 110:
+          _context.next = 115;
           break;
 
-        case 114:
-          _context.prev = 114;
+        case 112:
+          _context.prev = 112;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 117:
+        case 115:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 114], [31, 68]]);
+  }, _marked$2, null, [[0, 112], [31, 66]]);
 }
 
 function sendTextMessage(action) {
@@ -13088,21 +13159,19 @@ function sendTextMessage(action) {
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           _context2.next = 22;
-          return put(scrollToNewMessageAC(true, true));
+          return put(scrollToNewMessageAC(true));
 
         case 22:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 35;
+            _context2.next = 33;
             break;
           }
 
-          console.log('message to send ... ', messageToSend);
-          _context2.next = 26;
+          _context2.next = 25;
           return call(channel.sendMessage, messageToSend);
 
-        case 26:
+        case 25:
           messageResponse = _context2.sent;
-          console.log('messageResponse ... ', messageResponse);
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -13113,35 +13182,35 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 31;
+          _context2.next = 29;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 31:
+        case 29:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 35;
+          _context2.next = 33;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 35:
-          _context2.next = 40;
+        case 33:
+          _context2.next = 38;
           break;
 
-        case 37:
-          _context2.prev = 37;
+        case 35:
+          _context2.prev = 35;
           _context2.t0 = _context2["catch"](0);
           console.log('error on send message ... ', _context2.t0);
 
-        case 40:
+        case 38:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[0, 37]]);
+  }, _marked2$1, null, [[0, 35]]);
 }
 
 function resendMessage(action) {
@@ -13445,7 +13514,7 @@ function getMessagesQuery(action) {
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
 
           if (!channel.id) {
-            _context6.next = 91;
+            _context6.next = 92;
             break;
           }
 
@@ -13475,7 +13544,7 @@ function getMessagesQuery(action) {
           }
 
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          _context6.next = 83;
+          _context6.next = 84;
           break;
 
         case 19:
@@ -13532,12 +13601,12 @@ function getMessagesQuery(action) {
           return put(setScrollToMessagesAC(messageId));
 
         case 49:
-          _context6.next = 83;
+          _context6.next = 84;
           break;
 
         case 51:
           if (!(channel.unreadMessageCount && channel.lastReadMessageId)) {
-            _context6.next = 72;
+            _context6.next = 73;
             break;
           }
 
@@ -13574,30 +13643,31 @@ function getMessagesQuery(action) {
           return put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
 
         case 68:
-          _context6.next = 70;
+          setAllMessages([].concat(result.messages));
+          _context6.next = 71;
           return put(setMessagesAC(result.messages));
 
-        case 70:
-          _context6.next = 83;
+        case 71:
+          _context6.next = 84;
           break;
 
-        case 72:
+        case 73:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context6.next = 77;
+            _context6.next = 78;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context6.next = 77;
+          _context6.next = 78;
           return put(setMessagesAC(cachedMessages));
 
-        case 77:
-          _context6.next = 79;
+        case 78:
+          _context6.next = 80;
           return call(messageQuery.loadPrevious);
 
-        case 79:
+        case 80:
           result = _context6.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -13606,19 +13676,19 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context6.next = 83;
+          _context6.next = 84;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 83:
+        case 84:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context6.next = 89;
+            _context6.next = 90;
             break;
           }
 
-          _context6.next = 86;
+          _context6.next = 87;
           return put(setMessagesAC(result.messages));
 
-        case 86:
+        case 87:
           setMessagesToMap(channel.id, result.messages);
 
           if (!loadWithLastMessage) {
@@ -13629,25 +13699,25 @@ function getMessagesQuery(action) {
             setHasNextCached(false);
           }
 
-        case 89:
-          _context6.next = 91;
+        case 90:
+          _context6.next = 92;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 91:
-          _context6.next = 96;
+        case 92:
+          _context6.next = 97;
           break;
 
-        case 93:
-          _context6.prev = 93;
+        case 94:
+          _context6.prev = 94;
           _context6.t0 = _context6["catch"](0);
           console.log('error in message query', _context6.t0);
 
-        case 96:
+        case 97:
         case "end":
           return _context6.stop();
       }
     }
-  }, _marked6$1, null, [[0, 93]]);
+  }, _marked6$1, null, [[0, 94]]);
 }
 
 function loadMoreMessages(action) {
@@ -15833,14 +15903,14 @@ var Channel = function Channel(_ref) {
   }, React__default.createElement("span", {
     ref: messageAuthorRef
   }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (typingIndicator ? !isDirectChannel : lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
-    withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length),
+    withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link),
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
   }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
     return " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
     return " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice')), lastMessage.body)))), React__default.createElement(ChannelStatus, {
+  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), lastMessage.body)))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), (!!channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
     backgroundColor: colors.primary,
@@ -15888,7 +15958,7 @@ var LastMessageText = styled.span(_templateObject8$1 || (_templateObject8$1 = _t
 }, function (props) {
   return props.withAttachments && 'translate(0px, -1.5px)';
 }, colors.gray4, function (props) {
-  return props.withAttachments ? 'translate(0px, 4px)' : 'translate(0px, 2px)';
+  return props.withAttachments ? 'translate(0px, 3px)' : 'translate(0px, 2px)';
 });
 var ChannelStatus = styled.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 16px;\n  top: 15px;\n  display: flex;\n  flex-wrap: wrap;\n  height: 42px;\n  margin-left: auto;\n"])));
 var LastMessageDate = styled.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.gray9);
@@ -18798,8 +18868,11 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, [visibleChannel]);
   useDidUpdate(function () {
-    if (searchValue && searchOption === 'default') {
+    if (searchOption === 'default') {
       dispatch(getChannelsAC({
+        filter: filter,
+        limit: limit,
+        sort: sort,
         search: searchValue
       }));
     }
@@ -19878,10 +19951,8 @@ var EmojiIcon = function EmojiIcon(_ref) {
 };
 
 function EmojisPopup(_ref2) {
-  var setMessageText = _ref2.setMessageText,
-      messageText = _ref2.messageText,
+  var handleAddEmoji = _ref2.handleAddEmoji,
       handleEmojiPopupToggle = _ref2.handleEmojiPopupToggle,
-      handleAddReaction = _ref2.handleAddReaction,
       rightSide = _ref2.rightSide;
 
   var _useState = useState('People'),
@@ -19921,11 +19992,10 @@ function EmojisPopup(_ref2) {
   };
 
   var chooseEmoji = function chooseEmoji(selectedEmoji) {
-    if (setMessageText) {
-      setMessageText(messageText + selectedEmoji);
+    handleAddEmoji(selectedEmoji);
+
+    if (handleEmojiPopupToggle) {
       handleEmojiPopupToggle(false);
-    } else {
-      handleAddReaction(selectedEmoji);
     }
   };
 
@@ -20741,7 +20811,7 @@ var AttachmentImg = styled.img(_templateObject7$6 || (_templateObject7$6 = _tagg
 
 var wavesurfer = createCommonjsModule(function (module, exports) {
 /*!
- * wavesurfer.js 6.2.0 (2022-05-16)
+ * wavesurfer.js 6.4.0 (2022-11-05)
  * https://wavesurfer-js.org
  * @license BSD-3-Clause
  */
@@ -20762,19 +20832,12 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var _style = _interopRequireDefault(__webpack_require__(/*! ./util/style */ "./src/util/style.js"));
-
 var _getId = _interopRequireDefault(__webpack_require__(/*! ./util/get-id */ "./src/util/get-id.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 /**
  * The `CanvasEntry` class represents an element consisting of a wave `canvas`
  * and an (optional) progress wave `canvas`.
@@ -20785,7 +20848,6 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 var CanvasEntry = /*#__PURE__*/function () {
   function CanvasEntry() {
     _classCallCheck(this, CanvasEntry);
-
     /**
      * The wave node
      *
@@ -20797,77 +20859,70 @@ var CanvasEntry = /*#__PURE__*/function () {
      *
      * @type {CanvasRenderingContext2D}
      */
-
     this.waveCtx = null;
     /**
      * The (optional) progress wave node
      *
      * @type {HTMLCanvasElement}
      */
-
     this.progress = null;
     /**
      * The (optional) progress wave canvas rendering context
      *
      * @type {CanvasRenderingContext2D}
      */
-
     this.progressCtx = null;
     /**
      * Start of the area the canvas should render, between 0 and 1
      *
      * @type {number}
      */
-
     this.start = 0;
     /**
      * End of the area the canvas should render, between 0 and 1
      *
      * @type {number}
      */
-
     this.end = 1;
     /**
      * Unique identifier for this entry
      *
      * @type {string}
      */
-
     this.id = (0, _getId.default)(typeof this.constructor.name !== 'undefined' ? this.constructor.name.toLowerCase() + '_' : 'canvasentry_');
     /**
      * Canvas 2d context attributes
      *
      * @type {object}
      */
-
     this.canvasContextAttributes = {};
   }
+
   /**
    * Store the wave canvas element and create the 2D rendering context
    *
    * @param {HTMLCanvasElement} element The wave `canvas` element.
    */
-
-
   _createClass(CanvasEntry, [{
     key: "initWave",
     value: function initWave(element) {
       this.wave = element;
       this.waveCtx = this.wave.getContext('2d', this.canvasContextAttributes);
     }
+
     /**
      * Store the progress wave canvas element and create the 2D rendering
      * context
      *
      * @param {HTMLCanvasElement} element The progress wave `canvas` element.
      */
-
   }, {
     key: "initProgress",
     value: function initProgress(element) {
       this.progress = element;
       this.progressCtx = this.progress.getContext('2d', this.canvasContextAttributes);
     }
+
     /**
      * Update the dimensions
      *
@@ -20876,22 +20931,21 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @param {number} width The new width of the element
      * @param {number} height The new height of the element
      */
-
   }, {
     key: "updateDimensions",
     value: function updateDimensions(elementWidth, totalWidth, width, height) {
       // where the canvas starts and ends in the waveform, represented as a
       // decimal between 0 and 1
       this.start = this.wave.offsetLeft / totalWidth || 0;
-      this.end = this.start + elementWidth / totalWidth; // set wave canvas dimensions
+      this.end = this.start + elementWidth / totalWidth;
 
+      // set wave canvas dimensions
       this.wave.width = width;
       this.wave.height = height;
       var elementSize = {
         width: elementWidth + 'px'
       };
       (0, _style.default)(this.wave, elementSize);
-
       if (this.hasProgressCanvas) {
         // set progress canvas dimensions
         this.progress.width = width;
@@ -20899,20 +20953,22 @@ var CanvasEntry = /*#__PURE__*/function () {
         (0, _style.default)(this.progress, elementSize);
       }
     }
+
     /**
      * Clear the wave and progress rendering contexts
      */
-
   }, {
     key: "clearWave",
     value: function clearWave() {
       // wave
-      this.waveCtx.clearRect(0, 0, this.waveCtx.canvas.width, this.waveCtx.canvas.height); // progress
+      this.waveCtx.clearRect(0, 0, this.waveCtx.canvas.width, this.waveCtx.canvas.height);
 
+      // progress
       if (this.hasProgressCanvas) {
         this.progressCtx.clearRect(0, 0, this.progressCtx.canvas.width, this.progressCtx.canvas.height);
       }
     }
+
     /**
      * Set the fill styles for wave and progress
      * @param {string|string[]} waveColor Fill color for the wave canvas,
@@ -20920,16 +20976,15 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @param {?string|string[]} progressColor Fill color for the progress canvas,
      * or an array of colors to apply as a gradient
      */
-
   }, {
     key: "setFillStyles",
     value: function setFillStyles(waveColor, progressColor) {
       this.waveCtx.fillStyle = this.getFillStyle(this.waveCtx, waveColor);
-
       if (this.hasProgressCanvas) {
         this.progressCtx.fillStyle = this.getFillStyle(this.progressCtx, progressColor);
       }
     }
+
     /**
      * Utility function to handle wave color arguments
      *
@@ -20945,38 +21000,36 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @returns {string|CanvasGradient} Returns a string fillstyle value, or a
      *     canvas gradient
      */
-
   }, {
     key: "getFillStyle",
     value: function getFillStyle(ctx, color) {
       if (typeof color == 'string' || color instanceof CanvasGradient) {
         return color;
       }
-
       var waveGradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
       color.forEach(function (value, index) {
         return waveGradient.addColorStop(index / color.length, value);
       });
       return waveGradient;
     }
+
     /**
      * Set the canvas transforms for wave and progress
      *
      * @param {boolean} vertical Whether to render vertically
      */
-
   }, {
     key: "applyCanvasTransforms",
     value: function applyCanvasTransforms(vertical) {
       if (vertical) {
         // Reflect the waveform across the line y = -x
         this.waveCtx.setTransform(0, 1, 1, 0, 0, 0);
-
         if (this.hasProgressCanvas) {
           this.progressCtx.setTransform(0, 1, 1, 0, 0, 0);
         }
       }
     }
+
     /**
      * Draw a rectangle for wave and progress
      *
@@ -20986,16 +21039,15 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @param {number} height Height of the rectangle
      * @param {number} radius Radius of the rectangle
      */
-
   }, {
     key: "fillRects",
     value: function fillRects(x, y, width, height, radius) {
       this.fillRectToContext(this.waveCtx, x, y, width, height, radius);
-
       if (this.hasProgressCanvas) {
         this.fillRectToContext(this.progressCtx, x, y, width, height, radius);
       }
     }
+
     /**
      * Draw the actual rectangle on a `canvas` element
      *
@@ -21006,20 +21058,19 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @param {number} height Height of the rectangle
      * @param {number} radius Radius of the rectangle
      */
-
   }, {
     key: "fillRectToContext",
     value: function fillRectToContext(ctx, x, y, width, height, radius) {
       if (!ctx) {
         return;
       }
-
       if (radius) {
         this.drawRoundedRect(ctx, x, y, width, height, radius);
       } else {
         ctx.fillRect(x, y, width, height);
       }
     }
+
     /**
      * Draw a rounded rectangle on Canvas
      *
@@ -21033,21 +21084,18 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @return {void}
      * @example drawRoundedRect(ctx, 50, 50, 5, 10, 3)
      */
-
   }, {
     key: "drawRoundedRect",
     value: function drawRoundedRect(ctx, x, y, width, height, radius) {
       if (height === 0) {
         return;
-      } // peaks are float values from -1 to 1. Use absolute height values in
+      }
+      // peaks are float values from -1 to 1. Use absolute height values in
       // order to correctly calculate rounded rectangle coordinates
-
-
       if (height < 0) {
         height *= -1;
         y -= height;
       }
-
       ctx.beginPath();
       ctx.moveTo(x + radius, y);
       ctx.lineTo(x + width - radius, y);
@@ -21061,6 +21109,7 @@ var CanvasEntry = /*#__PURE__*/function () {
       ctx.closePath();
       ctx.fill();
     }
+
     /**
      * Render the actual wave and progress lines
      *
@@ -21073,16 +21122,15 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @param {number} end The x-offset of the end of the area that
      * should be rendered
      */
-
   }, {
     key: "drawLines",
     value: function drawLines(peaks, absmax, halfH, offsetY, start, end) {
       this.drawLineToContext(this.waveCtx, peaks, absmax, halfH, offsetY, start, end);
-
       if (this.hasProgressCanvas) {
         this.drawLineToContext(this.progressCtx, peaks, absmax, halfH, offsetY, start, end);
       }
     }
+
     /**
      * Render the actual waveform line on a `canvas` element
      *
@@ -21096,54 +21144,51 @@ var CanvasEntry = /*#__PURE__*/function () {
      * @param {number} end The x-offset of the end of the area that
      * should be rendered
      */
-
   }, {
     key: "drawLineToContext",
     value: function drawLineToContext(ctx, peaks, absmax, halfH, offsetY, start, end) {
       if (!ctx) {
         return;
       }
-
       var length = peaks.length / 2;
-      var first = Math.round(length * this.start); // use one more peak value to make sure we join peaks at ends -- unless,
-      // of course, this is the last canvas
+      var first = Math.round(length * this.start);
 
+      // use one more peak value to make sure we join peaks at ends -- unless,
+      // of course, this is the last canvas
       var last = Math.round(length * this.end) + 1;
       var canvasStart = first;
       var canvasEnd = last;
-      var scale = this.wave.width / (canvasEnd - canvasStart - 1); // optimization
+      var scale = this.wave.width / (canvasEnd - canvasStart - 1);
 
+      // optimization
       var halfOffset = halfH + offsetY;
       var absmaxHalf = absmax / halfH;
       ctx.beginPath();
       ctx.moveTo((canvasStart - first) * scale, halfOffset);
       ctx.lineTo((canvasStart - first) * scale, halfOffset - Math.round((peaks[2 * canvasStart] || 0) / absmaxHalf));
       var i, peak, h;
-
       for (i = canvasStart; i < canvasEnd; i++) {
         peak = peaks[2 * i] || 0;
         h = Math.round(peak / absmaxHalf);
         ctx.lineTo((i - first) * scale + this.halfPixel, halfOffset - h);
-      } // draw the bottom edge going backwards, to make a single
+      }
+
+      // draw the bottom edge going backwards, to make a single
       // closed hull to fill
-
-
       var j = canvasEnd - 1;
-
       for (j; j >= canvasStart; j--) {
         peak = peaks[2 * j + 1] || 0;
         h = Math.round(peak / absmaxHalf);
         ctx.lineTo((j - first) * scale + this.halfPixel, halfOffset - h);
       }
-
       ctx.lineTo((canvasStart - first) * scale, halfOffset - Math.round((peaks[2 * canvasStart + 1] || 0) / absmaxHalf));
       ctx.closePath();
       ctx.fill();
     }
+
     /**
      * Destroys this entry
      */
-
   }, {
     key: "destroy",
     value: function destroy() {
@@ -21152,6 +21197,7 @@ var CanvasEntry = /*#__PURE__*/function () {
       this.progressCtx = null;
       this.progress = null;
     }
+
     /**
      * Return image data of the wave `canvas` element
      *
@@ -21165,12 +21211,10 @@ var CanvasEntry = /*#__PURE__*/function () {
      * returns a data URL. When using the `'blob'` `type` this returns a
      * `Promise` that resolves with a `Blob` instance.
      */
-
   }, {
     key: "getImage",
     value: function getImage(format, quality, type) {
       var _this = this;
-
       if (type === 'blob') {
         return new Promise(function (resolve) {
           _this.wave.toBlob(resolve, format, quality);
@@ -21180,10 +21224,8 @@ var CanvasEntry = /*#__PURE__*/function () {
       }
     }
   }]);
-
   return CanvasEntry;
 }();
-
 exports["default"] = CanvasEntry;
 module.exports = exports.default;
 
@@ -21197,38 +21239,23 @@ module.exports = exports.default;
 
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var util = _interopRequireWildcard(__webpack_require__(/*! ./util */ "./src/util/index.js"));
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 /**
  * Parent class for renderers
  *
@@ -21236,46 +21263,39 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
  */
 var Drawer = /*#__PURE__*/function (_util$Observer) {
   _inherits(Drawer, _util$Observer);
-
   var _super = _createSuper(Drawer);
-
   /**
    * @param {HTMLElement} container The container node of the wavesurfer instance
    * @param {WavesurferParams} params The wavesurfer initialisation options
    */
   function Drawer(container, params) {
     var _this;
-
     _classCallCheck(this, Drawer);
-
     _this = _super.call(this);
     _this.container = util.withOrientation(container, params.vertical);
     /**
      * @type {WavesurferParams}
      */
-
     _this.params = params;
     /**
      * The width of the renderer
      * @type {number}
      */
-
     _this.width = 0;
     /**
      * The height of the renderer
      * @type {number}
      */
-
     _this.height = params.height * _this.params.pixelRatio;
     _this.lastPos = 0;
     /**
      * The `<wave>` element which is added to the container
      * @type {HTMLElement}
      */
-
     _this.wrapper = null;
     return _this;
   }
+
   /**
    * Alias of `util.style`
    *
@@ -21283,18 +21303,16 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
    * @param {Object} styles The map of propName: attribute, both are used as-is
    * @return {HTMLElement} el
    */
-
-
   _createClass(Drawer, [{
     key: "style",
     value: function style(el, styles) {
       return util.style(el, styles);
     }
+
     /**
      * Create the wrapper `<wave>` element, style it and set up the events for
      * interaction
      */
-
   }, {
     key: "createWrapper",
     value: function createWrapper() {
@@ -21306,7 +21324,6 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
         webkitUserSelect: 'none',
         height: this.params.height + 'px'
       });
-
       if (this.params.fillParent || this.params.scrollParent) {
         this.style(this.wrapper, {
           width: '100%',
@@ -21315,9 +21332,9 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
           overflowY: 'hidden'
         });
       }
-
       this.setupWrapperEvents();
     }
+
     /**
      * Handle click event
      *
@@ -21325,7 +21342,6 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
      * @param {?boolean} noPrevent Set to true to not call `e.preventDefault()`
      * @return {number} Playback position from 0 to 1
      */
-
   }, {
     key: "handleEvent",
     value: function handleEvent(e, noPrevent) {
@@ -21336,13 +21352,11 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
       var parentWidth = this.getWidth();
       var progressPixels = this.getProgressPixels(bbox, clientX);
       var progress;
-
       if (!this.params.fillParent && nominalWidth < parentWidth) {
         progress = progressPixels * (this.params.pixelRatio / nominalWidth) || 0;
       } else {
         progress = (progressPixels + this.wrapper.scrollLeft) / this.wrapper.scrollWidth || 0;
       }
-
       return util.clamp(progress, 0, 1);
     }
   }, {
@@ -21358,21 +21372,17 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
     key: "setupWrapperEvents",
     value: function setupWrapperEvents() {
       var _this2 = this;
-
       this.wrapper.addEventListener('click', function (e) {
         var orientedEvent = util.withOrientation(e, _this2.params.vertical);
         var scrollbarHeight = _this2.wrapper.offsetHeight - _this2.wrapper.clientHeight;
-
         if (scrollbarHeight !== 0) {
           // scrollbar is visible.  Check if click was on it
           var bbox = _this2.wrapper.getBoundingClientRect();
-
           if (orientedEvent.clientY >= bbox.bottom - scrollbarHeight) {
             // ignore mousedown as it was on the scrollbar
             return;
           }
         }
-
         if (_this2.params.interact) {
           _this2.fireEvent('click', e, _this2.handleEvent(e));
         }
@@ -21386,6 +21396,7 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
         return _this2.fireEvent('scroll', e);
       });
     }
+
     /**
      * Draw peaks on the canvas
      *
@@ -21397,20 +21408,18 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
      */
-
   }, {
     key: "drawPeaks",
     value: function drawPeaks(peaks, length, start, end) {
       if (!this.setWidth(length)) {
         this.clearWave();
       }
-
       this.params.barWidth ? this.drawBars(peaks, 0, start, end) : this.drawWave(peaks, 0, start, end);
     }
+
     /**
      * Scroll to the beginning
      */
-
   }, {
     key: "resetScroll",
     value: function resetScroll() {
@@ -21418,18 +21427,19 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
         this.wrapper.scrollLeft = 0;
       }
     }
+
     /**
      * Recenter the view-port at a certain percent of the waveform
      *
      * @param {number} percent Value from 0 to 1 on the waveform
      */
-
   }, {
     key: "recenter",
     value: function recenter(percent) {
       var position = this.wrapper.scrollWidth * percent;
       this.recenterOnPosition(position, true);
     }
+
     /**
      * Recenter the view-port on a position, either scroll there immediately or
      * in steps of 5 pixels
@@ -21437,7 +21447,6 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
      * @param {number} position X-offset in pixels
      * @param {boolean} immediate Set to true to immediately scroll somewhere
      */
-
   }, {
     key: "recenterOnPosition",
     value: function recenterOnPosition(position, immediate) {
@@ -21446,84 +21455,81 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
       var maxScroll = this.wrapper.scrollWidth - this.wrapper.clientWidth;
       var target = position - half;
       var offset = target - scrollLeft;
-
       if (maxScroll == 0) {
         // no need to continue if scrollbar is not there
         return;
-      } // if the cursor is currently visible...
+      }
 
-
+      // if the cursor is currently visible...
       if (!immediate && -half <= offset && offset < half) {
         // set rate at which waveform is centered
-        var rate = this.params.autoCenterRate; // make rate depend on width of view and length of waveform
+        var rate = this.params.autoCenterRate;
 
+        // make rate depend on width of view and length of waveform
         rate /= half;
         rate *= maxScroll;
         offset = Math.max(-rate, Math.min(rate, offset));
         target = scrollLeft + offset;
-      } // limit target to valid range (0 to maxScroll)
+      }
 
-
-      target = Math.max(0, Math.min(maxScroll, target)); // no use attempting to scroll if we're not moving
-
+      // limit target to valid range (0 to maxScroll)
+      target = Math.max(0, Math.min(maxScroll, target));
+      // no use attempting to scroll if we're not moving
       if (target != scrollLeft) {
         this.wrapper.scrollLeft = target;
       }
     }
+
     /**
      * Get the current scroll position in pixels
      *
      * @return {number} Horizontal scroll position in pixels
      */
-
   }, {
     key: "getScrollX",
     value: function getScrollX() {
       var x = 0;
-
       if (this.wrapper) {
         var pixelRatio = this.params.pixelRatio;
-        x = Math.round(this.wrapper.scrollLeft * pixelRatio); // In cases of elastic scroll (safari with mouse wheel) you can
+        x = Math.round(this.wrapper.scrollLeft * pixelRatio);
+
+        // In cases of elastic scroll (safari with mouse wheel) you can
         // scroll beyond the limits of the container
         // Calculate and floor the scrollable extent to make sure an out
         // of bounds value is not returned
         // Ticket #1312
-
         if (this.params.scrollParent) {
           var maxScroll = ~~(this.wrapper.scrollWidth * pixelRatio - this.getWidth());
           x = Math.min(maxScroll, Math.max(0, x));
         }
       }
-
       return x;
     }
+
     /**
      * Get the width of the container
      *
      * @return {number} The width of the container
      */
-
   }, {
     key: "getWidth",
     value: function getWidth() {
       return Math.round(this.container.clientWidth * this.params.pixelRatio);
     }
+
     /**
      * Set the width of the container
      *
      * @param {number} width The new width of the container
      * @return {boolean} Whether the width of the container was updated or not
      */
-
   }, {
     key: "setWidth",
     value: function setWidth(width) {
       if (this.width == width) {
         return false;
       }
-
       this.width = width;
-
       if (this.params.fillParent || this.params.scrollParent) {
         this.style(this.wrapper, {
           width: ''
@@ -21534,24 +21540,22 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
           width: newWidth
         });
       }
-
       this.updateSize();
       return true;
     }
+
     /**
      * Set the height of the container
      *
      * @param {number} height The new height of the container.
      * @return {boolean} Whether the height of the container was updated or not
      */
-
   }, {
     key: "setHeight",
     value: function setHeight(height) {
       if (height == this.height) {
         return false;
       }
-
       this.height = height;
       this.style(this.wrapper, {
         height: ~~(this.height / this.params.pixelRatio) + 'px'
@@ -21559,46 +21563,42 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
       this.updateSize();
       return true;
     }
+
     /**
      * Called by wavesurfer when progress should be rendered
      *
      * @param {number} progress From 0 to 1
      */
-
   }, {
     key: "progress",
     value: function progress(_progress) {
       var minPxDelta = 1 / this.params.pixelRatio;
       var pos = Math.round(_progress * this.width) * minPxDelta;
-
       if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
         this.lastPos = pos;
-
         if (this.params.scrollParent && this.params.autoCenter) {
           var newPos = ~~(this.wrapper.scrollWidth * _progress);
           this.recenterOnPosition(newPos, this.params.autoCenterImmediately);
         }
-
         this.updateProgress(pos);
       }
     }
+
     /**
      * This is called when wavesurfer is destroyed
      */
-
   }, {
     key: "destroy",
     value: function destroy() {
       this.unAll();
-
       if (this.wrapper) {
         if (this.wrapper.parentNode == this.container.domElement) {
           this.container.removeChild(this.wrapper.domElement);
         }
-
         this.wrapper = null;
       }
     }
+
     /* Renderer-specific methods */
 
     /**
@@ -21606,19 +21606,19 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
      *
      * @abstract
      */
-
   }, {
     key: "updateCursor",
     value: function updateCursor() {}
+
     /**
      * Called when the size of the container changes so the renderer can adjust
      *
      * @abstract
      */
-
   }, {
     key: "updateSize",
     value: function updateSize() {}
+
     /**
      * Draw a waveform with bars
      *
@@ -21632,10 +21632,10 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
      */
-
   }, {
     key: "drawBars",
     value: function drawBars(peaks, channelIndex, start, end) {}
+
     /**
      * Draw a waveform
      *
@@ -21649,34 +21649,31 @@ var Drawer = /*#__PURE__*/function (_util$Observer) {
      * @param {number} end The x-offset of the end of the area that should be
      * rendered
      */
-
   }, {
     key: "drawWave",
     value: function drawWave(peaks, channelIndex, start, end) {}
+
     /**
      * Clear the waveform
      *
      * @abstract
      */
-
   }, {
     key: "clearWave",
     value: function clearWave() {}
+
     /**
      * Render the new progress
      *
      * @abstract
      * @param {number} position X-Offset of progress position in pixels
      */
-
   }, {
     key: "updateProgress",
     value: function updateProgress(position) {}
   }]);
-
   return Drawer;
 }(util.Observer);
-
 exports["default"] = Drawer;
 module.exports = exports.default;
 
@@ -21690,44 +21687,26 @@ module.exports = exports.default;
 
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var _drawer = _interopRequireDefault(__webpack_require__(/*! ./drawer */ "./src/drawer.js"));
-
 var util = _interopRequireWildcard(__webpack_require__(/*! ./util */ "./src/util/index.js"));
-
 var _drawer2 = _interopRequireDefault(__webpack_require__(/*! ./drawer.canvasentry */ "./src/drawer.canvasentry.js"));
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 /**
  * MultiCanvas renderer for wavesurfer. Is currently the default and sole
  * builtin renderer.
@@ -21737,108 +21716,103 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
  */
 var MultiCanvas = /*#__PURE__*/function (_Drawer) {
   _inherits(MultiCanvas, _Drawer);
-
   var _super = _createSuper(MultiCanvas);
-
   /**
    * @param {HTMLElement} container The container node of the wavesurfer instance
    * @param {WavesurferParams} params The wavesurfer initialisation options
    */
   function MultiCanvas(container, params) {
     var _this;
-
     _classCallCheck(this, MultiCanvas);
-
     _this = _super.call(this, container, params);
+
     /**
      * @type {number}
      */
-
     _this.maxCanvasWidth = params.maxCanvasWidth;
+
     /**
      * @type {number}
      */
-
     _this.maxCanvasElementWidth = Math.round(params.maxCanvasWidth / params.pixelRatio);
+
     /**
      * Whether or not the progress wave is rendered. If the `waveColor`
      * and `progressColor` are the same color it is not.
      *
      * @type {boolean}
      */
-
     _this.hasProgressCanvas = params.waveColor != params.progressColor;
+
     /**
      * @type {number}
      */
-
     _this.halfPixel = 0.5 / params.pixelRatio;
+
     /**
      * List of `CanvasEntry` instances.
      *
      * @type {Array}
      */
-
     _this.canvases = [];
+
     /**
      * @type {HTMLElement}
      */
-
     _this.progressWave = null;
+
     /**
      * Class used to generate entries.
      *
      * @type {function}
      */
-
     _this.EntryClass = _drawer2.default;
+
     /**
      * Canvas 2d context attributes.
      *
      * @type {object}
      */
-
     _this.canvasContextAttributes = params.drawingContextAttributes;
+
     /**
      * Overlap added between entries to prevent vertical white stripes
      * between `canvas` elements.
      *
      * @type {number}
      */
-
     _this.overlap = 2 * Math.ceil(params.pixelRatio / 2);
+
     /**
      * The radius of the wave bars. Makes bars rounded
      *
      * @type {number}
      */
-
     _this.barRadius = params.barRadius || 0;
+
     /**
      * Whether to render the waveform vertically. Defaults to false.
      *
      * @type {boolean}
      */
-
     _this.vertical = params.vertical;
     return _this;
   }
+
   /**
    * Initialize the drawer
    */
-
-
   _createClass(MultiCanvas, [{
     key: "init",
     value: function init() {
       this.createWrapper();
       this.createElements();
     }
+
     /**
      * Create the canvas elements and style them
      *
      */
-
   }, {
     key: "createElements",
     value: function createElements() {
@@ -21859,10 +21833,10 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
       this.addCanvas();
       this.updateCursor();
     }
+
     /**
      * Update cursor style
      */
-
   }, {
     key: "updateCursor",
     value: function updateCursor() {
@@ -21871,44 +21845,41 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         borderRightColor: this.params.cursorColor
       });
     }
+
     /**
      * Adjust to the updated size by adding or removing canvases
      */
-
   }, {
     key: "updateSize",
     value: function updateSize() {
       var _this2 = this;
-
       var totalWidth = Math.round(this.width / this.params.pixelRatio);
-      var requiredCanvases = Math.ceil(totalWidth / (this.maxCanvasElementWidth + this.overlap)); // add required canvases
+      var requiredCanvases = Math.ceil(totalWidth / (this.maxCanvasElementWidth + this.overlap));
 
+      // add required canvases
       while (this.canvases.length < requiredCanvases) {
         this.addCanvas();
-      } // remove older existing canvases, if any
+      }
 
-
+      // remove older existing canvases, if any
       while (this.canvases.length > requiredCanvases) {
         this.removeCanvas();
       }
-
       var canvasWidth = this.maxCanvasWidth + this.overlap;
       var lastCanvas = this.canvases.length - 1;
       this.canvases.forEach(function (entry, i) {
         if (i == lastCanvas) {
           canvasWidth = _this2.width - _this2.maxCanvasWidth * lastCanvas;
         }
-
         _this2.updateDimensions(entry, canvasWidth, _this2.height);
-
         entry.clearWave();
       });
     }
+
     /**
      * Add a canvas to the canvas list
      *
      */
-
   }, {
     key: "addCanvas",
     value: function addCanvas() {
@@ -21916,8 +21887,9 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
       entry.canvasContextAttributes = this.canvasContextAttributes;
       entry.hasProgressCanvas = this.hasProgressCanvas;
       entry.halfPixel = this.halfPixel;
-      var leftOffset = this.maxCanvasElementWidth * this.canvases.length; // wave
+      var leftOffset = this.maxCanvasElementWidth * this.canvases.length;
 
+      // wave
       var wave = util.withOrientation(this.wrapper.appendChild(document.createElement('canvas')), this.params.vertical);
       this.style(wave, {
         position: 'absolute',
@@ -21928,8 +21900,9 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         height: '100%',
         pointerEvents: 'none'
       });
-      entry.initWave(wave); // progress
+      entry.initWave(wave);
 
+      // progress
       if (this.hasProgressCanvas) {
         var progress = util.withOrientation(this.progressWave.appendChild(document.createElement('canvas')), this.params.vertical);
         this.style(progress, {
@@ -21941,33 +21914,34 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         });
         entry.initProgress(progress);
       }
-
       this.canvases.push(entry);
     }
+
     /**
      * Pop single canvas from the list
      *
      */
-
   }, {
     key: "removeCanvas",
     value: function removeCanvas() {
-      var lastEntry = this.canvases[this.canvases.length - 1]; // wave
+      var lastEntry = this.canvases[this.canvases.length - 1];
 
-      lastEntry.wave.parentElement.removeChild(lastEntry.wave.domElement); // progress
+      // wave
+      lastEntry.wave.parentElement.removeChild(lastEntry.wave.domElement);
 
+      // progress
       if (this.hasProgressCanvas) {
         lastEntry.progress.parentElement.removeChild(lastEntry.progress.domElement);
-      } // cleanup
+      }
 
-
+      // cleanup
       if (lastEntry) {
         lastEntry.destroy();
         lastEntry = null;
       }
-
       this.canvases.pop();
     }
+
     /**
      * Update the dimensions of a canvas element
      *
@@ -21975,34 +21949,35 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * @param {number} width The new width of the element
      * @param {number} height The new height of the element
      */
-
   }, {
     key: "updateDimensions",
     value: function updateDimensions(entry, width, height) {
       var elementWidth = Math.round(width / this.params.pixelRatio);
-      var totalWidth = Math.round(this.width / this.params.pixelRatio); // update canvas dimensions
+      var totalWidth = Math.round(this.width / this.params.pixelRatio);
 
-      entry.updateDimensions(elementWidth, totalWidth, width, height); // style element
+      // update canvas dimensions
+      entry.updateDimensions(elementWidth, totalWidth, width, height);
 
+      // style element
       this.style(this.progressWave, {
         display: 'block'
       });
     }
+
     /**
      * Clear the whole multi-canvas
      */
-
   }, {
     key: "clearWave",
     value: function clearWave() {
       var _this3 = this;
-
       util.frame(function () {
         _this3.canvases.forEach(function (entry) {
           return entry.clearWave();
         });
       })();
     }
+
     /**
      * Draw a waveform with bars
      *
@@ -22016,27 +21991,23 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * rendered
      * @returns {void}
      */
-
   }, {
     key: "drawBars",
     value: function drawBars(peaks, channelIndex, start, end) {
       var _this4 = this;
-
       return this.prepareDraw(peaks, channelIndex, start, end, function (_ref) {
         var absmax = _ref.absmax,
-            hasMinVals = _ref.hasMinVals,
-            offsetY = _ref.offsetY,
-            halfH = _ref.halfH,
-            peaks = _ref.peaks,
-            ch = _ref.channelIndex;
-
+          hasMinVals = _ref.hasMinVals,
+          offsetY = _ref.offsetY,
+          halfH = _ref.halfH,
+          peaks = _ref.peaks,
+          ch = _ref.channelIndex;
         // if drawBars was called within ws.empty we don't pass a start and
         // don't want anything to happen
         if (start === undefined) {
           return;
-        } // Skip every other value if there are negatives.
-
-
+        }
+        // Skip every other value if there are negatives.
         var peakIndexScale = hasMinVals ? 2 : 1;
         var length = peaks.length / peakIndexScale;
         var bar = _this4.params.barWidth * _this4.params.pixelRatio;
@@ -22046,37 +22017,34 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         var first = start;
         var last = end;
         var peakIndex = first;
-
         for (peakIndex; peakIndex < last; peakIndex += step) {
           // search for the highest peak in the range this bar falls into
           var peak = 0;
           var peakIndexRange = Math.floor(peakIndex * scale) * peakIndexScale; // start index
-
           var peakIndexEnd = Math.floor((peakIndex + step) * scale) * peakIndexScale;
-
           do {
             // do..while makes sure at least one peak is always evaluated
             var newPeak = Math.abs(peaks[peakIndexRange]); // for arrays starting with negative values
-
             if (newPeak > peak) {
               peak = newPeak; // higher
             }
 
             peakIndexRange += peakIndexScale; // skip every other value for negatives
-          } while (peakIndexRange < peakIndexEnd); // calculate the height of this bar according to the highest peak found
+          } while (peakIndexRange < peakIndexEnd);
 
+          // calculate the height of this bar according to the highest peak found
+          var h = Math.round(peak / absmax * halfH);
 
-          var h = Math.round(peak / absmax * halfH); // in case of silences, allow the user to specify that we
-          // always draw *something* (normally a 1px high bar)
-
-          if (h == 0 && _this4.params.barMinHeight) {
-            h = _this4.params.barMinHeight;
+          // raise the bar height to the specified minimum height
+          // Math.max is used to replace any value smaller than barMinHeight (not just 0) with barMinHeight
+          if (_this4.params.barMinHeight) {
+            h = Math.max(h, _this4.params.barMinHeight);
           }
-
           _this4.fillRect(peakIndex + _this4.halfPixel, halfH - h + offsetY, bar + _this4.halfPixel, h * 2, _this4.barRadius, ch);
         }
       });
     }
+
     /**
      * Draw a waveform
      *
@@ -22090,43 +22058,39 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * rendered
      * @returns {void}
      */
-
   }, {
     key: "drawWave",
     value: function drawWave(peaks, channelIndex, start, end) {
       var _this5 = this;
-
       return this.prepareDraw(peaks, channelIndex, start, end, function (_ref2) {
         var absmax = _ref2.absmax,
-            hasMinVals = _ref2.hasMinVals,
-            offsetY = _ref2.offsetY,
-            halfH = _ref2.halfH,
-            peaks = _ref2.peaks,
-            channelIndex = _ref2.channelIndex;
-
+          hasMinVals = _ref2.hasMinVals,
+          offsetY = _ref2.offsetY,
+          halfH = _ref2.halfH,
+          peaks = _ref2.peaks,
+          channelIndex = _ref2.channelIndex;
         if (!hasMinVals) {
           var reflectedPeaks = [];
           var len = peaks.length;
           var i = 0;
-
           for (i; i < len; i++) {
             reflectedPeaks[2 * i] = peaks[i];
             reflectedPeaks[2 * i + 1] = -peaks[i];
           }
-
           peaks = reflectedPeaks;
-        } // if drawWave was called within ws.empty we don't pass a start and
+        }
+
+        // if drawWave was called within ws.empty we don't pass a start and
         // end and simply want a flat line
-
-
         if (start !== undefined) {
           _this5.drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex);
-        } // always draw a median line
+        }
 
-
+        // always draw a median line
         _this5.fillRect(0, halfH + offsetY - _this5.halfPixel, _this5.width, _this5.halfPixel, _this5.barRadius, channelIndex);
       });
     }
+
     /**
      * Tell the canvas entries to render their portion of the waveform
      *
@@ -22140,24 +22104,20 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * should be rendered
      * @param {channelIndex} channelIndex The channel index of the line drawn
      */
-
   }, {
     key: "drawLine",
     value: function drawLine(peaks, absmax, halfH, offsetY, start, end, channelIndex) {
       var _this6 = this;
-
       var _ref3 = this.params.splitChannelsOptions.channelColors[channelIndex] || {},
-          waveColor = _ref3.waveColor,
-          progressColor = _ref3.progressColor;
-
+        waveColor = _ref3.waveColor,
+        progressColor = _ref3.progressColor;
       this.canvases.forEach(function (entry, i) {
         _this6.setFillStyles(entry, waveColor, progressColor);
-
         _this6.applyCanvasTransforms(entry, _this6.params.vertical);
-
         entry.drawLines(peaks, absmax, halfH, offsetY, start, end);
       });
     }
+
     /**
      * Draw a rectangle on the multi-canvas
      *
@@ -22168,14 +22128,12 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * @param {number} radius Radius of the rectangle
      * @param {channelIndex} channelIndex The channel index of the bar drawn
      */
-
   }, {
     key: "fillRect",
     value: function fillRect(x, y, width, height, radius, channelIndex) {
       var startCanvas = Math.floor(x / this.maxCanvasWidth);
       var endCanvas = Math.min(Math.ceil((x + width) / this.maxCanvasWidth) + 1, this.canvases.length);
       var i = startCanvas;
-
       for (i; i < endCanvas; i++) {
         var entry = this.canvases[i];
         var leftOffset = i * this.maxCanvasWidth;
@@ -22185,30 +22143,29 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
           x2: Math.min(x + width, i * this.maxCanvasWidth + entry.wave.width),
           y2: y + height
         };
-
         if (intersection.x1 < intersection.x2) {
           var _ref4 = this.params.splitChannelsOptions.channelColors[channelIndex] || {},
-              waveColor = _ref4.waveColor,
-              progressColor = _ref4.progressColor;
-
+            waveColor = _ref4.waveColor,
+            progressColor = _ref4.progressColor;
           this.setFillStyles(entry, waveColor, progressColor);
           this.applyCanvasTransforms(entry, this.params.vertical);
           entry.fillRects(intersection.x1 - leftOffset, intersection.y1, intersection.x2 - intersection.x1, intersection.y2 - intersection.y1, radius);
         }
       }
     }
+
     /**
      * Returns whether to hide the channel from being drawn based on params.
      *
      * @param {number} channelIndex The index of the current channel.
      * @returns {bool} True to hide the channel, false to draw.
      */
-
   }, {
     key: "hideChannel",
     value: function hideChannel(channelIndex) {
       return this.params.splitChannels && this.params.splitChannelsOptions.filterChannels.includes(channelIndex);
     }
+
     /**
      * Performs preparation tasks and calculations which are shared by `drawBars`
      * and `drawWave`
@@ -22226,70 +22183,61 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * @param {number?} normalizedMax Maximum modulation value across channels for use with relativeNormalization. Ignored when undefined
      * @returns {void}
      */
-
   }, {
     key: "prepareDraw",
     value: function prepareDraw(peaks, channelIndex, start, end, fn, drawIndex, normalizedMax) {
       var _this7 = this;
-
       return util.frame(function () {
         // Split channels and call this function with the channelIndex set
         if (peaks[0] instanceof Array) {
           var channels = peaks;
-
           if (_this7.params.splitChannels) {
             var filteredChannels = channels.filter(function (c, i) {
               return !_this7.hideChannel(i);
             });
-
             if (!_this7.params.splitChannelsOptions.overlay) {
               _this7.setHeight(Math.max(filteredChannels.length, 1) * _this7.params.height * _this7.params.pixelRatio);
             }
-
             var overallAbsMax;
-
             if (_this7.params.splitChannelsOptions && _this7.params.splitChannelsOptions.relativeNormalization) {
               // calculate maximum peak across channels to use for normalization
               overallAbsMax = util.max(channels.map(function (channelPeaks) {
                 return util.absMax(channelPeaks);
               }));
             }
-
             return channels.forEach(function (channelPeaks, i) {
               return _this7.prepareDraw(channelPeaks, i, start, end, fn, filteredChannels.indexOf(channelPeaks), overallAbsMax);
             });
           }
-
           peaks = channels[0];
-        } // Return and do not draw channel peaks if hidden.
+        }
 
-
+        // Return and do not draw channel peaks if hidden.
         if (_this7.hideChannel(channelIndex)) {
           return;
-        } // calculate maximum modulation value, either from the barHeight
+        }
+
+        // calculate maximum modulation value, either from the barHeight
         // parameter or if normalize=true from the largest value in the peak
         // set
-
-
         var absmax = 1 / _this7.params.barHeight;
-
         if (_this7.params.normalize) {
           absmax = normalizedMax === undefined ? util.absMax(peaks) : normalizedMax;
-        } // Bar wave draws the bottom only as a reflection of the top,
+        }
+
+        // Bar wave draws the bottom only as a reflection of the top,
         // so we don't need negative values
-
-
         var hasMinVals = [].some.call(peaks, function (val) {
           return val < 0;
         });
         var height = _this7.params.height * _this7.params.pixelRatio;
         var halfH = height / 2;
-        var offsetY = height * drawIndex || 0; // Override offsetY if overlay is true
+        var offsetY = height * drawIndex || 0;
 
+        // Override offsetY if overlay is true
         if (_this7.params.splitChannelsOptions && _this7.params.splitChannelsOptions.overlay) {
           offsetY = 0;
         }
-
         return fn({
           absmax: absmax,
           hasMinVals: hasMinVals,
@@ -22301,6 +22249,7 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         });
       })();
     }
+
     /**
      * Set the fill styles for a certain entry (wave and progress)
      *
@@ -22308,7 +22257,6 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * @param {string} waveColor Wave color to draw this entry
      * @param {string} progressColor Progress color to draw this entry
      */
-
   }, {
     key: "setFillStyles",
     value: function setFillStyles(entry) {
@@ -22316,19 +22264,20 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
       var progressColor = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : this.params.progressColor;
       entry.setFillStyles(waveColor, progressColor);
     }
+
     /**
      * Set the canvas transforms for a certain entry (wave and progress)
      *
      * @param {CanvasEntry} entry Target entry
      * @param {boolean} vertical Whether to render the waveform vertically
      */
-
   }, {
     key: "applyCanvasTransforms",
     value: function applyCanvasTransforms(entry) {
       var vertical = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       entry.applyCanvasTransforms(vertical);
     }
+
     /**
      * Return image data of the multi-canvas
      *
@@ -22343,7 +22292,6 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
      * `Promise` that resolves with an array of `Blob` instances, one for each
      * canvas.
      */
-
   }, {
     key: "getImage",
     value: function getImage(format, quality, type) {
@@ -22358,12 +22306,12 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
         return images.length > 1 ? images : images[0];
       }
     }
+
     /**
      * Render the new progress
      *
      * @param {number} position X-offset of progress position in pixels
      */
-
   }, {
     key: "updateProgress",
     value: function updateProgress(position) {
@@ -22372,10 +22320,8 @@ var MultiCanvas = /*#__PURE__*/function (_Drawer) {
       });
     }
   }]);
-
   return MultiCanvas;
 }(_drawer.default);
-
 exports["default"] = MultiCanvas;
 module.exports = exports.default;
 
@@ -22389,40 +22335,24 @@ module.exports = exports.default;
 
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var _mediaelement = _interopRequireDefault(__webpack_require__(/*! ./mediaelement */ "./src/mediaelement.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _get() { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(arguments.length < 3 ? target : receiver); } return desc.value; }; } return _get.apply(this, arguments); }
-
+function _get() { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get.bind(); } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(arguments.length < 3 ? target : receiver); } return desc.value; }; } return _get.apply(this, arguments); }
 function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 /**
  * MediaElementWebAudio backend: load audio via an HTML5 audio tag, but playback with the WebAudio API.
  * The advantage here is that the html5 <audio> tag can perform range requests on the server and not
@@ -22434,9 +22364,7 @@ function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.g
  */
 var MediaElementWebAudio = /*#__PURE__*/function (_MediaElement) {
   _inherits(MediaElementWebAudio, _MediaElement);
-
   var _super = _createSuper(MediaElementWebAudio);
-
   /**
    * Construct the backend
    *
@@ -22444,23 +22372,18 @@ var MediaElementWebAudio = /*#__PURE__*/function (_MediaElement) {
    */
   function MediaElementWebAudio(params) {
     var _this;
-
     _classCallCheck(this, MediaElementWebAudio);
-
     _this = _super.call(this, params);
     /** @private */
-
     _this.params = params;
     /** @private */
-
     _this.sourceMediaElement = null;
     return _this;
   }
+
   /**
    * Initialise the backend, called in `wavesurfer.createBackend()`
    */
-
-
   _createClass(MediaElementWebAudio, [{
     key: "init",
     value: function init() {
@@ -22479,21 +22402,19 @@ var MediaElementWebAudio = /*#__PURE__*/function (_MediaElement) {
      * @param {string} preload HTML 5 preload attribute value
      * @private
      */
-
   }, {
     key: "_load",
     value: function _load(media, peaks, preload) {
       _get(_getPrototypeOf(MediaElementWebAudio.prototype), "_load", this).call(this, media, peaks, preload);
-
       this.createMediaElementSource(media);
     }
+
     /**
      * Create MediaElementSource node
      *
      * @since 3.2.0
      * @param {HTMLMediaElement} mediaElement HTML5 Audio to load
      */
-
   }, {
     key: "createMediaElementSource",
     value: function createMediaElementSource(mediaElement) {
@@ -22506,23 +22427,20 @@ var MediaElementWebAudio = /*#__PURE__*/function (_MediaElement) {
       this.resumeAudioContext();
       return _get(_getPrototypeOf(MediaElementWebAudio.prototype), "play", this).call(this, start, end);
     }
+
     /**
      * This is called when wavesurfer is destroyed
      *
      */
-
   }, {
     key: "destroy",
     value: function destroy() {
       _get(_getPrototypeOf(MediaElementWebAudio.prototype), "destroy", this).call(this);
-
       this.destroyWebAudio();
     }
   }]);
-
   return MediaElementWebAudio;
 }(_mediaelement.default);
-
 exports["default"] = MediaElementWebAudio;
 module.exports = exports.default;
 
@@ -22536,54 +22454,33 @@ module.exports = exports.default;
 
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var _webaudio = _interopRequireDefault(__webpack_require__(/*! ./webaudio */ "./src/webaudio.js"));
-
 var util = _interopRequireWildcard(__webpack_require__(/*! ./util */ "./src/util/index.js"));
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
-function _get() { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get; } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(arguments.length < 3 ? target : receiver); } return desc.value; }; } return _get.apply(this, arguments); }
-
+function _get() { if (typeof Reflect !== "undefined" && Reflect.get) { _get = Reflect.get.bind(); } else { _get = function _get(target, property, receiver) { var base = _superPropBase(target, property); if (!base) return; var desc = Object.getOwnPropertyDescriptor(base, property); if (desc.get) { return desc.get.call(arguments.length < 3 ? target : receiver); } return desc.value; }; } return _get.apply(this, arguments); }
 function _superPropBase(object, property) { while (!Object.prototype.hasOwnProperty.call(object, property)) { object = _getPrototypeOf(object); if (object === null) break; } return object; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 /**
  * MediaElement backend
  */
 var MediaElement = /*#__PURE__*/function (_WebAudio) {
   _inherits(MediaElement, _WebAudio);
-
   var _super = _createSuper(MediaElement);
-
   /**
    * Construct the backend
    *
@@ -22591,19 +22488,16 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
    */
   function MediaElement(params) {
     var _this;
-
     _classCallCheck(this, MediaElement);
-
     _this = _super.call(this, params);
     /** @private */
-
     _this.params = params;
+
     /**
      * Initially a dummy media element to catch errors. Once `_load` is
      * called, this will contain the actual `HTMLMediaElement`.
      * @private
      */
-
     _this.media = {
       currentTime: 0,
       duration: 0,
@@ -22613,127 +22507,107 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
       pause: function pause() {},
       volume: 0
     };
-    /** @private */
 
+    /** @private */
     _this.mediaType = params.mediaType.toLowerCase();
     /** @private */
-
     _this.elementPosition = params.elementPosition;
     /** @private */
-
     _this.peaks = null;
     /** @private */
-
     _this.playbackRate = 1;
     /** @private */
-
     _this.volume = 1;
     /** @private */
-
     _this.isMuted = false;
     /** @private */
-
     _this.buffer = null;
     /** @private */
-
     _this.onPlayEnd = null;
     /** @private */
-
     _this.mediaListeners = {};
     return _this;
   }
+
   /**
    * Initialise the backend, called in `wavesurfer.createBackend()`
    */
-
-
   _createClass(MediaElement, [{
     key: "init",
     value: function init() {
       this.setPlaybackRate(this.params.audioRate);
       this.createTimer();
     }
+
     /**
      * Attach event listeners to media element.
      */
-
   }, {
     key: "_setupMediaListeners",
     value: function _setupMediaListeners() {
       var _this2 = this;
-
       this.mediaListeners.error = function () {
         _this2.fireEvent('error', 'Error loading media element');
       };
-
       this.mediaListeners.canplay = function () {
         _this2.fireEvent('canplay');
       };
-
       this.mediaListeners.ended = function () {
         _this2.fireEvent('finish');
-      }; // listen to and relay play, pause and seeked events to enable
+      };
+      // listen to and relay play, pause and seeked events to enable
       // playback control from the external media element
-
-
       this.mediaListeners.play = function () {
         _this2.fireEvent('play');
       };
-
       this.mediaListeners.pause = function () {
         _this2.fireEvent('pause');
       };
-
       this.mediaListeners.seeked = function (event) {
         _this2.fireEvent('seek');
       };
-
       this.mediaListeners.volumechange = function (event) {
         _this2.isMuted = _this2.media.muted;
-
         if (_this2.isMuted) {
           _this2.volume = 0;
         } else {
           _this2.volume = _this2.media.volume;
         }
-
         _this2.fireEvent('volume');
-      }; // reset event listeners
+      };
 
-
+      // reset event listeners
       Object.keys(this.mediaListeners).forEach(function (id) {
         _this2.media.removeEventListener(id, _this2.mediaListeners[id]);
-
         _this2.media.addEventListener(id, _this2.mediaListeners[id]);
       });
     }
+
     /**
      * Create a timer to provide a more precise `audioprocess` event.
      */
-
   }, {
     key: "createTimer",
     value: function createTimer() {
       var _this3 = this;
-
       var onAudioProcess = function onAudioProcess() {
         if (_this3.isPaused()) {
           return;
         }
+        _this3.fireEvent('audioprocess', _this3.getCurrentTime());
 
-        _this3.fireEvent('audioprocess', _this3.getCurrentTime()); // Call again in the next frame
-
-
+        // Call again in the next frame
         util.frame(onAudioProcess)();
       };
+      this.on('play', onAudioProcess);
 
-      this.on('play', onAudioProcess); // Update the progress one more time to prevent it from being stuck in
+      // Update the progress one more time to prevent it from being stuck in
       // case of lower framerates
-
       this.on('pause', function () {
         _this3.fireEvent('audioprocess', _this3.getCurrentTime());
       });
     }
+
     /**
      * Create media element with url as its source,
      * and append to container element.
@@ -22745,7 +22619,6 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
      * @throws Will throw an error if the `url` argument is not a valid media
      * element.
      */
-
   }, {
     key: "load",
     value: function load(url, container, peaks, preload) {
@@ -22756,30 +22629,27 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
       media.src = url;
       media.style.width = '100%';
       var prevMedia = container.querySelector(this.mediaType);
-
       if (prevMedia) {
         container.removeChild(prevMedia);
       }
-
       container.appendChild(media);
-
       this._load(media, peaks, preload);
     }
+
     /**
      * Load existing media element.
      *
      * @param {HTMLMediaElement} elt HTML5 Audio or Video element
      * @param {number[]|Number.<Array[]>} peaks Array of peak data
      */
-
   }, {
     key: "loadElt",
     value: function loadElt(elt, peaks) {
       elt.controls = this.params.mediaControls;
       elt.autoplay = this.params.autoplay || false;
-
       this._load(elt, peaks, elt.preload);
     }
+
     /**
      * Method called by both `load` (from url)
      * and `loadElt` (existing media element) methods.
@@ -22791,31 +22661,27 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
      * element.
      * @private
      */
-
   }, {
     key: "_load",
     value: function _load(media, peaks, preload) {
       // verify media element is valid
       if (!(media instanceof HTMLMediaElement) || typeof media.addEventListener === 'undefined') {
         throw new Error('media parameter is not a valid media element');
-      } // load must be called manually on iOS, otherwise peaks won't draw
+      }
+
+      // load must be called manually on iOS, otherwise peaks won't draw
       // until a user interaction triggers load --> 'ready' event
       //
       // note that we avoid calling media.load here when given peaks and preload == 'none'
       // as this almost always triggers some browser fetch of the media.
-
-
       if (typeof media.load == 'function' && !(peaks && preload == 'none')) {
         // Resets the media element and restarts the media resource. Any
         // pending events are discarded. How much media data is fetched is
         // still affected by the preload attribute.
         media.load();
       }
-
       this.media = media;
-
       this._setupMediaListeners();
-
       this.peaks = peaks;
       this.onPlayEnd = null;
       this.buffer = null;
@@ -22823,100 +22689,97 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
       this.setPlaybackRate(this.playbackRate);
       this.setVolume(this.volume);
     }
+
     /**
      * Used by `wavesurfer.isPlaying()` and `wavesurfer.playPause()`
      *
      * @return {boolean} Media paused or not
      */
-
   }, {
     key: "isPaused",
     value: function isPaused() {
       return !this.media || this.media.paused;
     }
+
     /**
      * Used by `wavesurfer.getDuration()`
      *
      * @return {number} Duration
      */
-
   }, {
     key: "getDuration",
     value: function getDuration() {
       if (this.explicitDuration) {
         return this.explicitDuration;
       }
-
       var duration = (this.buffer || this.media).duration;
-
       if (duration >= Infinity) {
         // streaming audio
         duration = this.media.seekable.end(0);
       }
-
       return duration;
     }
+
     /**
      * Returns the current time in seconds relative to the audio-clip's
      * duration.
      *
      * @return {number} Current time
      */
-
   }, {
     key: "getCurrentTime",
     value: function getCurrentTime() {
       return this.media && this.media.currentTime;
     }
+
     /**
      * Get the position from 0 to 1
      *
      * @return {number} Current position
      */
-
   }, {
     key: "getPlayedPercents",
     value: function getPlayedPercents() {
       return this.getCurrentTime() / this.getDuration() || 0;
     }
+
     /**
      * Get the audio source playback rate.
      *
      * @return {number} Playback rate
      */
-
   }, {
     key: "getPlaybackRate",
     value: function getPlaybackRate() {
       return this.playbackRate || this.media.playbackRate;
     }
+
     /**
      * Set the audio source playback rate.
      *
      * @param {number} value Playback rate
      */
-
   }, {
     key: "setPlaybackRate",
     value: function setPlaybackRate(value) {
       this.playbackRate = value || 1;
       this.media.playbackRate = this.playbackRate;
     }
+
     /**
      * Used by `wavesurfer.seekTo()`
      *
      * @param {number} start Position to start at in seconds
      */
-
   }, {
     key: "seekTo",
     value: function seekTo(start) {
       if (start != null && !isNaN(start)) {
         this.media.currentTime = start;
       }
-
       this.clearPlayEnd();
     }
+
     /**
      * Plays the loaded audio region.
      *
@@ -22926,7 +22789,6 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
      * @emits MediaElement#play
      * @return {Promise} Result
      */
-
   }, {
     key: "play",
     value: function play(start, end) {
@@ -22935,50 +22797,44 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
       end && this.setPlayEnd(end);
       return promise;
     }
+
     /**
      * Pauses the loaded audio.
      *
      * @emits MediaElement#pause
      * @return {Promise} Result
      */
-
   }, {
     key: "pause",
     value: function pause() {
       var promise;
-
       if (this.media) {
         promise = this.media.pause();
       }
-
       this.clearPlayEnd();
       return promise;
     }
+
     /**
      * Set the play end
      *
      * @param {number} end Where to end
      */
-
   }, {
     key: "setPlayEnd",
     value: function setPlayEnd(end) {
       var _this4 = this;
-
       this.clearPlayEnd();
-
       this._onPlayEnd = function (time) {
         if (time >= end) {
           _this4.pause();
-
           _this4.seekTo(end);
         }
       };
-
       this.on('audioprocess', this._onPlayEnd);
     }
-    /** @private */
 
+    /** @private */
   }, {
     key: "clearPlayEnd",
     value: function clearPlayEnd() {
@@ -22987,6 +22843,7 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
         this._onPlayEnd = null;
       }
     }
+
     /**
      * Compute the max and min value of the waveform when broken into
      * <length> subranges.
@@ -22997,16 +22854,15 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
      * @return {number[]|Number.<Array[]>} Array of 2*<length> peaks or array of
      * arrays of peaks consisting of (max, min) values for each subrange.
      */
-
   }, {
     key: "getPeaks",
     value: function getPeaks(length, first, last) {
       if (this.buffer) {
         return _get(_getPrototypeOf(MediaElement.prototype), "getPeaks", this).call(this, length, first, last);
       }
-
       return this.peaks || [];
     }
+
     /**
      * Set the sink id for the media player
      *
@@ -23014,7 +22870,6 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
      * @returns {Promise} A Promise that resolves to `undefined` when there
      * are no errors.
      */
-
   }, {
     key: "setSinkId",
     value: function setSinkId(deviceId) {
@@ -23022,45 +22877,43 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
         if (!this.media.setSinkId) {
           return Promise.reject(new Error('setSinkId is not supported in your browser'));
         }
-
         return this.media.setSinkId(deviceId);
       }
-
       return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
     }
+
     /**
      * Get the current volume
      *
      * @return {number} value A floating point value between 0 and 1.
      */
-
   }, {
     key: "getVolume",
     value: function getVolume() {
       return this.volume;
     }
+
     /**
      * Set the audio volume
      *
      * @param {number} value A floating point value between 0 and 1.
      */
-
   }, {
     key: "setVolume",
     value: function setVolume(value) {
-      this.volume = value; // no need to change when it's already at that volume
-
+      this.volume = value;
+      // no need to change when it's already at that volume
       if (this.media.volume !== this.volume) {
         this.media.volume = this.volume;
       }
     }
+
     /**
      * Enable or disable muted audio
      *
      * @since 4.0.0
      * @param {boolean} muted Specify `true` to mute audio.
      */
-
   }, {
     key: "setMute",
     value: function setMute(muted) {
@@ -23068,37 +22921,33 @@ var MediaElement = /*#__PURE__*/function (_WebAudio) {
       // volumechange event listener.
       this.isMuted = this.media.muted = muted;
     }
+
     /**
      * This is called when wavesurfer is destroyed
      *
      */
-
   }, {
     key: "destroy",
     value: function destroy() {
       var _this5 = this;
-
       this.pause();
       this.unAll();
-      this.destroyed = true; // cleanup media event listeners
+      this.destroyed = true;
 
+      // cleanup media event listeners
       Object.keys(this.mediaListeners).forEach(function (id) {
         if (_this5.media) {
           _this5.media.removeEventListener(id, _this5.mediaListeners[id]);
         }
       });
-
       if (this.params.removeMediaElementOnDestroy && this.media && this.media.parentNode) {
         this.media.parentNode.removeChild(this.media);
       }
-
       this.media = null;
     }
   }]);
-
   return MediaElement;
 }(_webaudio.default);
-
 exports["default"] = MediaElement;
 module.exports = exports.default;
 
@@ -23115,13 +22964,9 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 /**
  * Caches the decoded peaks data to improve rendering speed for large audio
  *
@@ -23133,14 +22978,12 @@ var PeakCache = /*#__PURE__*/function () {
    */
   function PeakCache() {
     _classCallCheck(this, PeakCache);
-
     this.clearPeakCache();
   }
+
   /**
    * Empty the cache
    */
-
-
   _createClass(PeakCache, [{
     key: "clearPeakCache",
     value: function clearPeakCache() {
@@ -23156,9 +22999,9 @@ var PeakCache = /*#__PURE__*/function () {
        * when this changes (zoom events, for instance).
        * @private
        */
-
       this.peakCacheLength = -1;
     }
+
     /**
      * Add a range of peaks to the cache
      *
@@ -23167,54 +23010,50 @@ var PeakCache = /*#__PURE__*/function () {
      * @param {number} end The x offset of the end of the range
      * @return {Number.<Array[]>} Array with arrays of numbers
      */
-
   }, {
     key: "addRangeToPeakCache",
     value: function addRangeToPeakCache(length, start, end) {
       if (length != this.peakCacheLength) {
         this.clearPeakCache();
         this.peakCacheLength = length;
-      } // Return ranges that weren't in the cache before the call.
+      }
 
-
+      // Return ranges that weren't in the cache before the call.
       var uncachedRanges = [];
-      var i = 0; // Skip ranges before the current start.
-
+      var i = 0;
+      // Skip ranges before the current start.
       while (i < this.peakCacheRanges.length && this.peakCacheRanges[i] < start) {
         i++;
-      } // If |i| is even, |start| falls after an existing range.  Otherwise,
+      }
+      // If |i| is even, |start| falls after an existing range.  Otherwise,
       // |start| falls between an existing range, and the uncached region
       // starts when we encounter the next node in |peakCacheRanges| or
       // |end|, whichever comes first.
-
-
       if (i % 2 == 0) {
         uncachedRanges.push(start);
       }
-
       while (i < this.peakCacheRanges.length && this.peakCacheRanges[i] <= end) {
         uncachedRanges.push(this.peakCacheRanges[i]);
         i++;
-      } // If |i| is even, |end| is after all existing ranges.
-
-
+      }
+      // If |i| is even, |end| is after all existing ranges.
       if (i % 2 == 0) {
         uncachedRanges.push(end);
-      } // Filter out the 0-length ranges.
+      }
 
-
+      // Filter out the 0-length ranges.
       uncachedRanges = uncachedRanges.filter(function (item, pos, arr) {
         if (pos == 0) {
           return item != arr[pos + 1];
         } else if (pos == arr.length - 1) {
           return item != arr[pos - 1];
         }
-
         return item != arr[pos - 1] && item != arr[pos + 1];
-      }); // Merge the two ranges together, uncachedRanges will either contain
+      });
+
+      // Merge the two ranges together, uncachedRanges will either contain
       // wholly new points, or duplicates of points in peakCacheRanges.  If
       // duplicates are detected, remove both and extend the range.
-
       this.peakCacheRanges = this.peakCacheRanges.concat(uncachedRanges);
       this.peakCacheRanges = this.peakCacheRanges.sort(function (a, b) {
         return a - b;
@@ -23224,42 +23063,36 @@ var PeakCache = /*#__PURE__*/function () {
         } else if (pos == arr.length - 1) {
           return item != arr[pos - 1];
         }
-
         return item != arr[pos - 1] && item != arr[pos + 1];
-      }); // Push the uncached ranges into an array of arrays for ease of
+      });
+
+      // Push the uncached ranges into an array of arrays for ease of
       // iteration in the functions that call this.
-
       var uncachedRangePairs = [];
-
       for (i = 0; i < uncachedRanges.length; i += 2) {
         uncachedRangePairs.push([uncachedRanges[i], uncachedRanges[i + 1]]);
       }
-
       return uncachedRangePairs;
     }
+
     /**
      * For testing
      *
      * @return {Number.<Array[]>} Array with arrays of numbers
      */
-
   }, {
     key: "getCacheRanges",
     value: function getCacheRanges() {
       var peakCacheRangePairs = [];
       var i;
-
       for (i = 0; i < this.peakCacheRanges.length; i += 2) {
         peakCacheRangePairs.push([this.peakCacheRanges[i], this.peakCacheRanges[i + 1]]);
       }
-
       return peakCacheRangePairs;
     }
   }]);
-
   return PeakCache;
 }();
-
 exports["default"] = PeakCache;
 module.exports = exports.default;
 
@@ -23276,13 +23109,9 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = absMax;
-
 var _max = _interopRequireDefault(__webpack_require__(/*! ./max */ "./src/util/max.js"));
-
 var _min = _interopRequireDefault(__webpack_require__(/*! ./min */ "./src/util/min.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /**
  * Get the largest absolute value in an array
  *
@@ -23296,7 +23125,6 @@ function absMax(values) {
   var min = (0, _min.default)(values);
   return -min > max ? -min : max;
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23312,7 +23140,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = clamp;
-
 /**
  * Returns a number limited to the given range.
  *
@@ -23324,7 +23151,6 @@ exports["default"] = clamp;
 function clamp(val, min, max) {
   return Math.min(Math.max(min, val), max);
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23340,17 +23166,11 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = fetchFile;
-
 var _observer = _interopRequireDefault(__webpack_require__(/*! ./observer */ "./src/util/observer.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 var ProgressHandler = /*#__PURE__*/function () {
   /**
    * Instantiate ProgressHandler
@@ -23361,12 +23181,12 @@ var ProgressHandler = /*#__PURE__*/function () {
    */
   function ProgressHandler(instance, contentLength, response) {
     _classCallCheck(this, ProgressHandler);
-
     this.instance = instance;
     this.instance._reader = response.body.getReader();
     this.total = parseInt(contentLength, 10);
     this.loaded = 0;
   }
+
   /**
    * A method that is called once, immediately after the `ReadableStream``
    * is constructed.
@@ -23374,20 +23194,16 @@ var ProgressHandler = /*#__PURE__*/function () {
    * @param {ReadableStreamDefaultController} controller Controller instance
    *     used to control the stream.
    */
-
-
   _createClass(ProgressHandler, [{
     key: "start",
     value: function start(controller) {
       var _this = this;
-
       var read = function read() {
         // instance._reader.read() returns a promise that resolves
         // when a value has been received
         _this.instance._reader.read().then(function (_ref) {
           var done = _ref.done,
-              value = _ref.value;
-
+            value = _ref.value;
           // result objects contain two properties:
           // done  - true if the stream has already given you all its data.
           // value - some data. Always undefined when done is true.
@@ -23399,33 +23215,27 @@ var ProgressHandler = /*#__PURE__*/function () {
                 total: _this.total,
                 lengthComputable: false
               });
-            } // no more data needs to be consumed, close the stream
-
-
+            }
+            // no more data needs to be consumed, close the stream
             controller.close();
             return;
           }
-
           _this.loaded += value.byteLength;
-
           _this.instance.onProgress.call(_this.instance, {
             loaded: _this.loaded,
             total: _this.total,
             lengthComputable: !(_this.total === 0)
-          }); // enqueue the next data chunk into our target stream
-
-
+          });
+          // enqueue the next data chunk into our target stream
           controller.enqueue(value);
           read();
         }).catch(function (error) {
           controller.error(error);
         });
       };
-
       read();
     }
   }]);
-
   return ProgressHandler;
 }();
 /**
@@ -23469,29 +23279,28 @@ var ProgressHandler = /*#__PURE__*/function () {
  *     console.warn('fetchFile error: ', e);
  * });
  */
-
-
 function fetchFile(options) {
   if (!options) {
     throw new Error('fetch options missing');
   } else if (!options.url) {
     throw new Error('fetch url missing');
   }
-
   var instance = new _observer.default();
   var fetchHeaders = new Headers();
-  var fetchRequest = new Request(options.url); // add ability to abort
+  var fetchRequest = new Request(options.url);
 
-  instance.controller = new AbortController(); // check if headers have to be added
+  // add ability to abort
+  instance.controller = new AbortController();
 
+  // check if headers have to be added
   if (options && options.requestHeaders) {
     // add custom request headers
     options.requestHeaders.forEach(function (header) {
       fetchHeaders.append(header.key, header.value);
     });
-  } // parse fetch options
+  }
 
-
+  // parse fetch options
   var responseType = options.responseType || 'json';
   var fetchOptions = {
     method: options.method || 'GET',
@@ -23507,72 +23316,61 @@ function fetchFile(options) {
     // store response reference
     instance.response = response;
     var progressAvailable = true;
-
     if (!response.body) {
       // ReadableStream is not yet supported in this browser
       // see https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream
       progressAvailable = false;
-    } // Server must send CORS header "Access-Control-Expose-Headers: content-length"
+    }
 
-
+    // Server must send CORS header "Access-Control-Expose-Headers: content-length"
     var contentLength = response.headers.get('content-length');
-
     if (contentLength === null) {
       // Content-Length server response header missing.
       // Don't evaluate download progress if we can't compare against a total size
       // see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS#Access-Control-Expose-Headers
       progressAvailable = false;
     }
-
     if (!progressAvailable) {
       // not able to check download progress so skip it
       return response;
-    } // fire progress event when during load
+    }
 
-
+    // fire progress event when during load
     instance.onProgress = function (e) {
       instance.fireEvent('progress', e);
     };
-
     return new Response(new ReadableStream(new ProgressHandler(instance, contentLength, response)), fetchOptions);
   }).then(function (response) {
     var errMsg;
-
     if (response.ok) {
       switch (responseType) {
         case 'arraybuffer':
           return response.arrayBuffer();
-
         case 'json':
           return response.json();
-
         case 'blob':
           return response.blob();
-
         case 'text':
           return response.text();
-
         default:
           errMsg = 'Unknown responseType: ' + responseType;
           break;
       }
     }
-
     if (!errMsg) {
       errMsg = 'HTTP error status: ' + response.status;
     }
-
     throw new Error(errMsg);
   }).then(function (response) {
     instance.fireEvent('success', response);
   }).catch(function (error) {
     instance.fireEvent('error', error);
-  }); // return the fetch request
+  });
 
+  // return the fetch request
   instance.fetchRequest = fetchRequest;
   return instance;
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23588,11 +23386,8 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = frame;
-
 var _requestAnimationFrame = _interopRequireDefault(__webpack_require__(/*! ./request-animation-frame */ "./src/util/request-animation-frame.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 /**
  * Create a function which will be called at the next requestAnimationFrame
  * cycle
@@ -23606,13 +23401,11 @@ function frame(func) {
     for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
       args[_key] = arguments[_key];
     }
-
     return (0, _requestAnimationFrame.default)(function () {
       return func.apply(void 0, args);
     });
   };
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23628,7 +23421,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = getId;
-
 /**
  * Get a random prefixed ID
  *
@@ -23644,10 +23436,8 @@ function getId(prefix) {
   if (prefix === undefined) {
     prefix = 'wavesurfer_';
   }
-
   return prefix + Math.random().toString(32).substring(2);
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23746,35 +23536,20 @@ Object.defineProperty(exports, "withOrientation", ({
     return _orientation.default;
   }
 }));
-
 var _getId = _interopRequireDefault(__webpack_require__(/*! ./get-id */ "./src/util/get-id.js"));
-
 var _max = _interopRequireDefault(__webpack_require__(/*! ./max */ "./src/util/max.js"));
-
 var _min = _interopRequireDefault(__webpack_require__(/*! ./min */ "./src/util/min.js"));
-
 var _absMax = _interopRequireDefault(__webpack_require__(/*! ./absMax */ "./src/util/absMax.js"));
-
 var _observer = _interopRequireDefault(__webpack_require__(/*! ./observer */ "./src/util/observer.js"));
-
 var _style = _interopRequireDefault(__webpack_require__(/*! ./style */ "./src/util/style.js"));
-
 var _requestAnimationFrame = _interopRequireDefault(__webpack_require__(/*! ./request-animation-frame */ "./src/util/request-animation-frame.js"));
-
 var _frame = _interopRequireDefault(__webpack_require__(/*! ./frame */ "./src/util/frame.js"));
-
 var _debounce = _interopRequireDefault(__webpack_require__(/*! debounce */ "./node_modules/debounce/index.js"));
-
 var _preventClick = _interopRequireDefault(__webpack_require__(/*! ./prevent-click */ "./src/util/prevent-click.js"));
-
 var _fetch = _interopRequireDefault(__webpack_require__(/*! ./fetch */ "./src/util/fetch.js"));
-
 var _clamp = _interopRequireDefault(__webpack_require__(/*! ./clamp */ "./src/util/clamp.js"));
-
 var _orientation = _interopRequireDefault(__webpack_require__(/*! ./orientation */ "./src/util/orientation.js"));
-
 var _silenceMode = _interopRequireDefault(__webpack_require__(/*! ./silence-mode */ "./src/util/silence-mode.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ }),
@@ -23790,7 +23565,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = max;
-
 /**
  * Get the largest value
  *
@@ -23807,7 +23581,6 @@ function max(values) {
   });
   return largest;
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23823,7 +23596,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = min;
-
 /**
  * Get the smallest value
  *
@@ -23840,7 +23612,6 @@ function min(values) {
   });
   return smallest;
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -23856,20 +23627,15 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 /**
  * @typedef {Object} ListenerDescriptor
  * @property {string} name The name of the event
  * @property {function} callback The callback
  * @property {function} un The function to call to remove the listener
  */
-
 /**
  * Observer class
  */
@@ -23879,7 +23645,6 @@ var Observer = /*#__PURE__*/function () {
    */
   function Observer() {
     _classCallCheck(this, Observer);
-
     /**
      * @private
      * @todo Initialise the handlers here already and remove the conditional
@@ -23895,25 +23660,20 @@ var Observer = /*#__PURE__*/function () {
    * @param {function} fn The callback to trigger when the event is fired
    * @return {ListenerDescriptor} The event descriptor
    */
-
-
   _createClass(Observer, [{
     key: "on",
     value: function on(event, fn) {
       var _this = this;
-
       if (!this.handlers) {
         this.handlers = {};
       }
-
       var handlers = this.handlers[event];
-
       if (!handlers) {
         handlers = this.handlers[event] = [];
       }
+      handlers.push(fn);
 
-      handlers.push(fn); // Return an event descriptor
-
+      // Return an event descriptor
       return {
         name: event,
         callback: fn,
@@ -23922,6 +23682,7 @@ var Observer = /*#__PURE__*/function () {
         }
       };
     }
+
     /**
      * Remove an event handler.
      *
@@ -23929,17 +23690,14 @@ var Observer = /*#__PURE__*/function () {
      * removed listens to
      * @param {function} fn The callback that should be removed
      */
-
   }, {
     key: "un",
     value: function un(event, fn) {
       if (!this.handlers) {
         return;
       }
-
       var handlers = this.handlers[event];
       var i;
-
       if (handlers) {
         if (fn) {
           for (i = handlers.length - 1; i >= 0; i--) {
@@ -23952,15 +23710,16 @@ var Observer = /*#__PURE__*/function () {
         }
       }
     }
+
     /**
      * Remove all event handlers.
      */
-
   }, {
     key: "unAll",
     value: function unAll() {
       this.handlers = null;
     }
+
     /**
      * Attach a handler to an event. The handler is executed at most once per
      * event type.
@@ -23969,28 +23728,24 @@ var Observer = /*#__PURE__*/function () {
      * @param {function} handler The callback that is only to be called once
      * @return {ListenerDescriptor} The event descriptor
      */
-
   }, {
     key: "once",
     value: function once(event, handler) {
       var _this2 = this;
-
       var fn = function fn() {
         for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
           args[_key] = arguments[_key];
         }
-
         /*  eslint-disable no-invalid-this */
         handler.apply(_this2, args);
         /*  eslint-enable no-invalid-this */
-
         setTimeout(function () {
           _this2.un(event, fn);
         }, 0);
       };
-
       return this.on(event, fn);
     }
+
     /**
      * Disable firing a list of events by name. When specified, event handlers for any event type
      * passed in here will not be called.
@@ -24001,50 +23756,45 @@ var Observer = /*#__PURE__*/function () {
      * // disable seek and interaction events
      * wavesurfer.setDisabledEventEmissions(['seek', 'interaction']);
      */
-
   }, {
     key: "setDisabledEventEmissions",
     value: function setDisabledEventEmissions(eventNames) {
       this._disabledEventEmissions = eventNames;
     }
+
     /**
      * plugins borrow part of this class without calling the constructor,
      * so we have to be careful about _disabledEventEmissions
      */
-
   }, {
     key: "_isDisabledEventEmission",
     value: function _isDisabledEventEmission(event) {
       return this._disabledEventEmissions && this._disabledEventEmissions.includes(event);
     }
+
     /**
      * Manually fire an event
      *
      * @param {string} event The event to fire manually
      * @param {...any} args The arguments with which to call the listeners
      */
-
   }, {
     key: "fireEvent",
     value: function fireEvent(event) {
       for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
         args[_key2 - 1] = arguments[_key2];
       }
-
       if (!this.handlers || this._isDisabledEventEmission(event)) {
         return;
       }
-
       var handlers = this.handlers[event];
       handlers && handlers.forEach(function (fn) {
         fn.apply(void 0, args);
       });
     }
   }]);
-
   return Observer;
 }();
-
 exports["default"] = Observer;
 module.exports = exports.default;
 
@@ -24084,6 +23834,7 @@ var verticalPropMap = {
   borderRightWidth: 'borderBottomWidth',
   borderRightColor: 'borderBottomColor'
 };
+
 /**
  * Convert a horizontally-oriented property name to a vertical one.
  *
@@ -24091,7 +23842,6 @@ var verticalPropMap = {
  * @param {bool} vertical Whether the element is oriented vertically
  * @returns {string} prop, converted appropriately
  */
-
 function mapProp(prop, vertical) {
   if (Object.prototype.hasOwnProperty.call(verticalPropMap, prop)) {
     return vertical ? verticalPropMap[prop] : prop;
@@ -24099,8 +23849,8 @@ function mapProp(prop, vertical) {
     return prop;
   }
 }
-
 var isProxy = Symbol("isProxy");
+
 /**
  * Returns an appropriately oriented object based on vertical.
  * If vertical is true, attribute getting and setting will be mapped through
@@ -24115,7 +23865,6 @@ var isProxy = Symbol("isProxy");
  * @returns {Proxy} An oriented object with attr translation via verticalAttrMap
  * @since 5.0.0
  */
-
 function withOrientation(target, vertical) {
   if (target[isProxy]) {
     return target;
@@ -24150,7 +23899,6 @@ function withOrientation(target, vertical) {
     });
   }
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -24166,7 +23914,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = preventClick;
-
 /**
  * Stops propagation of click event and removes event listener
  *
@@ -24177,17 +23924,15 @@ function preventClickHandler(event) {
   event.stopPropagation();
   document.body.removeEventListener('click', preventClickHandler, true);
 }
+
 /**
  * Starts listening for click event and prevent propagation
  *
  * @param {object} values Values
  */
-
-
 function preventClick(values) {
   document.body.addEventListener('click', preventClickHandler, true);
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -24203,9 +23948,7 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 /* eslint-disable valid-jsdoc */
-
 /**
  * Returns the `requestAnimationFrame` function for the browser, or a shim with
  * `setTimeout` if the function is not found
@@ -24215,7 +23958,6 @@ exports["default"] = void 0;
 var _default = (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback, element) {
   return setTimeout(callback, 1000 / 60);
 }).bind(window);
-
 exports["default"] = _default;
 module.exports = exports.default;
 
@@ -24232,7 +23974,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = ignoreSilenceMode;
-
 /**
  * Ignores device silence mode when using the `WebAudio` backend.
  *
@@ -24249,22 +23990,24 @@ function ignoreSilenceMode() {
   // NOTE The silence MP3 must be high quality, when web audio sounds are played
   // in parallel the web audio sound is mixed to match the bitrate of the html sound
   // 0.01 seconds of silence VBR220-260 Joint Stereo 859B
-  var audioData = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA//////////////////////////////////////////////////////////////////8AAABhTEFNRTMuMTAwA8MAAAAAAAAAABQgJAUHQQAB9AAAAnGMHkkIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADgnABGiAAQBCqgCRMAAgEAH///////////////7+n/9FTuQsQH//////2NG0jWUGlio5gLQTOtIoeR2WX////X4s9Atb/JRVCbBUpeRUq//////////////////9RUi0f2jn/+xDECgPCjAEQAABN4AAANIAAAAQVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ=="; // disable iOS Airplay (setting the attribute in js doesn't work)
+  var audioData = "data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA//////////////////////////////////////////////////////////////////8AAABhTEFNRTMuMTAwA8MAAAAAAAAAABQgJAUHQQAB9AAAAnGMHkkIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQxAADgnABGiAAQBCqgCRMAAgEAH///////////////7+n/9FTuQsQH//////2NG0jWUGlio5gLQTOtIoeR2WX////X4s9Atb/JRVCbBUpeRUq//////////////////9RUi0f2jn/+xDECgPCjAEQAABN4AAANIAAAAQVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==";
 
+  // disable iOS Airplay (setting the attribute in js doesn't work)
   var tmp = document.createElement("div");
   tmp.innerHTML = '<audio x-webkit-airplay="deny"></audio>';
   var audioSilentMode = tmp.children.item(0);
   audioSilentMode.src = audioData;
   audioSilentMode.preload = "auto";
   audioSilentMode.type = "audio/mpeg";
-  audioSilentMode.disableRemotePlayback = true; // play
+  audioSilentMode.disableRemotePlayback = true;
 
-  audioSilentMode.play(); // cleanup
+  // play
+  audioSilentMode.play();
 
+  // cleanup
   audioSilentMode.remove();
   tmp.remove();
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -24280,7 +24023,6 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = style;
-
 /**
  * Apply a map of styles to an element
  *
@@ -24297,7 +24039,6 @@ function style(el, styles) {
   });
   return el;
 }
-
 module.exports = exports.default;
 
 /***/ }),
@@ -24310,50 +24051,29 @@ module.exports = exports.default;
 
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var util = _interopRequireWildcard(__webpack_require__(/*! ./util */ "./src/util/index.js"));
-
 var _drawer = _interopRequireDefault(__webpack_require__(/*! ./drawer.multicanvas */ "./src/drawer.multicanvas.js"));
-
 var _webaudio = _interopRequireDefault(__webpack_require__(/*! ./webaudio */ "./src/webaudio.js"));
-
 var _mediaelement = _interopRequireDefault(__webpack_require__(/*! ./mediaelement */ "./src/mediaelement.js"));
-
 var _peakcache = _interopRequireDefault(__webpack_require__(/*! ./peakcache */ "./src/peakcache.js"));
-
 var _mediaelementWebaudio = _interopRequireDefault(__webpack_require__(/*! ./mediaelement-webaudio */ "./src/mediaelement-webaudio.js"));
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
 /**
  * WaveSurfer core library class
@@ -24376,13 +24096,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
  * // load audio file
  * wavesurfer.load('example/media/demo.wav');
  */
-
-
 var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
   _inherits(WaveSurfer, _util$Observer);
-
   var _super = _createSuper(WaveSurfer);
-
   /**
    * Initialise wavesurfer instance
    *
@@ -24393,15 +24109,12 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
    */
   function WaveSurfer(params) {
     var _this;
-
     _classCallCheck(this, WaveSurfer);
-
     _this = _super.call(this);
     /**
      * Extract relevant parameters (or defaults)
      * @private
      */
-
     _defineProperty(_assertThisInitialized(_this), "defaultParams", {
       audioContext: null,
       audioScriptProcessor: null,
@@ -24455,31 +24168,26 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         overlay: false,
         channelColors: {},
         filterChannels: [],
-        relativeNormalization: false
+        relativeNormalization: false,
+        splitDragSelection: false
       },
       vertical: false,
       waveColor: '#999',
       xhr: {}
     });
-
     _defineProperty(_assertThisInitialized(_this), "backends", {
       MediaElement: _mediaelement.default,
       WebAudio: _webaudio.default,
       MediaElementWebAudio: _mediaelementWebaudio.default
     });
-
     _defineProperty(_assertThisInitialized(_this), "util", util);
-
     _this.params = Object.assign({}, _this.defaultParams, params);
     _this.params.splitChannelsOptions = Object.assign({}, _this.defaultParams.splitChannelsOptions, params.splitChannelsOptions);
     /** @private */
-
     _this.container = 'string' == typeof params.container ? document.querySelector(_this.params.container) : _this.params.container;
-
     if (!_this.container) {
       throw new Error('Container element not found');
     }
-
     if (_this.params.mediaContainer == null) {
       /** @private */
       _this.mediaContainer = _this.container;
@@ -24490,17 +24198,14 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       /** @private */
       _this.mediaContainer = _this.params.mediaContainer;
     }
-
     if (!_this.mediaContainer) {
       throw new Error('Media Container element not found');
     }
-
     if (_this.params.maxCanvasWidth <= 1) {
       throw new Error('maxCanvasWidth must be greater than 1');
     } else if (_this.params.maxCanvasWidth % 2 == 1) {
       throw new Error('maxCanvasWidth must be an even number');
     }
-
     if (_this.params.rtl === true) {
       if (_this.params.vertical === true) {
         util.style(_this.container, {
@@ -24512,97 +24217,86 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         });
       }
     }
-
     if (_this.params.backgroundColor) {
       _this.setBackgroundColor(_this.params.backgroundColor);
     }
+
     /**
      * @private Used to save the current volume when muting so we can
      * restore once unmuted
      * @type {number}
      */
-
-
     _this.savedVolume = 0;
+
     /**
      * @private The current muted state
      * @type {boolean}
      */
-
     _this.isMuted = false;
+
     /**
      * @private Will hold a list of event descriptors that need to be
      * canceled on subsequent loads of audio
      * @type {Object[]}
      */
-
     _this.tmpEvents = [];
+
     /**
      * @private Holds any running audio downloads
      * @type {Observer}
      */
-
     _this.currentRequest = null;
     /** @private */
-
     _this.arraybuffer = null;
     /** @private */
-
     _this.drawer = null;
     /** @private */
-
     _this.backend = null;
     /** @private */
+    _this.peakCache = null;
 
-    _this.peakCache = null; // cache constructor objects
-
+    // cache constructor objects
     if (typeof _this.params.renderer !== 'function') {
       throw new Error('Renderer parameter is invalid');
     }
     /**
      * @private The uninitialised Drawer class
      */
-
-
     _this.Drawer = _this.params.renderer;
     /**
      * @private The uninitialised Backend class
      */
     // Back compat
-
     if (_this.params.backend == 'AudioElement') {
       _this.params.backend = 'MediaElement';
     }
-
     if ((_this.params.backend == 'WebAudio' || _this.params.backend === 'MediaElementWebAudio') && !_webaudio.default.prototype.supportsWebAudio.call(null)) {
       _this.params.backend = 'MediaElement';
     }
-
     _this.Backend = _this.backends[_this.params.backend];
+
     /**
      * @private map of plugin names that are currently initialised
      */
-
     _this.initialisedPluginList = {};
     /** @private */
-
     _this.isDestroyed = false;
+
     /**
      * Get the current ready status.
      *
      * @example const isReady = wavesurfer.isReady;
      * @return {boolean}
      */
+    _this.isReady = false;
 
-    _this.isReady = false; // responsive debounced event listener. If this.params.responsive is not
+    // responsive debounced event listener. If this.params.responsive is not
     // set, this is never called. Use 100ms or this.params.responsive as
     // timeout for the debounce function.
-
     var prevWidth = 0;
     _this._onResize = util.debounce(function () {
       if (_this.drawer.wrapper && prevWidth != _this.drawer.wrapper.clientWidth && !_this.params.scrollParent) {
         prevWidth = _this.drawer.wrapper.clientWidth;
-
         if (prevWidth) {
           // redraw only if waveform container is rendered and has a width
           _this.drawer.fireEvent('redraw');
@@ -24611,6 +24305,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
     }, typeof _this.params.responsive === 'number' ? _this.params.responsive : 100);
     return _possibleConstructorReturn(_this, _assertThisInitialized(_this));
   }
+
   /**
    * Initialise the wave
    *
@@ -24619,8 +24314,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
    * wavesurfer.init();
    * @return {this} The wavesurfer instance
    */
-
-
   _createClass(WaveSurfer, [{
     key: "init",
     value: function init() {
@@ -24630,6 +24323,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       this.createPeakCache();
       return this;
     }
+
     /**
      * Add and initialise array of plugins (if `plugin.deferInit` is falsey),
      * this function is called in the init function of wavesurfer
@@ -24638,17 +24332,16 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @emits {WaveSurfer#plugins-registered} Called with the array of plugin definitions
      * @return {this} The wavesurfer instance
      */
-
   }, {
     key: "registerPlugins",
     value: function registerPlugins(plugins) {
       var _this2 = this;
-
       // first instantiate all the plugins
       plugins.forEach(function (plugin) {
         return _this2.addPlugin(plugin);
-      }); // now run the init functions
+      });
 
+      // now run the init functions
       plugins.forEach(function (plugin) {
         // call init function of the plugin if deferInit is falsey
         // in that case you would manually use initPlugins()
@@ -24659,18 +24352,19 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       this.fireEvent('plugins-registered', plugins);
       return this;
     }
+
     /**
      * Get a map of plugin names that are currently initialised
      *
      * @example wavesurfer.getPlugins();
      * @return {Object} Object with plugin names
      */
-
   }, {
     key: "getActivePlugins",
     value: function getActivePlugins() {
       return this.initialisedPluginList;
     }
+
     /**
      * Add a plugin object to wavesurfer
      *
@@ -24679,21 +24373,18 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @example wavesurfer.addPlugin(WaveSurfer.minimap());
      * @return {this} The wavesurfer instance
      */
-
   }, {
     key: "addPlugin",
     value: function addPlugin(plugin) {
       var _this3 = this;
-
       if (!plugin.name) {
         throw new Error('Plugin does not have a name!');
       }
-
       if (!plugin.instance) {
         throw new Error("Plugin ".concat(plugin.name, " does not have an instance property!"));
-      } // staticProps properties are applied to wavesurfer instance
+      }
 
-
+      // staticProps properties are applied to wavesurfer instance
       if (plugin.staticProps) {
         Object.keys(plugin.staticProps).forEach(function (pluginStaticProp) {
           /**
@@ -24703,23 +24394,24 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
           _this3[pluginStaticProp] = plugin.staticProps[pluginStaticProp];
         });
       }
+      var Instance = plugin.instance;
 
-      var Instance = plugin.instance; // turn the plugin instance into an observer
-
+      // turn the plugin instance into an observer
       var observerPrototypeKeys = Object.getOwnPropertyNames(util.Observer.prototype);
       observerPrototypeKeys.forEach(function (key) {
         Instance.prototype[key] = util.Observer.prototype[key];
       });
+
       /**
        * Instantiated plugin classes are added as a property of the wavesurfer
        * instance
        * @type {Object}
        */
-
       this[plugin.name] = new Instance(plugin.params || {}, this);
       this.fireEvent('plugin-added', plugin.name);
       return this;
     }
+
     /**
      * Initialise a plugin
      *
@@ -24728,24 +24420,22 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @example wavesurfer.initPlugin('minimap');
      * @return {this} The wavesurfer instance
      */
-
   }, {
     key: "initPlugin",
     value: function initPlugin(name) {
       if (!this[name]) {
         throw new Error("Plugin ".concat(name, " has not been added yet!"));
       }
-
       if (this.initialisedPluginList[name]) {
         // destroy any already initialised plugins
         this.destroyPlugin(name);
       }
-
       this[name].init();
       this.initialisedPluginList[name] = true;
       this.fireEvent('plugin-initialised', name);
       return this;
     }
+
     /**
      * Destroy a plugin
      *
@@ -24754,106 +24444,95 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @example wavesurfer.destroyPlugin('minimap');
      * @returns {this} The wavesurfer instance
      */
-
   }, {
     key: "destroyPlugin",
     value: function destroyPlugin(name) {
       if (!this[name]) {
         throw new Error("Plugin ".concat(name, " has not been added yet and cannot be destroyed!"));
       }
-
       if (!this.initialisedPluginList[name]) {
         throw new Error("Plugin ".concat(name, " is not active and cannot be destroyed!"));
       }
-
       if (typeof this[name].destroy !== 'function') {
         throw new Error("Plugin ".concat(name, " does not have a destroy function!"));
       }
-
       this[name].destroy();
       delete this.initialisedPluginList[name];
       this.fireEvent('plugin-destroyed', name);
       return this;
     }
+
     /**
      * Destroy all initialised plugins. Convenience function to use when
      * wavesurfer is removed
      *
      * @private
      */
-
   }, {
     key: "destroyAllPlugins",
     value: function destroyAllPlugins() {
       var _this4 = this;
-
       Object.keys(this.initialisedPluginList).forEach(function (name) {
         return _this4.destroyPlugin(name);
       });
     }
+
     /**
      * Create the drawer and draw the waveform
      *
      * @private
      * @emits WaveSurfer#drawer-created
      */
-
   }, {
     key: "createDrawer",
     value: function createDrawer() {
       var _this5 = this;
-
       this.drawer = new this.Drawer(this.container, this.params);
       this.drawer.init();
       this.fireEvent('drawer-created', this.drawer);
-
       if (this.params.responsive !== false) {
         window.addEventListener('resize', this._onResize, true);
         window.addEventListener('orientationchange', this._onResize, true);
       }
-
       this.drawer.on('redraw', function () {
         _this5.drawBuffer();
-
         _this5.drawer.progress(_this5.backend.getPlayedPercents());
-      }); // Click-to-seek
+      });
 
+      // Click-to-seek
       this.drawer.on('click', function (e, progress) {
         setTimeout(function () {
           return _this5.seekTo(progress);
         }, 0);
-      }); // Relay the scroll event from the drawer
+      });
 
+      // Relay the scroll event from the drawer
       this.drawer.on('scroll', function (e) {
         if (_this5.params.partialRender) {
           _this5.drawBuffer();
         }
-
         _this5.fireEvent('scroll', e);
       });
     }
+
     /**
      * Create the backend
      *
      * @private
      * @emits WaveSurfer#backend-created
      */
-
   }, {
     key: "createBackend",
     value: function createBackend() {
       var _this6 = this;
-
       if (this.backend) {
         this.backend.destroy();
       }
-
       this.backend = new this.Backend(this.params);
       this.backend.init();
       this.fireEvent('backend-created', this.backend);
       this.backend.on('finish', function () {
         _this6.drawer.progress(_this6.backend.getPlayedPercents());
-
         _this6.fireEvent('finish');
       });
       this.backend.on('play', function () {
@@ -24864,33 +24543,30 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       });
       this.backend.on('audioprocess', function (time) {
         _this6.drawer.progress(_this6.backend.getPlayedPercents());
-
         _this6.fireEvent('audioprocess', time);
-      }); // only needed for MediaElement and MediaElementWebAudio backend
+      });
 
+      // only needed for MediaElement and MediaElementWebAudio backend
       if (this.params.backend === 'MediaElement' || this.params.backend === 'MediaElementWebAudio') {
         this.backend.on('seek', function () {
           _this6.drawer.progress(_this6.backend.getPlayedPercents());
         });
         this.backend.on('volume', function () {
           var newVolume = _this6.getVolume();
-
           _this6.fireEvent('volume', newVolume);
-
           if (_this6.backend.isMuted !== _this6.isMuted) {
             _this6.isMuted = _this6.backend.isMuted;
-
             _this6.fireEvent('mute', _this6.isMuted);
           }
         });
       }
     }
+
     /**
      * Create the peak cache
      *
      * @private
      */
-
   }, {
     key: "createPeakCache",
     value: function createPeakCache() {
@@ -24898,37 +24574,37 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.peakCache = new _peakcache.default();
       }
     }
+
     /**
      * Get the duration of the audio clip
      *
      * @example const duration = wavesurfer.getDuration();
      * @return {number} Duration in seconds
      */
-
   }, {
     key: "getDuration",
     value: function getDuration() {
       return this.backend.getDuration();
     }
+
     /**
      * Get the current playback position
      *
      * @example const currentTime = wavesurfer.getCurrentTime();
      * @return {number} Playback position in seconds
      */
-
   }, {
     key: "getCurrentTime",
     value: function getCurrentTime() {
       return this.backend.getCurrentTime();
     }
+
     /**
      * Set the current play time in seconds.
      *
      * @param {number} seconds A positive number in seconds. E.g. 10 means 10
      * seconds, 60 means 1 minute
      */
-
   }, {
     key: "setCurrentTime",
     value: function setCurrentTime(seconds) {
@@ -24938,6 +24614,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.seekTo(seconds / this.getDuration());
       }
     }
+
     /**
      * Starts playback from the current position. Optional start and end
      * measured in seconds can be used to set the range of audio to play.
@@ -24950,41 +24627,38 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * // play from second 1 to 5
      * wavesurfer.play(1, 5);
      */
-
   }, {
     key: "play",
     value: function play(start, end) {
       var _this7 = this;
-
       if (this.params.ignoreSilenceMode) {
         // ignores device hardware silence mode
         util.ignoreSilenceMode();
       }
-
       this.fireEvent('interaction', function () {
         return _this7.play(start, end);
       });
       return this.backend.play(start, end);
     }
+
     /**
      * Set a point in seconds for playback to stop at.
      *
      * @param {number} position Position (in seconds) to stop at
      * @version 3.3.0
      */
-
   }, {
     key: "setPlayEnd",
     value: function setPlayEnd(position) {
       this.backend.setPlayEnd(position);
     }
+
     /**
      * Stops and pauses playback
      *
      * @example wavesurfer.pause();
      * @return {Promise} Result of the backend pause method
      */
-
   }, {
     key: "pause",
     value: function pause() {
@@ -24992,30 +24666,31 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         return this.backend.pause();
       }
     }
+
     /**
      * Toggle playback
      *
      * @example wavesurfer.playPause();
      * @return {Promise} Result of the backend play or pause method
      */
-
   }, {
     key: "playPause",
     value: function playPause() {
       return this.backend.isPaused() ? this.play() : this.pause();
     }
+
     /**
      * Get the current playback state
      *
      * @example const isPlaying = wavesurfer.isPlaying();
      * @return {boolean} False if paused, true if playing
      */
-
   }, {
     key: "isPlaying",
     value: function isPlaying() {
       return !this.backend.isPaused();
     }
+
     /**
      * Skip backward
      *
@@ -25023,12 +24698,12 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * is used
      * @example wavesurfer.skipBackward();
      */
-
   }, {
     key: "skipBackward",
     value: function skipBackward(seconds) {
       this.skip(-seconds || -this.params.skipLength);
     }
+
     /**
      * Skip forward
      *
@@ -25036,12 +24711,12 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * is used
      * @example wavesurfer.skipForward();
      */
-
   }, {
     key: "skipForward",
     value: function skipForward(seconds) {
       this.skip(seconds || this.params.skipLength);
     }
+
     /**
      * Skip a number of seconds from the current position (use a negative value
      * to go backwards).
@@ -25051,7 +24726,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * // go back 2 seconds
      * wavesurfer.skip(-2);
      */
-
   }, {
     key: "skip",
     value: function skip(offset) {
@@ -25060,6 +24734,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       position = Math.max(0, Math.min(duration, position + (offset || 0)));
       this.seekAndCenter(position / duration);
     }
+
     /**
      * Seeks to a position and centers the view
      *
@@ -25068,13 +24743,13 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * // seek and go to the middle of the audio
      * wavesurfer.seekTo(0.5);
      */
-
   }, {
     key: "seekAndCenter",
     value: function seekAndCenter(progress) {
       this.seekTo(progress);
       this.drawer.recenter(progress);
     }
+
     /**
      * Seeks to a position
      *
@@ -25085,46 +24760,40 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * // seek to the middle of the audio
      * wavesurfer.seekTo(0.5);
      */
-
   }, {
     key: "seekTo",
     value: function seekTo(progress) {
       var _this8 = this;
-
       // return an error if progress is not a number between 0 and 1
       if (typeof progress !== 'number' || !isFinite(progress) || progress < 0 || progress > 1) {
         throw new Error('Error calling wavesurfer.seekTo, parameter must be a number between 0 and 1!');
       }
-
       this.fireEvent('interaction', function () {
         return _this8.seekTo(progress);
       });
       var isWebAudioBackend = this.params.backend === 'WebAudio';
       var paused = this.backend.isPaused();
-
       if (isWebAudioBackend && !paused) {
         this.backend.pause();
-      } // avoid small scrolls while paused seeking
+      }
 
-
+      // avoid small scrolls while paused seeking
       var oldScrollParent = this.params.scrollParent;
       this.params.scrollParent = false;
       this.backend.seekTo(progress * this.getDuration());
       this.drawer.progress(progress);
-
       if (isWebAudioBackend && !paused) {
         this.backend.play();
       }
-
       this.params.scrollParent = oldScrollParent;
       this.fireEvent('seek', progress);
     }
+
     /**
      * Stops and goes to the beginning.
      *
      * @example wavesurfer.stop();
      */
-
   }, {
     key: "stop",
     value: function stop() {
@@ -25132,6 +24801,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       this.seekTo(0);
       this.drawer.progress(0);
     }
+
     /**
      * Sets the ID of the audio device to use for output and returns a Promise.
      *
@@ -25140,12 +24810,12 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @returns {Promise} `Promise` that resolves to `undefined` when there are
      * no errors detected.
      */
-
   }, {
     key: "setSinkId",
     value: function setSinkId(deviceId) {
       return this.backend.setSinkId(deviceId);
     }
+
     /**
      * Set the playback volume.
      *
@@ -25153,25 +24823,25 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * volume and 1 being full volume.
      * @emits WaveSurfer#volume
      */
-
   }, {
     key: "setVolume",
     value: function setVolume(newVolume) {
       this.backend.setVolume(newVolume);
       this.fireEvent('volume', newVolume);
     }
+
     /**
      * Get the playback volume.
      *
      * @return {number} A value between 0 and 1, 0 being no
      * volume and 1 being full volume.
      */
-
   }, {
     key: "getVolume",
     value: function getVolume() {
       return this.backend.getVolume();
     }
+
     /**
      * Set the playback rate.
      *
@@ -25179,23 +24849,23 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * speed, 2 means double speed and so on.
      * @example wavesurfer.setPlaybackRate(2);
      */
-
   }, {
     key: "setPlaybackRate",
     value: function setPlaybackRate(rate) {
       this.backend.setPlaybackRate(rate);
     }
+
     /**
      * Get the playback rate.
      *
      * @return {number} The current playback rate.
      */
-
   }, {
     key: "getPlaybackRate",
     value: function getPlaybackRate() {
       return this.backend.getPlaybackRate();
     }
+
     /**
      * Toggle the volume on and off. If not currently muted it will save the
      * current volume value and turn the volume off. If currently muted then it
@@ -25204,12 +24874,12 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      *
      * @example wavesurfer.toggleMute();
      */
-
   }, {
     key: "toggleMute",
     value: function toggleMute() {
       this.setMute(!this.isMuted);
     }
+
     /**
      * Enable or disable muted audio
      *
@@ -25221,7 +24891,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * wavesurfer.setMute(false);
      * console.log(wavesurfer.getMute()) // logs false
      */
-
   }, {
     key: "setMute",
     value: function setMute(mute) {
@@ -25230,7 +24899,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.fireEvent('mute', this.isMuted);
         return;
       }
-
       if (this.backend.setMute) {
         // Backends such as the MediaElement backend have their own handling
         // of mute, let them handle it.
@@ -25252,21 +24920,21 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
           this.fireEvent('volume', this.savedVolume);
         }
       }
-
       this.fireEvent('mute', this.isMuted);
     }
+
     /**
      * Get the current mute status.
      *
      * @example const isMuted = wavesurfer.getMute();
      * @return {boolean} Current mute status
      */
-
   }, {
     key: "getMute",
     value: function getMute() {
       return this.isMuted;
     }
+
     /**
      * Get the list of current set filters as an array.
      *
@@ -25274,53 +24942,51 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      *
      * @return {array} List of enabled filters
      */
-
   }, {
     key: "getFilters",
     value: function getFilters() {
       return this.backend.filters || [];
     }
+
     /**
      * Toggles `scrollParent` and redraws
      *
      * @example wavesurfer.toggleScroll();
      */
-
   }, {
     key: "toggleScroll",
     value: function toggleScroll() {
       this.params.scrollParent = !this.params.scrollParent;
       this.drawBuffer();
     }
+
     /**
      * Toggle mouse interaction
      *
      * @example wavesurfer.toggleInteraction();
      */
-
   }, {
     key: "toggleInteraction",
     value: function toggleInteraction() {
       this.params.interact = !this.params.interact;
     }
+
     /**
      * Get the fill color of the waveform after the cursor.
      *
      * @param {?number} channelIdx Optional index of the channel to get its wave color if splitChannels is true
      * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-
   }, {
     key: "getWaveColor",
     value: function getWaveColor() {
       var channelIdx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
       if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
         return this.params.splitChannelsOptions.channelColors[channelIdx].waveColor;
       }
-
       return this.params.waveColor;
     }
+
     /**
      * Set the fill color of the waveform after the cursor.
      *
@@ -25328,38 +24994,34 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {?number} channelIdx Optional index of the channel to set its wave color if splitChannels is true
      * @example wavesurfer.setWaveColor('#ddd');
      */
-
   }, {
     key: "setWaveColor",
     value: function setWaveColor(color) {
       var channelIdx = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
       if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
         this.params.splitChannelsOptions.channelColors[channelIdx].waveColor = color;
       } else {
         this.params.waveColor = color;
       }
-
       this.drawBuffer();
     }
+
     /**
      * Get the fill color of the waveform behind the cursor.
      *
      * @param {?number} channelIdx Optional index of the channel to get its progress color if splitChannels is true
      * @return {string|object} A CSS color string, or an array of CSS color strings.
      */
-
   }, {
     key: "getProgressColor",
     value: function getProgressColor() {
       var channelIdx = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
-
       if (this.params.splitChannelsOptions.channelColors[channelIdx]) {
         return this.params.splitChannelsOptions.channelColors[channelIdx].progressColor;
       }
-
       return this.params.progressColor;
     }
+
     /**
      * Set the fill color of the waveform behind the cursor.
      *
@@ -25367,7 +25029,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {?number} channelIdx Optional index of the channel to set its progress color if splitChannels is true
      * @example wavesurfer.setProgressColor('#400');
      */
-
   }, {
     key: "setProgressColor",
     value: function setProgressColor(color, channelIdx) {
@@ -25376,27 +25037,26 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       } else {
         this.params.progressColor = color;
       }
-
       this.drawBuffer();
     }
+
     /**
      * Get the background color of the waveform container.
      *
      * @return {string} A CSS color string.
      */
-
   }, {
     key: "getBackgroundColor",
     value: function getBackgroundColor() {
       return this.params.backgroundColor;
     }
+
     /**
      * Set the background color of the waveform container.
      *
      * @param {string} color A CSS color string.
      * @example wavesurfer.setBackgroundColor('#FF00FF');
      */
-
   }, {
     key: "setBackgroundColor",
     value: function setBackgroundColor(color) {
@@ -25405,18 +25065,19 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         background: this.params.backgroundColor
       });
     }
+
     /**
      * Get the fill color of the cursor indicating the playhead
      * position.
      *
      * @return {string} A CSS color string.
      */
-
   }, {
     key: "getCursorColor",
     value: function getCursorColor() {
       return this.params.cursorColor;
     }
+
     /**
      * Set the fill color of the cursor indicating the playhead
      * position.
@@ -25424,31 +25085,30 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {string} color A CSS color string.
      * @example wavesurfer.setCursorColor('#222');
      */
-
   }, {
     key: "setCursorColor",
     value: function setCursorColor(color) {
       this.params.cursorColor = color;
       this.drawer.updateCursor();
     }
+
     /**
      * Get the height of the waveform.
      *
      * @return {number} Height measured in pixels.
      */
-
   }, {
     key: "getHeight",
     value: function getHeight() {
       return this.params.height;
     }
+
     /**
      * Set the height of the waveform.
      *
      * @param {number} height Height measured in pixels.
      * @example wavesurfer.setHeight(200);
      */
-
   }, {
     key: "setHeight",
     value: function setHeight(height) {
@@ -25456,6 +25116,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       this.drawer.setHeight(height * this.params.pixelRatio);
       this.drawBuffer();
     }
+
     /**
      * Hide channels from being drawn on the waveform if splitting channels.
      *
@@ -25469,42 +25130,38 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {array} channelIndices Channels to be filtered out from drawing.
      * @version 4.0.0
      */
-
   }, {
     key: "setFilteredChannels",
     value: function setFilteredChannels(channelIndices) {
       this.params.splitChannelsOptions.filterChannels = channelIndices;
       this.drawBuffer();
     }
+
     /**
      * Get the correct peaks for current wave view-port and render wave
      *
      * @private
      * @emits WaveSurfer#redraw
      */
-
   }, {
     key: "drawBuffer",
     value: function drawBuffer() {
       var nominalWidth = Math.round(this.getDuration() * this.params.minPxPerSec * this.params.pixelRatio);
       var parentWidth = this.drawer.getWidth();
-      var width = nominalWidth; // always start at 0 after zooming for scrolling : issue redraw left part
-
+      var width = nominalWidth;
+      // always start at 0 after zooming for scrolling : issue redraw left part
       var start = 0;
-      var end = Math.max(start + parentWidth, width); // Fill container
-
+      var end = Math.max(start + parentWidth, width);
+      // Fill container
       if (this.params.fillParent && (!this.params.scrollParent || nominalWidth < parentWidth)) {
         width = parentWidth;
         start = 0;
         end = width;
       }
-
       var peaks;
-
       if (this.params.partialRender) {
         var newRanges = this.peakCache.addRangeToPeakCache(width, start, end);
         var i;
-
         for (i = 0; i < newRanges.length; i++) {
           peaks = this.backend.getPeaks(width, newRanges[i][0], newRanges[i][1]);
           this.drawer.drawPeaks(peaks, width, newRanges[i][0], newRanges[i][1]);
@@ -25513,9 +25170,9 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         peaks = this.backend.getPeaks(width, start, end);
         this.drawer.drawPeaks(peaks, width, start, end);
       }
-
       this.fireEvent('redraw', peaks, width);
     }
+
     /**
      * Horizontally zooms the waveform in and out. It also changes the parameter
      * `minPxPerSec` and enables the `scrollParent` option. Calling the function
@@ -25526,7 +25183,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @emits WaveSurfer#zoom
      * @example wavesurfer.zoom(20);
      */
-
   }, {
     key: "zoom",
     value: function zoom(pxPerSec) {
@@ -25537,30 +25193,29 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.params.minPxPerSec = pxPerSec;
         this.params.scrollParent = true;
       }
-
       this.drawBuffer();
       this.drawer.progress(this.backend.getPlayedPercents());
       this.drawer.recenter(this.getCurrentTime() / this.getDuration());
       this.fireEvent('zoom', pxPerSec);
     }
+
     /**
      * Decode buffer and load
      *
      * @private
      * @param {ArrayBuffer} arraybuffer Buffer to process
      */
-
   }, {
     key: "loadArrayBuffer",
     value: function loadArrayBuffer(arraybuffer) {
       var _this9 = this;
-
       this.decodeArrayBuffer(arraybuffer, function (data) {
         if (!_this9.isDestroyed) {
           _this9.loadDecodedBuffer(data);
         }
       });
     }
+
     /**
      * Directly load an externally decoded AudioBuffer
      *
@@ -25568,7 +25223,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {AudioBuffer} buffer Buffer to process
      * @emits WaveSurfer#ready
      */
-
   }, {
     key: "loadDecodedBuffer",
     value: function loadDecodedBuffer(buffer) {
@@ -25577,18 +25231,17 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       this.isReady = true;
       this.fireEvent('ready');
     }
+
     /**
      * Loads audio data from a Blob or File object
      *
      * @param {Blob|File} blob Audio data
      * @example
      */
-
   }, {
     key: "loadBlob",
     value: function loadBlob(blob) {
       var _this10 = this;
-
       // Create file reader
       var reader = new FileReader();
       reader.addEventListener('progress', function (e) {
@@ -25603,6 +25256,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       reader.readAsArrayBuffer(blob);
       this.empty();
     }
+
     /**
      * Loads audio and re-renders the waveform.
      *
@@ -25630,16 +25284,13 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      *   true
      * );
      */
-
   }, {
     key: "load",
     value: function load(url, peaks, preload, duration) {
       if (!url) {
         throw new Error('url parameter cannot be empty');
       }
-
       this.empty();
-
       if (preload) {
         // check whether the preload attribute will be usable and if not log
         // a warning listing the reasons why not and nullify the variable
@@ -25652,30 +25303,28 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         var activeReasons = Object.keys(preloadIgnoreReasons).filter(function (reason) {
           return preloadIgnoreReasons[reason];
         });
-
         if (activeReasons.length) {
           // eslint-disable-next-line no-console
-          console.warn('Preload parameter of wavesurfer.load will be ignored because:\n\t- ' + activeReasons.join('\n\t- ')); // stop invalid values from being used
-
+          console.warn('Preload parameter of wavesurfer.load will be ignored because:\n\t- ' + activeReasons.join('\n\t- '));
+          // stop invalid values from being used
           preload = null;
         }
-      } // loadBuffer(url, peaks, duration) requires that url is a string
+      }
+
+      // loadBuffer(url, peaks, duration) requires that url is a string
       // but users can pass in a HTMLMediaElement to WaveSurfer
-
-
       if (this.params.backend === 'WebAudio' && url instanceof HTMLMediaElement) {
         url = url.src;
       }
-
       switch (this.params.backend) {
         case 'WebAudio':
           return this.loadBuffer(url, peaks, duration);
-
         case 'MediaElement':
         case 'MediaElementWebAudio':
           return this.loadMediaElement(url, peaks, preload, duration);
       }
     }
+
     /**
      * Loads audio using Web Audio buffer backend.
      *
@@ -25686,22 +25335,18 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {?number} duration Optional duration of audio file
      * @returns {void}
      */
-
   }, {
     key: "loadBuffer",
     value: function loadBuffer(url, peaks, duration) {
       var _this11 = this;
-
       var load = function load(action) {
         if (action) {
           _this11.tmpEvents.push(_this11.once('ready', action));
         }
-
         return _this11.getArrayBuffer(url, function (data) {
           return _this11.loadArrayBuffer(data);
         });
       };
-
       if (peaks) {
         this.backend.setPeaks(peaks, duration);
         this.drawBuffer();
@@ -25711,6 +25356,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         return load();
       }
     }
+
     /**
      * Either create a media element, or load an existing media element.
      *
@@ -25724,60 +25370,54 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * audio element should be enabled
      * @param {?number} duration Optional duration of audio file
      */
-
   }, {
     key: "loadMediaElement",
     value: function loadMediaElement(urlOrElt, peaks, preload, duration) {
       var _this12 = this;
-
       var url = urlOrElt;
-
       if (typeof urlOrElt === 'string') {
         this.backend.load(url, this.mediaContainer, peaks, preload);
       } else {
         var elt = urlOrElt;
-        this.backend.loadElt(elt, peaks); // If peaks are not provided,
-        // url = element.src so we can get peaks with web audio
+        this.backend.loadElt(elt, peaks);
 
+        // If peaks are not provided,
+        // url = element.src so we can get peaks with web audio
         url = elt.src;
       }
-
       this.tmpEvents.push(this.backend.once('canplay', function () {
         // ignore when backend was already destroyed
         if (!_this12.backend.destroyed) {
           _this12.drawBuffer();
-
           _this12.isReady = true;
-
           _this12.fireEvent('ready');
         }
       }), this.backend.once('error', function (err) {
         return _this12.fireEvent('error', err);
-      })); // If peaks are provided, render them and fire the `waveform-ready` event.
+      }));
 
+      // If peaks are provided, render them and fire the `waveform-ready` event.
       if (peaks) {
         this.backend.setPeaks(peaks, duration);
         this.drawBuffer();
         this.fireEvent('waveform-ready');
-      } // If no pre-decoded peaks are provided, or are provided with
+      }
+
+      // If no pre-decoded peaks are provided, or are provided with
       // forceDecode flag, attempt to download the audio file and decode it
       // with Web Audio.
-
-
       if ((!peaks || this.params.forceDecode) && this.backend.supportsWebAudio()) {
         this.getArrayBuffer(url, function (arraybuffer) {
           _this12.decodeArrayBuffer(arraybuffer, function (buffer) {
             _this12.backend.buffer = buffer;
-
             _this12.backend.setPeaks(null);
-
             _this12.drawBuffer();
-
             _this12.fireEvent('waveform-ready');
           });
         });
       }
     }
+
     /**
      * Decode an array buffer and pass data to a callback
      *
@@ -25785,12 +25425,10 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {Object} arraybuffer The array buffer to decode
      * @param {function} callback The function to call on complete
      */
-
   }, {
     key: "decodeArrayBuffer",
     value: function decodeArrayBuffer(arraybuffer, callback) {
       var _this13 = this;
-
       if (!this.isDestroyed) {
         this.arraybuffer = arraybuffer;
         this.backend.decodeArrayBuffer(arraybuffer, function (data) {
@@ -25805,6 +25443,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         });
       }
     }
+
     /**
      * Load an array buffer using fetch and pass the result to a callback
      *
@@ -25813,12 +25452,10 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @returns {util.fetchFile} fetch call
      * @private
      */
-
   }, {
     key: "getArrayBuffer",
     value: function getArrayBuffer(url, callback) {
       var _this14 = this;
-
       var options = Object.assign({
         url: url,
         responseType: 'arraybuffer'
@@ -25832,11 +25469,11 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         _this14.currentRequest = null;
       }), request.on('error', function (e) {
         _this14.fireEvent('error', e);
-
         _this14.currentRequest = null;
       }));
       return request;
     }
+
     /**
      * Called while the audio file is loading
      *
@@ -25844,12 +25481,10 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {Event} e Progress event
      * @emits WaveSurfer#loading
      */
-
   }, {
     key: "onProgress",
     value: function onProgress(e) {
       var percentComplete;
-
       if (e.lengthComputable) {
         percentComplete = e.loaded / e.total;
       } else {
@@ -25857,9 +25492,9 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         // function, and assume downloads in the 1-3 MB range.
         percentComplete = e.loaded / (e.loaded + 1000000);
       }
-
       this.fireEvent('loading', Math.round(percentComplete * 100), e.target);
     }
+
     /**
      * Exports PCM data into a JSON array and optionally opens in a new window
      * as valid JSON Blob instance.
@@ -25872,7 +25507,6 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @param {number} end End index
      * @return {Promise} Promise that resolves with array of peaks
      */
-
   }, {
     key: "exportPCM",
     value: function exportPCM(length, accuracy, noWindow, start, end) {
@@ -25893,50 +25527,46 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
           window.open(objURL);
           URL.revokeObjectURL(objURL);
         }
-
         resolve(arr);
       });
     }
+
     /**
      * Save waveform image as data URI.
      *
-     * The default format is `'image/png'`. Other supported types are
-     * `'image/jpeg'` and `'image/webp'`.
+     * The default format is `image/png`. Other supported types are
+     * `image/jpeg` and `image/webp`.
      *
      * @param {string} format='image/png' A string indicating the image format.
-     * The default format type is `'image/png'`.
+     * The default format type is `image/png`.
      * @param {number} quality=1 A number between 0 and 1 indicating the image
      * quality to use for image formats that use lossy compression such as
-     * `'image/jpeg'`` and `'image/webp'`.
-     * @param {string} type Image data type to return. Either 'dataURL' (default)
-     * or 'blob'.
-     * @return {string|string[]|Promise} When using `'dataURL'` type this returns
+     * `image/jpeg` and `image/webp`.
+     * @param {string} type Image data type to return. Either `dataURL` (default)
+     * or `blob`.
+     * @return {string|string[]|Promise} When using `dataURL` type this returns
      * a single data URL or an array of data URLs, one for each canvas. When using
-     * `'blob'` type this returns a `Promise` resolving with an array of `Blob`
+     * `blob` type this returns a `Promise` resolving with an array of `Blob`
      * instances, one for each canvas.
      */
-
   }, {
     key: "exportImage",
     value: function exportImage(format, quality, type) {
       if (!format) {
         format = 'image/png';
       }
-
       if (!quality) {
         quality = 1;
       }
-
       if (!type) {
         type = 'dataURL';
       }
-
       return this.drawer.getImage(format, quality, type);
     }
+
     /**
      * Cancel any fetch request currently in progress
      */
-
   }, {
     key: "cancelAjax",
     value: function cancelAjax() {
@@ -25948,15 +25578,14 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
           // Ignoring exceptions thrown by call to cancel()
           this.currentRequest._reader.cancel().catch(function (err) {});
         }
-
         this.currentRequest.controller.abort();
         this.currentRequest = null;
       }
     }
+
     /**
      * @private
      */
-
   }, {
     key: "clearTmpEvents",
     value: function clearTmpEvents() {
@@ -25964,10 +25593,10 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         return e.un();
       });
     }
+
     /**
      * Display empty waveform.
      */
-
   }, {
     key: "empty",
     value: function empty() {
@@ -25975,23 +25604,23 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
         this.stop();
         this.backend.disconnectSource();
       }
-
       this.isReady = false;
       this.cancelAjax();
-      this.clearTmpEvents(); // empty drawer
+      this.clearTmpEvents();
 
+      // empty drawer
       this.drawer.progress(0);
       this.drawer.setWidth(0);
       this.drawer.drawPeaks({
         length: this.drawer.getWidth()
       }, 0);
     }
+
     /**
      * Remove events, elements and disconnect WebAudio nodes.
      *
      * @emits WaveSurfer#destroy
      */
-
   }, {
     key: "destroy",
     value: function destroy() {
@@ -26000,30 +25629,25 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       this.cancelAjax();
       this.clearTmpEvents();
       this.unAll();
-
       if (this.params.responsive !== false) {
         window.removeEventListener('resize', this._onResize, true);
         window.removeEventListener('orientationchange', this._onResize, true);
       }
-
       if (this.backend) {
-        this.backend.destroy(); // clears memory usage
-
+        this.backend.destroy();
+        // clears memory usage
         this.backend = null;
       }
-
       if (this.drawer) {
         this.drawer.destroy();
       }
-
       this.isDestroyed = true;
       this.isReady = false;
       this.arraybuffer = null;
     }
   }], [{
     key: "create",
-    value:
-    /** @private */
+    value: /** @private */
 
     /** @private */
 
@@ -26038,6 +25662,7 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
       var wavesurfer = new WaveSurfer(params);
       return wavesurfer.init();
     }
+
     /**
      * The library version number is available as a static property of the
      * WaveSurfer class
@@ -26046,18 +25671,12 @@ var WaveSurfer = /*#__PURE__*/function (_util$Observer) {
      * @example
      * console.log('Using wavesurfer.js ' + WaveSurfer.VERSION);
      */
-
   }]);
-
   return WaveSurfer;
 }(util.Observer);
-
 exports["default"] = WaveSurfer;
-
-_defineProperty(WaveSurfer, "VERSION", "6.2.0");
-
+_defineProperty(WaveSurfer, "VERSION", "6.4.0");
 _defineProperty(WaveSurfer, "util", util);
-
 module.exports = exports.default;
 
 /***/ }),
@@ -26070,55 +25689,37 @@ module.exports = exports.default;
 
 
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 exports["default"] = void 0;
-
 var util = _interopRequireWildcard(__webpack_require__(/*! ./util */ "./src/util/index.js"));
-
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
-
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 // using constants to prevent someone writing the string wrong
 var PLAYING = 'playing';
 var PAUSED = 'paused';
 var FINISHED = 'finished';
+
 /**
  * WebAudio backend
  *
  * @extends {Observer}
  */
-
 var WebAudio = /*#__PURE__*/function (_util$Observer) {
   _inherits(WebAudio, _util$Observer);
-
   var _super = _createSuper(WebAudio);
-
   /**
    * Construct the backend
    *
@@ -26126,18 +25727,12 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
    */
   function WebAudio(params) {
     var _defineProperty2, _this$states;
-
     var _this;
-
     _classCallCheck(this, WebAudio);
-
     _this = _super.call(this);
     /** @private */
-
     _defineProperty(_assertThisInitialized(_this), "audioContext", null);
-
     _defineProperty(_assertThisInitialized(_this), "offlineAudioContext", null);
-
     _defineProperty(_assertThisInitialized(_this), "stateBehaviors", (_defineProperty2 = {}, _defineProperty(_defineProperty2, PLAYING, {
       init: function init() {
         this.addOnAudioProcess();
@@ -26172,84 +25767,60 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         return this.getDuration();
       }
     }), _defineProperty2));
-
     _this.params = params;
     /** ac: Audio Context instance */
-
     _this.ac = params.audioContext || (_this.supportsWebAudio() ? _this.getAudioContext() : {});
     /**@private */
-
     _this.lastPlay = _this.ac.currentTime;
     /** @private */
-
     _this.startPosition = 0;
     /** @private */
-
     _this.scheduledPause = null;
     /** @private */
-
     _this.states = (_this$states = {}, _defineProperty(_this$states, PLAYING, Object.create(_this.stateBehaviors[PLAYING])), _defineProperty(_this$states, PAUSED, Object.create(_this.stateBehaviors[PAUSED])), _defineProperty(_this$states, FINISHED, Object.create(_this.stateBehaviors[FINISHED])), _this$states);
     /** @private */
-
     _this.buffer = null;
     /** @private */
-
     _this.filters = [];
     /** gainNode: allows to control audio volume */
-
     _this.gainNode = null;
     /** @private */
-
     _this.mergedPeaks = null;
     /** @private */
-
     _this.offlineAc = null;
     /** @private */
-
     _this.peaks = null;
     /** @private */
-
     _this.playbackRate = 1;
     /** analyser: provides audio analysis information */
-
     _this.analyser = null;
     /** scriptNode: allows processing audio */
-
     _this.scriptNode = null;
     /** @private */
-
     _this.source = null;
     /** @private */
-
     _this.splitPeaks = [];
     /** @private */
-
     _this.state = null;
     /** @private */
-
     _this.explicitDuration = params.duration;
     /** @private */
-
     _this.sinkStreamDestination = null;
     /** @private */
-
     _this.sinkAudioElement = null;
     /**
      * Boolean indicating if the backend was destroyed.
      */
-
     _this.destroyed = false;
     return _this;
   }
+
   /**
    * Initialise the backend, called in `wavesurfer.createBackend()`
    */
-
-
   _createClass(WebAudio, [{
     key: "supportsWebAudio",
-    value:
-    /** scriptBufferSize: size of the processing buffer */
+    value: /** scriptBufferSize: size of the processing buffer */
 
     /** audioContext: allows to process audio with WebAudio API */
 
@@ -26265,21 +25836,21 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
     function supportsWebAudio() {
       return !!(window.AudioContext || window.webkitAudioContext);
     }
+
     /**
      * Get the audio context used by this backend or create one
      *
      * @return {AudioContext} Existing audio context, or creates a new one
      */
-
   }, {
     key: "getAudioContext",
     value: function getAudioContext() {
       if (!window.WaveSurferAudioContext) {
         window.WaveSurferAudioContext = new (window.AudioContext || window.webkitAudioContext)();
       }
-
       return window.WaveSurferAudioContext;
     }
+
     /**
      * Get the offline audio context used by this backend or create one
      *
@@ -26287,14 +25858,12 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * @return {OfflineAudioContext} Existing offline audio context, or creates
      * a new one
      */
-
   }, {
     key: "getOfflineAudioContext",
     value: function getOfflineAudioContext(sampleRate) {
       if (!window.WaveSurferOfflineAudioContext) {
         window.WaveSurferOfflineAudioContext = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, 2, sampleRate);
       }
-
       return window.WaveSurferOfflineAudioContext;
     }
   }, {
@@ -26307,8 +25876,8 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
       this.setPlaybackRate(this.params.audioRate);
       this.setLength(0);
     }
-    /** @private */
 
+    /** @private */
   }, {
     key: "disconnectFilters",
     value: function disconnectFilters() {
@@ -26316,17 +25885,17 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         this.filters.forEach(function (filter) {
           filter && filter.disconnect();
         });
-        this.filters = null; // Reconnect direct path
-
+        this.filters = null;
+        // Reconnect direct path
         this.analyser.connect(this.gainNode);
       }
     }
+
     /**
      * @private
      *
      * @param {string} state The new state
      */
-
   }, {
     key: "setState",
     value: function setState(state) {
@@ -26335,21 +25904,21 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         this.state.init.call(this);
       }
     }
+
     /**
      * Unpacked `setFilters()`
      *
      * @param {...AudioNode} filters One or more filters to set
      */
-
   }, {
     key: "setFilter",
     value: function setFilter() {
       for (var _len = arguments.length, filters = new Array(_len), _key = 0; _key < _len; _key++) {
         filters[_key] = arguments[_key];
       }
-
       this.setFilters(filters);
     }
+
     /**
      * Insert custom Web Audio nodes into the graph
      *
@@ -26358,18 +25927,20 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * const lowpass = wavesurfer.backend.ac.createBiquadFilter();
      * wavesurfer.backend.setFilter(lowpass);
      */
-
   }, {
     key: "setFilters",
     value: function setFilters(filters) {
       // Remove existing filters
-      this.disconnectFilters(); // Insert filters if filter array not empty
+      this.disconnectFilters();
 
+      // Insert filters if filter array not empty
       if (filters && filters.length) {
-        this.filters = filters; // Disconnect direct path before inserting filters
+        this.filters = filters;
 
-        this.analyser.disconnect(); // Connect each filter in turn
+        // Disconnect direct path before inserting filters
+        this.analyser.disconnect();
 
+        // Connect each filter in turn
         filters.reduce(function (prev, curr) {
           prev.connect(curr);
           return curr;
@@ -26377,7 +25948,6 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
       }
     }
     /** Create ScriptProcessorNode to process audio */
-
   }, {
     key: "createScriptNode",
     value: function createScriptNode() {
@@ -26390,22 +25960,18 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
           this.scriptNode = this.ac.createJavaScriptNode(WebAudio.scriptBufferSize);
         }
       }
-
       this.scriptNode.connect(this.ac.destination);
     }
-    /** @private */
 
+    /** @private */
   }, {
     key: "addOnAudioProcess",
     value: function addOnAudioProcess() {
       var _this2 = this;
-
       this.scriptNode.onaudioprocess = function () {
         var time = _this2.getCurrentTime();
-
         if (time >= _this2.getDuration()) {
           _this2.setState(FINISHED);
-
           _this2.fireEvent('pause');
         } else if (time >= _this2.scheduledPause) {
           _this2.pause();
@@ -26414,26 +25980,25 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         }
       };
     }
-    /** @private */
 
+    /** @private */
   }, {
     key: "removeOnAudioProcess",
     value: function removeOnAudioProcess() {
       this.scriptNode.onaudioprocess = null;
     }
     /** Create analyser node to perform audio analysis */
-
   }, {
     key: "createAnalyserNode",
     value: function createAnalyserNode() {
       this.analyser = this.ac.createAnalyser();
       this.analyser.connect(this.gainNode);
     }
+
     /**
      * Create the gain node needed to control the playback volume.
      *
      */
-
   }, {
     key: "createVolumeNode",
     value: function createVolumeNode() {
@@ -26442,11 +26007,11 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         this.gainNode = this.ac.createGain();
       } else {
         this.gainNode = this.ac.createGainNode();
-      } // Add the gain node to the graph
-
-
+      }
+      // Add the gain node to the graph
       this.gainNode.connect(this.ac.destination);
     }
+
     /**
      * Set the sink id for the media player
      *
@@ -26454,7 +26019,6 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * @returns {Promise} A Promise that resolves to `undefined` when there
      * are no errors.
      */
-
   }, {
     key: "setSinkId",
     value: function setSinkId(deviceId) {
@@ -26465,19 +26029,16 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
          * webaudio stream to that element and setSinkId there.
          */
         if (!this.sinkAudioElement) {
-          this.sinkAudioElement = new window.Audio(); // autoplay is necessary since we're not invoking .play()
-
+          this.sinkAudioElement = new window.Audio();
+          // autoplay is necessary since we're not invoking .play()
           this.sinkAudioElement.autoplay = true;
         }
-
         if (!this.sinkAudioElement.setSinkId) {
           return Promise.reject(new Error('setSinkId is not supported in your browser'));
         }
-
         if (!this.sinkStreamDestination) {
           this.sinkStreamDestination = this.ac.createMediaStreamDestination();
         }
-
         this.gainNode.disconnect();
         this.gainNode.connect(this.sinkStreamDestination);
         this.sinkAudioElement.srcObject = this.sinkStreamDestination.stream;
@@ -26486,28 +26047,29 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         return Promise.reject(new Error('Invalid deviceId: ' + deviceId));
       }
     }
+
     /**
      * Set the audio volume
      *
      * @param {number} value A floating point value between 0 and 1.
      */
-
   }, {
     key: "setVolume",
     value: function setVolume(value) {
       this.gainNode.gain.setValueAtTime(value, this.ac.currentTime);
     }
+
     /**
      * Get the current volume
      *
      * @return {number} value A floating point value between 0 and 1.
      */
-
   }, {
     key: "getVolume",
     value: function getVolume() {
       return this.gainNode.gain.value;
     }
+
     /**
      * Decode an array buffer and pass data to a callback
      *
@@ -26516,14 +26078,12 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * @param {function} callback The function to call on complete.
      * @param {function} errback The function to call on error.
      */
-
   }, {
     key: "decodeArrayBuffer",
     value: function decodeArrayBuffer(arraybuffer, callback, errback) {
       if (!this.offlineAc) {
         this.offlineAc = this.getOfflineAudioContext(this.ac && this.ac.sampleRate ? this.ac.sampleRate : 44100);
       }
-
       if ('webkitAudioContext' in window) {
         // Safari: no support for Promise-based decodeAudioData enabled
         // Enable it in Safari using the Experimental Features > Modern WebAudio API option
@@ -26538,28 +26098,27 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         });
       }
     }
+
     /**
      * Set pre-decoded peaks
      *
      * @param {number[]|Number.<Array[]>} peaks Peaks data
      * @param {?number} duration Explicit duration
      */
-
   }, {
     key: "setPeaks",
     value: function setPeaks(peaks, duration) {
       if (duration != null) {
         this.explicitDuration = duration;
       }
-
       this.peaks = peaks;
     }
+
     /**
      * Set the rendered length (different from the length of the audio)
      *
      * @param {number} length The rendered length
      */
-
   }, {
     key: "setLength",
     value: function setLength(length) {
@@ -26567,23 +26126,21 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
       if (this.mergedPeaks && length == 2 * this.mergedPeaks.length - 1 + 2) {
         return;
       }
-
       this.splitPeaks = [];
-      this.mergedPeaks = []; // Set the last element of the sparse array so the peak arrays are
+      this.mergedPeaks = [];
+      // Set the last element of the sparse array so the peak arrays are
       // appropriately sized for other calculations.
-
       var channels = this.buffer ? this.buffer.numberOfChannels : 1;
       var c;
-
       for (c = 0; c < channels; c++) {
         this.splitPeaks[c] = [];
         this.splitPeaks[c][2 * (length - 1)] = 0;
         this.splitPeaks[c][2 * (length - 1) + 1] = 0;
       }
-
       this.mergedPeaks[2 * (length - 1)] = 0;
       this.mergedPeaks[2 * (length - 1) + 1] = 0;
     }
+
     /**
      * Compute the max and min value of the waveform when broken into <length> subranges.
      *
@@ -26593,25 +26150,22 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * @return {number[]|Number.<Array[]>} Array of 2*<length> peaks or array of arrays of
      * peaks consisting of (max, min) values for each subrange.
      */
-
   }, {
     key: "getPeaks",
     value: function getPeaks(length, first, last) {
       if (this.peaks) {
         return this.peaks;
       }
-
       if (!this.buffer) {
         return [];
       }
-
       first = first || 0;
       last = last || length - 1;
       this.setLength(length);
-
       if (!this.buffer) {
         return this.params.splitChannels ? this.splitPeaks : this.mergedPeaks;
       }
+
       /**
        * The following snippet fixes a buffering data issue on the Safari
        * browser which returned undefined It creates the missing buffer based
@@ -26619,23 +26173,18 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
        * webaudio context 4096 samples seemed to be the best fit for rendering
        * will review this code once a stable version of Safari TP is out
        */
-
-
       if (!this.buffer.length) {
         var newBuffer = this.createBuffer(1, 4096, this.sampleRate);
         this.buffer = newBuffer.buffer;
       }
-
       var sampleSize = this.buffer.length / length;
       var sampleStep = ~~(sampleSize / 10) || 1;
       var channels = this.buffer.numberOfChannels;
       var c;
-
       for (c = 0; c < channels; c++) {
         var peaks = this.splitPeaks[c];
         var chan = this.buffer.getChannelData(c);
         var i = void 0;
-
         for (i = first; i <= last; i++) {
           var start = ~~(i * sampleSize);
           var end = ~~(start + sampleSize);
@@ -26645,51 +26194,43 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
            * on one side of zero, we still return the true max and
            * min values in the subrange.
            */
-
           var min = chan[start];
           var max = min;
           var j = void 0;
-
           for (j = start; j < end; j += sampleStep) {
             var value = chan[j];
-
             if (value > max) {
               max = value;
             }
-
             if (value < min) {
               min = value;
             }
           }
-
           peaks[2 * i] = max;
           peaks[2 * i + 1] = min;
-
           if (c == 0 || max > this.mergedPeaks[2 * i]) {
             this.mergedPeaks[2 * i] = max;
           }
-
           if (c == 0 || min < this.mergedPeaks[2 * i + 1]) {
             this.mergedPeaks[2 * i + 1] = min;
           }
         }
       }
-
       return this.params.splitChannels ? this.splitPeaks : this.mergedPeaks;
     }
+
     /**
      * Get the position from 0 to 1
      *
      * @return {number} Position
      */
-
   }, {
     key: "getPlayedPercents",
     value: function getPlayedPercents() {
       return this.state.getPlayedPercents.call(this);
     }
-    /** @private */
 
+    /** @private */
   }, {
     key: "disconnectSource",
     value: function disconnectSource() {
@@ -26700,7 +26241,6 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
     /**
      * Destroy all references with WebAudio, disconnecting audio nodes and closing Audio Context
      */
-
   }, {
     key: "destroyWebAudio",
     value: function destroyWebAudio() {
@@ -26708,29 +26248,28 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
       this.disconnectSource();
       this.gainNode.disconnect();
       this.scriptNode.disconnect();
-      this.analyser.disconnect(); // close the audioContext if closeAudioContext option is set to true
+      this.analyser.disconnect();
 
+      // close the audioContext if closeAudioContext option is set to true
       if (this.params.closeAudioContext) {
         // check if browser supports AudioContext.close()
         if (typeof this.ac.close === 'function' && this.ac.state != 'closed') {
           this.ac.close();
-        } // clear the reference to the audiocontext
-
-
-        this.ac = null; // clear the actual audiocontext, either passed as param or the
+        }
+        // clear the reference to the audiocontext
+        this.ac = null;
+        // clear the actual audiocontext, either passed as param or the
         // global singleton
-
         if (!this.params.audioContext) {
           window.WaveSurferAudioContext = null;
         } else {
           this.params.audioContext = null;
-        } // clear the offlineAudioContext
-
-
+        }
+        // clear the offlineAudioContext
         window.WaveSurferOfflineAudioContext = null;
-      } // disconnect resources used by setSinkId
+      }
 
-
+      // disconnect resources used by setSinkId
       if (this.sinkStreamDestination) {
         this.sinkAudioElement.pause();
         this.sinkAudioElement.srcObject = null;
@@ -26741,25 +26280,23 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
     /**
      * This is called when wavesurfer is destroyed
      */
-
   }, {
     key: "destroy",
     value: function destroy() {
       if (!this.isPaused()) {
         this.pause();
       }
-
       this.unAll();
       this.buffer = null;
       this.destroyed = true;
       this.destroyWebAudio();
     }
+
     /**
      * Loaded a decoded audio buffer
      *
      * @param {Object} buffer Decoded audio buffer to load
      */
-
   }, {
     key: "load",
     value: function load(buffer) {
@@ -26768,26 +26305,27 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
       this.buffer = buffer;
       this.createSource();
     }
-    /** @private */
 
+    /** @private */
   }, {
     key: "createSource",
     value: function createSource() {
       this.disconnectSource();
-      this.source = this.ac.createBufferSource(); // adjust for old browsers
+      this.source = this.ac.createBufferSource();
 
+      // adjust for old browsers
       this.source.start = this.source.start || this.source.noteGrainOn;
       this.source.stop = this.source.stop || this.source.noteOff;
       this.setPlaybackRate(this.playbackRate);
       this.source.buffer = this.buffer;
       this.source.connect(this.analyser);
     }
+
     /**
      * @private
      *
      * some browsers require an explicit call to #resume before they will play back audio
      */
-
   }, {
     key: "resumeAudioContext",
     value: function resumeAudioContext() {
@@ -26795,36 +26333,35 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
         this.ac.resume && this.ac.resume();
       }
     }
+
     /**
      * Used by `wavesurfer.isPlaying()` and `wavesurfer.playPause()`
      *
      * @return {boolean} Whether or not this backend is currently paused
      */
-
   }, {
     key: "isPaused",
     value: function isPaused() {
       return this.state !== this.states[PLAYING];
     }
+
     /**
      * Used by `wavesurfer.getDuration()`
      *
      * @return {number} Duration of loaded buffer
      */
-
   }, {
     key: "getDuration",
     value: function getDuration() {
       if (this.explicitDuration) {
         return this.explicitDuration;
       }
-
       if (!this.buffer) {
         return 0;
       }
-
       return this.buffer.duration;
     }
+
     /**
      * Used by `wavesurfer.seekTo()`
      *
@@ -26833,51 +26370,44 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * @return {{start: number, end: number}} Object containing start and end
      * positions
      */
-
   }, {
     key: "seekTo",
     value: function seekTo(start, end) {
       if (!this.buffer) {
         return;
       }
-
       this.scheduledPause = null;
-
       if (start == null) {
         start = this.getCurrentTime();
-
         if (start >= this.getDuration()) {
           start = 0;
         }
       }
-
       if (end == null) {
         end = this.getDuration();
       }
-
       this.startPosition = start;
       this.lastPlay = this.ac.currentTime;
-
       if (this.state === this.states[FINISHED]) {
         this.setState(PAUSED);
       }
-
       return {
         start: start,
         end: end
       };
     }
+
     /**
      * Get the playback position in seconds
      *
      * @return {number} The playback position in seconds
      */
-
   }, {
     key: "getPlayedTime",
     value: function getPlayedTime() {
       return (this.ac.currentTime - this.lastPlay) * this.playbackRate;
     }
+
     /**
      * Plays the loaded audio region.
      *
@@ -26885,15 +26415,14 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
      * of a clip.
      * @param {number} end When to stop relative to the beginning of a clip.
      */
-
   }, {
     key: "play",
     value: function play(start, end) {
       if (!this.buffer) {
         return;
-      } // need to re-create source on each playback
+      }
 
-
+      // need to re-create source on each playback
       this.createSource();
       var adjustedTime = this.seekTo(start, end);
       start = adjustedTime.start;
@@ -26904,85 +26433,80 @@ var WebAudio = /*#__PURE__*/function (_util$Observer) {
       this.setState(PLAYING);
       this.fireEvent('play');
     }
+
     /**
      * Pauses the loaded audio.
      */
-
   }, {
     key: "pause",
     value: function pause() {
       this.scheduledPause = null;
       this.startPosition += this.getPlayedTime();
-
       try {
         this.source && this.source.stop(0);
-      } catch (err) {// Calling stop can throw the following 2 errors:
+      } catch (err) {
+        // Calling stop can throw the following 2 errors:
         // - RangeError (The value specified for when is negative.)
         // - InvalidStateNode (The node has not been started by calling start().)
         // We can safely ignore both errors, because:
         // - The range is surely correct
         // - The node might not have been started yet, in which case we just want to carry on without causing any trouble.
       }
-
       this.setState(PAUSED);
       this.fireEvent('pause');
     }
+
     /**
      * Returns the current time in seconds relative to the audio-clip's
      * duration.
      *
      * @return {number} The current time in seconds
      */
-
   }, {
     key: "getCurrentTime",
     value: function getCurrentTime() {
       return this.state.getCurrentTime.call(this);
     }
+
     /**
      * Returns the current playback rate. (0=no playback, 1=normal playback)
      *
      * @return {number} The current playback rate
      */
-
   }, {
     key: "getPlaybackRate",
     value: function getPlaybackRate() {
       return this.playbackRate;
     }
+
     /**
      * Set the audio source playback rate.
      *
      * @param {number} value The playback rate to use
      */
-
   }, {
     key: "setPlaybackRate",
     value: function setPlaybackRate(value) {
       this.playbackRate = value || 1;
       this.source && this.source.playbackRate.setValueAtTime(this.playbackRate, this.ac.currentTime);
     }
+
     /**
      * Set a point in seconds for playback to stop at.
      *
      * @param {number} end Position to end at
      * @version 3.3.0
      */
-
   }, {
     key: "setPlayEnd",
     value: function setPlayEnd(end) {
       this.scheduledPause = end;
     }
   }]);
-
   return WebAudio;
 }(util.Observer);
-
 exports["default"] = WebAudio;
-
 _defineProperty(WebAudio, "scriptBufferSize", 256);
-
 module.exports = exports.default;
 
 /***/ }),
@@ -27214,20 +26738,24 @@ var AudioPlayer = function AudioPlayer(_ref) {
       setRecording = _useState[1];
 
   var _useState2 = useState(false),
-      playAudio = _useState2[0],
-      setPlayAudio = _useState2[1];
+      isRendered = _useState2[0],
+      setIsRendered = _useState2[1];
 
   var _useState3 = useState(false),
-      payingAudioId = _useState3[0],
-      setPayingAudioId = _useState3[1];
+      playAudio = _useState3[0],
+      setPlayAudio = _useState3[1];
 
-  var _useState4 = useState(''),
-      currentTime = _useState4[0],
-      setCurrentTime = _useState4[1];
+  var _useState4 = useState(false),
+      payingAudioId = _useState4[0],
+      setPayingAudioId = _useState4[1];
 
-  var _useState5 = useState(1),
-      audioRate = _useState5[0],
-      setAudioRate = _useState5[1];
+  var _useState5 = useState(''),
+      currentTime = _useState5[0],
+      setCurrentTime = _useState5[1];
+
+  var _useState6 = useState(1),
+      audioRate = _useState6[0],
+      setAudioRate = _useState6[1];
 
   var wavesurfer = useRef(null);
   var wavesurferContainer = useRef(null);
@@ -27316,7 +26844,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
     };
   }, [recording.initRecording]);
   useEffect(function () {
-    if (url) {
+    if (url && !isRendered) {
       wavesurfer.current = WaveSurfer.create({
         container: wavesurferContainer.current,
         waveColor: colors.gray9,
@@ -27367,6 +26895,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
         var currentTime = wavesurfer.current.getCurrentTime();
         setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
       });
+      setIsRendered(true);
     }
 
     return function () {
@@ -28742,10 +28271,8 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
 
   if (differentDays && !today.diff(current, 'days')) {
     dividerText = 'Today';
-  } else if (differentDays && !today.add(-1, 'days').diff(current, 'days')) {
-    dividerText = 'Yesterday';
   } else if (differentDays) {
-    dividerText = moment().year() === moment(current).year() ? current.format('DD MMMM') : current.format('DD MMMM YYYY');
+    dividerText = moment().year() === moment(current).year() ? current.format('MMMM D') : current.format('MMMM D YYYY');
   }
 
   return !differentDays ? null : React__default.createElement(MessageDivider, {
@@ -29111,6 +28638,7 @@ var Messages = function Messages(_ref2) {
       dispatch(showScrollToNewMessageButtonAC(false));
 
       if (scrollToNewMessage.updateMessageList) {
+        console.log('call get messages 2');
         dispatch(getMessagesAC(channel, true));
       }
     }
@@ -29128,6 +28656,7 @@ var Messages = function Messages(_ref2) {
   useEffect(function () {
     setHasNextCached(false);
     setHasPrevCached(false);
+    console.log('call get messages 3');
     dispatch(getMessagesAC(channel));
 
     if (channel.id) {
@@ -29338,7 +28867,7 @@ var Messages = function Messages(_ref2) {
 var Container$d = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  overflow: auto;\n  //scroll-behavior: smooth;\n"])));
 var EmptyDiv = styled.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
 var MessagesBox = styled.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
-var MessageTopDate = styled.div(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 300px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
+var MessageTopDate = styled.div(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
   return props.systemMessage ? '' : 'absolute';
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
@@ -29630,6 +29159,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
     dispatch(sendTypingAC(typingState));
   };
 
+  var handleAddEmoji = function handleAddEmoji(emoji) {
+    var selPos = getCaretPosition(messageInputRef.current);
+    var newText = messageText.slice(0, selPos) + emoji + messageText.slice(selPos);
+    setMessageText(newText);
+    messageInputRef.current.innerText = newText;
+    setCursorPosition(messageInputRef.current, selPos + 1);
+  };
+
   var handleTyping = function handleTyping(e) {
     if (messageToEdit) {
       setEditMessageText(e.currentTarget.innerText);
@@ -29676,7 +29213,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
       if (messageToEdit) {
         handleEditMessage();
-      } else if (messageText) {
+      } else if (messageText || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
         var messageToSend = {
           body: messageTexToSend,
@@ -29863,13 +29400,20 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handlePastAttachments = function handlePastAttachments(e) {
-    if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+    var os = detectOS();
+    var browser = detectBrowser();
+
+    if (os === 'Windows' && browser === 'Firefox') {
       e.preventDefault();
-      var fileList = Object.values(e.clipboardData.files);
-      fileList.forEach(function (file) {
-        handleAddAttachment(file, true);
-        return Promise.resolve();
-      });
+    } else {
+      if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+        e.preventDefault();
+        var fileList = Object.values(e.clipboardData.files);
+        fileList.forEach(function (file) {
+          handleAddAttachment(file, true);
+          return Promise.resolve();
+        });
+      }
     }
   };
 
@@ -30165,8 +29709,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     from: typingIndicator.from,
     typingState: typingIndicator.typingState
   }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName || typingIndicator.from.id, ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
-    setMessageText: setMessageText,
-    messageText: messageText,
+    handleAddEmoji: handleAddEmoji,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
     rightSide: emojisInRightSide
   }), messageToEdit && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
@@ -30271,7 +29814,7 @@ var SendMessageInputContainer = styled.div(_templateObject7$b || (_templateObjec
   return props.messageForReply ? '0 0 4px 4px' : '4px';
 }, AddAttachmentIcon, colors.primary);
 var MessageInputWrapper = styled.div(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  position: relative;\n"])));
-var MessageInput = styled.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  width: 100%;\n  max-height: 80px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  border-radius: 6px;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  order: ", ";\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), function (props) {
+var MessageInput = styled.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  border-radius: 6px;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  order: ", ";\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 3;
 }, colors.gray7, colors.gray7);
 var EmojiButton = styled.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
