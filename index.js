@@ -13153,52 +13153,44 @@ function sendTextMessage(action) {
 
         case 17:
           hasNextMessages = _context2.sent;
-          addMessageToMap(channelId, pendingMessage);
-          addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
 
           if (getHasNextCached()) {
-            _context2.next = 32;
-            break;
-          }
-
-          if (!hasNextMessages) {
             _context2.next = 26;
             break;
           }
 
-          _context2.next = 24;
-          return effects.put(getMessagesAC(channel));
-
-        case 24:
-          _context2.next = 30;
-          break;
-
-        case 26:
-          _context2.next = 28;
-          return effects.put(addMessageAC(pendingMessage));
-
-        case 28:
-          _context2.next = 30;
-          return effects.put(scrollToNewMessageAC(true));
-
-        case 30:
-          _context2.next = 34;
-          break;
-
-        case 32:
-          _context2.next = 34;
-          return effects.put(scrollToNewMessageAC(true, true));
-
-        case 34:
-          if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 45;
+          if (!hasNextMessages) {
+            _context2.next = 24;
             break;
           }
 
-          _context2.next = 37;
+          _context2.next = 22;
+          return effects.put(getMessagesAC(channel));
+
+        case 22:
+          _context2.next = 26;
+          break;
+
+        case 24:
+          _context2.next = 26;
+          return effects.put(addMessageAC(structuredClone(pendingMessage)));
+
+        case 26:
+          addMessageToMap(channelId, pendingMessage);
+          addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
+          _context2.next = 30;
+          return effects.put(scrollToNewMessageAC(true, true));
+
+        case 30:
+          if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
+            _context2.next = 41;
+            break;
+          }
+
+          _context2.next = 33;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 37:
+        case 33:
           messageResponse = _context2.sent;
           messageUpdateData = {
             id: messageResponse.id,
@@ -13210,35 +13202,35 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 41;
+          _context2.next = 37;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 41:
+        case 37:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 45;
+          _context2.next = 41;
           return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 45:
-          _context2.next = 50;
+        case 41:
+          _context2.next = 46;
           break;
 
-        case 47:
-          _context2.prev = 47;
+        case 43:
+          _context2.prev = 43;
           _context2.t0 = _context2["catch"](0);
           console.log('error on send message ... ', _context2.t0);
 
-        case 50:
+        case 46:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[0, 47]]);
+  }, _marked2$1, null, [[0, 43]]);
 }
 
 function resendMessage(action) {
