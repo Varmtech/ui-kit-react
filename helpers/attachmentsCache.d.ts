@@ -1,2 +1,2 @@
-export declare const setAttachmentToCache: (attachmentId: string, attachmentUrl: string) => void;
-export declare const getAttachmentUrlFromCache: (attachmentId: string) => string;
+export declare const setAttachmentToCache: (attachmentId: string, attachmentResponse: any) => void;
+export declare const getAttachmentUrlFromCache: (attachmentId: string) => Promise<string | false>;
