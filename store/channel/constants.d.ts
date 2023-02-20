@@ -5,6 +5,7 @@ export declare const LOAD_MORE_CHANNEL = "LOAD_MORE_CHANNEL";
 export declare const LOAD_MORE_CHANNELS_FOR_FORWARD = "LOAD_MORE_CHANNELS_FOR_FORWARD";
 export declare const ADD_CHANNEL = "ADD_CHANNEL";
 export declare const ADD_CHANNELS = "ADD_CHANNELS";
+export declare const ADD_CHANNELS_FOR_FORWARD = "ADD_CHANNELS_FOR_FORWARD";
 export declare const SET_CHANNELS = "SET_CHANNELS";
 export declare const SET_CHANNELS_FOR_FORWARD = "SET_CHANNELS_FOR_FORWARD";
 export declare const DELETE_CHANNEL = "DELETE_CHANNEL";

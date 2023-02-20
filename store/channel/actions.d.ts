@@ -43,6 +43,12 @@ export declare function addChannelsAC(channels: IChannel[]): {
         channels: IChannel[];
     };
 };
+export declare function addChannelsForForwardAC(channels: IChannel[]): {
+    type: string;
+    payload: {
+        channels: IChannel[];
+    };
+};
 export declare function deleteChannelAC(channelId: string): {
     type: string;
     payload: {

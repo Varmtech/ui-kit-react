@@ -23,6 +23,12 @@ export declare function updateMembersAC(members: IMember[]): {
         members: IMember[];
     };
 };
+export declare function updateMembersPresenceAC(members: IMember[]): {
+    type: string;
+    payload: {
+        members: IMember[];
+    };
+};
 export declare function loadMoreMembersAC(limit: number): {
     type: string;
     payload: {

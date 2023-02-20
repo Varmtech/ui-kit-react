@@ -3,6 +3,7 @@ export declare const ADD_MEMBERS = "ADD_MEMBERS";
 export declare const SET_MEMBERS_TO_LIST = "SET_MEMBERS_TO_LIST";
 export declare const ADD_MEMBERS_TO_LIST = "ADD_MEMBERS_TO_LIST";
 export declare const UPDATE_MEMBERS = "UPDATE_MEMBERS";
+export declare const UPDATE_MEMBERS_PRESENCE = "UPDATE_MEMBERS_PRESENCE";
 export declare const LOAD_MORE_MEMBERS = "LOAD_MORE_MEMBERS";
 export declare const SET_MEMBERS_LOADING_STATE = "SET_MEMBERS_LOADING_STATE";
 export declare const CLEAR_MEMBERS = "CLEAR_MEMBERS";

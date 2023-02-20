@@ -1,4 +1,4 @@
-import { IAction, IMember, IRole } from "../../types";
+import { IAction, IMember, IRole } from '../../types';
 export interface IMembersStore {
     membersLoadingState: boolean;
     membersHasNext: boolean;
