@@ -24,6 +24,32 @@ export interface ICreateChannel {
     userId?: string;
     members?: IAddMember[];
 }
+export interface IAttachment {
+    id?: string;
+    attachmentId?: string;
+    createdAt: Date;
+    url: any;
+    attachmentUrl: string;
+    type: string;
+    name: string;
+    data: any;
+    fileSize: number;
+    title?: string;
+    metadata?: any;
+    user: IUser;
+}
+declare class AttachmentBuilder {
+    url: string;
+    type: string;
+    name?: string;
+    metadata?: string;
+    upload?: boolean;
+    constructor(url: string, type: string);
+    setName: (name: string) => this;
+    setMetadata: (metadata: string) => this;
+    setUpload: (upload: boolean) => this;
+    create: () => IAttachment;
+}
 export interface IChannel {
     id: string;
     createdAt: Date | number;
@@ -68,7 +94,7 @@ export interface IChannel {
         reaction: any;
     }>;
     createMessageBuilder: () => any;
-    createAttachmentBuilder: (url: string, type: string) => any;
+    createAttachmentBuilder: (url: string, type: string) => AttachmentBuilder;
 }
 export interface IReaction {
     key: string;
@@ -76,20 +102,6 @@ export interface IReaction {
     reason: string;
     updatedAt: Date;
     messageId: number;
-    user: IUser;
-}
-export interface IAttachment {
-    id?: string;
-    attachmentId?: string;
-    createdAt: Date;
-    url: any;
-    attachmentUrl: string;
-    type: string;
-    name: string;
-    data: any;
-    fileSize: number;
-    title?: string;
-    metadata?: any;
     user: IUser;
 }
 export interface IMessage {
@@ -160,3 +172,4 @@ export interface IContactsMap {
     [key: string]: IContact;
 }
 export declare type MuteTime = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 24;
+export {};

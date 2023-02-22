@@ -1970,7 +1970,7 @@ var UploadAvatarButton = styled.button(_templateObject29 || (_templateObject29 =
 var UploadAvatarHandler = styled.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.blue7);
 var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: #2f81ff;\n"])));
 var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
-  return props.withPadding && props.messageBody ? '8px 0 0 12px' : props.withPadding ? '8px 0 4px 12px' : '';
+  return props.withPadding && (props.messageBody ? '8px 0 0 12px' : props.isForwarded ? '8px 0 2px 12px' : '8px 0 4px 12px');
 }, function (props) {
   return props.color || colors.cobalt1;
 }, function (props) {
@@ -1978,10 +1978,12 @@ var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTe
 }, function (props) {
   return props.fontSize || '15px';
 });
-var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & > a {\n    color: ", ";\n  }\n"])), function (props) {
+var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & > a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'Inter, sans-serif';
 }, function (props) {
-  return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
+  return props.withAttachment && (props.showMessageSenderName ? '0 12px 10px' : props.isForwarded ? '4px 12px 10px' : '8px 12px 10px');
+}, function (props) {
+  return props.withAttachment && !props.withMediaAttachment && '2px';
 }, function (props) {
   return props.fontSize || '15px';
 }, function (props) {
@@ -8157,7 +8159,7 @@ var detectBrowser = function detectBrowser() {
   return browser;
 };
 
-var MESSAGES_MAX_LENGTH = 70;
+var MESSAGES_MAX_LENGTH = 60;
 var LOAD_MAX_MESSAGE_COUNT = 20;
 var MESSAGE_LOAD_DIRECTION = {
   PREV: 'prev',
@@ -11570,7 +11572,7 @@ function getChannelsForForward(action) {
         case 28:
           groupChannelsData = _context3.sent;
           groupChannelsToAdd = groupChannelsData.channels.filter(function (channel) {
-            return !(channel.type === CHANNEL_TYPE.PUBLIC && !(channel.role === 'admin' || channel.role === 'owner'));
+            return !(channel.type === CHANNEL_TYPE.PUBLIC && (channel.role === 'admin' || channel.role === 'owner'));
           });
           allChannels = directChannelsToAdd.concat(groupChannelsToAdd);
           _context3.next = 33;
@@ -11608,7 +11610,7 @@ function getChannelsForForward(action) {
 
         case 51:
           channelsToAdd = channelsData.channels.filter(function (channel) {
-            return channel.type === CHANNEL_TYPE.PUBLIC ? !(channel.role === 'admin' || channel.role === 'owner') : channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.id : true;
+            return channel.type === CHANNEL_TYPE.PUBLIC ? channel.role === 'admin' || channel.role === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.id : true;
           });
           _context3.next = 54;
           return call(setChannelsInMap, channelsToAdd);
@@ -11728,7 +11730,7 @@ function channelsForForwardLoadMore(action) {
 
         case 12:
           channelsToAdd = channelsData.channels.filter(function (channel) {
-            return channel.type === CHANNEL_TYPE.PUBLIC ? !(channel.role === 'admin' || channel.role === 'owner') : channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.id : true;
+            return channel.type === CHANNEL_TYPE.PUBLIC ? channel.role === 'admin' || channel.role === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.id : true;
           });
           _context5.next = 15;
           return call(setChannelsInMap, channelsToAdd);
@@ -13437,54 +13439,53 @@ function sendTextMessage(action) {
           }
 
           messageToSend = messageBuilder.create();
-          console.log('message to send ... ', messageToSend);
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageToSend, {
             createdAt: new Date(Date.now()),
             parent: _message.parent
           })));
-          _context2.next = 18;
+          _context2.next = 17;
           return select(messagesHasNextSelector);
 
-        case 18:
+        case 17:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 27;
+            _context2.next = 26;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 25;
+            _context2.next = 24;
             break;
           }
 
-          _context2.next = 23;
+          _context2.next = 22;
           return put(getMessagesAC(channel));
 
-        case 23:
-          _context2.next = 27;
+        case 22:
+          _context2.next = 26;
           break;
 
-        case 25:
-          _context2.next = 27;
+        case 24:
+          _context2.next = 26;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 27:
+        case 26:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context2.next = 31;
+          _context2.next = 30;
           return put(scrollToNewMessageAC(true, true));
 
-        case 31:
+        case 30:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 42;
+            _context2.next = 41;
             break;
           }
 
-          _context2.next = 34;
+          _context2.next = 33;
           return call(channel.sendMessage, messageToSend);
 
-        case 34:
+        case 33:
           messageResponse = _context2.sent;
           messageUpdateData = {
             id: messageResponse.id,
@@ -13496,35 +13497,35 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 38;
+          _context2.next = 37;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 38:
+        case 37:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 42;
+          _context2.next = 41;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 42:
-          _context2.next = 47;
+        case 41:
+          _context2.next = 46;
           break;
 
-        case 44:
-          _context2.prev = 44;
+        case 43:
+          _context2.prev = 43;
           _context2.t0 = _context2["catch"](0);
           console.log('error on send message ... ', _context2.t0);
 
-        case 47:
+        case 46:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[0, 44]]);
+  }, _marked2$1, null, [[0, 43]]);
 }
 
 function forwardMessage(action) {
@@ -13554,7 +13555,7 @@ function forwardMessage(action) {
 
           if (_message2.attachments && _message2.attachments.length) {
             attachmentBuilder = channel.createAttachmentBuilder(attachments[0].url, attachments[0].type);
-            att = attachmentBuilder.setName(attachments[0].name).setUpload(false).create();
+            att = attachmentBuilder.setName(attachments[0].name).setMetadata(JSON.stringify(attachments[0].metadata)).setFileSize(attachments[0].fileSize).setUpload(false).create();
             attachments = [att];
           }
 
@@ -27768,7 +27769,7 @@ var AttachmentImg$1 = styled.img(_templateObject11$3 || (_templateObject11$3 = _
 }, function (props) {
   return !props.isRepliedMessage && !props.isPrevious && !props.fitTheContainer ? props.imageMinWidth || '130px' : props.isRepliedMessage ? '40px' : '';
 });
-var VideoCont = styled.div(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  height: ", ";\n"])), function (props) {
+var VideoCont = styled.div(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  cursor: pointer;\n  height: ", ";\n"])), function (props) {
   return props.isDetailsView && '100%';
 });
 
@@ -28237,6 +28238,7 @@ var Message = function Message(_ref) {
   var firstMessageInInterval = prevMessage ? message.createdAt - prevMessage.createdAt > 300000 : false;
   var lastMessageInInterval = nextMessage ? nextMessage.createdAt - message.createdAt > 300000 : false;
   var withAttachments = message.attachments && message.attachments.length > 0;
+  var withMediaAttachment = withAttachments && (message.attachments[0].type === attachmentTypes.video || message.attachments[0].type === attachmentTypes.image);
   var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
   var borderRadius = !message.incoming ? prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 4px 16px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '16px 4px 16px 16px' : '16px 4px 4px 16px' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 16px 4px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '4px 16px 16px 16px' : '4px 16px 16px 4px';
   var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && (message.incoming || showSenderNameOnOwnMessages);
@@ -28376,6 +28378,7 @@ var Message = function Message(_ref) {
   var MessageHeader = function MessageHeader() {
     return React__default.createElement(MessageHeaderCont, null, showMessageSenderName && React__default.createElement(MessageOwner, {
       withPadding: withAttachments || message.parent && message.parent.attachments && !!message.parent.attachments.length,
+      isForwarded: message.forwardingDetails,
       messageBody: !!message.body,
       color: colors.primary,
       rtlDirection: ownMessageOnRightSide && !message.incoming
@@ -28457,10 +28460,17 @@ var Message = function Message(_ref) {
   }, !!message.parent.attachments.length && message.parent.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, null), message.parent.body ? MessageTextFormat({
     text: message.parent.body,
     message: message.parent
-  }) : message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.link && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, null, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
+  }) : message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.link && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, {
+    withAttachments: withAttachments,
+    withMediaAttachment: withMediaAttachment,
+    withBody: !!message.body,
+    showSenderName: showMessageSenderName
+  }, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
     showMessageSenderName: showMessageSenderName,
     withAttachment: withAttachments && !!message.body,
-    fontFamily: fontFamily
+    withMediaAttachment: withMediaAttachment,
+    fontFamily: fontFamily,
+    isForwarded: !!message.forwardingDetails
   }, MessageTextFormat({
     text: message.body,
     message: message
@@ -28541,7 +28551,15 @@ var ReplyMessageContainer = styled.div(_templateObject8$7 || (_templateObject8$7
   return props.withAttachments ? '8px 8px' : '0 0 8px';
 });
 var ReplyMessageBody = styled.div(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  max-width: 100%;\n"])));
-var ForwardedTitle = styled.h3(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin: 0 0 4px;\n\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), colors.primary, colors.primary);
+var ForwardedTitle = styled.h3(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), colors.primary, function (props) {
+  return props.withAttachments && props.withBody ? '0' : '0 0 4px';
+}, function (props) {
+  return props.withAttachments && '8px 0 0 12px';
+}, function (props) {
+  return props.showSenderName && (props.withBody ? '2px' : '0');
+}, function (props) {
+  return props.withBody ? (!props.withAttachments || props.showSenderName) && '4px' : props.withAttachments ? props.withMediaAttachment ? '8px' : '2px' : '4px';
+}, colors.primary);
 var MessageStatus = styled.span(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
   var lastMessage = _ref2.lastMessage;
   return lastMessage ? 'visible' : 'hidden';
@@ -28698,6 +28716,7 @@ var SliderPopup = function SliderPopup(_ref) {
       setPrevButtonDisabled = _useState7[1];
 
   var customUploader = getCustomUploader();
+  var customDownloader = getCustomDownloader();
   var contactsMap = useSelector(contactsMapSelector);
   var attachments = useSelector(attachmentsForPopupSelector, shallowEqual) || [];
   var attachmentUserName = currentFile ? currentFile.user && makeUserName(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
@@ -28705,6 +28724,18 @@ var SliderPopup = function SliderPopup(_ref) {
   var handleClosePopup = function handleClosePopup() {
     setAttachmentsList([]);
     setIsSliderOpen(false);
+  };
+
+  var downloadImage = function downloadImage(src) {
+    var image = new Image();
+    image.src = src;
+
+    image.onload = function () {
+      var _extends2;
+
+      setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.url] = src, _extends2)));
+      setImageLoading(false);
+    };
   };
 
   useDidUpdate(function () {
@@ -28717,37 +28748,52 @@ var SliderPopup = function SliderPopup(_ref) {
         }
       }
 
-      if (!downloadedFiles[currentFile.url]) {
-        customUploader.download(currentFile.url).then(function (src) {
-          var _extends2;
+      getAttachmentUrlFromCache(currentFile.id).then(function (cachedUrl) {
+        if (cachedUrl) {
+          if (!downloadedFiles[currentFile.url]) {
+            if (currentFile.type === 'image') {
+              downloadImage(cachedUrl);
+            } else {
+              var _extends3;
 
-          setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.url] = src, _extends2)));
-
-          if (currentFile.type === 'image') {
-            var image = new Image();
-            image.src = src;
-
-            image.onload = function () {
-              setImageLoading(false);
-            };
-          } else {
-            setPlayedVideo(currentFile.url);
+              setDownloadedFiles(_extends({}, downloadedFiles, (_extends3 = {}, _extends3[currentFile.url] = cachedUrl, _extends3)));
+              setPlayedVideo(currentFile.url);
+            }
           }
-        })["catch"](function (e) {
-          console.log('error on download... ', e);
-        });
-      } else {
-        if (currentFile.type === 'video') {
-          setPlayedVideo(currentFile.url);
-        } else {
-          var image = new Image();
-          image.src = downloadedFiles[currentFile.url];
 
-          image.onload = function () {
-            setImageLoading(false);
-          };
+          setImageLoading(false);
+        } else {
+          if (customDownloader) {
+            customDownloader(currentFile.url).then(function (url) {
+              try {
+                return Promise.resolve(fetch(url)).then(function (response) {
+                  setAttachmentToCache(currentFile.id, response);
+
+                  if (currentFile.type === 'image') {
+                    downloadImage(url);
+                  } else {
+                    var _extends4;
+
+                    setDownloadedFiles(_extends({}, downloadedFiles, (_extends4 = {}, _extends4[currentFile.url] = url, _extends4)));
+                    setPlayedVideo(currentFile.url);
+                  }
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            });
+          } else {
+            if (currentFile.type === 'image') {
+              downloadImage(currentFile.url);
+            } else {
+              var _extends5;
+
+              setDownloadedFiles(_extends({}, downloadedFiles, (_extends5 = {}, _extends5[currentFile.url] = currentFile.url, _extends5)));
+              setPlayedVideo(currentFile.url);
+            }
+          }
         }
-      }
+      });
     }
   }, [currentFile]);
   useDidUpdate(function () {
@@ -28759,7 +28805,7 @@ var SliderPopup = function SliderPopup(_ref) {
 
     if (currentMedia) {
       var indexOnList = attachments.findIndex(function (item) {
-        return item.url === currentMedia.url;
+        return item.id === currentMedia.id;
       });
 
       if (!attachments[indexOnList + 1]) {
@@ -28776,23 +28822,42 @@ var SliderPopup = function SliderPopup(_ref) {
     }
   }, [attachments]);
   useEffect(function () {
-    if (customUploader && currentMediaFile) {
-      if (!downloadedFiles[currentMediaFile.url]) {
-        customUploader.download(currentMediaFile.url).then(function (src) {
-          var _extends3;
-
-          setDownloadedFiles(_extends({}, downloadedFiles, (_extends3 = {}, _extends3[currentMediaFile.url] = src, _extends3)));
-
+    if (customDownloader && currentMediaFile) {
+      getAttachmentUrlFromCache(currentMediaFile.id).then(function (cachedUrl) {
+        if (cachedUrl) {
           if (currentMediaFile.type === 'image') {
-            var image = new Image();
-            image.src = src;
+            downloadImage(cachedUrl);
+          } else {
+            var _extends6;
 
-            image.onload = function () {
-              setImageLoading(false);
-            };
+            setDownloadedFiles(_extends({}, downloadedFiles, (_extends6 = {}, _extends6[currentMediaFile.url] = cachedUrl, _extends6)));
+            setPlayedVideo(currentMediaFile.url);
           }
-        });
-      }
+        } else {
+          if (customDownloader) {
+            customDownloader(currentMediaFile.url).then(function (url) {
+              try {
+                return Promise.resolve(fetch(url)).then(function (response) {
+                  setAttachmentToCache(currentMediaFile.id, response);
+
+                  if (currentMediaFile.type === 'image') {
+                    downloadImage(url);
+                  } else {
+                    var _extends7;
+
+                    setDownloadedFiles(_extends({}, downloadedFiles, (_extends7 = {}, _extends7[currentMediaFile.url] = url, _extends7)));
+                    setPlayedVideo(currentMediaFile.url);
+                  }
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            });
+          } else {
+            downloadImage(currentMediaFile.url);
+          }
+        }
+      });
     }
 
     if (currentMediaFile && !mediaFiles) {
@@ -28819,7 +28884,7 @@ var SliderPopup = function SliderPopup(_ref) {
     pagination: false,
     className: 'custom_carousel',
     initialActiveIndex: currentFile && attachmentsList.findIndex(function (item) {
-      return item.url === currentFile.url;
+      return item.id === currentFile.id;
     }),
     onChange: function onChange(_currentItem, pageIndex) {
       setImageLoading(true);
@@ -28858,7 +28923,7 @@ var SliderPopup = function SliderPopup(_ref) {
     isRTL: false
   }, attachmentsList.map(function (file) {
     return React__default.createElement(CarouselItem, {
-      key: file.url,
+      key: file.id,
       draggable: false
     }, downloadedFiles[file.url] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? React__default.createElement(React__default.Fragment, null, imageLoading ? React__default.createElement(UploadCont, null, React__default.createElement(UploadingIcon, null)) : React__default.createElement("img", {
       draggable: false,

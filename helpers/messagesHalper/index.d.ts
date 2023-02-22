@@ -1,5 +1,5 @@
 import { IMessage, IReaction } from '../../types';
-export declare const MESSAGES_MAX_LENGTH = 70;
+export declare const MESSAGES_MAX_LENGTH = 60;
 export declare const LOAD_MAX_MESSAGE_COUNT = 20;
 export declare const MESSAGE_LOAD_DIRECTION: {
     PREV: string;

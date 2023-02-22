@@ -66,6 +66,8 @@ export declare const MessageText: import("styled-components").StyledComponent<"p
     lineHeight?: string | undefined;
     showMessageSenderName?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
+    withMediaAttachment?: boolean | undefined;
+    isForwarded?: boolean | undefined;
 }, never>;
 export declare const ReplyMessageText: import("styled-components").StyledComponent<"span", any, {
     withAttachment?: boolean | undefined;
