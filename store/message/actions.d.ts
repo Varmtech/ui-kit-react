@@ -25,6 +25,14 @@ export declare function resendMessageAC(message: any, channelId: string, connect
         connectionState: string;
     };
 };
+export declare function forwardMessageAC(message: any, channelId: string, connectionState: string): {
+    type: string;
+    payload: {
+        message: any;
+        channelId: string;
+        connectionState: string;
+    };
+};
 export declare function deleteMessageAC(channelId: string, messageId: string, deleteOption: 'forMe' | 'forEveryone'): {
     type: string;
     payload: {

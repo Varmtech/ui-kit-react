@@ -16,6 +16,7 @@ export declare const SET_HAS_PREV_MESSAGES = "SET_HAS_PREV_MESSAGES";
 export declare const CLEAR_MESSAGES = "CLEAR_MESSAGES";
 export declare const SEND_MESSAGE = "SEND_MESSAGE";
 export declare const SEND_TEXT_MESSAGE = "SEND_TEXT_MESSAGE";
+export declare const FORWARD_MESSAGE = "FORWARD_MESSAGE";
 export declare const SEND_THREAD_REPLY_MESSAGE = "SEND_THREAD_REPLY_MESSAGE";
 export declare const EDIT_MESSAGE = "EDIT_MESSAGE";
 export declare const SET_MESSAGE_TO_EDIT = "SET_MESSAGE_TO_EDIT";

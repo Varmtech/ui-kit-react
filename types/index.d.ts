@@ -13,6 +13,10 @@ export interface IUser {
         lastActiveAt?: Date | null;
     };
 }
+export interface IAddMember {
+    id: string;
+    role: string;
+}
 export interface ICreateChannel {
     metadata?: any;
     label?: string;
@@ -66,6 +70,28 @@ export interface IChannel {
     createMessageBuilder: () => any;
     createAttachmentBuilder: (url: string, type: string) => any;
 }
+export interface IReaction {
+    key: string;
+    score: number;
+    reason: string;
+    updatedAt: Date;
+    messageId: number;
+    user: IUser;
+}
+export interface IAttachment {
+    id?: string;
+    attachmentId?: string;
+    createdAt: Date;
+    url: any;
+    attachmentUrl: string;
+    type: string;
+    name: string;
+    data: any;
+    fileSize: number;
+    title?: string;
+    metadata?: any;
+    user: IUser;
+}
 export interface IMessage {
     id: string;
     tid?: string;
@@ -93,28 +119,12 @@ export interface IMessage {
     replyCount?: number;
     transient: boolean;
     silent: boolean;
-}
-export interface IReaction {
-    key: string;
-    score: number;
-    reason: string;
-    updatedAt: Date;
-    messageId: number;
-    user: IUser;
-}
-export interface IAttachment {
-    id?: string;
-    attachmentId?: string;
-    createdAt: Date;
-    url: any;
-    attachmentUrl: string;
-    type: string;
-    name: string;
-    data: any;
-    fileSize: number;
-    title?: string;
-    metadata?: any;
-    user: IUser;
+    forwardingDetails?: {
+        channelId: string;
+        hops: number;
+        messageId: string;
+        user: IUser;
+    };
 }
 export interface IMedia extends IAttachment {
     user: IUser;
@@ -136,10 +146,6 @@ export interface IRole {
     priority?: number;
 }
 export interface IMember extends IUser {
-    role: string;
-}
-export interface IAddMember {
-    id: string;
     role: string;
 }
 export interface IContact {

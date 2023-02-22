@@ -45,6 +45,7 @@ export declare const PopupBody: import("styled-components").StyledComponent<"div
     withFooter?: boolean | undefined;
 }, never>;
 export declare const PopupDescription: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const BoltText: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const PopupFooter: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const SectionHeader: import("styled-components").StyledComponent<"h4", any, {
     margin?: string | undefined;

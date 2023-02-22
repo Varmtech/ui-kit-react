@@ -5,6 +5,7 @@ interface IMessageProps {
     channel: IChannel;
     senderFromContact?: IContact;
     parentSenderFromContact?: IContact;
+    forwardSenderFromContact?: IContact;
     isPendingMessage?: boolean;
     prevMessage?: IMessage;
     nextMessage: IMessage;

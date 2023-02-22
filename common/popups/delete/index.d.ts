@@ -1,7 +1,7 @@
 /// <reference types="react" />
 interface IProps {
     title: string;
-    description: string;
+    description: string | JSX.Element;
     buttonText: string;
     buttonTextColor?: string;
     buttonBackground?: string;
