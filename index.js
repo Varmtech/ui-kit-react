@@ -1048,7 +1048,6 @@ var ChannelReducer = (function (state, _temp) {
         if (!newState.channels.find(function (chan) {
           return chan.id === payload.channel.id;
         })) {
-          console.log('add channel,,,,, ');
           newState.channels = [payload.channel].concat(newState.channels);
         }
 
@@ -1195,7 +1194,6 @@ var ChannelReducer = (function (state, _temp) {
       {
         var _channel5 = payload.channel,
             message = payload.message;
-        console.log('update message last message .... ');
         var updateChannel = newState.channels.find(function (chan) {
           return chan.id === _channel5.id;
         });
@@ -13554,7 +13552,7 @@ function forwardMessage(action) {
           attachments = _message2.attachments;
 
           if (channel.type === CHANNEL_TYPE.PUBLIC && !(channel.role === 'admin' || channel.role === 'owner')) {
-            _context3.next = 56;
+            _context3.next = 55;
             break;
           }
 
@@ -13625,7 +13623,7 @@ function forwardMessage(action) {
 
         case 38:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context3.next = 56;
+            _context3.next = 55;
             break;
           }
 
@@ -13634,7 +13632,6 @@ function forwardMessage(action) {
 
         case 41:
           messageResponse = _context3.sent;
-          console.log('message response.. ', messageResponse);
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -13647,23 +13644,23 @@ function forwardMessage(action) {
           };
 
           if (!(channelId === activeChannelId)) {
-            _context3.next = 51;
+            _context3.next = 50;
             break;
           }
 
-          _context3.next = 47;
+          _context3.next = 46;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 47:
+        case 46:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context3.next = 52;
+          _context3.next = 51;
           break;
 
-        case 51:
+        case 50:
           if (isCachedChannel) {
             updateMessageOnMap(channel.id, {
               messageId: messageToSend.tid,
@@ -13671,31 +13668,31 @@ function forwardMessage(action) {
             });
           }
 
-        case 52:
-          _context3.next = 54;
+        case 51:
+          _context3.next = 53;
           return effects.put(addChannelAC(channel));
 
-        case 54:
-          _context3.next = 56;
+        case 53:
+          _context3.next = 55;
           return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 56:
-          _context3.next = 61;
+        case 55:
+          _context3.next = 60;
           break;
 
-        case 58:
-          _context3.prev = 58;
+        case 57:
+          _context3.prev = 57;
           _context3.t0 = _context3["catch"](0);
           console.log('error on forward message ... ', _context3.t0);
 
-        case 61:
+        case 60:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3$1, null, [[0, 58]]);
+  }, _marked3$1, null, [[0, 57]]);
 }
 
 function resendMessage(action) {
@@ -29446,7 +29443,6 @@ var Messages = function Messages(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages... ', messages);
   }, [messages]);
   React.useEffect(function () {
     if (getUnreadScrollTo()) {
