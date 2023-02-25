@@ -1,9 +1,7 @@
 import React from 'react';
-import { ICustomColors } from './types';
 import { IChannel, IContact } from '../../types';
 interface IChannelProps {
     channel: IChannel;
-    customColors?: ICustomColors;
     avatar?: boolean;
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;

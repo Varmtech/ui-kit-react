@@ -1,2 +1,2 @@
-export declare const setUserDisplayNameFromContact: (value: boolean) => void;
-export declare const getUserDisplayNameFromContact: () => boolean;
+export declare const setShowOnlyContactUsers: (value: boolean) => void;
+export declare const getShowOnlyContactUsers: () => boolean;

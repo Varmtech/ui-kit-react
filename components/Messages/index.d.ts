@@ -45,7 +45,6 @@ interface MessagesProps {
     starIconTooltipText?: string;
     reportIconTooltipText?: string;
     messageActionIconsColor?: string;
-    messageActionIconsHoverColor?: string;
     dateDividerFontSize?: string;
     dateDividerTextColor?: string;
     dateDividerBorder?: string;
@@ -69,8 +68,8 @@ interface MessagesProps {
     fileAttachmentsSizeColor?: string;
     fileAttachmentsIcon?: JSX.Element;
 }
-declare const Messages: React.FC<MessagesProps>;
-export default Messages;
+declare const MessageList: React.FC<MessagesProps>;
+export default MessageList;
 export declare const Container: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const EmptyDiv: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const MessageTopDate: import("styled-components").StyledComponent<"div", any, any, never>;

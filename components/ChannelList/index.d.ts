@@ -1,12 +1,10 @@
 import React, { FC } from 'react';
-import { ICustomColors } from '../Channel/types';
 import { IChannel } from '../../types';
 interface IChannelGroup {
     groupName: string;
     channelList: IChannel[];
 }
 interface IChannelListProps {
-    customColors?: ICustomColors;
     List?: FC<{
         channels: IChannel[];
         loadMoreChannels: (count?: number) => void;
@@ -31,6 +29,8 @@ interface IChannelListProps {
     notificationsIsMutedIconColor?: string;
     createChannelIcon?: JSX.Element;
     createChannelIconHoverBackground?: string;
+    selectedChannelBackground?: string;
+    selectedChannelLeftBorder?: string;
     onChannelDeleted?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
     onChannelCreated?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
     onChannelHidden?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;

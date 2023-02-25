@@ -1,4 +1,4 @@
-export interface ICustomColors {
+export interface IChannelsCustomColors {
     selectedChannelBackground?: string;
     selectedChannelLeftBorder?: string;
 }

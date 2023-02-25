@@ -22,7 +22,7 @@ export interface ICustomUploader {
 export interface IChatClientProps {
     client: SceytChatClient;
     avatarColors?: ICustomAvatarColors;
-    userDisplayNameFromContacts?: boolean;
+    showOnlyContactUsers?: boolean;
     sendAttachmentsAsSeparateMessages?: boolean;
     children?: JSX.Element | JSX.Element[];
     logoSrc?: string;
@@ -36,5 +36,5 @@ export interface IChatClientProps {
         defaultAvatarBackground?: string;
     };
 }
-declare const SceytChatContainer: ({ client, avatarColors, children, userDisplayNameFromContacts, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors }: IChatClientProps) => JSX.Element;
+declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors }: IChatClientProps) => JSX.Element;
 export default SceytChatContainer;
