@@ -19292,6 +19292,8 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, [deletedChannel]);
   useDidUpdate(function () {
+    console.log('connectionStatus.. .. ', connectionStatus);
+
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       dispatch(getChannelsAC({
         filter: filter,
@@ -19306,10 +19308,6 @@ var ChannelList = function ChannelList(_ref) {
 
       clearMessagesMap();
       removeAllMessages();
-
-      if (getFromContacts) {
-        dispatch(getContactsAC());
-      }
     }
   }, [connectionStatus]);
   React.useEffect(function () {
@@ -19385,6 +19383,10 @@ var ChannelList = function ChannelList(_ref) {
       sort: sort,
       search: ''
     }, false));
+
+    if (getFromContacts) {
+      dispatch(getContactsAC());
+    }
 
     if (selectedChannelBackground || selectedChannelLeftBorder) {
       setCustomColors(_extends({}, selectedChannelBackground && {
