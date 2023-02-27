@@ -11584,7 +11584,7 @@ function getChannelsForForward(action) {
         case 28:
           groupChannelsData = _context3.sent;
           groupChannelsToAdd = groupChannelsData.channels.filter(function (channel) {
-            return !(channel.type === CHANNEL_TYPE.PUBLIC && (channel.role === 'admin' || channel.role === 'owner'));
+            return channel.type === CHANNEL_TYPE.PUBLIC ? channel.role === 'admin' || channel.role === 'owner' : true;
           });
           allChannels = directChannelsToAdd.concat(groupChannelsToAdd);
           _context3.next = 33;
@@ -16181,14 +16181,14 @@ var Avatar = function Avatar(_ref) {
   var avatarText = '';
 
   if (!image && name) {
-    var splittedName = name.split(' ');
+    var splittedName = name.trimStart().split(' ');
 
     if (splittedName.length > 1 && splittedName[1]) {
       var firstWord = splittedName[0];
       var secondWord = splittedName[1];
       var firstCharOfFirstWord = firstWord.codePointAt(0);
       var firstCharOfSecondWord = secondWord.codePointAt(0);
-      avatarText = "" + String.fromCodePoint(firstCharOfFirstWord) + String.fromCodePoint(firstCharOfSecondWord);
+      avatarText = (firstCharOfFirstWord ? String.fromCodePoint(firstCharOfFirstWord) : '') + "\n                    " + (firstCharOfSecondWord ? String.fromCodePoint(firstCharOfSecondWord) : '');
     } else {
       var _firstCharOfFirstWord = name.codePointAt(0);
 
@@ -27555,56 +27555,59 @@ var Attachment = function Attachment(_ref) {
   }, [attachmentUrl]);
   React.useEffect(function () {
     setAttachmentUrl('');
-    getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
-      if (attachment.type === 'image' && !isPrevious) {
-        if (cachedUrl) {
-          downloadImage(cachedUrl);
-        } else {
-          if (customDownloader) {
-            customDownloader(attachment.url).then(function (url) {
-              try {
-                return Promise.resolve(fetch(url)).then(function (response) {
-                  setAttachmentToCache(attachment.id, response);
-                  downloadImage(url);
-                });
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            });
+
+    if (attachment.type === attachmentTypes.video || attachment.type === attachmentTypes.image) {
+      getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
+        if (attachment.type === 'image' && !isPrevious) {
+          if (cachedUrl) {
+            downloadImage(cachedUrl);
           } else {
-            downloadImage(attachment.url);
+            if (customDownloader) {
+              customDownloader(attachment.url).then(function (url) {
+                try {
+                  return Promise.resolve(fetch(url)).then(function (response) {
+                    setAttachmentToCache(attachment.id, response);
+                    downloadImage(url);
+                  });
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              });
+            } else {
+              downloadImage(attachment.url);
+            }
+          }
+        } else {
+          if (attachment.type === attachmentTypes.video && cachedUrl) {
+            setAttachmentUrl(cachedUrl);
+          } else {
+            if (customDownloader) {
+              customDownloader(attachment.url).then(function (url) {
+                try {
+                  var _temp3 = function _temp3() {
+                    setAttachmentUrl(url);
+                  };
+
+                  var _temp4 = function () {
+                    if (attachment.type === attachmentTypes.video) {
+                      return Promise.resolve(fetch(url)).then(function (response) {
+                        setAttachmentToCache(attachment.id, response);
+                      });
+                    }
+                  }();
+
+                  return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              });
+            } else {
+              setAttachmentUrl(attachment.url);
+            }
           }
         }
-      } else {
-        if (attachment.type === attachmentTypes.video && cachedUrl) {
-          setAttachmentUrl(cachedUrl);
-        } else {
-          if (customDownloader) {
-            customDownloader(attachment.url).then(function (url) {
-              try {
-                var _temp3 = function _temp3() {
-                  setAttachmentUrl(url);
-                };
-
-                var _temp4 = function () {
-                  if (attachment.type === attachmentTypes.video) {
-                    return Promise.resolve(fetch(url)).then(function (response) {
-                      setAttachmentToCache(attachment.id, response);
-                    });
-                  }
-                }();
-
-                return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            });
-          } else {
-            setAttachmentUrl(attachment.url);
-          }
-        }
-      }
-    });
+      });
+    }
   }, [attachment]);
   return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
     onClick: function onClick() {
@@ -28366,7 +28369,7 @@ var Message = function Message(_ref) {
         isThreadMessage: !!isThreadMessage,
         rtlDirection: ownMessageOnRightSide && !message.incoming,
         showMessageReaction: messageReaction,
-        showEditMessage: editMessage,
+        showEditMessage: editMessage && !(message.attachments && message.attachments.length && message.attachments[0].type === attachmentTypes.voice || !message.body),
         showReplyMessage: replyMessage,
         showReplyMessageInThread: replyMessageInThread,
         showForwardMessage: forwardMessage,
@@ -28487,7 +28490,9 @@ var Message = function Message(_ref) {
   }, message.parent.user.id === user.id ? 'You' : makeUserName(parentSenderFromContact, message.parent.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
     fontSize: '14px',
     lineHeight: '16px'
-  }, !!message.parent.attachments.length && message.parent.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, null), message.parent.body ? MessageTextFormat({
+  }, !!message.parent.attachments.length && message.parent.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, {
+    color: colors.primary
+  }), message.parent.body ? MessageTextFormat({
     text: message.parent.body,
     message: message.parent
   }) : message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.link && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, {
@@ -28512,7 +28517,7 @@ var Message = function Message(_ref) {
     withAttachment: true,
     fileAttachment: message.attachments[0].type === 'file' || message.attachments[0].type === 'voice'
   }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, {
-    color: message.attachments[0].type !== 'voice' ? colors.white : ''
+    color: message.attachments[0].type !== 'voice' && message.attachments[0].type !== 'file' ? colors.white : ''
   }, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && messageStatusIcon(message.deliveryStatus, message.attachments[0].type !== 'voice' && message.attachments[0].type !== 'file' ? colors.white : '')), withAttachments && message.attachments.map(function (attachment) {
     return React__default.createElement(Attachment, {
       key: attachment.attachmentId || attachment.url,
@@ -28635,7 +28640,9 @@ var MessageContent = styled__default.div(_templateObject17$1 || (_templateObject
 }, function (props) {
   return props.messageWidthPercent ? props.messageWidthPercent + "%" : '100%';
 });
-var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), colors.primary);
+var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.primary;
+});
 var MessageItem = styled__default.div(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  padding: 4px 40px;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  &:last-child {\n    margin-bottom: 0;\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
   return props.topMargin && '12px';
 }, function (props) {
@@ -29080,6 +29087,9 @@ var VideoPlayer = function VideoPlayer(_ref) {
     ref: containerRef,
     fullScreen: isFullScreen
   }, React__default.createElement("video", {
+    onClick: function onClick() {
+      return videoHandler(playing ? 'pause' : 'play');
+    },
     id: 'video1',
     ref: videoRef,
     className: 'video',
@@ -30683,8 +30693,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         });
       } else {
         e.preventDefault();
-        e.currentTarget.innerText = e.clipboardData.getData('Text');
-        placeCaretAtEnd(messageInputRef.current);
+        document.execCommand('inserttext', false, e.clipboardData.getData('text/plain'));
       }
     }
   };
@@ -32174,7 +32183,6 @@ var Members = function Members(_ref) {
       setCloseMenu = _useState8[1];
 
   var members = reactRedux.useSelector(activeChannelMembersSelector) || [];
-  console.log('members.. . .. ', members);
   var contactsMap = reactRedux.useSelector(contactsMapSelector) || {};
   var membersLoading = reactRedux.useSelector(membersLoadingStateSelector) || {};
   var user = getClient().chatClient.user;
@@ -32291,7 +32299,7 @@ var Members = function Members(_ref) {
       color: colors.primary
     }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
       color: colors.purple
-    }, "Admin") : ''), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && React__default.createElement(DropDown, {
+    }, "Admin") : ''), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && member.role !== 'owner' && React__default.createElement(DropDown, {
       isSelect: true,
       forceClose: !!(closeMenu && closeMenu !== member.id),
       watchToggleState: function watchToggleState(state) {
@@ -32305,7 +32313,7 @@ var Members = function Members(_ref) {
       },
       key: 1,
       hoverBackground: customColors.selectedChannelBackground
-    }, "Change role"), showMakeMemberAdmin && chekActionPermission('changeMemberRole') && React__default.createElement(DropdownOptionLi, {
+    }, "Change role"), showMakeMemberAdmin && chekActionPermission('changeMemberRole') && member.role !== 'owner' && React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
         toggleMakeAdminPopup(member.role === 'admin');
@@ -32313,7 +32321,7 @@ var Members = function Members(_ref) {
       textColor: member.role === 'admin' ? colors.red1 : '',
       key: 2,
       hoverBackground: customColors.selectedChannelBackground
-    }, member.role === 'admin' ? 'Revoke Admin' : 'Make Admin'), showKickMember && chekActionPermission('kickMember') && React__default.createElement(DropdownOptionLi, {
+    }, member.role === 'admin' ? 'Revoke Admin' : 'Make Admin'), showKickMember && chekActionPermission('kickMember') && member.role !== 'owner' && React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
         toggleKickMemberPopup();
