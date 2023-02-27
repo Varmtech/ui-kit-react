@@ -3,6 +3,7 @@ import { IUser } from '../../types';
 interface SendMessageProps {
     draggedAttachments?: boolean;
     handleAttachmentSelected?: (state: boolean) => void;
+    disabled?: boolean;
     hideEmojis?: boolean;
     emojiIcoOrder?: number;
     attachmentIcoOrder?: number;

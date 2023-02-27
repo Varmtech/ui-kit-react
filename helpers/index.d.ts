@@ -1,6 +1,7 @@
 /// <reference types="react" />
 import { IAttachment, IContact, IMessage, IUser } from '../types';
 export declare const messageStatusIcon: (messageStatus: string, iconColor?: string | undefined, readIconColor?: string | undefined) => JSX.Element;
+export declare const isAlphanumeric: (str: string) => boolean;
 export declare const getFileExtension: (filename: string) => string | undefined;
 export declare const MessageTextFormatForEdit: ({ text, message }: {
     text: string;

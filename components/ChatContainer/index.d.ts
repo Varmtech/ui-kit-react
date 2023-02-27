@@ -1,7 +1,7 @@
 /// <reference types="react" />
 import SceytChatClient from 'sceyt-chat';
 import { ICustomAvatarColors } from '../Channel/types';
-import { IAttachment } from '../../types';
+import { IAttachment, IUser } from '../../types';
 export interface IProgress {
     loaded: number;
     total: number;
@@ -22,6 +22,7 @@ export interface ICustomUploader {
 export interface IChatClientProps {
     client: SceytChatClient;
     avatarColors?: ICustomAvatarColors;
+    hideUserPresence?: (user: IUser) => boolean;
     showOnlyContactUsers?: boolean;
     sendAttachmentsAsSeparateMessages?: boolean;
     children?: JSX.Element | JSX.Element[];
@@ -36,5 +37,5 @@ export interface IChatClientProps {
         defaultAvatarBackground?: string;
     };
 }
-declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors }: IChatClientProps) => JSX.Element;
+declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors, hideUserPresence }: IChatClientProps) => JSX.Element;
 export default SceytChatContainer;

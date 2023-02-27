@@ -48,3 +48,4 @@ export declare const deleteVideoThumb: (attachmentId: string) => void;
 export declare const setPendingAttachment: (attachmentId: string, file: File) => void;
 export declare const getPendingAttachment: (attachmentId: string) => File;
 export declare const deletePendingAttachment: (attachmentId: string) => boolean;
+export declare const getPendingMessages: (channelId: string) => IMessage[];

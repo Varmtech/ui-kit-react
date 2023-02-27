@@ -7848,6 +7848,9 @@ var messageStatusIcon = function messageStatusIcon(messageStatus, iconColor, rea
       });
   }
 };
+var isAlphanumeric = function isAlphanumeric(str) {
+  return /[a-z]/i.test(str);
+};
 var getFileExtension = function getFileExtension(filename) {
   var ext = filename.split('.').pop();
   if (ext === filename) return '';
@@ -7923,6 +7926,10 @@ var bytesToSize = function bytesToSize(bytes, decimals) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 };
 var makeUserName = function makeUserName(contact, user, fromContact) {
+  if (user && isAlphanumeric(user.id)) {
+    return user.id.charAt(0).toUpperCase() + user.id.slice(1);
+  }
+
   return fromContact ? contact ? contact.firstName ? contact.firstName + " " + contact.lastName : contact.id : user ? user.id || 'Deleted user' : '' : user ? user.firstName ? user.firstName + " " + user.lastName : user.id || 'Deleted user' : '';
 };
 var systemMessageUserName = function systemMessageUserName(contact, userId) {
@@ -8169,7 +8176,9 @@ var MESSAGE_LOAD_DIRECTION = {
   PREV: 'prev',
   NEXT: 'next'
 };
+var pendingAttachments = {};
 var messagesMap = {};
+var pendingMessagesMap = {};
 var activeChannelAllMessages = [];
 var prevCached = false;
 var nextCached = false;
@@ -8281,6 +8290,18 @@ function addMessageToMap(channelId, message) {
   }
 }
 function updateMessageOnMap(channelId, updatedMessage) {
+  if (updatedMessage.params.deliveryStatus !== MESSAGE_DELIVERY_STATUS.PENDING && pendingMessagesMap[channelId]) {
+    var filteredMessages = pendingMessagesMap[channelId].filter(function (msg) {
+      return msg.tid !== updatedMessage.messageId;
+    });
+
+    if (filteredMessages && filteredMessages.length && filteredMessages.length > 0) {
+      pendingMessagesMap[channelId] = filteredMessages;
+    } else {
+      delete pendingMessagesMap[channelId];
+    }
+  }
+
   if (messagesMap[channelId]) {
     messagesMap[channelId] = messagesMap[channelId].map(function (mes) {
       if (mes.tid === updatedMessage.messageId || mes.id === updatedMessage.messageId) {
@@ -8358,6 +8379,15 @@ var getVideoThumb = function getVideoThumb(attachmentId) {
 };
 var deleteVideoThumb = function deleteVideoThumb(attachmentId) {
   delete pendingVideoAttachmentsThumbs[attachmentId];
+};
+var getPendingAttachment = function getPendingAttachment(attachmentId) {
+  return pendingAttachments[attachmentId];
+};
+var deletePendingAttachment = function deletePendingAttachment(attachmentId) {
+  return delete pendingAttachments[attachmentId];
+};
+var getPendingMessages = function getPendingMessages(channelId) {
+  return pendingMessagesMap[channelId];
 };
 
 var initialState$1 = {
@@ -9503,6 +9533,16 @@ function sendTextMessageAC(message, channelId, connectionState) {
     payload: {
       message: message,
       channelId: channelId,
+      connectionState: connectionState
+    }
+  };
+}
+function resendMessageAC(message, channelId, connectionState) {
+  return {
+    type: RESEND_MESSAGE,
+    payload: {
+      channelId: channelId,
+      message: message,
       connectionState: connectionState
     }
   };
@@ -13137,6 +13177,7 @@ function sendMessage(action) {
 
         case 71:
           messageResponse = _context.sent;
+          deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -13792,6 +13833,7 @@ function resendMessage(action) {
 
         case 34:
           _messageResponse2 = _context4.sent;
+          deletePendingAttachment(_messageAttachment.attachmentId);
           messageUpdateData = {
             id: _messageResponse2.id,
             deliveryStatus: _messageResponse2.deliveryStatus,
@@ -14001,7 +14043,7 @@ function editMessage(action) {
 }
 
 function getMessagesQuery(action) {
-  var _action$payload, channel, loadWithLastMessage, messageId, limit, SceytChatClient, messageQueryBuilder, messageQuery, cachedMessages, result, allMessages, messageIndex, maxLengthPart;
+  var _action$payload, channel, loadWithLastMessage, messageId, limit, SceytChatClient, messageQueryBuilder, messageQuery, cachedMessages, result, allMessages, messageIndex, maxLengthPart, pendingMessages, _pendingMessages2, _pendingMessages, _pendingMessages3;
 
   return _regeneratorRuntime().wrap(function getMessagesQuery$(_context7) {
     while (1) {
@@ -14011,7 +14053,7 @@ function getMessagesQuery(action) {
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
 
           if (!channel.id) {
-            _context7.next = 89;
+            _context7.next = 97;
             break;
           }
 
@@ -14041,12 +14083,12 @@ function getMessagesQuery(action) {
           }
 
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          _context7.next = 81;
+          _context7.next = 87;
           break;
 
         case 19:
           if (!messageId) {
-            _context7.next = 46;
+            _context7.next = 48;
             break;
           }
 
@@ -14068,7 +14110,7 @@ function getMessagesQuery(action) {
         case 27:
           setHasPrevCached(messageIndex > maxLengthPart);
           setHasNextCached(allMessages.length > maxLengthPart);
-          _context7.next = 42;
+          _context7.next = 44;
           break;
 
         case 31:
@@ -14082,25 +14124,31 @@ function getMessagesQuery(action) {
           return effects.put(setMessagesHasNextAC(true));
 
         case 37:
-          _context7.next = 39;
-          return effects.put(setMessagesAC(result.messages));
+          pendingMessages = getPendingMessages(channel.id);
 
-        case 39:
+          if (pendingMessages && pendingMessages.length) {
+            result.messages = [].concat(result.messages, pendingMessages);
+          }
+
+          _context7.next = 41;
+          return effects.put(setMessagesAC([].concat(result.messages)));
+
+        case 41:
           setAllMessages([].concat(result.messages));
           setHasPrevCached(false);
           setHasNextCached(false);
 
-        case 42:
-          _context7.next = 44;
+        case 44:
+          _context7.next = 46;
           return effects.put(setScrollToMessagesAC(messageId));
 
-        case 44:
-          _context7.next = 81;
+        case 46:
+          _context7.next = 87;
           break;
 
-        case 46:
+        case 48:
           if (!(channel.unreadMessageCount && channel.lastReadMessageId)) {
-            _context7.next = 68;
+            _context7.next = 74;
             break;
           }
 
@@ -14108,60 +14156,72 @@ function getMessagesQuery(action) {
           messageQuery.limit = MESSAGES_MAX_LENGTH;
 
           if (!(getMessagesFromMap(channel.id) && getMessagesFromMap(channel.id).length)) {
-            _context7.next = 55;
+            _context7.next = 59;
             break;
           }
 
           result.messages = getMessagesFromMap(channel.id);
-          _context7.next = 53;
-          return effects.put(setMessagesAC(result.messages));
+          _pendingMessages2 = getPendingMessages(channel.id);
 
-        case 53:
-          _context7.next = 59;
-          break;
+          if (_pendingMessages2 && _pendingMessages2.length) {
+            result.messages = [].concat(result.messages, _pendingMessages2);
+          }
 
-        case 55:
           _context7.next = 57;
-          return effects.call(messageQuery.loadNearMessageId, channel.lastReadMessageId);
+          return effects.put(setMessagesAC([].concat(result.messages)));
 
         case 57:
-          result = _context7.sent;
-          setMessagesToMap(channel.id, result.messages);
+          _context7.next = 63;
+          break;
 
         case 59:
           _context7.next = 61;
-          return effects.put(setMessagesHasPrevAC(true));
+          return effects.call(messageQuery.loadNearMessageId, channel.lastReadMessageId);
 
         case 61:
-          _context7.next = 63;
-          return effects.put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
+          result = _context7.sent;
+          setMessagesToMap(channel.id, result.messages);
 
         case 63:
-          setAllMessages([].concat(result.messages));
-          _context7.next = 66;
-          return effects.put(setMessagesAC(result.messages));
+          _context7.next = 65;
+          return effects.put(setMessagesHasPrevAC(true));
 
-        case 66:
-          _context7.next = 81;
+        case 65:
+          _context7.next = 67;
+          return effects.put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
+
+        case 67:
+          _pendingMessages = getPendingMessages(channel.id);
+
+          if (_pendingMessages && _pendingMessages.length) {
+            result.messages = [].concat(result.messages, _pendingMessages);
+          }
+
+          setAllMessages([].concat(result.messages));
+          _context7.next = 72;
+          return effects.put(setMessagesAC([].concat(result.messages)));
+
+        case 72:
+          _context7.next = 87;
           break;
 
-        case 68:
+        case 74:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context7.next = 73;
+            _context7.next = 79;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context7.next = 73;
+          _context7.next = 79;
           return effects.put(setMessagesAC(cachedMessages));
 
-        case 73:
-          _context7.next = 75;
+        case 79:
+          _context7.next = 81;
           return effects.call(messageQuery.loadPrevious);
 
-        case 75:
+        case 81:
           result = _context7.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -14170,23 +14230,29 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context7.next = 79;
+          _context7.next = 85;
           return effects.put(setMessagesHasPrevAC(result.hasNext));
 
-        case 79:
-          _context7.next = 81;
+        case 85:
+          _context7.next = 87;
           return effects.put(setMessagesHasNextAC(false));
 
-        case 81:
+        case 87:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context7.next = 87;
+            _context7.next = 95;
             break;
           }
 
-          _context7.next = 84;
-          return effects.put(setMessagesAC(result.messages));
+          _pendingMessages3 = getPendingMessages(channel.id);
 
-        case 84:
+          if (_pendingMessages3 && _pendingMessages3.length) {
+            result.messages = [].concat(result.messages, _pendingMessages3);
+          }
+
+          _context7.next = 92;
+          return effects.put(setMessagesAC([].concat(result.messages)));
+
+        case 92:
           setMessagesToMap(channel.id, result.messages);
 
           if (!loadWithLastMessage) {
@@ -14197,25 +14263,25 @@ function getMessagesQuery(action) {
             setHasNextCached(false);
           }
 
-        case 87:
-          _context7.next = 89;
+        case 95:
+          _context7.next = 97;
           return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 89:
-          _context7.next = 94;
+        case 97:
+          _context7.next = 102;
           break;
 
-        case 91:
-          _context7.prev = 91;
+        case 99:
+          _context7.prev = 99;
           _context7.t0 = _context7["catch"](0);
           console.log('error in message query', _context7.t0);
 
-        case 94:
+        case 102:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$1, null, [[0, 91]]);
+  }, _marked7$1, null, [[0, 99]]);
 }
 
 function loadMoreMessages(action) {
@@ -15765,6 +15831,11 @@ var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
   return store.ChannelReducer.draggedAttachments;
 };
 
+var hideUserPresence;
+var setHideUserPresence = function setHideUserPresence(callback) {
+  hideUserPresence = callback;
+};
+
 var SceytChat = function SceytChat(_ref) {
   var client = _ref.client,
       avatarColors = _ref.avatarColors,
@@ -15773,7 +15844,8 @@ var SceytChat = function SceytChat(_ref) {
       logoSrc = _ref.logoSrc,
       CustomUploader = _ref.CustomUploader,
       sendAttachmentsAsSeparateMessages = _ref.sendAttachmentsAsSeparateMessages,
-      customColors = _ref.customColors;
+      customColors = _ref.customColors,
+      hideUserPresence = _ref.hideUserPresence;
   var dispatch = reactRedux.useDispatch();
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var connectionStatus = reactRedux.useSelector(connectionStatusSelector);
@@ -15920,6 +15992,10 @@ var SceytChat = function SceytChat(_ref) {
     }
   }, [tabIsActive]);
   React.useEffect(function () {
+    if (hideUserPresence) {
+      setHideUserPresence(hideUserPresence);
+    }
+
     if (contactsMap) {
       setContactsMap(contactsMap);
     }
@@ -15940,7 +16016,8 @@ var SceytChatContainer = function SceytChatContainer(_ref) {
       sendAttachmentsAsSeparateMessages = _ref.sendAttachmentsAsSeparateMessages,
       logoSrc = _ref.logoSrc,
       CustomUploader = _ref.CustomUploader,
-      customColors = _ref.customColors;
+      customColors = _ref.customColors,
+      hideUserPresence = _ref.hideUserPresence;
   return React__default.createElement(reactRedux.Provider, {
     store: store
   }, React__default.createElement(SceytChat, {
@@ -15951,7 +16028,8 @@ var SceytChatContainer = function SceytChatContainer(_ref) {
     logoSrc: logoSrc,
     CustomUploader: CustomUploader,
     sendAttachmentsAsSeparateMessages: sendAttachmentsAsSeparateMessages,
-    customColors: customColors
+    customColors: customColors,
+    hideUserPresence: hideUserPresence
   }));
 };
 
@@ -16213,7 +16291,7 @@ var Avatar = function Avatar(_ref) {
     alt: ''
   }));
 };
-var Container$1 = styled__default.div(_templateObject$3 || (_templateObject$3 = _taggedTemplateLiteralLoose(["\n    display: flex;\n    align-items: center;\n    flex: 0 0 auto;\n    text-transform: uppercase;\n    justify-content: center;\n    width: ", ";\n    height: ", ";\n    border-radius: 50%;\n    color: #fff;\n    overflow: hidden;\n    margin: ", ";\n    ", ";\n  span {\n    text-transform: uppercase;\n    font-style: normal;\n    font-weight: 500;\n    font-size: ", "};\n  }\n  & > svg {\n    height: ", ";\n    width: ", ";\n  }\n\n"])), function (props) {
+var Container$1 = styled__default.div(_templateObject$3 || (_templateObject$3 = _taggedTemplateLiteralLoose(["\n    display: flex;\n    align-items: center;\n    flex: 0 0 auto;\n    text-transform: uppercase;\n    justify-content: center;\n    width: ", ";\n    height: ", ";\n    border-radius: 50%;\n    color: #fff;\n    overflow: hidden;\n    margin: ", ";\n    ", ";\n  span {\n    text-transform: uppercase;\n    font-style: normal;\n    white-space: nowrap;\n    font-weight: 500;\n    font-size: ", "};\n  }\n  & > svg {\n    height: ", ";\n    width: ", ";\n  }\n\n"])), function (props) {
   return props.size ? props.size + "px" : '38px';
 }, function (props) {
   return props.size ? props.size + "px" : '38px';
@@ -16369,7 +16447,7 @@ var Channel = function Channel(_ref) {
     size: 50,
     textSize: 16,
     setDefaultAvatar: isDirectChannel
-  }), isDirectChannel && channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE && React__default.createElement(UserStatus, {
+  }), isDirectChannel && (hideUserPresence(channel.peer) ? '' : channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE) && React__default.createElement(UserStatus, {
     backgroundColor: colors.primary
   })), React__default.createElement(ChannelInfo, {
     avatar: withAvatar,
@@ -19162,6 +19240,7 @@ var ChannelList = function ChannelList(_ref) {
       selectedChannelLeftBorder = _ref.selectedChannelLeftBorder,
       List = _ref.List,
       ListItem = _ref.ListItem,
+      getActiveChannel = _ref.getActiveChannel,
       Profile = _ref.Profile,
       filter = _ref.filter,
       limit = _ref.limit,
@@ -19376,6 +19455,11 @@ var ChannelList = function ChannelList(_ref) {
       }));
     }
   }, [searchValue]);
+  useDidUpdate(function () {
+    if (getActiveChannel) {
+      getActiveChannel(activeChannel);
+    }
+  }, [activeChannel.id]);
   React.useEffect(function () {
     dispatch(getChannelsAC({
       filter: filter,
@@ -19618,7 +19702,7 @@ function ChatHeader(_ref) {
     size: 36,
     textSize: 13,
     setDefaultAvatar: isDirectChannel
-  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, null, activeChannel.subject || (isDirectChannel ? makeUserName(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), React__default.createElement(ChanelInfo, {
+  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, null, activeChannel.subject || (isDirectChannel ? makeUserName(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(activeChannel.peer) ? '' : activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), React__default.createElement(ChanelInfo, {
     onClick: function onClick() {
       return channelDetailsOnOpen();
     },
@@ -19822,7 +19906,7 @@ function SvgEditSquare(props) {
   })));
 }
 
-var _path$s, _path2$4, _path3$2;
+var _path$s;
 
 function _extends$v() {
   _extends$v = Object.assign ? Object.assign.bind() : function (target) {
@@ -19841,33 +19925,20 @@ function _extends$v() {
   return _extends$v.apply(this, arguments);
 }
 
-function SvgReact(props) {
+function SvgResend(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$v({
-    width: 20,
-    height: 20,
+    width: 17,
+    height: 15,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$s || (_path$s = /*#__PURE__*/React.createElement("path", {
-    d: "M15.913 3v4.174M13.826 5.088H18M6.174 11.348s1.043 1.739 2.782 1.739c1.74 0 2.783-1.74 2.783-1.74",
+    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
     stroke: "currentColor",
-    strokeWidth: 1.3,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })), _path2$4 || (_path2$4 = /*#__PURE__*/React.createElement("path", {
-    d: "M6.87 7.87h.006M11.043 7.87h.007",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })), _path3$2 || (_path3$2 = /*#__PURE__*/React.createElement("path", {
-    d: "M15.913 9.957a6.957 6.957 0 11-4.708-6.584",
-    stroke: "currentColor",
-    strokeWidth: 1.3,
-    strokeLinecap: "round"
+    strokeWidth: 1.4
   })));
 }
 
-var _path$t;
+var _path$t, _path2$4, _path3$2;
 
 function _extends$w() {
   _extends$w = Object.assign ? Object.assign.bind() : function (target) {
@@ -19886,18 +19957,29 @@ function _extends$w() {
   return _extends$w.apply(this, arguments);
 }
 
-function SvgReplyIcon(props) {
+function SvgReact(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$w({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24.01 24.01",
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$t || (_path$t = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M19.78 12l-6.958-6.045v2.83c0 .452-.346.87-.847.899-.318.018-1.494.102-2.809.388-1.35.294-2.693.768-3.47 1.479-.94.857-1.459 2.44-1.706 4.128-.095.652-.146 1.29-.17 1.86.133-.152.272-.306.416-.46.753-.806 1.716-1.698 2.688-2.161.917-.437 2.086-.584 3.02-.63a16.68 16.68 0 012.052.027.897.897 0 01.826.896v2.834L19.78 12zm1.658-.68a.9.9 0 010 1.36l-8.726 7.58a.9.9 0 01-1.49-.68v-3.705a14.97 14.97 0 00-1.197.01c-.885.044-1.791.181-2.413.477-.686.327-1.479 1.03-2.206 1.808-.71.76-1.291 1.52-1.557 1.88-.483.655-1.577.39-1.622-.485a22.078 22.078 0 01.18-4.117c.256-1.751.835-3.823 2.21-5.079 1.11-1.014 2.814-1.557 4.21-1.86a21.08 21.08 0 012.395-.37v-3.72a.9.9 0 011.49-.68l8.726 7.582z",
-    fill: "currentColor"
+    d: "M15.913 3v4.174M13.826 5.088H18M6.174 11.348s1.043 1.739 2.782 1.739c1.74 0 2.783-1.74 2.783-1.74",
+    stroke: "currentColor",
+    strokeWidth: 1.3,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })), _path2$4 || (_path2$4 = /*#__PURE__*/React.createElement("path", {
+    d: "M6.87 7.87h.006M11.043 7.87h.007",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })), _path3$2 || (_path3$2 = /*#__PURE__*/React.createElement("path", {
+    d: "M15.913 9.957a6.957 6.957 0 11-4.708-6.584",
+    stroke: "currentColor",
+    strokeWidth: 1.3,
+    strokeLinecap: "round"
   })));
 }
 
@@ -19920,20 +20002,22 @@ function _extends$x() {
   return _extends$x.apply(this, arguments);
 }
 
-function SvgThreadReply(props) {
+function SvgReplyIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$x({
-    width: 20,
-    height: 20,
-    fill: "currentColor",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24.01 24.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$u || (_path$u = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M19.072 10.206c.26.255.283.66.068.942l-.06.068-4.901 5a.714.714 0 01-.95.061l-.068-.06-2.955-2.991a.714.714 0 01.95-1.064l.066.06 2.446 2.475 4.394-4.483a.714.714 0 011.01-.008zM6.786 12.144a.714.714 0 010 1.428H3.214a.714.714 0 010-1.428h3.572zm8.571-4.286a.714.714 0 110 1.429H3.214a.714.714 0 110-1.429h12.143zm0-4.286a.714.714 0 110 1.429H3.214a.714.714 0 010-1.429h12.143z"
+    d: "M19.78 12l-6.958-6.045v2.83c0 .452-.346.87-.847.899-.318.018-1.494.102-2.809.388-1.35.294-2.693.768-3.47 1.479-.94.857-1.459 2.44-1.706 4.128-.095.652-.146 1.29-.17 1.86.133-.152.272-.306.416-.46.753-.806 1.716-1.698 2.688-2.161.917-.437 2.086-.584 3.02-.63a16.68 16.68 0 012.052.027.897.897 0 01.826.896v2.834L19.78 12zm1.658-.68a.9.9 0 010 1.36l-8.726 7.58a.9.9 0 01-1.49-.68v-3.705a14.97 14.97 0 00-1.197.01c-.885.044-1.791.181-2.413.477-.686.327-1.479 1.03-2.206 1.808-.71.76-1.291 1.52-1.557 1.88-.483.655-1.577.39-1.622-.485a22.078 22.078 0 01.18-4.117c.256-1.751.835-3.823 2.21-5.079 1.11-1.014 2.814-1.557 4.21-1.86a21.08 21.08 0 012.395-.37v-3.72a.9.9 0 011.49-.68l8.726 7.582z",
+    fill: "currentColor"
   })));
 }
 
-var _path$v, _path2$5;
+var _path$v;
 
 function _extends$y() {
   _extends$y = Object.assign ? Object.assign.bind() : function (target) {
@@ -19952,22 +20036,20 @@ function _extends$y() {
   return _extends$y.apply(this, arguments);
 }
 
-function SvgEmojiSmileIcon(props) {
+function SvgThreadReply(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$y({
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$v || (_path$v = /*#__PURE__*/React.createElement("path", {
-    d: "M8.438 14.297a.9.9 0 011.273.149 2.77 2.77 0 00.516.415c.383.24.97.489 1.773.489.803 0 1.39-.25 1.773-.489a2.773 2.773 0 00.516-.415l.012-.013.002-.003a.9.9 0 011.4 1.132L15 15l.703.562-.001.001-.002.002-.002.003-.007.008-.018.022a3.487 3.487 0 01-.245.254c-.16.15-.394.344-.7.536A5.094 5.094 0 0112 17.15a5.094 5.094 0 01-2.727-.762 4.567 4.567 0 01-.7-.537 3.501 3.501 0 01-.246-.253l-.018-.022-.007-.008-.002-.003-.002-.002L9 15l-.703.562a.9.9 0 01.14-1.265zM10.25 10.25a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zM15 11.5A1.25 1.25 0 1015 9a1.25 1.25 0 000 2.5z"
-  })), _path2$5 || (_path2$5 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M12 2.1c-5.468 0-9.9 4.432-9.9 9.9 0 5.467 4.432 9.9 9.9 9.9s9.9-4.433 9.9-9.9c0-5.468-4.432-9.9-9.9-9.9zM3.9 12a8.1 8.1 0 1116.2 0 8.1 8.1 0 01-16.2 0z"
+    d: "M19.072 10.206c.26.255.283.66.068.942l-.06.068-4.901 5a.714.714 0 01-.95.061l-.068-.06-2.955-2.991a.714.714 0 01.95-1.064l.066.06 2.446 2.475 4.394-4.483a.714.714 0 011.01-.008zM6.786 12.144a.714.714 0 010 1.428H3.214a.714.714 0 010-1.428h3.572zm8.571-4.286a.714.714 0 110 1.429H3.214a.714.714 0 110-1.429h12.143zm0-4.286a.714.714 0 110 1.429H3.214a.714.714 0 010-1.429h12.143z"
   })));
 }
 
-var _path$w;
+var _path$w, _path2$5;
 
 function _extends$z() {
   _extends$z = Object.assign ? Object.assign.bind() : function (target) {
@@ -19986,16 +20068,18 @@ function _extends$z() {
   return _extends$z.apply(this, arguments);
 }
 
-function SvgEmojiAnimalIcon(props) {
+function SvgEmojiSmileIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$z({
     width: 24,
     height: 24,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$w || (_path$w = /*#__PURE__*/React.createElement("path", {
+    d: "M8.438 14.297a.9.9 0 011.273.149 2.77 2.77 0 00.516.415c.383.24.97.489 1.773.489.803 0 1.39-.25 1.773-.489a2.773 2.773 0 00.516-.415l.012-.013.002-.003a.9.9 0 011.4 1.132L15 15l.703.562-.001.001-.002.002-.002.003-.007.008-.018.022a3.487 3.487 0 01-.245.254c-.16.15-.394.344-.7.536A5.094 5.094 0 0112 17.15a5.094 5.094 0 01-2.727-.762 4.567 4.567 0 01-.7-.537 3.501 3.501 0 01-.246-.253l-.018-.022-.007-.008-.002-.003-.002-.002L9 15l-.703.562a.9.9 0 01.14-1.265zM10.25 10.25a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zM15 11.5A1.25 1.25 0 1015 9a1.25 1.25 0 000 2.5z"
+  })), _path2$5 || (_path2$5 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M14.068 3.405c.559-.56 1.345-.95 2.212-.804.873.147 1.481.776 1.81 1.496.33.723.424 1.61.26 2.5-.165.89-.57 1.689-1.133 2.254-.558.56-1.344.95-2.212.804-.872-.147-1.48-.776-1.81-1.497-.33-.722-.423-1.61-.258-2.5.164-.89.569-1.688 1.131-2.253zm1.215 1.21c-.291.292-.552.765-.66 1.355-.11.59-.034 1.114.132 1.476.166.364.378.492.535.518.161.027.418-.027.713-.323.291-.292.551-.765.66-1.355.11-.59.033-1.115-.132-1.476-.166-.364-.378-.492-.535-.518-.162-.027-.418.027-.713.323zM9.264 11.68c.632-.78 1.499-1.395 2.736-1.395 1.24 0 2.106.621 2.737 1.4.523.646.937 1.468 1.304 2.198l.151.299c.3.588.588 1.046.857 1.474.1.159.197.313.291.469.322.53.66 1.148.66 1.871 0 .587-.143 1.1-.44 1.517-.295.413-.69.661-1.073.809-.66.255-1.413.251-1.82.25l-.095-.001c-.464 0-.833-.065-1.16-.122l-.11-.02A7.038 7.038 0 0012 20.315c-.576 0-.953.056-1.302.116l-.11.02a6.337 6.337 0 01-1.16.12H9.24c-.447-.003-1.216-.025-1.889-.341a2.298 2.298 0 01-.964-.82C6.127 19.01 6 18.534 6 17.996c0-.695.344-1.316.658-1.839.09-.15.182-.3.277-.454.273-.441.568-.917.871-1.519l.14-.277c.37-.742.788-1.575 1.318-2.227zm.211 3.002l-.138.275c-.341.675-.691 1.24-.97 1.692-.088.14-.168.27-.239.389-.33.55-.414.794-.414.958 0 .264.06.401.108.475.05.075.127.145.258.206.298.14.723.175 1.171.179h.178c.308 0 .537-.04.87-.097l.11-.019c.4-.068.881-.14 1.591-.14s1.19.072 1.591.14l.11.02c.334.057.562.096.87.096h.034c.47 0 .918 0 1.265-.133.153-.06.24-.13.293-.205.052-.072.123-.219.123-.522 0-.2-.09-.452-.412-.983-.072-.119-.154-.25-.245-.393-.277-.441-.627-.997-.964-1.66l-.157-.31c-.381-.754-.705-1.394-1.103-1.886C12.988 12.25 12.57 12 12 12c-.57 0-.99.25-1.406.761-.403.497-.73 1.15-1.119 1.922zM11.063 5.659c-.164-.891-.569-1.69-1.131-2.254-.559-.56-1.345-.95-2.212-.804-.873.147-1.481.776-1.81 1.496-.33.723-.424 1.61-.26 2.5.165.89.57 1.689 1.132 2.254.56.56 1.345.95 2.213.804.872-.147 1.48-.776 1.81-1.497.33-.722.423-1.61.258-2.5zM8.004 4.292c.162-.027.418.027.713.323.291.292.552.765.66 1.355.11.59.034 1.114-.132 1.476-.166.364-.378.492-.535.518-.161.027-.418-.027-.713-.323-.291-.292-.551-.765-.66-1.355-.11-.59-.033-1.115.132-1.476.166-.364.378-.492.535-.518zM4.83 8.949c.648.367 1.214.975 1.588 1.723.374.746.518 1.558.398 2.285-.12.73-.526 1.445-1.298 1.78-.757.33-1.565.162-2.205-.201-.648-.367-1.214-.976-1.588-1.723-.374-.747-.518-1.558-.398-2.286.12-.73.526-1.445 1.297-1.78.757-.33 1.566-.161 2.206.202zm-.846 1.49c-.331-.187-.56-.17-.676-.12-.102.044-.237.167-.29.485-.052.32.003.768.24 1.242.236.472.576.815.9.998.332.188.561.172.677.121.101-.044.237-.167.29-.485.052-.32-.003-.768-.24-1.241-.236-.473-.576-.815-.9-1zM21.407 8.773c-.787-.38-1.627-.18-2.271.225-.65.41-1.206 1.08-1.57 1.886-.363.808-.497 1.672-.384 2.437.11.752.49 1.529 1.269 1.905.787.38 1.626.18 2.27-.226.65-.41 1.206-1.079 1.57-1.886.363-.807.497-1.671.384-2.436-.11-.753-.49-1.53-1.268-1.905zm-2.277 2.815c.247-.55.598-.936.92-1.139.327-.206.526-.174.611-.133.094.046.258.2.319.612.059.4-.006.934-.253 1.482-.247.55-.597.937-.92 1.14-.327.206-.525.173-.61.132-.095-.045-.259-.2-.32-.612-.058-.4.006-.934.253-1.482z"
+    d: "M12 2.1c-5.468 0-9.9 4.432-9.9 9.9 0 5.467 4.432 9.9 9.9 9.9s9.9-4.433 9.9-9.9c0-5.468-4.432-9.9-9.9-9.9zM3.9 12a8.1 8.1 0 1116.2 0 8.1 8.1 0 01-16.2 0z"
   })));
 }
 
@@ -20018,14 +20102,16 @@ function _extends$A() {
   return _extends$A.apply(this, arguments);
 }
 
-function SvgEmojiFoodIcon(props) {
+function SvgEmojiAnimalIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$A({
     width: 24,
     height: 24,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$x || (_path$x = /*#__PURE__*/React.createElement("path", {
-    d: "M16.375 5.336c-1.608 0-2.517.346-3.22.817.449-1.026 1.547-2.567 4.095-2.567a.875.875 0 100-1.75c-2.556 0-4.05 1.194-4.854 2.198-.056.068-.104.141-.157.213C11.764 2.588 10.949 1 9.556 1c-.55 0-1.187.248-1.931.836-1.726 1.366-1.462 2.558-.444 3.518C4.658 5.549 1.5 7.413 1.5 12.328c0 4.009 4.34 9.633 7.875 9.633 1.728 0 2.075-.426 2.625-.875.55.45.897.875 2.625.875 3.534 0 7.875-5.616 7.875-9.625 0-5.21-3.548-7-6.125-7zM8.712 3.208c.56-.445.825-.458.844-.458.373.148.853 1.23 1.188 2.673-1.337-.55-2.399-1.183-2.608-1.615.052-.098.21-.312.576-.6zm5.913 17.003c-.945 0-1.059-.096-1.364-.352l-.154-.128a1.739 1.739 0 00-1.108-.395 1.74 1.74 0 00-1.108.395l-.154.128c-.303.255-.417.352-1.362.352-2.461 0-6.125-4.716-6.125-7.883 0-5.095 3.927-5.242 4.375-5.242 1.697 0 2.174.412 2.964 1.094l.282.242a1.745 1.745 0 002.258 0l.282-.242c.79-.682 1.267-1.094 2.964-1.094.448 0 4.375.147 4.375 5.25 0 3.165-3.664 7.875-6.125 7.875z"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.068 3.405c.559-.56 1.345-.95 2.212-.804.873.147 1.481.776 1.81 1.496.33.723.424 1.61.26 2.5-.165.89-.57 1.689-1.133 2.254-.558.56-1.344.95-2.212.804-.872-.147-1.48-.776-1.81-1.497-.33-.722-.423-1.61-.258-2.5.164-.89.569-1.688 1.131-2.253zm1.215 1.21c-.291.292-.552.765-.66 1.355-.11.59-.034 1.114.132 1.476.166.364.378.492.535.518.161.027.418-.027.713-.323.291-.292.551-.765.66-1.355.11-.59.033-1.115-.132-1.476-.166-.364-.378-.492-.535-.518-.162-.027-.418.027-.713.323zM9.264 11.68c.632-.78 1.499-1.395 2.736-1.395 1.24 0 2.106.621 2.737 1.4.523.646.937 1.468 1.304 2.198l.151.299c.3.588.588 1.046.857 1.474.1.159.197.313.291.469.322.53.66 1.148.66 1.871 0 .587-.143 1.1-.44 1.517-.295.413-.69.661-1.073.809-.66.255-1.413.251-1.82.25l-.095-.001c-.464 0-.833-.065-1.16-.122l-.11-.02A7.038 7.038 0 0012 20.315c-.576 0-.953.056-1.302.116l-.11.02a6.337 6.337 0 01-1.16.12H9.24c-.447-.003-1.216-.025-1.889-.341a2.298 2.298 0 01-.964-.82C6.127 19.01 6 18.534 6 17.996c0-.695.344-1.316.658-1.839.09-.15.182-.3.277-.454.273-.441.568-.917.871-1.519l.14-.277c.37-.742.788-1.575 1.318-2.227zm.211 3.002l-.138.275c-.341.675-.691 1.24-.97 1.692-.088.14-.168.27-.239.389-.33.55-.414.794-.414.958 0 .264.06.401.108.475.05.075.127.145.258.206.298.14.723.175 1.171.179h.178c.308 0 .537-.04.87-.097l.11-.019c.4-.068.881-.14 1.591-.14s1.19.072 1.591.14l.11.02c.334.057.562.096.87.096h.034c.47 0 .918 0 1.265-.133.153-.06.24-.13.293-.205.052-.072.123-.219.123-.522 0-.2-.09-.452-.412-.983-.072-.119-.154-.25-.245-.393-.277-.441-.627-.997-.964-1.66l-.157-.31c-.381-.754-.705-1.394-1.103-1.886C12.988 12.25 12.57 12 12 12c-.57 0-.99.25-1.406.761-.403.497-.73 1.15-1.119 1.922zM11.063 5.659c-.164-.891-.569-1.69-1.131-2.254-.559-.56-1.345-.95-2.212-.804-.873.147-1.481.776-1.81 1.496-.33.723-.424 1.61-.26 2.5.165.89.57 1.689 1.132 2.254.56.56 1.345.95 2.213.804.872-.147 1.48-.776 1.81-1.497.33-.722.423-1.61.258-2.5zM8.004 4.292c.162-.027.418.027.713.323.291.292.552.765.66 1.355.11.59.034 1.114-.132 1.476-.166.364-.378.492-.535.518-.161.027-.418-.027-.713-.323-.291-.292-.551-.765-.66-1.355-.11-.59-.033-1.115.132-1.476.166-.364.378-.492.535-.518zM4.83 8.949c.648.367 1.214.975 1.588 1.723.374.746.518 1.558.398 2.285-.12.73-.526 1.445-1.298 1.78-.757.33-1.565.162-2.205-.201-.648-.367-1.214-.976-1.588-1.723-.374-.747-.518-1.558-.398-2.286.12-.73.526-1.445 1.297-1.78.757-.33 1.566-.161 2.206.202zm-.846 1.49c-.331-.187-.56-.17-.676-.12-.102.044-.237.167-.29.485-.052.32.003.768.24 1.242.236.472.576.815.9.998.332.188.561.172.677.121.101-.044.237-.167.29-.485.052-.32-.003-.768-.24-1.241-.236-.473-.576-.815-.9-1zM21.407 8.773c-.787-.38-1.627-.18-2.271.225-.65.41-1.206 1.08-1.57 1.886-.363.808-.497 1.672-.384 2.437.11.752.49 1.529 1.269 1.905.787.38 1.626.18 2.27-.226.65-.41 1.206-1.079 1.57-1.886.363-.807.497-1.671.384-2.436-.11-.753-.49-1.53-1.268-1.905zm-2.277 2.815c.247-.55.598-.936.92-1.139.327-.206.526-.174.611-.133.094.046.258.2.319.612.059.4-.006.934-.253 1.482-.247.55-.597.937-.92 1.14-.327.206-.525.173-.61.132-.095-.045-.259-.2-.32-.612-.058-.4.006-.934.253-1.482z"
   })));
 }
 
@@ -20048,16 +20134,14 @@ function _extends$B() {
   return _extends$B.apply(this, arguments);
 }
 
-function SvgEmojiTravelIcon(props) {
+function SvgEmojiFoodIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$B({
     width: 24,
     height: 24,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$y || (_path$y = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M9.61 3.6H14.39c1.117 0 1.89-.001 2.59.24a4.4 4.4 0 011.643 1.016c.529.518.874 1.209 1.374 2.209l.067.134.84 1.68h1.216a.88.88 0 01.88.88v.312c0 .82-.59 1.462-1.32 1.607v7.148c0 .093 0 .209-.008.312a1.28 1.28 0 01-.131.485c-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.313.009h-.531c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.275 1.275 0 01-.558-.558 1.284 1.284 0 01-.13-.485c-.01-.103-.009-.22-.009-.313v-.265H5.84v.266c0 .093 0 .209-.008.312-.01.12-.036.298-.131.485-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.312.009h-.532c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.276 1.276 0 01-.558-.558 1.282 1.282 0 01-.13-.485 3.969 3.969 0 01-.009-.313v-7.147A1.637 1.637 0 011 10.071V9.76a.88.88 0 01.88-.88h1.216l.84-1.68.067-.135c.5-1 .845-1.691 1.374-2.209A4.4 4.4 0 017.02 3.84c.7-.241 1.472-.24 2.59-.24zM4.095 16.363a9.285 9.285 0 01-.015-.682v-4.143c.063.011.14.025.234.04.283.044.715.102 1.336.158 1.243.113 3.25.224 6.35.224 3.1 0 5.107-.111 6.35-.224a20.77 20.77 0 001.336-.158c.094-.015.171-.029.234-.04v4.03c0 .384 0 .619-.015.795a1.126 1.126 0 01-.03.19.44.44 0 01-.199.2l-.003.002a1.126 1.126 0 01-.19.03c-.176.014-.41.015-.795.015H5.312c-.384 0-.62-.001-.795-.015a1.127 1.127 0 01-.19-.03.44.44 0 01-.202-.202 1.126 1.126 0 01-.03-.19zm15.32-6.524l-.925-1.852c-.594-1.188-.807-1.588-1.098-1.873a2.64 2.64 0 00-.987-.61c-.385-.133-.839-.144-2.166-.144H9.761c-1.328 0-1.781.011-2.166.144a2.64 2.64 0 00-.987.61c-.29.285-.504.685-1.098 1.873l-.926 1.852h.004c.24.038.633.09 1.222.144 1.177.107 3.13.217 6.19.217 3.06 0 5.013-.11 6.19-.217a19.01 19.01 0 001.226-.144zm-1.146 5.194a.88.88 0 10-.218-1.746l-1.76.22a.88.88 0 00.218 1.746l1.76-.22zM4.967 14.05a.88.88 0 00.764.982l1.76.22a.88.88 0 10.218-1.746l-1.76-.22a.88.88 0 00-.982.763z"
+    d: "M16.375 5.336c-1.608 0-2.517.346-3.22.817.449-1.026 1.547-2.567 4.095-2.567a.875.875 0 100-1.75c-2.556 0-4.05 1.194-4.854 2.198-.056.068-.104.141-.157.213C11.764 2.588 10.949 1 9.556 1c-.55 0-1.187.248-1.931.836-1.726 1.366-1.462 2.558-.444 3.518C4.658 5.549 1.5 7.413 1.5 12.328c0 4.009 4.34 9.633 7.875 9.633 1.728 0 2.075-.426 2.625-.875.55.45.897.875 2.625.875 3.534 0 7.875-5.616 7.875-9.625 0-5.21-3.548-7-6.125-7zM8.712 3.208c.56-.445.825-.458.844-.458.373.148.853 1.23 1.188 2.673-1.337-.55-2.399-1.183-2.608-1.615.052-.098.21-.312.576-.6zm5.913 17.003c-.945 0-1.059-.096-1.364-.352l-.154-.128a1.739 1.739 0 00-1.108-.395 1.74 1.74 0 00-1.108.395l-.154.128c-.303.255-.417.352-1.362.352-2.461 0-6.125-4.716-6.125-7.883 0-5.095 3.927-5.242 4.375-5.242 1.697 0 2.174.412 2.964 1.094l.282.242a1.745 1.745 0 002.258 0l.282-.242c.79-.682 1.267-1.094 2.964-1.094.448 0 4.375.147 4.375 5.25 0 3.165-3.664 7.875-6.125 7.875z"
   })));
 }
 
@@ -20080,14 +20164,16 @@ function _extends$C() {
   return _extends$C.apply(this, arguments);
 }
 
-function SvgEmojiObjectIcon(props) {
+function SvgEmojiTravelIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$C({
     width: 24,
     height: 24,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$z || (_path$z = /*#__PURE__*/React.createElement("path", {
-    d: "M10 16h1.19v-2.06a1.007 1.007 0 01-.16-.12L9.32 12.1a1 1 0 111.41-1.41l1.25 1.25 1.32-1.32a.97.97 0 011.38 0c.4.4.4 1.05 0 1.46L13 13.74a.998.998 0 01-.19.15V16H14v-.15a1.002 1.002 0 01.3-.73c2.71-2.58 3.71-4.17 3.71-6.27a5.93 5.93 0 00-6-5.85C8.69 3 6 5.63 6 8.85c0 2.1.98 3.66 3.7 6.26.19.18.3.45.3.72V16zm0 2v1a1 1 0 001 1h2a1 1 0 001-1v-1h-4zm-2-1.75c-2.85-2.77-4-4.7-4-7.4C4 4.51 7.6 1 12 1c4.42 0 8.01 3.51 8.01 7.85 0 2.7-1.17 4.66-4.01 7.42V19a3 3 0 01-3 3h-2a3 3 0 01-3-3v-2.75z"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M9.61 3.6H14.39c1.117 0 1.89-.001 2.59.24a4.4 4.4 0 011.643 1.016c.529.518.874 1.209 1.374 2.209l.067.134.84 1.68h1.216a.88.88 0 01.88.88v.312c0 .82-.59 1.462-1.32 1.607v7.148c0 .093 0 .209-.008.312a1.28 1.28 0 01-.131.485c-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.313.009h-.531c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.275 1.275 0 01-.558-.558 1.284 1.284 0 01-.13-.485c-.01-.103-.009-.22-.009-.313v-.265H5.84v.266c0 .093 0 .209-.008.312-.01.12-.036.298-.131.485-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.312.009h-.532c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.276 1.276 0 01-.558-.558 1.282 1.282 0 01-.13-.485 3.969 3.969 0 01-.009-.313v-7.147A1.637 1.637 0 011 10.071V9.76a.88.88 0 01.88-.88h1.216l.84-1.68.067-.135c.5-1 .845-1.691 1.374-2.209A4.4 4.4 0 017.02 3.84c.7-.241 1.472-.24 2.59-.24zM4.095 16.363a9.285 9.285 0 01-.015-.682v-4.143c.063.011.14.025.234.04.283.044.715.102 1.336.158 1.243.113 3.25.224 6.35.224 3.1 0 5.107-.111 6.35-.224a20.77 20.77 0 001.336-.158c.094-.015.171-.029.234-.04v4.03c0 .384 0 .619-.015.795a1.126 1.126 0 01-.03.19.44.44 0 01-.199.2l-.003.002a1.126 1.126 0 01-.19.03c-.176.014-.41.015-.795.015H5.312c-.384 0-.62-.001-.795-.015a1.127 1.127 0 01-.19-.03.44.44 0 01-.202-.202 1.126 1.126 0 01-.03-.19zm15.32-6.524l-.925-1.852c-.594-1.188-.807-1.588-1.098-1.873a2.64 2.64 0 00-.987-.61c-.385-.133-.839-.144-2.166-.144H9.761c-1.328 0-1.781.011-2.166.144a2.64 2.64 0 00-.987.61c-.29.285-.504.685-1.098 1.873l-.926 1.852h.004c.24.038.633.09 1.222.144 1.177.107 3.13.217 6.19.217 3.06 0 5.013-.11 6.19-.217a19.01 19.01 0 001.226-.144zm-1.146 5.194a.88.88 0 10-.218-1.746l-1.76.22a.88.88 0 00.218 1.746l1.76-.22zM4.967 14.05a.88.88 0 00.764.982l1.76.22a.88.88 0 10.218-1.746l-1.76-.22a.88.88 0 00-.982.763z"
   })));
 }
 
@@ -20110,14 +20196,14 @@ function _extends$D() {
   return _extends$D.apply(this, arguments);
 }
 
-function SvgEmojiSymbolsIcon(props) {
+function SvgEmojiObjectIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$D({
     width: 24,
     height: 24,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$A || (_path$A = /*#__PURE__*/React.createElement("path", {
-    d: "M19.1 4a4.6 4.6 0 011.37.28A4.01 4.01 0 0123 7.9c.03 2.73.03 5.47 0 8.2a4.15 4.15 0 01-.98 2.52A4.02 4.02 0 0119.1 20c-4.73.06-9.47.06-14.2 0a4.572 4.572 0 01-1.37-.28A4.02 4.02 0 011 16.1c-.03-2.73-.03-5.47 0-8.2A4.01 4.01 0 014.9 4c4.73-.06 9.47-.06 14.2 0zM5 6a2.02 2.02 0 00-2 1.95c-.034 2.7-.034 5.4 0 8.1A2.02 2.02 0 004.95 18c4.7.06 9.4.06 14.1 0A2.02 2.02 0 0021 16.05c.034-2.7.034-5.4 0-8.1A2.02 2.02 0 0019.05 6C14.37 5.94 9.68 6 5 6zm2 7.88a1.12 1.12 0 110 2.24 1.12 1.12 0 010-2.24zm4 .03a1.1 1.1 0 110 2.19 1.1 1.1 0 010-2.2v.01zm6.44-3.8l.23-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.42-.15.18 0 .37.07.5.2.23.22.18.53.12.83l-.19.92h.2c.32 0 .45.01.58.08.19.1.31.3.31.56 0 .27-.12.46-.3.56-.14.07-.27.08-.59.08h-.45l-.26 1.27h.33c.32 0 .44.02.58.09.18.1.3.29.3.55 0 .27-.12.47-.3.56-.14.07-.26.08-.58.08h-.58l-.27 1.33c-.06.3-.1.46-.26.62a.6.6 0 01-.42.15.74.74 0 01-.5-.2c-.23-.22-.18-.53-.12-.83l.21-1.07h-1.3l-.27 1.33c-.06.3-.1.46-.27.62-.1.1-.25.15-.42.15a.74.74 0 01-.49-.2c-.24-.22-.18-.53-.12-.83l.2-1.07h-.2c-.31 0-.44 0-.57-.08-.19-.1-.31-.29-.31-.56 0-.26.12-.46.3-.55.14-.07.27-.09.59-.09h.45l.26-1.27h-.33c-.32 0-.44-.01-.58-.08-.18-.1-.3-.3-.3-.56 0-.27.12-.46.3-.56.14-.07.26-.08.58-.08h.58l.24-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.41-.15.18 0 .37.07.5.2.24.22.18.53.12.83l-.18.92h1.31zm-8.14-.2c0-1.33-1.05-2.18-2.36-2.18-.68 0-1.35.23-1.78.6-.45.4-.64 1-.64 1.34 0 .23.1.42.22.53.12.12.3.2.5.2.21 0 .36-.07.5-.18.34-.25.42-.63.55-.77a.85.85 0 01.66-.27c.55 0 .76.27.76.75 0 .3-.24.67-.43.89l-.65.83c-.28.4-.4.7-.38 1.03.02.36.28.67.57.7.24.02.6 0 .79-.38.13-.25.53-.73.73-1.07l.47-.62c.34-.43.49-.8.49-1.4zm2.54-1.17c0-.36-.01-.49-.11-.68-.13-.22-.4-.37-.73-.37-.33 0-.6.15-.73.37-.1.19-.11.32-.11.68v3.45c0 .36 0 .5.11.68.13.22.4.37.73.37.33 0 .6-.15.73-.37.1-.19.11-.32.11-.68V8.74zm5.09 3.92l.25-1.27h-1.3l-.26 1.27h1.31z"
+    d: "M10 16h1.19v-2.06a1.007 1.007 0 01-.16-.12L9.32 12.1a1 1 0 111.41-1.41l1.25 1.25 1.32-1.32a.97.97 0 011.38 0c.4.4.4 1.05 0 1.46L13 13.74a.998.998 0 01-.19.15V16H14v-.15a1.002 1.002 0 01.3-.73c2.71-2.58 3.71-4.17 3.71-6.27a5.93 5.93 0 00-6-5.85C8.69 3 6 5.63 6 8.85c0 2.1.98 3.66 3.7 6.26.19.18.3.45.3.72V16zm0 2v1a1 1 0 001 1h2a1 1 0 001-1v-1h-4zm-2-1.75c-2.85-2.77-4-4.7-4-7.4C4 4.51 7.6 1 12 1c4.42 0 8.01 3.51 8.01 7.85 0 2.7-1.17 4.66-4.01 7.42V19a3 3 0 01-3 3h-2a3 3 0 01-3-3v-2.75z"
   })));
 }
 
@@ -20140,13 +20226,43 @@ function _extends$E() {
   return _extends$E.apply(this, arguments);
 }
 
-function SvgEmojiFlagicon(props) {
+function SvgEmojiSymbolsIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$E({
     width: 24,
     height: 24,
     fill: "currentColor",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$B || (_path$B = /*#__PURE__*/React.createElement("path", {
+    d: "M19.1 4a4.6 4.6 0 011.37.28A4.01 4.01 0 0123 7.9c.03 2.73.03 5.47 0 8.2a4.15 4.15 0 01-.98 2.52A4.02 4.02 0 0119.1 20c-4.73.06-9.47.06-14.2 0a4.572 4.572 0 01-1.37-.28A4.02 4.02 0 011 16.1c-.03-2.73-.03-5.47 0-8.2A4.01 4.01 0 014.9 4c4.73-.06 9.47-.06 14.2 0zM5 6a2.02 2.02 0 00-2 1.95c-.034 2.7-.034 5.4 0 8.1A2.02 2.02 0 004.95 18c4.7.06 9.4.06 14.1 0A2.02 2.02 0 0021 16.05c.034-2.7.034-5.4 0-8.1A2.02 2.02 0 0019.05 6C14.37 5.94 9.68 6 5 6zm2 7.88a1.12 1.12 0 110 2.24 1.12 1.12 0 010-2.24zm4 .03a1.1 1.1 0 110 2.19 1.1 1.1 0 010-2.2v.01zm6.44-3.8l.23-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.42-.15.18 0 .37.07.5.2.23.22.18.53.12.83l-.19.92h.2c.32 0 .45.01.58.08.19.1.31.3.31.56 0 .27-.12.46-.3.56-.14.07-.27.08-.59.08h-.45l-.26 1.27h.33c.32 0 .44.02.58.09.18.1.3.29.3.55 0 .27-.12.47-.3.56-.14.07-.26.08-.58.08h-.58l-.27 1.33c-.06.3-.1.46-.26.62a.6.6 0 01-.42.15.74.74 0 01-.5-.2c-.23-.22-.18-.53-.12-.83l.21-1.07h-1.3l-.27 1.33c-.06.3-.1.46-.27.62-.1.1-.25.15-.42.15a.74.74 0 01-.49-.2c-.24-.22-.18-.53-.12-.83l.2-1.07h-.2c-.31 0-.44 0-.57-.08-.19-.1-.31-.29-.31-.56 0-.26.12-.46.3-.55.14-.07.27-.09.59-.09h.45l.26-1.27h-.33c-.32 0-.44-.01-.58-.08-.18-.1-.3-.3-.3-.56 0-.27.12-.46.3-.56.14-.07.26-.08.58-.08h.58l.24-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.41-.15.18 0 .37.07.5.2.24.22.18.53.12.83l-.18.92h1.31zm-8.14-.2c0-1.33-1.05-2.18-2.36-2.18-.68 0-1.35.23-1.78.6-.45.4-.64 1-.64 1.34 0 .23.1.42.22.53.12.12.3.2.5.2.21 0 .36-.07.5-.18.34-.25.42-.63.55-.77a.85.85 0 01.66-.27c.55 0 .76.27.76.75 0 .3-.24.67-.43.89l-.65.83c-.28.4-.4.7-.38 1.03.02.36.28.67.57.7.24.02.6 0 .79-.38.13-.25.53-.73.73-1.07l.47-.62c.34-.43.49-.8.49-1.4zm2.54-1.17c0-.36-.01-.49-.11-.68-.13-.22-.4-.37-.73-.37-.33 0-.6.15-.73.37-.1.19-.11.32-.11.68v3.45c0 .36 0 .5.11.68.13.22.4.37.73.37.33 0 .6-.15.73-.37.1-.19.11-.32.11-.68V8.74zm5.09 3.92l.25-1.27h-1.3l-.26 1.27h1.31z"
+  })));
+}
+
+var _path$C;
+
+function _extends$F() {
+  _extends$F = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$F.apply(this, arguments);
+}
+
+function SvgEmojiFlagicon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$F({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$C || (_path$C = /*#__PURE__*/React.createElement("path", {
     d: "M6.63 3.23c2.13 1.12 3.18.99 5.4-.13l.03-.03c2.8-1.4 4.52-1.57 7.43.08a1 1 0 01.51.87v9.23a1 1 0 01-1.5.87c-2.69-1.52-4.13-1.43-6.62-.22-.33.158-.66.315-.99.47-1.4.62-2.6.81-3.89.43V20a1 1 0 11-2 0V4a1 1 0 011.63-.77zM7 12.66c1.05.5 1.87.42 3.08-.12.314-.137.624-.283.93-.44 2.56-1.24 4.46-1.53 6.99-.46V4.62c-1.9-.98-2.96-.81-5.03.24l-.04.02c-2.3 1.16-3.85 1.5-5.93.71v7.07z"
   })));
 }
@@ -20592,6 +20708,7 @@ var _templateObject$j, _templateObject2$h, _templateObject3$d, _templateObject4$
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
       channel = _ref.channel,
+      handleResendMessage = _ref.handleResendMessage,
       handleOpenDeleteMessage = _ref.handleOpenDeleteMessage,
       handleDeletePendingMessage = _ref.handleDeletePendingMessage,
       handleOpenForwardMessage = _ref.handleOpenForwardMessage,
@@ -20683,7 +20800,15 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditSquare, null)), !isThreadMessage && React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
+  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditSquare, null)), messageStatus === MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+    iconColor: messageActionIconsColor,
+    hoverIconColor: colors.primary,
+    onClick: function onClick() {
+      return handleResendMessage();
+    }
+  }, React__default.createElement(ItemNote, {
+    direction: 'top'
+  }, " Resend Message "), React__default.createElement(SvgResend, null)), !isThreadMessage && React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && (isDirectChannel ? channel.peer.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
     order: replyIconOrder || 2,
     iconColor: messageActionIconsColor,
     hoverIconColor: colors.primary,
@@ -20760,39 +20885,7 @@ var EmojiContainer = styled__default.div(_templateObject4$a || (_templateObject4
   return props.rtlDirection ? '' : '-84px';
 });
 
-var _path$C;
-
-function _extends$F() {
-  _extends$F = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$F.apply(this, arguments);
-}
-
-function SvgCancel(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$F({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 25 25",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$C || (_path$C = /*#__PURE__*/React.createElement("path", {
-    d: "M7.536 6.264a.9.9 0 00-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 001.272 1.272L12 13.273l4.464 4.463a.9.9 0 101.272-1.272L13.273 12l4.463-4.464a.9.9 0 10-1.272-1.272L12 10.727 7.536 6.264z",
-    fill: "#fff"
-  })));
-}
-
-var _path$D, _path2$6, _path3$3;
+var _path$D;
 
 function _extends$G() {
   _extends$G = Object.assign ? Object.assign.bind() : function (target) {
@@ -20811,13 +20904,45 @@ function _extends$G() {
   return _extends$G.apply(this, arguments);
 }
 
-function SvgFileIcon(props) {
+function SvgCancel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$G({
+    width: 24,
+    height: 24,
+    viewBox: "0 0 25 25",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$D || (_path$D = /*#__PURE__*/React.createElement("path", {
+    d: "M7.536 6.264a.9.9 0 00-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 001.272 1.272L12 13.273l4.464 4.463a.9.9 0 101.272-1.272L13.273 12l4.463-4.464a.9.9 0 10-1.272-1.272L12 10.727 7.536 6.264z",
+    fill: "#fff"
+  })));
+}
+
+var _path$E, _path2$6, _path3$3;
+
+function _extends$H() {
+  _extends$H = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$H.apply(this, arguments);
+}
+
+function SvgFileIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$H({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$D || (_path$D = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$E || (_path$E = /*#__PURE__*/React.createElement("path", {
     d: "M19.5 3H9a3 3 0 00-3 3v24a3 3 0 003 3h18a3 3 0 003-3V13.5L19.5 3z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -20837,48 +20962,7 @@ function SvgFileIcon(props) {
   })));
 }
 
-var _circle, _path$E;
-
-function _extends$H() {
-  _extends$H = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$H.apply(this, arguments);
-}
-
-function SvgDeleteUpload(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$H({
-    width: 20,
-    height: 20,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle || (_circle = /*#__PURE__*/React.createElement("circle", {
-    cx: 10,
-    cy: 10,
-    r: 9.3,
-    fill: "#A3A5B0",
-    stroke: "#fff",
-    strokeWidth: 1.4
-  })), _path$E || (_path$E = /*#__PURE__*/React.createElement("path", {
-    d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
-    stroke: "#fff",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _circle$1, _path$F;
+var _circle, _path$F;
 
 function _extends$I() {
   _extends$I = Object.assign ? Object.assign.bind() : function (target) {
@@ -20897,27 +20981,29 @@ function _extends$I() {
   return _extends$I.apply(this, arguments);
 }
 
-function SvgDeleteFailed(props) {
+function SvgDeleteUpload(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$I({
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$1 || (_circle$1 = /*#__PURE__*/React.createElement("circle", {
-    cx: 9,
-    cy: 9,
-    r: 8.5,
-    fill: "#fff",
-    stroke: "#ED4D60"
+  }, props), _circle || (_circle = /*#__PURE__*/React.createElement("circle", {
+    cx: 10,
+    cy: 10,
+    r: 9.3,
+    fill: "#A3A5B0",
+    stroke: "#fff",
+    strokeWidth: 1.4
   })), _path$F || (_path$F = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M13.014 4.994a.634.634 0 00-.899 0L9 8.101 5.885 4.987a.634.634 0 10-.899.898l3.116 3.116-3.116 3.115a.634.634 0 10.899.898L9 9.9l3.115 3.115a.634.634 0 10.899-.898L9.898 9.001l3.116-3.116a.638.638 0 000-.891z",
-    fill: "#ED4D60"
+    d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
+    stroke: "#fff",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$G;
+var _circle$1, _path$G;
 
 function _extends$J() {
   _extends$J = Object.assign ? Object.assign.bind() : function (target) {
@@ -20936,18 +21022,23 @@ function _extends$J() {
   return _extends$J.apply(this, arguments);
 }
 
-function SvgUpload(props) {
+function SvgDeleteFailed(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$J({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 18,
+    height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$G || (_path$G = /*#__PURE__*/React.createElement("path", {
+  }, props), _circle$1 || (_circle$1 = /*#__PURE__*/React.createElement("circle", {
+    cx: 9,
+    cy: 9,
+    r: 8.5,
+    fill: "#fff",
+    stroke: "#ED4D60"
+  })), _path$G || (_path$G = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
-    fill: "#fff"
+    d: "M13.014 4.994a.634.634 0 00-.899 0L9 8.101 5.885 4.987a.634.634 0 10-.899.898l3.116 3.116-3.116 3.115a.634.634 0 10.899.898L9 9.9l3.115 3.115a.634.634 0 10.899-.898L9.898 9.001l3.116-3.116a.638.638 0 000-.891z",
+    fill: "#ED4D60"
   })));
 }
 
@@ -20970,7 +21061,7 @@ function _extends$K() {
   return _extends$K.apply(this, arguments);
 }
 
-function SvgDownload(props) {
+function SvgUpload(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$K({
     width: 32,
     height: 32,
@@ -20978,12 +21069,14 @@ function SvgDownload(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$H || (_path$H = /*#__PURE__*/React.createElement("path", {
-    d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
     fill: "#fff"
   })));
 }
 
-var _circle$2, _path$I;
+var _path$I;
 
 function _extends$L() {
   _extends$L = Object.assign ? Object.assign.bind() : function (target) {
@@ -21002,8 +21095,40 @@ function _extends$L() {
   return _extends$L.apply(this, arguments);
 }
 
-function SvgPlayVideo(props) {
+function SvgDownload(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$L({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$I || (_path$I = /*#__PURE__*/React.createElement("path", {
+    d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
+    fill: "#fff"
+  })));
+}
+
+var _circle$2, _path$J;
+
+function _extends$M() {
+  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$M.apply(this, arguments);
+}
+
+function SvgPlayVideo(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$M({
     width: 56,
     height: 56,
     fill: "none",
@@ -21014,7 +21139,7 @@ function SvgPlayVideo(props) {
     r: 28,
     fill: "#17191C",
     fillOpacity: 0.4
-  })), _path$I || (_path$I = /*#__PURE__*/React.createElement("path", {
+  })), _path$J || (_path$J = /*#__PURE__*/React.createElement("path", {
     d: "M38.048 26.262c1.27.767 1.27 2.706 0 3.473l-13.224 7.996c-1.258.76-2.824-.202-2.824-1.737V20.003c0-1.535 1.566-2.498 2.824-1.737l13.224 7.996z",
     fill: "#fff"
   })));
@@ -27176,44 +27301,7 @@ module.exports = debounce;
 
 var WaveSurfer = unwrapExports(wavesurfer);
 
-var _circle$3, _path$J;
-
-function _extends$M() {
-  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$M.apply(this, arguments);
-}
-
-function SvgPlay(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$M({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 33 33",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$3 || (_circle$3 = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "#0DBD8B"
-  })), _path$J || (_path$J = /*#__PURE__*/React.createElement("path", {
-    d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
-    fill: "#fff"
-  })));
-}
-
-var _circle$4, _path$K;
+var _circle$3, _path$K;
 
 function _extends$N() {
   _extends$N = Object.assign ? Object.assign.bind() : function (target) {
@@ -27232,8 +27320,45 @@ function _extends$N() {
   return _extends$N.apply(this, arguments);
 }
 
-function SvgPause(props) {
+function SvgPlay(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$N({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 33 33",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$3 || (_circle$3 = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "#0DBD8B"
+  })), _path$K || (_path$K = /*#__PURE__*/React.createElement("path", {
+    d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
+    fill: "#fff"
+  })));
+}
+
+var _circle$4, _path$L;
+
+function _extends$O() {
+  _extends$O = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$O.apply(this, arguments);
+}
+
+function SvgPause(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$O({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -27244,7 +27369,7 @@ function SvgPause(props) {
     cy: 16,
     r: 16,
     fill: "#0DBD8B"
-  })), _path$K || (_path$K = /*#__PURE__*/React.createElement("path", {
+  })), _path$L || (_path$L = /*#__PURE__*/React.createElement("path", {
     d: "M13.721 10.375c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12h-1.067c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067zm5.625 0c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12H18.28c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067z",
     fill: "#fff"
   })));
@@ -27556,7 +27681,7 @@ var Attachment = function Attachment(_ref) {
   React.useEffect(function () {
     setAttachmentUrl('');
 
-    if (attachment.type === attachmentTypes.video || attachment.type === attachmentTypes.image) {
+    if (!(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
         if (attachment.type === 'image' && !isPrevious) {
           if (cachedUrl) {
@@ -27733,7 +27858,7 @@ var Attachment = function Attachment(_ref) {
   }, React__default.createElement(AttachmentName, {
     color: selectedFileAttachmentsTitleColor,
     ref: fileNameRef
-  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, fileNameMaxLength || isPrevious ? 18 : 32)), React__default.createElement(AttachmentSize, {
+  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, fileNameMaxLength || isPrevious ? 18 : 30)), React__default.createElement(AttachmentSize, {
     color: selectedFileAttachmentsSizeColor
   }, (attachment.data && attachment.data.size || attachment.fileSize) && bytesToSize(isPrevious ? attachment.data.size : +attachment.fileSize), React__default.createElement("span", null, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.FAIL && 'Upload error'))), isPrevious && React__default.createElement(RemoveChosenFile, {
     onClick: function onClick() {
@@ -28127,7 +28252,7 @@ function ForwardMessagePopup(_ref) {
       size: 40,
       textSize: 12,
       setDefaultAvatar: isDirectChannel
-    }), React__default.createElement(ChannelInfo$2, null, React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), React__default.createElement(ChannelMembers, null, isDirectChannel ? channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), React__default.createElement(CustomCheckbox, {
+    }), React__default.createElement(ChannelInfo$2, null, React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), React__default.createElement(ChannelMembers, null, isDirectChannel ? (hideUserPresence(channel.peer) ? '' : channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), React__default.createElement(CustomCheckbox, {
       index: channel.id,
       state: isSelected,
       onChange: function onChange(e) {
@@ -28303,6 +28428,21 @@ var Message = function Message(_ref) {
     dispatch(deleteMessageAC(channel.id, message.id, deleteOption));
   };
 
+  var handleResendMessage = function handleResendMessage() {
+    var messageToResend = _extends({}, message);
+
+    if (message.attachments && message.attachments.length) {
+      messageToResend.attachments = message.attachments.map(function (att) {
+        var pendingAttachment = getPendingAttachment(att.attachmentId);
+        return _extends({}, att, {
+          data: new File([pendingAttachment], att.data.name)
+        });
+      });
+    }
+
+    dispatch(resendMessageAC(messageToResend, channel.id, connectionStatus));
+  };
+
   var handleRemoveFailedAttachment = function handleRemoveFailedAttachment(attachmentId) {
     console.log('remove attachment .. ', attachmentId);
   };
@@ -28313,6 +28453,7 @@ var Message = function Message(_ref) {
       message.attachments.forEach(function (att) {
         if (customUploader) {
           cancelUpload(att.attachmentId);
+          deletePendingAttachment(att.attachmentId);
         }
       });
     }
@@ -28362,6 +28503,7 @@ var Message = function Message(_ref) {
         handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
         handleDeletePendingMessage: handleDeletePendingMessage,
         handleOpenForwardMessage: handleToggleForwardMessagePopup,
+        handleResendMessage: handleResendMessage,
         handleReplyMessage: handleReplyMessage,
         handleReportMessage: handleToggleReportPopupOpen,
         handleAddEmoji: handleReactionAddDelete,
@@ -28655,39 +28797,6 @@ var MessageItem = styled__default.div(_templateObject19$1 || (_templateObject19$
   return props.hoverBackground || '';
 }, HiddenMessageTime, MessageStatusAndTime, MessageStatus);
 
-var _path$L;
-
-function _extends$O() {
-  _extends$O = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$O.apply(this, arguments);
-}
-
-function SvgSliderButtonRight(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$O({
-    width: 28,
-    height: 28,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$L || (_path$L = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
-    fill: "#fff"
-  })));
-}
-
 var _path$M;
 
 function _extends$P() {
@@ -28707,16 +28816,17 @@ function _extends$P() {
   return _extends$P.apply(this, arguments);
 }
 
-function SvgSliderButtonLeft(props) {
+function SvgSliderButtonRight(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$P({
     width: 28,
     height: 28,
+    viewBox: "0 0 28.01 28.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$M || (_path$M = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
+    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
     fill: "#fff"
   })));
 }
@@ -28740,14 +28850,17 @@ function _extends$Q() {
   return _extends$Q.apply(this, arguments);
 }
 
-function SvgVideoPlayerPlay(props) {
+function SvgSliderButtonLeft(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$Q({
-    width: 20,
-    height: 20,
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$N || (_path$N = /*#__PURE__*/React.createElement("path", {
-    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
     fill: "#fff"
   })));
 }
@@ -28771,14 +28884,14 @@ function _extends$R() {
   return _extends$R.apply(this, arguments);
 }
 
-function SvgVideoPlayerPause(props) {
+function SvgVideoPlayerPlay(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$R({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$O || (_path$O = /*#__PURE__*/React.createElement("path", {
-    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
     fill: "#fff"
   })));
 }
@@ -28802,14 +28915,14 @@ function _extends$S() {
   return _extends$S.apply(this, arguments);
 }
 
-function SvgVolume(props) {
+function SvgVideoPlayerPause(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$S({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$P || (_path$P = /*#__PURE__*/React.createElement("path", {
-    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
     fill: "#fff"
   })));
 }
@@ -28833,14 +28946,14 @@ function _extends$T() {
   return _extends$T.apply(this, arguments);
 }
 
-function SvgVolumeMute(props) {
+function SvgVolume(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$T({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Q || (_path$Q = /*#__PURE__*/React.createElement("path", {
-    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
+    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
     fill: "#fff"
   })));
 }
@@ -28864,16 +28977,14 @@ function _extends$U() {
   return _extends$U.apply(this, arguments);
 }
 
-function SvgFullscreen(props) {
+function SvgVolumeMute(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$U({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$R || (_path$R = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
+    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
     fill: "#fff"
   })));
 }
@@ -28897,13 +29008,46 @@ function _extends$V() {
   return _extends$V.apply(this, arguments);
 }
 
-function SvgFullscreenExit(props) {
+function SvgFullscreen(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$V({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$S || (_path$S = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
+    fill: "#fff"
+  })));
+}
+
+var _path$T;
+
+function _extends$W() {
+  _extends$W = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$W.apply(this, arguments);
+}
+
+function SvgFullscreenExit(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$W({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.438 11.781c0-.466.377-.844.843-.844H8.22c.466 0 .844.378.844.844v3.938a.844.844 0 01-1.688 0v-1.9L3.94 17.252a.844.844 0 11-1.193-1.193l3.435-3.435h-1.9a.844.844 0 01-.844-.844zM17.253 2.747c.33.33.33.864 0 1.193l-3.435 3.435h1.899a.844.844 0 110 1.688h-3.936a.844.844 0 01-.844-.844V4.28a.844.844 0 011.688 0v1.9l3.435-3.434a.844.844 0 011.193 0z",
@@ -29132,15 +29276,15 @@ var VideoPlayer = function VideoPlayer(_ref) {
 var Component$1 = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n"])), function (props) {
   return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
 });
-var PlayPauseWrapper = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n"])));
-var ControlsContainer = styled__default.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n"])));
-var ControlTime = styled__default.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n"])), colors.white);
+var PlayPauseWrapper = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n"])));
+var ControlsContainer = styled__default.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 16px);\n    padding: 0 8px;\n  }\n"])));
+var ControlTime = styled__default.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n"])), colors.white);
 var ProgressBlock = styled__default.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
 var VolumeController = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
-var VolumeIconWrapper = styled__default.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n"])));
-var VolumeSlide = styled__default.input(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
+var VolumeIconWrapper = styled__default.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n"])));
+var VolumeSlide = styled__default.input(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
 var Progress = styled__default.input(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
-var FullScreenWrapper = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n"])));
+var FullScreenWrapper = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n"])));
 
 var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$2;
 
@@ -29414,20 +29558,24 @@ var FileSize = styled__default.span(_templateObject8$9 || (_templateObject8$9 = 
 var UserName = styled__default.h4(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled__default.span(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  img,\n  video {\n    max-width: calc(100vw - 300px);\n    max-height: calc(100vh - 200px);\n  }\n"])));
+var CarouselItem = styled__default.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    //max-height: calc(100vh - 200px);\n    max-width: 100%;\n    max-height: 100%;\n  }\n"])));
 var UploadCont = styled__default.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var ArrowButton = styled__default.button(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
+var ArrowButton = styled__default.button(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n  visibility: ", ";\n  @media (max-width: 768px) {\n    min-width: 36px;\n    max-width: 36px;\n    height: 36px;\n    margin-right: ", ";\n    margin-left: ", ";\n\n    & > svg {\n      width: 22px;\n      height: 22px;\n    }\n  }\n  @media (max-width: 450px) {\n    min-width: 32px;\n    max-width: 32px;\n    height: 32px;\n\n    & > svg {\n      width: 20px;\n      height: 20px;\n    }\n  }\n"])), function (props) {
   return !props.leftButton && '24px';
 }, function (props) {
   return props.leftButton && '24px';
 }, colors.gray6, function (props) {
   return props.hide && 'hidden';
+}, function (props) {
+  return !props.leftButton && '4px';
+}, function (props) {
+  return props.leftButton && '4px';
 });
 
-var _path$T;
+var _path$U;
 
-function _extends$W() {
-  _extends$W = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$X() {
+  _extends$X = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -29440,17 +29588,17 @@ function _extends$W() {
 
     return target;
   };
-  return _extends$W.apply(this, arguments);
+  return _extends$X.apply(this, arguments);
 }
 
 function SvgChoseMedia(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$W({
+  return /*#__PURE__*/React.createElement("svg", _extends$X({
     width: 18,
     height: 18,
     viewBox: "0 0 19 19",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
@@ -30174,43 +30322,7 @@ var DropAttachmentArea = styled__default.div(_templateObject7$c || (_templateObj
 var MessageWrapper = styled__default.div(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
 var NoMessagesContainer = styled__default.div(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray6);
 
-var _circle$5, _path$U;
-
-function _extends$X() {
-  _extends$X = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$X.apply(this, arguments);
-}
-
-function SvgSend(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$X({
-    width: 32,
-    height: 32,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
-  })));
-}
-
-var _path$V;
+var _circle$5, _path$V;
 
 function _extends$Y() {
   _extends$Y = Object.assign ? Object.assign.bind() : function (target) {
@@ -30229,15 +30341,20 @@ function _extends$Y() {
   return _extends$Y.apply(this, arguments);
 }
 
-function SvgEye(props) {
+function SvgSend(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$Y({
-    width: 25,
-    height: 24,
+    width: 32,
+    height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$V || (_path$V = /*#__PURE__*/React.createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
-    fill: "CurrentColor"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$V || (_path$V = /*#__PURE__*/React.createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
   })));
 }
 
@@ -30260,15 +30377,14 @@ function _extends$Z() {
   return _extends$Z.apply(this, arguments);
 }
 
-function SvgEdit(props) {
+function SvgEye(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$Z({
-    width: 24,
+    width: 25,
     height: 24,
-    viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$W || (_path$W = /*#__PURE__*/React.createElement("path", {
-    d: "M13.92 6.768l3.312 3.312-7.934 7.925a6.229 6.229 0 01-2.586 1.554l-2.71.827a.312.312 0 01-.388-.389l.827-2.71a6.231 6.231 0 011.553-2.586l7.926-7.933zm4.746-2.758l1.324 1.324a1.4 1.4 0 01.096 1.874l-.096.106-1.414 1.41-3.3-3.3 1.41-1.414a1.4 1.4 0 011.98 0z",
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
     fill: "CurrentColor"
   })));
 }
@@ -30292,15 +30408,16 @@ function _extends$_() {
   return _extends$_.apply(this, arguments);
 }
 
-function SvgAttachment(props) {
+function SvgEdit(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$_({
     width: 24,
     height: 24,
+    viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$X || (_path$X = /*#__PURE__*/React.createElement("path", {
-    d: "M12.162 9.34a.857.857 0 011.212 1.213l-3.576 3.576a1.29 1.29 0 000 1.818 1.29 1.29 0 001.818 0l6.667-6.667c1.373-1.373 1.298-3.55 0-4.849-1.298-1.297-3.476-1.372-4.849 0l-6.667 6.667c-2.186 2.187-2.145 5.734 0 7.88 2.146 2.145 5.693 2.186 7.88 0l3.575-3.576a.857.857 0 111.213 1.212l-3.576 3.576c-2.862 2.862-7.495 2.809-10.304 0-2.809-2.81-2.862-7.442 0-10.304l6.667-6.667c2.062-2.061 5.324-1.949 7.273 0 1.95 1.95 2.062 5.212 0 7.273l-6.667 6.667c-1.137 1.138-3.04 1.203-4.242 0-1.203-1.203-1.138-3.105 0-4.242L12.16 9.34z",
-    fill: "currentColor"
+    d: "M13.92 6.768l3.312 3.312-7.934 7.925a6.229 6.229 0 01-2.586 1.554l-2.71.827a.312.312 0 01-.388-.389l.827-2.71a6.231 6.231 0 011.553-2.586l7.926-7.933zm4.746-2.758l1.324 1.324a1.4 1.4 0 01.096 1.874l-.096.106-1.414 1.41-3.3-3.3 1.41-1.414a1.4 1.4 0 011.98 0z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -30323,13 +30440,44 @@ function _extends$$() {
   return _extends$$.apply(this, arguments);
 }
 
-function SvgErrorCircle(props) {
+function SvgAttachment(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$$({
-    width: 25,
+    width: 24,
     height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Y || (_path$Y = /*#__PURE__*/React.createElement("path", {
+    d: "M12.162 9.34a.857.857 0 011.212 1.213l-3.576 3.576a1.29 1.29 0 000 1.818 1.29 1.29 0 001.818 0l6.667-6.667c1.373-1.373 1.298-3.55 0-4.849-1.298-1.297-3.476-1.372-4.849 0l-6.667 6.667c-2.186 2.187-2.145 5.734 0 7.88 2.146 2.145 5.693 2.186 7.88 0l3.575-3.576a.857.857 0 111.213 1.212l-3.576 3.576c-2.862 2.862-7.495 2.809-10.304 0-2.809-2.81-2.862-7.442 0-10.304l6.667-6.667c2.062-2.061 5.324-1.949 7.273 0 1.95 1.95 2.062 5.212 0 7.273l-6.667 6.667c-1.137 1.138-3.04 1.203-4.242 0-1.203-1.203-1.138-3.105 0-4.242L12.16 9.34z",
+    fill: "currentColor"
+  })));
+}
+
+var _path$Z;
+
+function _extends$10() {
+  _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$10.apply(this, arguments);
+}
+
+function SvgErrorCircle(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$10({
+    width: 25,
+    height: 24,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$Z || (_path$Z = /*#__PURE__*/React.createElement("path", {
     d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
     fill: "#FFB73D"
   })));
@@ -30340,6 +30488,8 @@ var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
   var handleAttachmentSelected = _ref.handleAttachmentSelected,
+      _ref$disabled = _ref.disabled,
+      disabled = _ref$disabled === void 0 ? false : _ref$disabled,
       emojiIcoOrder = _ref.emojiIcoOrder,
       attachmentIcoOrder = _ref.attachmentIcoOrder,
       sendIconOrder = _ref.sendIconOrder,
@@ -30988,7 +31138,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     border: border,
     borderRadius: borderRadius,
     ref: messageContRef
-  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), " ", isDeletedUserChat ? 'This user has been deleted.' : 'You blocked this user.') : !activeChannel.role ? React__default.createElement(JoinChannelCont, {
+  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disabled ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disabled ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.role ? React__default.createElement(JoinChannelCont, {
     onClick: handleJoinToChannel,
     color: colors.primary
   }, "Join") : (activeChannel.type === CHANNEL_TYPE.PUBLIC ? !(activeChannel.role === 'admin' || activeChannel.role === 'owner') : !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
@@ -31155,40 +31305,6 @@ var ReadOnlyCont = styled__default.div(_templateObject26$1 || (_templateObject26
 var ReplyMessageCont = styled__default.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
 var ReplyIconWrapper = styled__default.span(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), colors.primary, colors.white);
 
-var _path$Z;
-
-function _extends$10() {
-  _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$10.apply(this, arguments);
-}
-
-function SvgBottom(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$10({
-    width: 12,
-    height: 7,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$Z || (_path$Z = /*#__PURE__*/React.createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
 var _path$_;
 
 function _extends$11() {
@@ -31208,22 +31324,22 @@ function _extends$11() {
   return _extends$11.apply(this, arguments);
 }
 
-function SvgNotificationsOff2(props) {
+function SvgBottom(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$11({
-    width: 16,
-    height: 16,
+    width: 12,
+    height: 7,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$_ || (_path$_ = /*#__PURE__*/React.createElement("path", {
-    d: "M9.259 14.3a1.454 1.454 0 01-2.517 0M12.821 9.007a13.013 13.013 0 01-.458-3.636M3.826 4.105c-.126.41-.19.837-.189 1.266 0 5.09-2.182 6.545-2.182 6.545h10.182M12.365 5.37a4.363 4.363 0 00-6.786-3.636M1 1l14 14",
-    stroke: "CurrentColor",
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
   })));
 }
 
-var _path$$, _circle$6;
+var _path$$;
 
 function _extends$12() {
   _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31242,27 +31358,22 @@ function _extends$12() {
   return _extends$12.apply(this, arguments);
 }
 
-function SvgMarkAsUnRead(props) {
+function SvgNotificationsOff2(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$12({
-    width: 20,
-    height: 20,
+    width: 16,
+    height: 16,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$$ || (_path$$ = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M17.778 8.516a3.958 3.958 0 01-5.117-5.982 7.847 7.847 0 00-2.631-.451c-4.356 0-7.887 3.544-7.887 7.917 0 1.359.341 2.638.942 3.755l-.967 3.118a.732.732 0 00.912.919l3.043-.943a7.827 7.827 0 003.957 1.067c4.356 0 7.887-3.544 7.887-7.916 0-.507-.048-1.003-.139-1.484z",
-    fill: "CurrentColor"
-  })), _circle$6 || (_circle$6 = /*#__PURE__*/React.createElement("circle", {
-    cx: 15.542,
-    cy: 5.25,
-    r: 1.875,
-    fill: "CurrentColor",
-    stroke: "CurrentColor"
+    d: "M9.259 14.3a1.454 1.454 0 01-2.517 0M12.821 9.007a13.013 13.013 0 01-.458-3.636M3.826 4.105c-.126.41-.19.837-.189 1.266 0 5.09-2.182 6.545-2.182 6.545h10.182M12.365 5.37a4.363 4.363 0 00-6.786-3.636M1 1l14 14",
+    stroke: "CurrentColor",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$10;
+var _path$10, _circle$6;
 
 function _extends$13() {
   _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31281,7 +31392,7 @@ function _extends$13() {
   return _extends$13.apply(this, arguments);
 }
 
-function SvgMarkAsRead(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$13({
     width: 20,
     height: 20,
@@ -31290,8 +31401,14 @@ function SvgMarkAsRead(props) {
   }, props), _path$10 || (_path$10 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M17.917 10c0 4.372-3.531 7.916-7.887 7.916a7.827 7.827 0 01-3.957-1.067l-3.043.943a.732.732 0 01-.913-.919l.968-3.118A7.904 7.904 0 012.143 10c0-4.373 3.531-7.917 7.887-7.917S17.917 5.627 17.917 10z",
+    d: "M17.778 8.516a3.958 3.958 0 01-5.117-5.982 7.847 7.847 0 00-2.631-.451c-4.356 0-7.887 3.544-7.887 7.917 0 1.359.341 2.638.942 3.755l-.967 3.118a.732.732 0 00.912.919l3.043-.943a7.827 7.827 0 003.957 1.067c4.356 0 7.887-3.544 7.887-7.916 0-.507-.048-1.003-.139-1.484z",
     fill: "CurrentColor"
+  })), _circle$6 || (_circle$6 = /*#__PURE__*/React.createElement("circle", {
+    cx: 15.542,
+    cy: 5.25,
+    r: 1.875,
+    fill: "CurrentColor",
+    stroke: "CurrentColor"
   })));
 }
 
@@ -31314,14 +31431,16 @@ function _extends$14() {
   return _extends$14.apply(this, arguments);
 }
 
-function SvgDeleteChannel(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$14({
     width: 20,
-    height: 21,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M17.917 10c0 4.372-3.531 7.916-7.887 7.916a7.827 7.827 0 01-3.957-1.067l-3.043.943a.732.732 0 01-.913-.919l.968-3.118A7.904 7.904 0 012.143 10c0-4.373 3.531-7.917 7.887-7.917S17.917 5.627 17.917 10z",
     fill: "CurrentColor"
   })));
 }
@@ -31345,17 +31464,15 @@ function _extends$15() {
   return _extends$15.apply(this, arguments);
 }
 
-function SvgClear(props) {
+function SvgDeleteChannel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$15({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
-    fill: "#FA4C56"
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -31378,19 +31495,21 @@ function _extends$16() {
   return _extends$16.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgClear(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$16({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
+    fill: "#FA4C56"
   })));
 }
 
-var _path$14, _path2$7;
+var _path$14;
 
 function _extends$17() {
   _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31409,24 +31528,19 @@ function _extends$17() {
   return _extends$17.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgBlockChannel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$17({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$15;
+var _path$15, _path2$7;
 
 function _extends$18() {
   _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31445,15 +31559,20 @@ function _extends$18() {
   return _extends$18.apply(this, arguments);
 }
 
-function SvgStar(props) {
+function SvgReport(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$18({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -31476,13 +31595,44 @@ function _extends$19() {
   return _extends$19.apply(this, arguments);
 }
 
-function SvgPin(props) {
+function SvgStar(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$19({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
+  })));
+}
+
+var _path$17;
+
+function _extends$1a() {
+  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1a.apply(this, arguments);
+}
+
+function SvgPin(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1a({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
@@ -31960,52 +32110,7 @@ var ActionItem$1 = styled__default.li(_templateObject6$g || (_templateObject6$g 
   return props.hoverColor || colors.blue2;
 });
 
-var _rect, _rect2, _path$17;
-
-function _extends$1a() {
-  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1a.apply(this, arguments);
-}
-
-function SvgAddMember(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1a({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect || (_rect = /*#__PURE__*/React.createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 20,
-    fill: "#F3F5F7"
-  })), _rect2 || (_rect2 = /*#__PURE__*/React.createElement("rect", {
-    x: 0.25,
-    y: 0.25,
-    width: 39.5,
-    height: 39.5,
-    rx: 19.75,
-    stroke: "#000",
-    strokeOpacity: 0.08,
-    strokeWidth: 0.5
-  })), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
-    d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$18;
+var _rect, _rect2, _path$18;
 
 function _extends$1b() {
   _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
@@ -32024,13 +32129,58 @@ function _extends$1b() {
   return _extends$1b.apply(this, arguments);
 }
 
-function SvgMoreVert(props) {
+function SvgAddMember(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1b({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect || (_rect = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 20,
+    fill: "#F3F5F7"
+  })), _rect2 || (_rect2 = /*#__PURE__*/React.createElement("rect", {
+    x: 0.25,
+    y: 0.25,
+    width: 39.5,
+    height: 39.5,
+    rx: 19.75,
+    stroke: "#000",
+    strokeOpacity: 0.08,
+    strokeWidth: 0.5
+  })), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
+    d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$19;
+
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1c.apply(this, arguments);
+}
+
+function SvgMoreVert(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1c({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
@@ -32446,10 +32596,10 @@ var Media = function Media(_ref) {
 var Container$h = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled__default.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$19, _path2$8, _path3$4;
+var _path$1a, _path2$8, _path3$4;
 
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32462,17 +32612,17 @@ function _extends$1c() {
 
     return target;
   };
-  return _extends$1c.apply(this, arguments);
+  return _extends$1d.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1c({
+  return /*#__PURE__*/React.createElement("svg", _extends$1d({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -32492,10 +32642,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$1a, _path2$9;
+var _path$1b, _path2$9;
 
-function _extends$1d() {
-  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32508,16 +32658,16 @@ function _extends$1d() {
 
     return target;
   };
-  return _extends$1d.apply(this, arguments);
+  return _extends$1e.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1d({
+  return /*#__PURE__*/React.createElement("svg", _extends$1e({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1b || (_path$1b = /*#__PURE__*/React.createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -32578,8 +32728,8 @@ var FileSizeAndDate = styled__default.span(_templateObject7$f || (_templateObjec
 
 var _rect$1, _rect2$1, _g$3, _defs;
 
-function _extends$1e() {
-  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1f() {
+  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32592,11 +32742,11 @@ function _extends$1e() {
 
     return target;
   };
-  return _extends$1e.apply(this, arguments);
+  return _extends$1f.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1e({
+  return /*#__PURE__*/React.createElement("svg", _extends$1f({
     width: 42,
     height: 42,
     fill: "none",
@@ -32685,48 +32835,7 @@ var Links = function Links(_ref) {
 };
 var Container$j = styled__default.ul(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$2, _circle$7, _path$1b;
-
-function _extends$1f() {
-  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1f.apply(this, arguments);
-}
-
-function SvgVoicePreview(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1f({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/React.createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 8,
-    fill: "#F3F5F7"
-  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
-    cx: 20,
-    cy: 20,
-    r: 14,
-    fill: "#0DBD8B"
-  })), _path$1b || (_path$1b = /*#__PURE__*/React.createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$3, _circle$8, _path$1c;
+var _rect$2, _circle$7, _path$1c;
 
 function _extends$1g() {
   _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
@@ -32745,29 +32854,29 @@ function _extends$1g() {
   return _extends$1g.apply(this, arguments);
 }
 
-function SvgVoicePreviewPause(props) {
+function SvgVoicePreview(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1g({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/React.createElement("rect", {
+  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/React.createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
     fill: "#F3F5F7"
-  })), _circle$8 || (_circle$8 = /*#__PURE__*/React.createElement("circle", {
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
   })), _path$1c || (_path$1c = /*#__PURE__*/React.createElement("path", {
-    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$4, _circle$9, _path$1d;
+var _rect$3, _circle$8, _path$1d;
 
 function _extends$1h() {
   _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
@@ -32786,29 +32895,29 @@ function _extends$1h() {
   return _extends$1h.apply(this, arguments);
 }
 
-function SvgVoicePreviewHoverIcon(props) {
+function SvgVoicePreviewPause(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1h({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/React.createElement("rect", {
+  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/React.createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
-    fill: "#fff"
-  })), _circle$9 || (_circle$9 = /*#__PURE__*/React.createElement("circle", {
+    fill: "#F3F5F7"
+  })), _circle$8 || (_circle$8 = /*#__PURE__*/React.createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
   })), _path$1d || (_path$1d = /*#__PURE__*/React.createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
 
-var _rect$5, _circle$a, _path$1e;
+var _rect$4, _circle$9, _path$1e;
 
 function _extends$1i() {
   _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
@@ -32827,8 +32936,49 @@ function _extends$1i() {
   return _extends$1i.apply(this, arguments);
 }
 
-function SvgVoicePreviewPauseHover(props) {
+function SvgVoicePreviewHoverIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1i({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#fff"
+  })), _circle$9 || (_circle$9 = /*#__PURE__*/React.createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$1e || (_path$1e = /*#__PURE__*/React.createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$5, _circle$a, _path$1f;
+
+function _extends$1j() {
+  _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1j.apply(this, arguments);
+}
+
+function SvgVoicePreviewPauseHover(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1j({
     width: 40,
     height: 40,
     fill: "none",
@@ -32843,7 +32993,7 @@ function SvgVoicePreviewPauseHover(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1e || (_path$1e = /*#__PURE__*/React.createElement("path", {
+  })), _path$1f || (_path$1f = /*#__PURE__*/React.createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
@@ -33163,10 +33313,10 @@ var DetailsTabHeader = styled__default.div(_templateObject2$A || (_templateObjec
   return props.activeTabColor || colors.primary;
 });
 
-var _path$1f;
+var _path$1g;
 
-function _extends$1j() {
-  _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1k() {
+  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33179,17 +33329,17 @@ function _extends$1j() {
 
     return target;
   };
-  return _extends$1j.apply(this, arguments);
+  return _extends$1k.apply(this, arguments);
 }
 
 function SvgCamera(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1j({
+  return /*#__PURE__*/React.createElement("svg", _extends$1k({
     width: 40,
     height: 40,
     viewBox: "0 0 41 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1f || (_path$1f = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M16.86 6.667a4.167 4.167 0 00-4.084 3.342c-.058.288-.17.566-.363.787l-.837.954c-.263.3-.644.473-1.043.473H6.11A2.778 2.778 0 003.333 15v15.278a2.778 2.778 0 002.778 2.778H33.89a2.778 2.778 0 002.778-2.778V15a2.778 2.778 0 00-2.778-2.777h-4.422c-.4 0-.78-.173-1.043-.473l-.837-.954c-.194-.22-.305-.499-.363-.787a4.167 4.167 0 00-4.085-3.342h-6.278zm8.696 15.278a5.556 5.556 0 11-11.112 0 5.556 5.556 0 0111.112 0zM6.806 10.139a.694.694 0 000 1.39h2.777a.694.694 0 100-1.39H6.806z",
@@ -33449,6 +33599,7 @@ var Details = function Details(_ref) {
       reportChannelIconColor = _ref.reportChannelIconColor,
       reportChannelTextColor = _ref.reportChannelTextColor,
       deleteChannelIcon = _ref.deleteChannelIcon,
+      showDeleteChannel = _ref.showDeleteChannel,
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
       deleteChannelOrder = _ref.deleteChannelOrder,
@@ -33582,11 +33733,11 @@ var Details = function Details(_ref) {
     image: channel.avatarUrl || channel.peer && channel.peer.avatarUrl,
     name: channel.subject || channel.peer && (channel.peer.firstName || channel.peer.id),
     size: 72,
-    textSize: 32,
+    textSize: 26,
     setDefaultAvatar: isDirectChannel
   }), React__default.createElement(ChannelInfo$3, null, React__default.createElement(ChannelName$1, {
     isDirect: isDirectChannel
-  }, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, channel.peer.presence && (channel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, ' ', channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member')), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
+  }, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(channel.peer) ? '' : channel.peer.presence && (channel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, ' ', channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member')), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
     onClick: function onClick() {
       return setEditMode(true);
     }
@@ -33637,7 +33788,7 @@ var Details = function Details(_ref) {
     reportChannelOrder: reportChannelOrder,
     reportChannelIconColor: reportChannelIconColor,
     reportChannelTextColor: reportChannelTextColor,
-    showDeleteChannel: checkActionPermission('deleteChannel'),
+    showDeleteChannel: showDeleteChannel && checkActionPermission('deleteChannel'),
     deleteChannelIcon: deleteChannelIcon,
     deleteChannelIconColor: deleteChannelIconColor,
     deleteChannelTextColor: deleteChannelTextColor,
@@ -33754,6 +33905,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       reportChannelOrder = _ref.reportChannelOrder,
       reportChannelIconColor = _ref.reportChannelIconColor,
       reportChannelTextColor = _ref.reportChannelTextColor,
+      showDeleteChannel = _ref.showDeleteChannel,
       deleteChannelIcon = _ref.deleteChannelIcon,
       deleteChannelIconColor = _ref.deleteChannelIconColor,
       deleteChannelTextColor = _ref.deleteChannelTextColor,
@@ -33850,6 +34002,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     reportChannelOrder: reportChannelOrder,
     reportChannelIconColor: reportChannelIconColor,
     reportChannelTextColor: reportChannelTextColor,
+    showDeleteChannel: showDeleteChannel,
     deleteChannelIcon: deleteChannelIcon,
     deleteChannelIconColor: deleteChannelIconColor,
     deleteChannelTextColor: deleteChannelTextColor,
@@ -33906,10 +34059,10 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var _path$1g, _path2$a, _path3$5;
+var _path$1h, _path2$a, _path3$5;
 
-function _extends$1k() {
-  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1l() {
+  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33922,15 +34075,15 @@ function _extends$1k() {
 
     return target;
   };
-  return _extends$1k.apply(this, arguments);
+  return _extends$1l.apply(this, arguments);
 }
 
 function SvgChatLogo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1k({
+  return /*#__PURE__*/React.createElement("svg", _extends$1l({
     viewBox: "0 0 249 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
     d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
     fill: "#e17335"
   })), _path2$a || (_path2$a = /*#__PURE__*/React.createElement("path", {
@@ -33950,10 +34103,10 @@ function SceytChatHeader() {
   return React__default.createElement(Container$o, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
-var _path$1h;
+var _path$1i;
 
-function _extends$1l() {
-  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1m() {
+  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33966,16 +34119,16 @@ function _extends$1l() {
 
     return target;
   };
-  return _extends$1l.apply(this, arguments);
+  return _extends$1m.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1l({
+  return /*#__PURE__*/React.createElement("svg", _extends$1m({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1i || (_path$1i = /*#__PURE__*/React.createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
