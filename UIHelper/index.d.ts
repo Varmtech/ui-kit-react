@@ -84,6 +84,7 @@ export declare const UploadingIcon: import("styled-components").StyledComponent<
     fileAttachment?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
 }, never>;
+export declare const TextInOneLine: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UploadPercent: import("styled-components").StyledComponent<"span", any, {
     fileAttachment?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
