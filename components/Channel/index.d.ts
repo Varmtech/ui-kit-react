@@ -11,7 +11,7 @@ interface IChannelProps {
 }
 declare const Channel: React.FC<IChannelProps>;
 export default Channel;
-interface UnreadCountProps {
+export interface UnreadCountProps {
     readonly isMuted: boolean;
     readonly backgroundColor?: string;
     width?: string;
@@ -28,6 +28,7 @@ export declare const ChannelInfo: import("styled-components").StyledComponent<"d
 export declare const MutedIcon: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const LastMessage: import("styled-components").StyledComponent<"div", any, {
     markedAsUnread?: boolean | undefined;
+    unreadMentions?: boolean | undefined;
 }, never>;
 export declare const AvatarWrapper: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const UserStatus: import("styled-components").StyledComponent<"span", any, {
@@ -43,5 +44,8 @@ export declare const LastMessageText: import("styled-components").StyledComponen
 export declare const ChannelStatus: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const LastMessageDate: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const DeliveryIconCont: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const UnreadMentionIconWrapper: import("styled-components").StyledComponent<"span", any, {
+    iconColor?: string | undefined;
+}, never>;
 export declare const TypingIndicator: import("styled-components").StyledComponent<"span", any, {}, never>;
-export declare const UnreadCount: import("styled-components").StyledComponent<"span", any, UnreadCountProps, never>;
+export declare const UnreadInfo: import("styled-components").StyledComponent<"span", any, {}, never>;

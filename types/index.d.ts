@@ -69,6 +69,8 @@ export interface IChannel {
     role: string;
     avatarUrl?: string;
     unreadMessageCount?: number;
+    unreadMentionsCount?: number;
+    unreadReactionsCount?: number;
     delete: () => Promise<void>;
     deleteAllMessages: (deleteForMe?: boolean) => Promise<void>;
     hide: () => Promise<boolean>;
