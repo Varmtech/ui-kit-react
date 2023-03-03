@@ -7809,6 +7809,14 @@ var cancelUpload = function cancelUpload(attachmentId) {
   return pendingUploaders[attachmentId].cancel();
 };
 
+var SceytChatClient = {};
+var setClient = function setClient(client) {
+  SceytChatClient = client;
+};
+var getClient = function getClient() {
+  return SceytChatClient;
+};
+
 var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1;
 var ReadIconWrapper = styled(SvgTicksRead)(_templateObject$1 || (_templateObject$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
@@ -7856,7 +7864,9 @@ var getFileExtension = function getFileExtension(filename) {
 var urlRegex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
 var MessageTextFormat = function MessageTextFormat(_ref5) {
   var text = _ref5.text,
-      message = _ref5.message;
+      message = _ref5.message,
+      contactsMap = _ref5.contactsMap,
+      getFromContacts = _ref5.getFromContacts;
   var messageText = [text];
 
   if (message.mentionedUsers && message.mentionedUsers.length > 0) {
@@ -7879,9 +7889,10 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
       });
 
       if (mentionDisplay) {
+        var user = getClient().chatClient.user;
         messageText.unshift("" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mentionsPositions[mentionMemberId].loc)), React__default.createElement(MentionedUser, {
           key: "" + mentionMemberId
-        }, "@" + mentionDisplay.firstName + (mentionDisplay.lastName !== '' ? " " + mentionDisplay.lastName : '')), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mentionsPositions[mentionMemberId].loc + mentionsPositions[mentionMemberId].len)));
+        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts)), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mentionsPositions[mentionMemberId].loc + mentionsPositions[mentionMemberId].len)));
       }
     };
 
@@ -8234,7 +8245,6 @@ var getHasNextCached = function getHasNextCached() {
 };
 var getFromAllMessagesByMessageId = function getFromAllMessagesByMessageId(messageId, direction, getWithLastMessage) {
   var messagesForAdd = [];
-  console.log('called get from all . , getWithLastMessage .. ', getWithLastMessage);
 
   if (getWithLastMessage) {
     messagesForAdd = [].concat(activeChannelAllMessages).slice(-MESSAGES_MAX_LENGTH);
@@ -8244,7 +8254,6 @@ var getFromAllMessagesByMessageId = function getFromAllMessagesByMessageId(messa
     var fromMessageIndex = activeChannelAllMessages.findIndex(function (mes) {
       return mes.id === messageId;
     });
-    console.log('fromMessageIndex . .. . ', fromMessageIndex);
 
     if (fromMessageIndex !== 0) {
       if (direction === MESSAGE_LOAD_DIRECTION.PREV) {
@@ -8255,9 +8264,6 @@ var getFromAllMessagesByMessageId = function getFromAllMessagesByMessageId(messa
       } else {
         var toMessage = fromMessageIndex + LOAD_MAX_MESSAGE_COUNT + 1;
         messagesForAdd = activeChannelAllMessages.slice(fromMessageIndex + 1, toMessage);
-        console.log('toMessage.  .. . ', toMessage);
-        console.log('messagesForAdd.  .. . ', messagesForAdd);
-        console.log('activeChannelAllMessages.  .. . ', activeChannelAllMessages);
 
         if (toMessage > activeChannelAllMessages.length - 1) {
           setHasNextCached(false);
@@ -9519,14 +9525,6 @@ function getUnreadScrollTo() {
 function setUnreadScrollTo(state) {
   unreadScrollTo.isScrolled = state;
 }
-
-var SceytChatClient = {};
-var setClient = function setClient(client) {
-  SceytChatClient = client;
-};
-var getClient = function getClient() {
-  return SceytChatClient;
-};
 
 function sendMessageAC(message, channelId, connectionState, sendAttachmentsAsSeparateMessage, isResend) {
   return {
@@ -12997,7 +12995,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked15$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _messageResponse, _messageUpdateData;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _messageResponse, _messageUpdateData;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -13011,15 +13009,18 @@ function sendMessage(action) {
 
         case 5:
           channel = _context.sent;
+          mentionedUserIds = message.mentionedMembers.map(function (member) {
+            return member.id;
+          });
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 133;
+            _context.next = 134;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 99;
+            _context.next = 100;
             break;
           }
 
@@ -13030,27 +13031,27 @@ function sendMessage(action) {
           fileType = messageAttachment.type;
 
           if (!(fileType === 'video')) {
-            _context.next = 16;
+            _context.next = 17;
             break;
           }
 
           thumbnailMetas = getVideoThumb(messageAttachment.attachmentId);
-          _context.next = 20;
+          _context.next = 21;
           break;
 
-        case 16:
+        case 17:
           if (!(fileType === 'image')) {
-            _context.next = 20;
+            _context.next = 21;
             break;
           }
 
-          _context.next = 19;
+          _context.next = 20;
           return call(createImageThumbnail, message.attachments[0].data, undefined, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 19:
+        case 20:
           thumbnailMetas = _context.sent;
 
-        case 20:
+        case 21:
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -13059,7 +13060,7 @@ function sendMessage(action) {
           });
           setPendingAttachment(messageAttachment.attachmentId, messageAttachment.data);
           messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody(message.body).setAttachments([]).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
+          messageBuilder.setBody(message.body).setAttachments([]).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parent) {
             messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
@@ -13077,47 +13078,47 @@ function sendMessage(action) {
             createdAt: new Date(Date.now()),
             parent: message.parent
           })));
-          _context.next = 31;
+          _context.next = 32;
           return select(messagesHasNextSelector);
 
-        case 31:
+        case 32:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 40;
+            _context.next = 41;
             break;
           }
 
           if (!hasNextMessages) {
-            _context.next = 38;
+            _context.next = 39;
             break;
           }
 
-          _context.next = 36;
+          _context.next = 37;
           return put(getMessagesAC(channel));
 
-        case 36:
-          _context.next = 40;
+        case 37:
+          _context.next = 41;
           break;
 
-        case 38:
-          _context.next = 40;
+        case 39:
+          _context.next = 41;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 40:
+        case 41:
           console.log('add pending message .. ', pendingMessage);
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context.next = 45;
+          _context.next = 46;
           return put(scrollToNewMessageAC(true, true));
 
-        case 45:
-          _context.next = 47;
+        case 46:
+          _context.next = 48;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.attachmentId));
 
-        case 47:
+        case 48:
           if (!customUploader) {
-            _context.next = 97;
+            _context.next = 98;
             break;
           }
 
@@ -13146,42 +13147,42 @@ function sendMessage(action) {
             });
           };
 
-          _context.prev = 50;
+          _context.prev = 51;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 86;
+            _context.next = 87;
             break;
           }
 
-          _context.next = 54;
+          _context.next = 55;
           return call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 54:
+        case 55:
           uri = _context.sent;
           console.log('upload res .... uri, ,, ', uri);
-          _context.next = 58;
+          _context.next = 59;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
 
-        case 58:
+        case 59:
           fileSize = messageAttachment.size;
 
           if (!(messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 66;
+            _context.next = 67;
             break;
           }
 
-          _context.next = 62;
+          _context.next = 63;
           return call(getImageSize, filePath);
 
-        case 62:
+        case 63:
           fileSize = _context.sent;
-          _context.next = 65;
+          _context.next = 66;
           return call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 65:
+        case 66:
           thumbnailMetas = _context.sent;
 
-        case 66:
+        case 67:
           attachmentMeta = JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -13192,10 +13193,10 @@ function sendMessage(action) {
           attachmentToSend.attachmentId = messageAttachment.attachmentId;
           attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [attachmentToSend];
-          _context.next = 74;
+          _context.next = 75;
           return call(channel.sendMessage, messageToSend);
 
-        case 74:
+        case 75:
           messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
@@ -13211,10 +13212,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 79;
+          _context.next = 80;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 79:
+        case 80:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -13224,29 +13225,29 @@ function sendMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context.next = 84;
+          _context.next = 85;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 84:
-          _context.next = 87;
+        case 85:
+          _context.next = 88;
           break;
-
-        case 86:
-          throw Error('Network error');
 
         case 87:
-          _context.next = 97;
+          throw Error('Network error');
+
+        case 88:
+          _context.next = 98;
           break;
 
-        case 89:
-          _context.prev = 89;
-          _context.t0 = _context["catch"](50);
-          _context.next = 93;
+        case 90:
+          _context.prev = 90;
+          _context.t0 = _context["catch"](51);
+          _context.next = 94;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 93:
+        case 94:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -13256,16 +13257,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 97;
+          _context.next = 98;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 97:
-          _context.next = 133;
+        case 98:
+          _context.next = 134;
           break;
 
-        case 99:
+        case 100:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -13290,7 +13291,7 @@ function sendMessage(action) {
           });
           _messageBuilder = channel.createMessageBuilder();
 
-          _messageBuilder.setBody(message.body).setAttachments(message.attachments).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
+          _messageBuilder.setBody(message.body).setAttachments(message.attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parent) {
             _messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
@@ -13303,7 +13304,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 117;
+            _context.next = 118;
             break;
           }
 
@@ -13353,12 +13354,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 111;
+          _context.next = 112;
           return call(uploadAllAttachments);
 
-        case 111:
+        case 112:
           uploadedAttachments = _context.sent;
-          _context.next = 114;
+          _context.next = 115;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -13401,12 +13402,12 @@ function sendMessage(action) {
             }
           });
 
-        case 114:
+        case 115:
           attachmentsToSend = _context.sent;
-          _context.next = 120;
+          _context.next = 121;
           break;
 
-        case 117:
+        case 118:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -13418,25 +13419,25 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 120;
+          _context.next = 121;
           return put(addMessageAC(JSON.parse(JSON.stringify(_extends({}, _messageCopy2, {
             createdAt: new Date(Date.now()),
             parent: message.parent
           })))));
 
-        case 120:
+        case 121:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 133;
+            _context.next = 134;
             break;
           }
 
           console.log('message to send .... ', _messageToSend);
-          _context.next = 125;
+          _context.next = 126;
           return call(channel.sendMessage, _messageToSend);
 
-        case 125:
+        case 126:
           _messageResponse = _context.sent;
           console.log('message response ... ', _messageResponse);
           _messageUpdateData = {
@@ -13449,38 +13450,38 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 130;
+          _context.next = 131;
           return put(updateMessageAC(_messageToSend.tid, _messageUpdateData));
 
-        case 130:
+        case 131:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData
           });
-          _context.next = 133;
+          _context.next = 134;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
             id: channel.id
           }));
 
-        case 133:
-          _context.next = 135;
+        case 134:
+          _context.next = 136;
           return put(scrollToNewMessageAC(true));
 
-        case 135:
-          _context.next = 140;
+        case 136:
+          _context.next = 141;
           break;
 
-        case 137:
-          _context.prev = 137;
+        case 138:
+          _context.prev = 138;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 140:
+        case 141:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 137], [50, 89]]);
+  }, _marked$2, null, [[0, 138], [51, 90]]);
 }
 
 function sendTextMessage(action) {
@@ -14073,7 +14074,7 @@ function getMessagesQuery(action) {
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
 
           if (!channel.id) {
-            _context7.next = 97;
+            _context7.next = 96;
             break;
           }
 
@@ -14098,18 +14099,17 @@ function getMessagesQuery(action) {
           };
 
           if (!loadWithLastMessage) {
-            _context7.next = 20;
+            _context7.next = 19;
             break;
           }
 
-          console.log('get with last message ........ ');
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          _context7.next = 88;
+          _context7.next = 87;
           break;
 
-        case 20:
+        case 19:
           if (!messageId) {
-            _context7.next = 49;
+            _context7.next = 48;
             break;
           }
 
@@ -14120,56 +14120,56 @@ function getMessagesQuery(action) {
           maxLengthPart = MESSAGES_MAX_LENGTH / 2;
 
           if (!(messageIndex >= maxLengthPart)) {
-            _context7.next = 32;
+            _context7.next = 31;
             break;
           }
 
           result.messages = allMessages.slice(messageIndex - maxLengthPart, messageIndex + maxLengthPart);
-          _context7.next = 28;
+          _context7.next = 27;
           return put(setMessagesAC(result.messages));
 
-        case 28:
+        case 27:
           setHasPrevCached(messageIndex > maxLengthPart);
           setHasNextCached(allMessages.length > maxLengthPart);
-          _context7.next = 45;
+          _context7.next = 44;
           break;
 
-        case 32:
+        case 31:
           messageQuery.limit = MESSAGES_MAX_LENGTH;
-          _context7.next = 35;
+          _context7.next = 34;
           return call(messageQuery.loadNearMessageId, messageId);
 
-        case 35:
+        case 34:
           result = _context7.sent;
-          _context7.next = 38;
+          _context7.next = 37;
           return put(setMessagesHasNextAC(true));
 
-        case 38:
+        case 37:
           pendingMessages = getPendingMessages(channel.id);
 
           if (pendingMessages && pendingMessages.length) {
             result.messages = [].concat(result.messages, pendingMessages);
           }
 
-          _context7.next = 42;
+          _context7.next = 41;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 42:
+        case 41:
           setAllMessages([].concat(result.messages));
           setHasPrevCached(false);
           setHasNextCached(false);
 
-        case 45:
-          _context7.next = 47;
+        case 44:
+          _context7.next = 46;
           return put(setScrollToMessagesAC(messageId));
 
-        case 47:
-          _context7.next = 88;
+        case 46:
+          _context7.next = 87;
           break;
 
-        case 49:
+        case 48:
           if (!(channel.unreadMessageCount && channel.lastReadMessageId)) {
-            _context7.next = 75;
+            _context7.next = 74;
             break;
           }
 
@@ -14177,7 +14177,7 @@ function getMessagesQuery(action) {
           messageQuery.limit = MESSAGES_MAX_LENGTH;
 
           if (!(getMessagesFromMap(channel.id) && getMessagesFromMap(channel.id).length)) {
-            _context7.next = 60;
+            _context7.next = 59;
             break;
           }
 
@@ -14188,30 +14188,30 @@ function getMessagesQuery(action) {
             result.messages = [].concat(result.messages, _pendingMessages2);
           }
 
-          _context7.next = 58;
+          _context7.next = 57;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 58:
-          _context7.next = 64;
+        case 57:
+          _context7.next = 63;
           break;
 
-        case 60:
-          _context7.next = 62;
+        case 59:
+          _context7.next = 61;
           return call(messageQuery.loadNearMessageId, channel.lastReadMessageId);
 
-        case 62:
+        case 61:
           result = _context7.sent;
           setMessagesToMap(channel.id, result.messages);
 
-        case 64:
-          _context7.next = 66;
+        case 63:
+          _context7.next = 65;
           return put(setMessagesHasPrevAC(true));
 
-        case 66:
-          _context7.next = 68;
+        case 65:
+          _context7.next = 67;
           return put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
 
-        case 68:
+        case 67:
           _pendingMessages = getPendingMessages(channel.id);
 
           if (_pendingMessages && _pendingMessages.length) {
@@ -14219,30 +14219,30 @@ function getMessagesQuery(action) {
           }
 
           setAllMessages([].concat(result.messages));
-          _context7.next = 73;
+          _context7.next = 72;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 73:
-          _context7.next = 88;
+        case 72:
+          _context7.next = 87;
           break;
 
-        case 75:
+        case 74:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context7.next = 80;
+            _context7.next = 79;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context7.next = 80;
+          _context7.next = 79;
           return put(setMessagesAC(cachedMessages));
 
-        case 80:
-          _context7.next = 82;
+        case 79:
+          _context7.next = 81;
           return call(messageQuery.loadPrevious);
 
-        case 82:
+        case 81:
           result = _context7.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -14251,16 +14251,16 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context7.next = 86;
+          _context7.next = 85;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 86:
-          _context7.next = 88;
+        case 85:
+          _context7.next = 87;
           return put(setMessagesHasNextAC(false));
 
-        case 88:
+        case 87:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context7.next = 95;
+            _context7.next = 94;
             break;
           }
 
@@ -14272,10 +14272,10 @@ function getMessagesQuery(action) {
             }
           }
 
-          _context7.next = 92;
+          _context7.next = 91;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 92:
+        case 91:
           setMessagesToMap(channel.id, result.messages);
 
           if (!loadWithLastMessage) {
@@ -14286,25 +14286,25 @@ function getMessagesQuery(action) {
             setHasNextCached(false);
           }
 
-        case 95:
-          _context7.next = 97;
+        case 94:
+          _context7.next = 96;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 97:
-          _context7.next = 102;
+        case 96:
+          _context7.next = 101;
           break;
 
-        case 99:
-          _context7.prev = 99;
+        case 98:
+          _context7.prev = 98;
           _context7.t0 = _context7["catch"](0);
           console.log('error in message query', _context7.t0);
 
-        case 102:
+        case 101:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$1, null, [[0, 99]]);
+  }, _marked7$1, null, [[0, 98]]);
 }
 
 function loadMoreMessages(action) {
@@ -14876,7 +14876,7 @@ function getMembers(action) {
           channelId = payload.channelId;
           SceytChatClient = getClient();
           membersQueryBuilder = new SceytChatClient.chatClient.MemberListQueryBuilder(channelId);
-          membersQueryBuilder.all().byAffiliationOrder().orderKeyByUsername().limit(15);
+          membersQueryBuilder.all().byAffiliationOrder().orderKeyByUsername().limit(50);
           _context.next = 8;
           return call(membersQueryBuilder.build);
 
@@ -15934,8 +15934,13 @@ var SceytChat = function SceytChat(_ref) {
       setSceytChatClient(client);
       dispatch(setUserAC(client.chatClient.user));
       dispatch(watchForEventsAC());
+      console.log('client.chatClient.connectStatus.. ... ', client.chatClient.connectStatus);
       dispatch(setConnectionStatusAC(client.chatClient.connectStatus));
     } else {
+      console.log('destroy session... ');
+      clearMessagesMap();
+      removeAllMessages();
+      setActiveChannelId('');
       destroyChannelsMap();
       dispatch(destroySession());
     }
@@ -17031,7 +17036,6 @@ var UsersPopup = function UsersPopup(_ref) {
   var contactList = useSelector(contactListSelector);
   var contactsMap = useSelector(contactsMapSelector);
   var usersList = useSelector(usersListSelector);
-  console.log('users list .... ', usersList);
   var getFromContacts = getShowOnlyContactUsers();
   var usersLoadingState = useSelector(usersLoadingStateSelector);
   var selectedMembersCont = useRef('');
@@ -19430,12 +19434,10 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (addedToChannel) {
       if (onAddedToChannel) {
-        console.log('call added to channel on use effect');
         onAddedToChannel(function (updatedChannels) {
           return handleSetChannelList(updatedChannels, false);
         }, addedToChannel);
       } else {
-        console.log('addedToChannel add channel from comp ... ', addedToChannel);
         dispatch(addChannelAC(addedToChannel));
       }
 
@@ -19445,7 +19447,6 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (hiddenChannel) {
       if (onChannelHidden) {
-        console.log('call hidden channel');
         onChannelHidden(function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
         }, hiddenChannel);
@@ -28326,8 +28327,6 @@ var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$
 var Message = function Message(_ref) {
   var message = _ref.message,
       channel = _ref.channel,
-      senderFromContact = _ref.senderFromContact,
-      parentSenderFromContact = _ref.parentSenderFromContact,
       handleScrollToRepliedMessage = _ref.handleScrollToRepliedMessage,
       handleMediaItemClick = _ref.handleMediaItemClick,
       isPendingMessage = _ref.isPendingMessage,
@@ -28407,6 +28406,7 @@ var Message = function Message(_ref) {
   var user = ChatClient.user;
   var getFromContacts = getShowOnlyContactUsers();
   var connectionStatus = useSelector(connectionStatusSelector, shallowEqual);
+  var contactsMap = useSelector(contactsMapSelector, shallowEqual);
 
   var _useState = useState(false),
       deletePopupOpen = _useState[0],
@@ -28590,7 +28590,7 @@ var Message = function Message(_ref) {
       messageBody: !!message.body,
       color: colors.primary,
       rtlDirection: ownMessageOnRightSide && !message.incoming
-    }, message.user.id === user.id && message.user.firstName ? message.user.firstName + " " + message.user.lastName : makeUserName(senderFromContact, message.user, getFromContacts)), messageTimePosition === 'topOfMessage' && React__default.createElement(MessageTime, null, "" + moment(message.createdAt).format('HH:mm')));
+    }, message.user.id === user.id && message.user.firstName ? message.user.firstName + " " + message.user.lastName : makeUserName(contactsMap[message.user.id], message.user, getFromContacts)), messageTimePosition === 'topOfMessage' && React__default.createElement(MessageTime, null, "" + moment(message.createdAt).format('HH:mm')));
   };
 
   useEffect(function () {
@@ -28662,14 +28662,16 @@ var Message = function Message(_ref) {
     color: colors.primary,
     fontSize: '12px',
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, message.parent.user.id === user.id ? 'You' : makeUserName(parentSenderFromContact, message.parent.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
+  }, message.parent.user.id === user.id ? 'You' : makeUserName(contactsMap[message.parent.user.id], message.parent.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
     fontSize: '14px',
     lineHeight: '16px'
   }, !!message.parent.attachments.length && message.parent.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, {
     color: colors.primary
   }), message.parent.body ? MessageTextFormat({
     text: message.parent.body,
-    message: message.parent
+    message: message.parent,
+    contactsMap: contactsMap,
+    getFromContacts: getFromContacts
   }) : message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.link && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, {
     withAttachments: withAttachments,
     withMediaAttachment: withMediaAttachment,
@@ -28684,7 +28686,9 @@ var Message = function Message(_ref) {
     isForwarded: !!message.forwardingDetails
   }, MessageTextFormat({
     text: message.body,
-    message: message
+    message: message,
+    contactsMap: contactsMap,
+    getFromContacts: getFromContacts
   }), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
     iconColor: colors.primary,
     lastMessage: !firstMessage
@@ -30249,10 +30253,7 @@ var MessageList = function MessageList(_ref2) {
       handleMediaItemClick: function handleMediaItemClick(attachment) {
         return setMediaFile(attachment);
       },
-      senderFromContact: message.user && contactsMap[message.user.id],
       handleScrollToRepliedMessage: handleScrollToRepliedMessage,
-      parentSenderFromContact: message.parent && message.parent.user && contactsMap[message.parent.user.id],
-      forwardSenderFromContact: message.forwardingDetails && message.forwardingDetails.user && contactsMap[message.forwardingDetails.user.id],
       prevMessage: prevMessage,
       nextMessage: nextMessage,
       firstMessage: index,
@@ -30339,9 +30340,9 @@ var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _tag
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
 }, function (props) {
-  return props.systemMessage && '2px';
+  return props.systemMessage && '12px';
 }, function (props) {
-  return props.systemMessage && '16px';
+  return props.systemMessage && '12px';
 }, function (props) {
   return !props.systemMessage && 'none';
 }, function (props) {
@@ -30528,7 +30529,169 @@ function SvgErrorCircle(props) {
   })));
 }
 
-var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$3, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var activeChannelMembersSelector = function activeChannelMembersSelector(store) {
+  return store.MembersReducer.activeChannelMembers;
+};
+var rolesSelector = function rolesSelector(store) {
+  return store.MembersReducer.roles;
+};
+var membersLoadingStateSelector = function membersLoadingStateSelector(store) {
+  return store.MembersReducer.membersLoadingState;
+};
+
+var LOADING_STATE$1 = {
+  LOADING: 1,
+  LOADED: 2
+};
+var PRESENCE_STATUS$1 = {
+  OFFLINE: 'Offline',
+  ONLINE: 'Online'
+};
+
+var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f;
+function MentionMembersPopup(_ref) {
+  var channelId = _ref.channelId,
+      addMentionMember = _ref.addMentionMember,
+      handleMentionsPopupClose = _ref.handleMentionsPopupClose,
+      searchMention = _ref.searchMention;
+  var members = useSelector(activeChannelMembersSelector, shallowEqual);
+  var contactsMap = useSelector(contactsMapSelector);
+  var getFromContacts = getShowOnlyContactUsers();
+
+  var _useState = useState([]),
+      filteredMembers = _useState[0],
+      setFilteredMembers = _useState[1];
+
+  var filteredMembersLength = useRef(0);
+
+  var _useState2 = useState(0),
+      activeIndex = _useState2[0],
+      setActiveIndex = _useState2[1];
+
+  var user = getClient().chatClient.user;
+  var membersLoading = useSelector(membersLoadingStateSelector, shallowEqual) || {};
+  var dispatch = useDispatch();
+
+  var handleMembersListScroll = function handleMembersListScroll(event) {
+    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100) {
+      if (membersLoading === LOADING_STATE$1.LOADED) {
+        dispatch(loadMoreMembersAC(15));
+      }
+    }
+  };
+
+  var handleMentionMember = function handleMentionMember() {
+    addMentionMember(filteredMembers[activeIndex]);
+    handleMentionsPopupClose();
+  };
+
+  var sortMembers = function sortMembers(membersList) {
+    return [].concat(membersList).sort(function (a, b) {
+      var aDisplayName = makeUserName(a.id === user.id ? a : contactsMap[a.id], a, getFromContacts);
+      var bDisplayName = makeUserName(b.id === user.id ? b : contactsMap[b.id], b, getFromContacts);
+
+      if (aDisplayName < bDisplayName) {
+        return -1;
+      }
+
+      if (aDisplayName > bDisplayName) {
+        return 1;
+      }
+
+      return 0;
+    });
+  };
+
+  var handleKeyDown = function handleKeyDown(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex(function (prevState) {
+        return prevState < filteredMembersLength.current - 1 ? prevState + 1 : prevState;
+      });
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex(function (prevState) {
+        return prevState > 0 ? prevState - 1 : prevState;
+      });
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleMentionMember();
+    }
+  };
+
+  useEffect(function () {
+    dispatch(getMembersAC(channelId));
+  }, [channelId]);
+  useEffect(function () {
+    window.addEventListener('keydown', handleKeyDown);
+    return function () {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [filteredMembers, activeIndex]);
+  useEffect(function () {
+    if (members && members.length && !searchMention) {
+      var sortedMembers = sortMembers(members.filter(function (member) {
+        return member.id !== user.id;
+      }));
+      filteredMembersLength.current = sortedMembers.length;
+      setFilteredMembers(sortedMembers);
+    }
+  }, [members]);
+  useDidUpdate(function () {
+    if (searchMention) {
+      var searchedMembers = [].concat(members).filter(function (member) {
+        var displayName = makeUserName(contactsMap[member.id], member, getFromContacts);
+        return displayName && member.id !== user.id && displayName.toLowerCase().includes(searchMention.toLowerCase());
+      });
+      filteredMembersLength.current = searchedMembers.length;
+      setFilteredMembers(sortMembers(searchedMembers));
+    } else {
+      var _searchedMembers = [].concat(members).filter(function (member) {
+        return member.id !== user.id;
+      });
+
+      filteredMembersLength.current = _searchedMembers.length || 0;
+      setFilteredMembers(sortMembers(_searchedMembers || []));
+    }
+  }, [searchMention]);
+  return React__default.createElement(Container$e, null, React__default.createElement(MembersList, {
+    onScroll: handleMembersListScroll
+  }, filteredMembers.map(function (member, index) {
+    return React__default.createElement(MemberItem, {
+      key: member.id,
+      onClick: function onClick() {
+        handleMentionMember();
+      },
+      isActiveItem: activeIndex === index,
+      onMouseEnter: function onMouseEnter() {
+        return setActiveIndex(index);
+      }
+    }, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+      name: member.firstName || member.id,
+      image: member.avatarUrl,
+      size: 32,
+      textSize: 14,
+      setDefaultAvatar: true
+    }), member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE && React__default.createElement(UserStatus, null)), React__default.createElement(MemberName$1, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)));
+  })));
+}
+MentionMembersPopup.defaultProps = {
+  activeItemIndex: null,
+  searchMention: ''
+};
+var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: 237px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])));
+var MemberName$1 = styled.span(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  margin: 0 0 0 12px;\n  max-width: calc(100% - 30px);\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var EditMemberIcon = styled.span(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList = styled.ul(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
+var MemberItem = styled.li(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+  return props.isActiveItem && colors.gray0;
+}, EditMemberIcon, UserStatus);
+
+var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$3, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -30591,25 +30754,53 @@ var SendMessageInput = function SendMessageInput(_ref) {
       emojisInRightSide = _useState6[0],
       setEmojisInRightSide = _useState6[1];
 
-  var _useState7 = useState(),
-      typingTimout = _useState7[0],
-      setTypingTimout = _useState7[1];
+  var _useState7 = useState([]),
+      mentionedMembers = _useState7[0],
+      setMentionedMembers = _useState7[1];
 
-  var _useState8 = useState(),
-      inTypingStateTimout = _useState8[0],
-      setInTypingStateTimout = _useState8[1];
+  var _useState8 = useState([]),
+      mentionedMembersDisplayName = _useState8[0],
+      setMentionedMembersDisplayName = _useState8[1];
 
-  var _useState9 = useState(false),
-      inTypingState = _useState9[0],
-      setInTypingState = _useState9[1];
+  var _useState9 = useState(undefined),
+      currentMentions = _useState9[0],
+      setCurrentMentions = _useState9[1];
 
   var _useState10 = useState(false),
-      sendMessageIsActive = _useState10[0],
-      setSendMessageIsActive = _useState10[1];
+      mentionTyping = _useState10[0],
+      setMentionTyping = _useState10[1];
 
-  var _useState11 = useState([]),
-      attachments = _useState11[0],
-      setAttachments = _useState11[1];
+  var _useState11 = useState(undefined),
+      mentionEdit = _useState11[0],
+      setMentionEdit = _useState11[1];
+
+  var _useState12 = useState(),
+      selectionPos = _useState12[0],
+      setSelectionPos = _useState12[1];
+
+  var _useState13 = useState(),
+      typingTimout = _useState13[0],
+      setTypingTimout = _useState13[1];
+
+  var _useState14 = useState(),
+      inTypingStateTimout = _useState14[0],
+      setInTypingStateTimout = _useState14[1];
+
+  var _useState15 = useState(false),
+      inTypingState = _useState15[0],
+      setInTypingState = _useState15[1];
+
+  var _useState16 = useState(false),
+      sendMessageIsActive = _useState16[0],
+      setSendMessageIsActive = _useState16[1];
+
+  var _useState17 = useState(false),
+      openMention = _useState17[0],
+      setOpenMention = _useState17[1];
+
+  var _useState18 = useState([]),
+      attachments = _useState18[0],
+      setAttachments = _useState18[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
@@ -30617,6 +30808,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var fileUploader = useRef(null);
   var messageInputRef = useRef(null);
   var emojiBtnRef = useRef(null);
+  var mentionsRef = useRef(null);
   var mediaExtensions = '.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.wmv,.flv,.webm,.jfif';
 
   var handleSendTypingState = function handleSendTypingState(typingState) {
@@ -30640,34 +30832,212 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setCursorPosition(messageInputRef.current, selPos + emoji.length);
   };
 
-  var handleTyping = function handleTyping(e) {
-    if (messageToEdit) {
-      setEditMessageText(e.currentTarget.innerText);
+  var handleSetMention = function handleSetMention(member) {
+    var mentionDisplayName = makeUserName(user.id === member.id ? member : contactsMap[member.id], member, getFromContacts);
+    var mentionToChange = mentionedMembers.find(function (men) {
+      return men.start === currentMentions.start;
+    });
+
+    if (mentionToChange) {
+      setMentionedMembers(mentionedMembers.map(function (menMem) {
+        if (menMem.start === currentMentions.start) {
+          return _extends({}, member, {
+            start: currentMentions.start,
+            end: currentMentions.start + 1 + mentionDisplayName.trim().length
+          });
+        } else {
+          return menMem;
+        }
+      }));
+      setMentionedMembersDisplayName(mentionedMembersDisplayName.filter(function (menMem) {
+        return menMem.id !== mentionToChange.id;
+      }));
     } else {
-      setMessageText(e.currentTarget.innerText);
+      setMentionedMembers(function (members) {
+        return [].concat(members, [_extends({}, member, {
+          start: currentMentions.start,
+          end: currentMentions.start + 1 + mentionDisplayName.trim().length
+        })]);
+      });
     }
 
-    handleMentionDetect(e.currentTarget);
+    if (!mentionedMembersDisplayName.find(function (menMem) {
+      return menMem.id === member.id;
+    })) {
+      setMentionedMembersDisplayName(function (prevState) {
+        return [].concat(prevState, [{
+          id: member.id,
+          displayName: "@" + mentionDisplayName
+        }]);
+      });
+    }
 
-    if (typingTimout) {
-      if (!inTypingStateTimout) {
+    setMentionTyping(false);
+    var currentText = [messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1), mentionDisplayName, messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length)].join('');
+    setMessageText(currentText);
+    messageInputRef.current.innerText = currentText;
+    setCursorPosition(messageInputRef.current, currentMentions.start + 1 + mentionDisplayName.length);
+
+    var updateCurrentMentions = _extends({}, currentMentions);
+
+    updateCurrentMentions.typed = mentionDisplayName;
+    updateCurrentMentions.id = member.id;
+    updateCurrentMentions.end = updateCurrentMentions.start + mentionDisplayName.length;
+    setCurrentMentions(updateCurrentMentions);
+    setMentionEdit(undefined);
+    messageInputRef.current.focus();
+  };
+
+  var handleCloseMentionsPopup = function handleCloseMentionsPopup() {
+    setOpenMention(false);
+    setMentionTyping(false);
+    setMentionEdit(undefined);
+  };
+
+  var handleTyping = function handleTyping(e) {
+    if (!(openMention && (e.key === 'ArrowDown' || e.key === 'ArrowUp'))) {
+      if (messageToEdit) {
+        setEditMessageText(e.currentTarget.innerText);
+      } else {
+        setMessageText(e.currentTarget.innerText);
+      }
+
+      handleMentionDetect(e);
+
+      if (typingTimout) {
+        if (!inTypingStateTimout) {
+          handleSendTypingState(true);
+        }
+
+        clearTimeout(typingTimout);
+      } else {
         handleSendTypingState(true);
       }
 
-      clearTimeout(typingTimout);
-    } else {
-      handleSendTypingState(true);
+      setTypingTimout(setTimeout(function () {
+        setTypingTimout(0);
+      }, 2000));
     }
-
-    setTypingTimout(setTimeout(function () {
-      setTypingTimout(0);
-    }, 2000));
   };
 
   var handleMentionDetect = function handleMentionDetect(e) {
+    var selPos = getCaretPosition(e.currentTarget);
+
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
-      var selPos = getCaretPosition(e.currentTarget);
-      console.log('selPos ... ', selPos);
+      setSelectionPos(selPos);
+    } else {
+      if (mentionedMembers.length) {
+        var edited = false;
+        var editMentions = mentionedMembers.map(function (men) {
+          if (men.start > selPos) {
+            if (!edited) {
+              edited = true;
+            }
+
+            var newMen = _extends({}, men);
+
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+              newMen.start -= 1;
+              newMen.end -= 1;
+            } else {
+              newMen.start += 1;
+              newMen.end += 1;
+            }
+
+            return newMen;
+          }
+
+          return men;
+        });
+
+        if (edited) {
+          setMentionedMembers(editMentions);
+        }
+      }
+    }
+
+    if (currentMentions && currentMentions.start === selPos - 1 && !mentionTyping) {
+      setMentionTyping(true);
+      setOpenMention(true);
+    }
+
+    if (e.key === '@' && !mentionTyping) {
+      setCurrentMentions({
+        start: selPos - 1,
+        typed: ''
+      });
+      setMentionTyping(true);
+      setOpenMention(true);
+    }
+
+    var shouldClose = false;
+
+    if (e.key === 'Backspace') {
+      var mentionToEdit = mentionedMembers.find(function (menMem) {
+        return menMem.start < selPos && menMem.end >= selPos;
+      });
+
+      if (mentionToEdit) {
+        var currentText = [messageText.slice(0, mentionToEdit.start + 1), messageText.slice(mentionToEdit.end)].join('');
+        setMessageText(currentText);
+        messageInputRef.current.innerText = currentText;
+        setMentionedMembers(function (prevState) {
+          return prevState.filter(function (mem) {
+            return mem.start !== mentionToEdit.start;
+          });
+        });
+        setMentionEdit(undefined);
+        setCursorPosition(messageInputRef.current, mentionToEdit.start + 1);
+        setOpenMention(true);
+        setMentionTyping(true);
+        setCurrentMentions({
+          start: mentionToEdit.start,
+          typed: ''
+        });
+      } else if (currentMentions) {
+        if (currentMentions.start >= selPos) {
+          shouldClose = true;
+          setCurrentMentions(undefined);
+          setOpenMention(false);
+          setMentionTyping(false);
+        } else {
+          setCurrentMentions({
+            start: currentMentions.start,
+            typed: messageText.slice(currentMentions.start + 1, selPos)
+          });
+        }
+      }
+    }
+
+    if (mentionTyping) {
+      if (e.key === ' ') {
+        handleCloseMentionsPopup();
+      } else if (!currentMentions.end && !shouldClose) {
+        var typedMessage = e.currentTarget.innerText;
+
+        var updateCurrentMentions = _extends({}, currentMentions);
+
+        updateCurrentMentions.typed = typedMessage.slice(updateCurrentMentions.start + 1).split(' ')[0];
+        setCurrentMentions(updateCurrentMentions);
+      }
+    }
+
+    if (mentionEdit && (e.key === 'Delete' || e.key === 'Backspace')) {
+      var _currentText = [messageText.slice(0, mentionEdit.start + 1), messageText.slice(mentionEdit.end)].join('');
+
+      setMessageText(_currentText);
+      messageInputRef.current.innerText = _currentText;
+      setMentionedMembers(function (prevState) {
+        return prevState.filter(function (mem) {
+          return mem.start !== mentionEdit.start;
+        });
+      });
+      setMentionEdit(undefined);
+      setCursorPosition(messageInputRef.current, mentionEdit.start + 1);
+      setCurrentMentions({
+        start: mentionEdit.start,
+        typed: ''
+      });
     }
   };
 
@@ -30679,7 +31049,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var shiftKey = event.shiftKey,
         charCode = event.charCode,
         type = event.type;
-    var shouldSend = charCode === 13 && shiftKey === false || type === 'click';
+    var shouldSend = charCode === 13 && shiftKey === false && !openMention || type === 'click';
 
     if (shouldSend) {
       event.preventDefault();
@@ -30688,12 +31058,50 @@ var SendMessageInput = function SendMessageInput(_ref) {
         handleEditMessage();
       } else if (messageText || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
+        var mentionedMembersPositions = {};
+        var sortedMentionedMembersDspNames = mentionedMembersDisplayName.sort(function (a, b) {
+          return a.displayName < b.displayName ? 1 : b.displayName < a.displayName ? -1 : 0;
+        });
+        var findIndexes = [];
+        sortedMentionedMembersDspNames.forEach(function (menMem) {
+          var menIndex = messageTexToSend.indexOf(menMem.displayName.trim());
+          var existingIndex = findIndexes.includes(menIndex);
+          var i = 0;
+
+          while (existingIndex) {
+            menIndex = messageTexToSend.indexOf(menMem.displayName, menIndex + 1);
+            existingIndex = findIndexes.includes(menIndex);
+            i++;
+
+            if (i > sortedMentionedMembersDspNames.length) {
+              break;
+            }
+          }
+
+          var mentionDisplayLength = menMem.displayName.length;
+
+          if (!mentionedMembersPositions[menMem.id] && menIndex >= 0) {
+            var _extends2;
+
+            findIndexes.push(menIndex);
+            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends2 = {}, _extends2[menMem.id] = {
+              loc: menIndex,
+              len: mentionDisplayLength
+            }, _extends2));
+          }
+        });
         var messageToSend = {
+          metadata: mentionedMembersPositions,
           body: messageTexToSend,
           mentionedMembers: [],
           attachments: [],
           type: 'text'
         };
+        messageToSend.mentionedMembers = mentionedMembers.filter(function (v, i, a) {
+          return a.findIndex(function (t) {
+            return t.id === v.id;
+          }) === i;
+        });
 
         if (messageForReply) {
           messageToSend.parent = messageForReply;
@@ -30768,6 +31176,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
         messageInputRef.current.innerText = '';
         setAttachments([]);
         handleCloseReply();
+        setMentionedMembers([]);
+        setMentionedMembersDisplayName([]);
+        setOpenMention(false);
+        setMentionTyping(false);
         fileUploader.current.value = '';
 
         if (inTypingState) {
@@ -30812,13 +31224,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
           var mentionDisplayLength = mentionedMembersDisplayName.length;
 
           if (!mentionedMembersPositions[menMem.id] && menIndex >= 0) {
-            var _extends2;
+            var _extends3;
 
             findIndexes.push(menIndex);
-            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends2 = {}, _extends2[menMem.id] = {
+            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends3 = {}, _extends3[menMem.id] = {
               loc: menIndex,
               len: mentionDisplayLength
-            }, _extends2));
+            }, _extends3));
           }
         }
       });
@@ -30899,9 +31311,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var setVideoIsReadyToSend = function setVideoIsReadyToSend(attachmentId) {
-    var _extends3;
+    var _extends4;
 
-    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends3 = {}, _extends3[attachmentId] = true, _extends3)));
+    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends4 = {}, _extends4[attachmentId] = true, _extends4)));
   };
 
   var handleJoinToChannel = function handleJoinToChannel() {
@@ -30915,6 +31327,29 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setIsEmojisOpened(false);
     }
   };
+
+  useEffect(function () {
+    if (mentionedMembers.length) {
+      var currentPos = getCaretPosition(messageInputRef.current);
+      var mentionToEdit = mentionedMembers.find(function (menMem) {
+        return menMem.start < currentPos && menMem.end >= currentPos;
+      });
+
+      if (mentionToEdit) {
+        setMentionEdit(mentionToEdit);
+        setCurrentMentions({
+          start: mentionToEdit.start,
+          typed: ''
+        });
+        setOpenMention(true);
+        setMentionTyping(true);
+      } else if (openMention || mentionTyping) {
+        handleCloseMentionsPopup();
+        setMentionTyping(false);
+        setOpenMention(false);
+      }
+    }
+  }, [selectionPos]);
 
   var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
     try {
@@ -31088,12 +31523,15 @@ var SendMessageInput = function SendMessageInput(_ref) {
     if (prevActiveChannelId && activeChannel.id && prevActiveChannelId !== activeChannel.id) {
       setMessageText('');
       handleCloseReply();
+      setMentionedMembers([]);
+      setMentionedMembersDisplayName([]);
       setAttachments([]);
 
       if (messageInputRef.current) {
         messageInputRef.current.focus();
       }
 
+      setOpenMention(false);
       handleCloseEditMode();
       clearTimeout(typingTimout);
     } else if (activeChannel.id) {
@@ -31190,7 +31628,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(Container$e, {
+  return React__default.createElement(Container$f, {
     margin: margin,
     border: border,
     borderRadius: borderRadius,
@@ -31223,7 +31661,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
     color: colors.primary
   }, replyMessageIcon || React__default.createElement(SvgReplyIcon, null), " Reply to", React__default.createElement(UserName$1, null, user.id === messageForReply.user.id ? user.firstName ? user.firstName + " " + user.lastName : user.id : makeUserName(contactsMap[messageForReply.user.id], messageForReply.user, getFromContacts))), messageForReply.attachments && messageForReply.attachments.length ? messageForReply.attachments[0].type === attachmentTypes.voice ? 'Voice' : messageForReply.attachments[0].type === attachmentTypes.image ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Photo') : messageForReply.attachments[0].type === attachmentTypes.video ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Video') : React__default.createElement(TextInOneLine, null, messageForReply.body || 'File') : MessageTextFormat({
     text: messageForReply.body,
-    message: messageForReply
+    message: messageForReply,
+    contactsMap: contactsMap,
+    getFromContacts: getFromContacts
   })))), !!attachments.length && React__default.createElement(ChosenAttachments, {
     fileBoxWidth: selectedFileAttachmentsBoxWidth
   }, attachments.map(function (attachment) {
@@ -31277,7 +31717,15 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: function onClick() {
       setIsEmojisOpened(!isEmojisOpened);
     }
-  }, React__default.createElement(SvgEmojiSmileIcon, null)), React__default.createElement(UploadFile, {
+  }, React__default.createElement(SvgEmojiSmileIcon, null)), React__default.createElement(MentionsContainer, {
+    ref: mentionsRef,
+    mentionsIsOpen: openMention
+  }, openMention && React__default.createElement(MentionMembersPopup, {
+    channelId: activeChannel.id,
+    addMentionMember: handleSetMention,
+    searchMention: currentMentions.typed,
+    handleMentionsPopupClose: handleCloseMentionsPopup
+  })), React__default.createElement(UploadFile, {
     ref: fileUploader,
     onChange: handleFileUpload,
     multiple: true,
@@ -31299,17 +31747,17 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, React__default.createElement(SvgSend, null)))));
 };
 
-var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
+var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
   return props.margin || '30px 16px 16px';
 }, colors.gray1, function (props) {
   return props.border || '';
 }, function (props) {
   return props.borderRadius || '4px';
 });
-var EditReplyMessageCont = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
-var EditMessageText = styled.p(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled.span(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
-var UserName$1 = styled.span(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageCont = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
+var EditMessageText = styled.p(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
+var UserName$1 = styled.span(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
 var EditReplyMessageHeader = styled.h4(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
@@ -31336,7 +31784,7 @@ var EmojiButton = styled.span(_templateObject11$6 || (_templateObject11$6 = _tag
 }, function (props) {
   return props.hoverColor || colors.primary;
 });
-var MentionsContainer = styled.span(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
+var MentionsContainer = styled.div(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
 var SendMessageIcon = styled.span(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n\n  color: ", ";\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
@@ -31699,7 +32147,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g, _templateObject6$g;
+var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$l, _templateObject5$h, _templateObject6$g;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -31923,7 +32371,7 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return React__default.createElement(Container$f, {
+  return React__default.createElement(Container$g, {
     isDirect: isDirectChannel
   }, toggleable && React__default.createElement(ActionHeader, {
     onClick: handleActionsOpen
@@ -32150,15 +32598,15 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
+var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
   return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
 });
-var ActionHeader = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
-var MenuTriggerIcon = styled.span(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
+var ActionHeader = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
+var MenuTriggerIcon = styled.span(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
-var ActionsMenu = styled.ul(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu = styled.ul(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose([""])));
 var ActionItem$1 = styled.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
@@ -32247,17 +32695,7 @@ function SvgMoreVert(props) {
   })));
 }
 
-var activeChannelMembersSelector = function activeChannelMembersSelector(store) {
-  return store.MembersReducer.activeChannelMembers;
-};
-var rolesSelector = function rolesSelector(store) {
-  return store.MembersReducer.roles;
-};
-var membersLoadingStateSelector = function membersLoadingStateSelector(store) {
-  return store.MembersReducer.membersLoadingState;
-};
-
-var _templateObject$w, _templateObject2$u, _templateObject3$o;
+var _templateObject$x, _templateObject2$v, _templateObject3$p;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
   var channelId = _ref.channelId,
@@ -32336,11 +32774,11 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }, "Save"))));
 };
 
-var RolesSelect = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
-var RoleSpan = styled.span(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
+var RolesSelect = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
+var RoleLabel = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
+var RoleSpan = styled.span(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$h, _templateObject6$h, _templateObject7$e, _templateObject8$c;
+var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$m, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -32490,14 +32928,14 @@ var Members = function Members(_ref) {
     dispatch(getContactsAC());
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return React__default.createElement(Container$g, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList, {
+  return React__default.createElement(Container$h, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
     onScroll: handleMembersListScroll
-  }, chekActionPermission('addMember') && React__default.createElement(MemberItem, {
+  }, chekActionPermission('addMember') && React__default.createElement(MemberItem$1, {
     key: 1,
     onClick: handleAddMemberPopup,
     addMemberIconColor: colors.primary
   }, React__default.createElement(SvgAddMember, null), (channel === null || channel === void 0 ? void 0 : channel.type) === CHANNEL_TYPE.PUBLIC ? 'Add subscribers' : 'Add members'), !!members.length && members.map(function (member, index) {
-    return React__default.createElement(MemberItem, {
+    return React__default.createElement(MemberItem$1, {
       key: member.id + index,
       hoverBackground: customColors.selectedChannelBackground
     }, React__default.createElement(Avatar, {
@@ -32506,7 +32944,7 @@ var Members = function Members(_ref) {
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$1, null, member.id === user.id ? 'You' : makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
+    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$2, null, member.id === user.id ? 'You' : makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
       color: colors.primary
     }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
       color: colors.purple
@@ -32516,7 +32954,7 @@ var Members = function Members(_ref) {
       watchToggleState: function watchToggleState(state) {
         return watchDropdownState(state, member.id);
       },
-      trigger: React__default.createElement(EditMemberIcon, null, React__default.createElement(SvgMoreVert, null))
+      trigger: React__default.createElement(EditMemberIcon$1, null, React__default.createElement(SvgMoreVert, null))
     }, React__default.createElement(DropdownOptionsUl, null, showChangeMemberRole && chekActionPermission('changeMemberRole') && React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
@@ -32594,24 +33032,24 @@ var Members = function Members(_ref) {
     toggleCreatePopup: handleAddMemberPopup
   }));
 };
-var Container$g = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose([""])));
-var ActionsMenu$1 = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled.div(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
-var MemberName$1 = styled.h4(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
-var EditMemberIcon = styled.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled.ul(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem = styled.li(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
+var Container$h = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu$1 = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
+var MemberNamePresence = styled.div(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
+var MemberName$2 = styled.h4(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
+var EditMemberIcon$1 = styled.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList$1 = styled.ul(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var MemberItem$1 = styled.li(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
   return props.hoverBackground || colors.gray0;
-}, EditMemberIcon, UserStatus);
+}, EditMemberIcon$1, UserStatus);
 var RoleBadge = styled.span(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n\n  &::after {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    border-radius: 12px;\n    width: 100%;\n    height: 100%;\n    background-color: ", ";\n    opacity: 0.1;\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.color || colors.primary;
 });
 
-var _templateObject$y, _templateObject2$w;
+var _templateObject$z, _templateObject2$x;
 
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
@@ -32630,7 +33068,7 @@ var Media = function Media(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return React__default.createElement(Container$h, null, attachments.map(function (file) {
+  return React__default.createElement(Container$i, null, attachments.map(function (file) {
     return React__default.createElement(MediaItem, {
       key: file.url,
       onClick: function onClick() {
@@ -32654,8 +33092,8 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$h = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
-var MediaItem = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
+var Container$i = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var MediaItem = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
 var _path$1a, _path2$8, _path3$4;
 
@@ -32743,7 +33181,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$z, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$i, _templateObject6$i, _templateObject7$f;
+var _templateObject$A, _templateObject2$y, _templateObject3$r, _templateObject4$n, _templateObject5$j, _templateObject6$i, _templateObject7$f;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -32758,7 +33196,7 @@ var Files = function Files(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
-  return React__default.createElement(Container$i, null, attachments.map(function (file) {
+  return React__default.createElement(Container$j, null, attachments.map(function (file) {
     return React__default.createElement(FileItem, {
       key: file.url,
       hoverBackgroundColor: filePreviewHoverBackgroundColor
@@ -32775,11 +33213,11 @@ var Files = function Files(_ref) {
     }, filePreviewDownloadIcon || React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$i = styled.ul(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled.a(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
-var FileIconCont = styled.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileHoverIconCont = styled.span(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled.img(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var Container$j = styled.ul(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DownloadWrapper = styled.a(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
+var FileIconCont = styled.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileHoverIconCont = styled.span(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileThumb = styled.img(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
 var FileItem = styled.div(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
@@ -32840,7 +33278,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$A, _templateObject2$y, _templateObject3$r, _templateObject4$n, _templateObject5$j;
+var _templateObject$B, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$k;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -32858,17 +33296,17 @@ var LinkItem = function LinkItem(_ref) {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled.span(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var LinkHoverIconCont = styled.span(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var LinkInfoCont = styled.div(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
-var FileItem$1 = styled.li(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var LinkIconCont = styled.span(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
+var LinkHoverIconCont = styled.span(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var LinkInfoCont = styled.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
+var FileItem$1 = styled.li(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
-var _templateObject$B;
+var _templateObject$C;
 
 var Links = function Links(_ref) {
   var channelId = _ref.channelId,
@@ -32882,7 +33320,7 @@ var Links = function Links(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
-  return React__default.createElement(Container$j, null, attachments.map(function (file) {
+  return React__default.createElement(Container$k, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
@@ -32894,7 +33332,7 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$j = styled.ul(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$k = styled.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
 var _rect$2, _circle$7, _path$1c;
 
@@ -33060,7 +33498,7 @@ function SvgVoicePreviewPauseHover(props) {
   })));
 }
 
-var _templateObject$C, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$k, _templateObject6$j, _templateObject7$g, _templateObject8$d;
+var _templateObject$D, _templateObject2$A, _templateObject3$t, _templateObject4$p, _templateObject5$l, _templateObject6$j, _templateObject7$g, _templateObject8$d;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -33193,13 +33631,13 @@ var VoiceItem = function VoiceItem(_ref) {
     type: 'audio/mpeg'
   })));
 };
-var FileIconCont$1 = styled.span(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
-var FileHoverIconCont$1 = styled.span(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
-var FileItem$2 = styled.li(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var FileIconCont$1 = styled.span(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled.span(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled.li(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
-var AudioInfo = styled.div(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioInfo = styled.div(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioTitle = styled.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 var AudioDate = styled.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
@@ -33210,7 +33648,7 @@ var AudioSendTime = styled.span(_templateObject7$g || (_templateObject7$g = _tag
 });
 var Audio = styled.audio(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$D;
+var _templateObject$E;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
@@ -33231,7 +33669,7 @@ var Voices = function Voices(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return React__default.createElement(Container$k, null, attachments.map(function (file) {
+  return React__default.createElement(Container$l, null, attachments.map(function (file) {
     return React__default.createElement(VoiceItem, {
       key: file.id,
       file: file,
@@ -33249,9 +33687,9 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$k = styled.ul(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$l = styled.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$E, _templateObject2$A;
+var _templateObject$F, _templateObject2$B;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -33302,7 +33740,7 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return React__default.createElement(Container$l, null, React__default.createElement(DetailsTabHeader, {
+  return React__default.createElement(Container$m, null, React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
@@ -33369,8 +33807,8 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$l = styled.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
+var Container$m = styled.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
   return props.activeTabColor || colors.primary;
 });
 
@@ -33408,15 +33846,15 @@ function SvgCamera(props) {
   })));
 }
 
-var _templateObject$F, _templateObject2$B, _templateObject3$t, _templateObject4$p;
-var Container$m = styled.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
+var _templateObject$G, _templateObject2$C, _templateObject3$u, _templateObject4$q;
+var Container$n = styled.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
 });
-var AvatarCont = styled.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
-var DropDownWrapper = styled.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
-var EditChannelFooter = styled(ButtonBlock)(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
+var AvatarCont = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
+var DropDownWrapper = styled.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
+var EditChannelFooter = styled(ButtonBlock)(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
@@ -33542,7 +33980,7 @@ var EditChannel = function EditChannel(_ref) {
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$m, {
+  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$n, {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode
@@ -33615,7 +34053,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$G, _templateObject2$C, _templateObject3$u, _templateObject4$q, _templateObject5$l, _templateObject6$k, _templateObject7$h;
+var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$r, _templateObject5$m, _templateObject6$k, _templateObject7$h;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -33769,7 +34207,7 @@ var Details = function Details(_ref) {
   useEffect(function () {
     setMounted(true);
   }, []);
-  return React__default.createElement(Container$n, {
+  return React__default.createElement(Container$o, {
     mounted: mounted
   }, React__default.createElement(ChannelDetailsHeader, null, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
     onClick: function onClick() {
@@ -33910,15 +34348,15 @@ var Details = function Details(_ref) {
     privateChannelMakeAdminPopupDescription: privateChannelMakeAdminPopupDescription
   })));
 };
-var Container$n = styled.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
+var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
   return props.mounted && ' width: 360px';
 });
-var ChannelDetailsHeader = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
-var ChatDetails = styled.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChannelDetailsHeader = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
+var ChatDetails = styled.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
-var ChannelInfo$3 = styled.div(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
-var DetailsHeader = styled.div(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
+var ChannelInfo$3 = styled.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
+var DetailsHeader = styled.div(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
 var ChannelName$1 = styled(SectionHeader)(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
@@ -34156,12 +34594,12 @@ function SvgChatLogo(props) {
   })));
 }
 
-var _templateObject$H, _templateObject2$D;
-var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
-var Logo = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
+var _templateObject$I, _templateObject2$E;
+var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
+var Logo = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
 
 function SceytChatHeader() {
-  return React__default.createElement(Container$o, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
+  return React__default.createElement(Container$p, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
 var _path$1i;
@@ -34195,7 +34633,7 @@ function SvgChevronDown(props) {
   })));
 }
 
-var _templateObject$I;
+var _templateObject$J;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -34239,7 +34677,7 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";
 }, colors.white);
 

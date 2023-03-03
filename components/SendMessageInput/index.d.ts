@@ -26,5 +26,7 @@ interface SendMessageProps {
     replyMessageIcon?: JSX.Element;
 }
 declare const SendMessageInput: React.FC<SendMessageProps>;
-export declare const MentionsContainer: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const MentionsContainer: import("styled-components").StyledComponent<"div", any, {
+    mentionsIsOpen?: boolean | undefined;
+}, never>;
 export default SendMessageInput;

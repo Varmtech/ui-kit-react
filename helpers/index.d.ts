@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { IAttachment, IContact, IMessage, IUser } from '../types';
+import { IAttachment, IContact, IContactsMap, IMessage, IUser } from '../types';
 export declare const messageStatusIcon: (messageStatus: string, iconColor?: string | undefined, readIconColor?: string | undefined) => JSX.Element;
 export declare const isAlphanumeric: (str: string) => boolean;
 export declare const getFileExtension: (filename: string) => string | undefined;
@@ -8,9 +8,11 @@ export declare const MessageTextFormatForEdit: ({ text, message }: {
     message: any;
 }) => string;
 export declare const urlRegex: RegExp;
-export declare const MessageTextFormat: ({ text, message }: {
+export declare const MessageTextFormat: ({ text, message, contactsMap, getFromContacts }: {
     text: string;
     message: any;
+    contactsMap: IContactsMap;
+    getFromContacts: boolean;
 }) => string | string[];
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const setMessageTypeByAttachment: (attachmentType: string) => "file" | "media";
