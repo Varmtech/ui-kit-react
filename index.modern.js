@@ -31237,6 +31237,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         setMentionedMembersDisplayName([]);
         setOpenMention(false);
         setMentionTyping(false);
+        setCurrentMentions(undefined);
         fileUploader.current.value = '';
 
         if (inTypingState) {
@@ -31580,20 +31581,22 @@ var SendMessageInput = function SendMessageInput(_ref) {
     if (prevActiveChannelId && activeChannel.id && prevActiveChannelId !== activeChannel.id) {
       setMessageText('');
       handleCloseReply();
-      setMentionedMembers([]);
       setMentionedMembersDisplayName([]);
       setAttachments([]);
-
-      if (messageInputRef.current) {
-        messageInputRef.current.focus();
-      }
-
-      setOpenMention(false);
       handleCloseEditMode();
       clearTimeout(typingTimout);
     } else if (activeChannel.id) {
       prevActiveChannelId = activeChannel.id;
     }
+
+    if (messageInputRef.current) {
+      messageInputRef.current.focus();
+    }
+
+    setMentionedMembers([]);
+    setOpenMention(false);
+    setCurrentMentions(undefined);
+    setMentionTyping(false);
   }, [activeChannel.id]);
   useEffect(function () {
     if (messageText || editMessageText && editMessageText !== messageToEdit.body || attachments.length) {
