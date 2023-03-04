@@ -16545,8 +16545,9 @@ var Channel = function Channel(_ref) {
   })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), lastMessage.body)))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), React__default.createElement(UnreadInfo, null, !!(channel.unreadMentionsCount && channel.unreadMentionsCount > 0) && React__default.createElement(UnreadMentionIconWrapper, {
-    iconColor: colors.primary
-  }, React__default.createElement(SvgUnreadMention, null)), (!!channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
+    iconColor: colors.primary,
+    rightMargin: !!(channel.unreadMessageCount || channel.markedAsUnread)
+  }, React__default.createElement(SvgUnreadMention, null)), !!(channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
     backgroundColor: colors.primary,
     isMuted: channel.muted
   }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : '')));
@@ -16597,7 +16598,9 @@ var LastMessageText = styled__default.span(_templateObject8$1 || (_templateObjec
 var ChannelStatus = styled__default.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 16px;\n  top: 15px;\n  display: flex;\n  flex-wrap: wrap;\n  height: 42px;\n  margin-left: auto;\n"])));
 var LastMessageDate = styled__default.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.gray9);
 var DeliveryIconCont = styled__default.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 6px;\n  line-height: 13px;\n"])));
-var UnreadMentionIconWrapper = styled__default.span(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 8px;\n  line-height: 13px;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var UnreadMentionIconWrapper = styled__default.span(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  margin-right: ", ";\n  line-height: 13px;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.rightMargin && '8px';
+}, function (props) {
   return props.iconColor || colors.primary;
 });
 var TypingIndicator = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  font-style: italic;\n"])));
@@ -21302,7 +21305,9 @@ var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentId)
       }
     });
   } else {
-    return false;
+    return new Promise(function (_resolve, reject) {
+      return reject(new Error('Cache not available'));
+    });
   }
 };
 
@@ -30250,13 +30255,15 @@ var MessageList = function MessageList(_ref2) {
     onDrop: handleDropFile,
     onDragOver: handleDragOver
   }, React__default.createElement(IconWrapper$1, {
-    draggable: true
+    draggable: true,
+    iconColor: colors.primary
   }, React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), isDragging === 'media' && React__default.createElement(DropAttachmentArea, {
     draggable: true,
     onDrop: handleDropMedia,
     onDragOver: handleDragOver
   }, React__default.createElement(IconWrapper$1, {
-    draggable: true
+    draggable: true,
+    iconColor: colors.primary
   }, React__default.createElement(SvgChoseMedia, null)), "Drag & drop to send as media")), React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
     dateDividerFontSize: dateDividerFontSize,
     dateDividerTextColor: dateDividerTextColor,
@@ -30422,7 +30429,9 @@ var DragAndDropContainer = styled__default.div(_templateObject5$e || (_templateO
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper$1 = styled__default.span(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, colors.primary);
+var IconWrapper$1 = styled__default.span(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, function (props) {
+  return props.iconColor || colors.primary;
+});
 var DropAttachmentArea = styled__default.div(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
   return props.margin || '12px 32px 32px';
 }, colors.gray6, colors.gray5, IconWrapper$1, colors.white);

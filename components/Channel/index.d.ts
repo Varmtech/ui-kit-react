@@ -46,6 +46,7 @@ export declare const LastMessageDate: import("styled-components").StyledComponen
 export declare const DeliveryIconCont: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UnreadMentionIconWrapper: import("styled-components").StyledComponent<"span", any, {
     iconColor?: string | undefined;
+    rightMargin?: boolean | undefined;
 }, never>;
 export declare const TypingIndicator: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UnreadInfo: import("styled-components").StyledComponent<"span", any, {}, never>;

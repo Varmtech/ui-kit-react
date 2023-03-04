@@ -77,7 +77,9 @@ export declare const DragAndDropContainer: import("styled-components").StyledCom
     topOffset?: number | undefined;
     height?: number | undefined;
 }, never>;
-export declare const IconWrapper: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const IconWrapper: import("styled-components").StyledComponent<"span", any, {
+    iconColor?: string | undefined;
+}, never>;
 export declare const DropAttachmentArea: import("styled-components").StyledComponent<"div", any, {
     margin?: string | undefined;
 }, never>;
