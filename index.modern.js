@@ -30680,6 +30680,15 @@ function MentionMembersPopup(_ref) {
     }
   };
 
+  var handleClicks = function handleClicks(e) {
+    if (e.target.closest('.mention_member_popup')) {
+      return;
+    }
+
+    handleMentionsPopupClose();
+  };
+
+  useEventListener('click', handleClicks);
   useEffect(function () {
     dispatch(getMembersAC(channelId));
   }, [channelId]);
@@ -30715,7 +30724,9 @@ function MentionMembersPopup(_ref) {
       setFilteredMembers(sortMembers(_searchedMembers || []));
     }
   }, [searchMention]);
-  return React__default.createElement(Container$e, null, React__default.createElement(MembersList, {
+  return React__default.createElement(Container$e, {
+    className: 'mention_member_popup'
+  }, React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
   }, filteredMembers.map(function (member, index) {
     return React__default.createElement(MemberItem, {
@@ -31074,7 +31085,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
         var updateCurrentMentions = _extends({}, currentMentions);
 
-        updateCurrentMentions.typed = typedMessage.slice(updateCurrentMentions.start + 1).split(' ')[0];
+        updateCurrentMentions.typed = typedMessage.slice(updateCurrentMentions.start + 1, selPos);
         setCurrentMentions(updateCurrentMentions);
       }
     }
