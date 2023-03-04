@@ -31022,7 +31022,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setOpenMention(true);
     }
 
-    if (e.key === '@' && !mentionTyping) {
+    if (e.key === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
