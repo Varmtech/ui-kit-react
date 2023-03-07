@@ -1,4 +1,4 @@
-import React__default, { createElement, Children, useState, useEffect, useRef, useLayoutEffect, useCallback, createRef, useMemo } from 'react';
+import React__default, { createElement, Children, useState, useEffect, useRef, useLayoutEffect, useCallback, createRef } from 'react';
 import { useDispatch, useSelector, shallowEqual, Provider } from 'react-redux';
 import createSagaMiddleware, { eventChannel } from 'redux-saga';
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
@@ -7892,7 +7892,7 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
         var user = getClient().chatClient.user;
         messageText.unshift("" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mentionsPositions[mentionMemberId].loc)), React__default.createElement(MentionedUser, {
           key: "" + mentionMemberId
-        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts)), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mentionsPositions[mentionMemberId].loc + mentionsPositions[mentionMemberId].len)));
+        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mentionsPositions[mentionMemberId].loc + mentionsPositions[mentionMemberId].len)));
       }
     };
 
@@ -8081,11 +8081,10 @@ var getCaretPosition = function getCaretPosition(editableDiv) {
 
       if (range.parentElement() === editableDiv) {
         var tempEl = document.createElement('span');
-        editableDiv.insertBefore(tempEl, editableDiv.firstChild);
-        var tempRange = range.duplicate();
-        tempRange.moveToElementText(tempEl);
-        tempRange.setEndPoint('EndToEnd', range);
-        caretPos = tempRange.text.length;
+        editableDiv.childNodes.forEach(function (node) {
+          editableDiv.insertBefore(tempEl, node);
+          caretPos += node.textContent.length;
+        });
       }
     }
   }
@@ -10518,7 +10517,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 41 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 48 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 50 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 75 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 91 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 98 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 133 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 137 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 141 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 146 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 166 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 182 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 195 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 203 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 211 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 217 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 234 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 239 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 244 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 249 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 254 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 258 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 262 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 269 : 273;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 41 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 48 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 50 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 75 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 91 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 98 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 135 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 139 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 143 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 168 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 184 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 197 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 205 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 213 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 219 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 236 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 241 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 246 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 251 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 256 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 260 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 264 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 271 : 275;
           break;
 
         case 14:
@@ -10543,7 +10542,7 @@ function watchForEvents() {
           return put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 24:
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 25:
           channel = args.channel;
@@ -10553,7 +10552,7 @@ function watchForEvents() {
 
         case 29:
 
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 32:
           console.log('channel LEAVE ... ');
@@ -10573,7 +10572,7 @@ function watchForEvents() {
           return put(removeMemberFromListAC([member]));
 
         case 40:
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 41:
           console.log('channel BLOCK ... ');
@@ -10589,11 +10588,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 47:
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 48:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 50:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -10655,7 +10654,7 @@ function watchForEvents() {
           }));
 
         case 74:
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 75:
           _channel4 = args.channel;
@@ -10692,7 +10691,7 @@ function watchForEvents() {
           }));
 
         case 90:
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 91:
           updatedChannel = args.updatedChannel;
@@ -10711,7 +10710,7 @@ function watchForEvents() {
           }));
 
         case 97:
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
         case 98:
           _channel5 = args.channel, message = args.message;
@@ -10735,46 +10734,50 @@ function watchForEvents() {
           return call(setChannelInMap, _channel5);
 
         case 109:
-          _context3.next = 114;
+          _context3.next = 116;
           break;
 
         case 111:
           if (message.repliedInThread) {
-            _context3.next = 114;
+            _context3.next = 116;
             break;
           }
 
           _context3.next = 114;
-          return put(updateChannelDataAC(message, channelForAdd));
+          return put(updateChannelLastMessageAC(message, channelForAdd));
 
         case 114:
+          _context3.next = 116;
+          return put(updateChannelDataAC(message, channelForAdd));
+
+        case 116:
           if (!(_channel5.id === _activeChannelId4)) {
-            _context3.next = 120;
+            _context3.next = 122;
             break;
           }
 
           if (getHasNextCached()) {
-            _context3.next = 118;
+            _context3.next = 120;
             break;
           }
 
-          _context3.next = 118;
+          _context3.next = 120;
           return put(addMessageAC(message));
 
-        case 118:
+        case 120:
           addAllMessages([message], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 120:
+        case 122:
           if (getMessagesFromMap(_channel5.id) && getMessagesFromMap(_channel5.id).length) {
             addMessageToMap(_channel5.id, message);
           }
 
-          _context3.next = 123;
+          _context3.next = 125;
           return put(updateChannelDataAC(_channel5.id, _extends({}, channelForAdd)));
 
-        case 123:
+        case 125:
           if (!(message.user.id !== SceytChatClient.chatClient.user.id)) {
-            _context3.next = 132;
+            _context3.next = 134;
             break;
           }
 
@@ -10785,25 +10788,25 @@ function watchForEvents() {
           }
 
           if (!(message.repliedInThread && message.parent.id)) {
-            _context3.next = 130;
+            _context3.next = 132;
             break;
           }
 
-          _context3.next = 128;
+          _context3.next = 130;
           return put(markMessagesAsDeliveredAC(message.parent.id, [message.id]));
 
-        case 128:
-          _context3.next = 132;
+        case 130:
+          _context3.next = 134;
           break;
 
-        case 130:
-          _context3.next = 132;
+        case 132:
+          _context3.next = 134;
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
-        case 132:
-          return _context3.abrupt("break", 274);
+        case 134:
+          return _context3.abrupt("break", 276);
 
-        case 133:
+        case 135:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
             var channelId, markerList, channel, _activeChannelId5, lastMessage, updateLastMessage, markersMap;
 
@@ -10879,19 +10882,19 @@ function watchForEvents() {
                 }
               }
             }, _callee);
-          })(), "t1", 134);
+          })(), "t1", 136);
 
-        case 134:
+        case 136:
           _ret = _context3.t1;
 
           if (!(_ret === "break")) {
-            _context3.next = 137;
+            _context3.next = 139;
             break;
           }
 
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
-        case 137:
+        case 139:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
             var channel, from;
             return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -10919,150 +10922,150 @@ function watchForEvents() {
                 }
               }
             }, _callee2);
-          })(), "t2", 138);
+          })(), "t2", 140);
 
-        case 138:
+        case 140:
           _ret2 = _context3.t2;
 
           if (!(_ret2 === "break")) {
-            _context3.next = 141;
+            _context3.next = 143;
             break;
           }
 
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
-        case 141:
+        case 143:
           _channel6 = args.channel, from = args.from;
 
           if (typingUsersTimeout[from.id]) {
             clearTimeout(typingUsersTimeout[from.id]);
           }
 
-          _context3.next = 145;
+          _context3.next = 147;
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
-        case 145:
-          return _context3.abrupt("break", 274);
+        case 147:
+          return _context3.abrupt("break", 276);
 
-        case 146:
+        case 148:
           channelId = args.channelId;
           console.log('channel DELETE ... ');
-          _context3.next = 150;
+          _context3.next = 152;
           return call(getActiveChannelId);
 
-        case 150:
+        case 152:
           _activeChannelId6 = _context3.sent;
           _channel7 = getChannelFromMap(channelId);
 
           if (!_channel7) {
-            _context3.next = 157;
+            _context3.next = 159;
             break;
           }
 
-          _context3.next = 155;
-          return put(removeChannelAC(channelId));
-
-        case 155:
           _context3.next = 157;
-          return call(removeChannelFromMap, channelId);
+          return put(removeChannelAC(channelId));
 
         case 157:
           _context3.next = 159;
-          return put(setChannelToRemoveAC(_channel7));
+          return call(removeChannelFromMap, channelId);
 
         case 159:
+          _context3.next = 161;
+          return put(setChannelToRemoveAC(_channel7));
+
+        case 161:
           if (!(_activeChannelId6 === channelId)) {
-            _context3.next = 165;
+            _context3.next = 167;
             break;
           }
 
-          _context3.next = 162;
+          _context3.next = 164;
           return call(getLastChannelFromMap);
 
-        case 162:
+        case 164:
           _activeChannel = _context3.sent;
-          _context3.next = 165;
+          _context3.next = 167;
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
-        case 165:
-          return _context3.abrupt("break", 274);
+        case 167:
+          return _context3.abrupt("break", 276);
 
-        case 166:
+        case 168:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
           _activeChannelId7 = getActiveChannelId();
           console.log('channel DELETE_MESSAGE ... ');
           _channelExists6 = checkChannelExists(_channel8.id);
 
           if (!(_channel8.id === _activeChannelId7)) {
-            _context3.next = 174;
+            _context3.next = 176;
             break;
           }
 
           updateMessageOnAllMessages(deletedMessage.id, deletedMessage);
-          _context3.next = 174;
+          _context3.next = 176;
           return put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 174:
+        case 176:
           updateMessageOnMap(_channel8.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
 
           if (!_channelExists6) {
-            _context3.next = 181;
+            _context3.next = 183;
             break;
           }
 
-          _context3.next = 178;
+          _context3.next = 180;
           return put(updateChannelDataAC(_channel8.id, {
             unreadMessageCount: _channel8.unreadMessageCount
           }));
 
-        case 178:
+        case 180:
           if (!(_channel8.lastMessage.id === deletedMessage.id)) {
-            _context3.next = 181;
+            _context3.next = 183;
             break;
           }
 
-          _context3.next = 181;
+          _context3.next = 183;
           return put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
-        case 181:
-          return _context3.abrupt("break", 274);
+        case 183:
+          return _context3.abrupt("break", 276);
 
-        case 182:
+        case 184:
           _channel9 = args.channel, _message = args.message;
           console.log('channel EDIT_MESSAGE ... ');
           _activeChannelId8 = getActiveChannelId();
           _channelExists7 = checkChannelExists(_channel9.id);
 
           if (!(_channel9.id === _activeChannelId8)) {
-            _context3.next = 189;
+            _context3.next = 191;
             break;
           }
 
-          _context3.next = 189;
+          _context3.next = 191;
           return put(updateMessageAC(_message.id, {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments
           }));
 
-        case 189:
+        case 191:
           if (!_channelExists7) {
-            _context3.next = 193;
+            _context3.next = 195;
             break;
           }
 
           if (!(_channel9.lastMessage.id === _message.id)) {
-            _context3.next = 193;
+            _context3.next = 195;
             break;
           }
 
-          _context3.next = 193;
+          _context3.next = 195;
           return put(updateChannelLastMessageAC(_message, _channel9));
 
-        case 193:
+        case 195:
           if (checkChannelExistsOnMessagesMap(_channel9.id)) {
             updateMessageOnMap(_channel9.id, {
               messageId: _message.id,
@@ -11070,181 +11073,181 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
-        case 195:
+        case 197:
           console.log('channel REACTION_ADDED ... ');
           _channel10 = args.channel, user = args.user, _message2 = args.message, reaction = args.reaction;
           isSelf = user.id === SceytChatClient.chatClient.user.id;
           _activeChannelId9 = getActiveChannelId();
 
           if (!(_channel10.id === _activeChannelId9)) {
-            _context3.next = 202;
+            _context3.next = 204;
             break;
           }
 
-          _context3.next = 202;
+          _context3.next = 204;
           return put(addReactionToMessageAC(_message2, reaction, isSelf));
 
-        case 202:
-          return _context3.abrupt("break", 274);
+        case 204:
+          return _context3.abrupt("break", 276);
 
-        case 203:
+        case 205:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ');
           _isSelf = _user.id === SceytChatClient.chatClient.user.id;
           _activeChannelId10 = getActiveChannelId();
 
           if (!(_channel11.id === _activeChannelId10)) {
-            _context3.next = 210;
+            _context3.next = 212;
             break;
           }
 
-          _context3.next = 210;
+          _context3.next = 212;
           return put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 210:
-          return _context3.abrupt("break", 274);
+        case 212:
+          return _context3.abrupt("break", 276);
 
-        case 211:
+        case 213:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 216;
+          _context3.next = 218;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 216:
-          return _context3.abrupt("break", 274);
+        case 218:
+          return _context3.abrupt("break", 276);
 
-        case 217:
+        case 219:
           _channel13 = args.channel;
           console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 221;
+          _context3.next = 223;
           return call(getActiveChannelId);
 
-        case 221:
+        case 223:
           _activeChannelId11 = _context3.sent;
-          _context3.next = 224;
+          _context3.next = 226;
           return call(checkChannelExists, _channel13.id);
 
-        case 224:
+        case 226:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId11)) {
-            _context3.next = 229;
+            _context3.next = 231;
             break;
           }
 
-          _context3.next = 228;
+          _context3.next = 230;
           return put(clearMessagesAC());
 
-        case 228:
+        case 230:
           removeAllMessages();
 
-        case 229:
+        case 231:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 233;
+            _context3.next = 235;
             break;
           }
 
-          _context3.next = 233;
+          _context3.next = 235;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: {},
             unreadMessageCount: 0
           }));
 
-        case 233:
-          return _context3.abrupt("break", 274);
+        case 235:
+          return _context3.abrupt("break", 276);
 
-        case 234:
+        case 236:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 238;
+          _context3.next = 240;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 238:
-          return _context3.abrupt("break", 274);
+        case 240:
+          return _context3.abrupt("break", 276);
 
-        case 239:
+        case 241:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 243;
+          _context3.next = 245;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 243:
-          return _context3.abrupt("break", 274);
+        case 245:
+          return _context3.abrupt("break", 276);
 
-        case 244:
+        case 246:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context3.next = 248;
+          _context3.next = 250;
           return put(setChannelToHideAC(_channel16));
 
-        case 248:
-          return _context3.abrupt("break", 274);
+        case 250:
+          return _context3.abrupt("break", 276);
 
-        case 249:
+        case 251:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context3.next = 253;
+          _context3.next = 255;
           return put(setChannelToUnHideAC(_channel17));
 
-        case 253:
-          return _context3.abrupt("break", 274);
+        case 255:
+          return _context3.abrupt("break", 276);
 
-        case 254:
+        case 256:
           _channel18 = args.channel;
-          _context3.next = 257;
+          _context3.next = 259;
           return put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 257:
-          return _context3.abrupt("break", 274);
+        case 259:
+          return _context3.abrupt("break", 276);
 
-        case 258:
+        case 260:
           _channel19 = args.channel;
-          _context3.next = 261;
+          _context3.next = 263;
           return put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 261:
-          return _context3.abrupt("break", 274);
+        case 263:
+          return _context3.abrupt("break", 276);
 
-        case 262:
+        case 264:
           console.log('channel CHANGE_ROLE ... ');
-          _context3.next = 266;
+          _context3.next = 268;
           return call(getActiveChannelId);
 
-        case 266:
+        case 268:
 
-          return _context3.abrupt("break", 274);
+          return _context3.abrupt("break", 276);
 
-        case 269:
+        case 271:
           status = args.status;
-          _context3.next = 272;
+          _context3.next = 274;
           return put(setConnectionStatusAC(status));
 
-        case 272:
-          return _context3.abrupt("break", 274);
+        case 274:
+          return _context3.abrupt("break", 276);
 
-        case 273:
+        case 275:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 274:
+        case 276:
           _context3.next = 5;
           break;
 
-        case 276:
+        case 278:
         case "end":
           return _context3.stop();
       }
@@ -12427,7 +12430,7 @@ function checkUsersStatus(action) {
           usersToUpdateMap = {};
           update = false;
           updatedUsers.forEach(function (updatedUser) {
-            if (updatedUser.presence && (updatedUser.presence.state !== usersMap[updatedUser.id].state || updatedUser.presence.lastActiveAt !== usersMap[updatedUser.id].lastActiveAt)) {
+            if (updatedUser.presence && updatedUser.presence.state !== usersMap[updatedUser.id].state) {
               usersToUpdateMap[updatedUser.id] = updatedUser;
               update = true;
             }
@@ -16416,7 +16419,7 @@ function useUpdatePresence(channel, isVisible) {
     }
   }, [connectionStatus]);
   useEffect(function () {
-    if (channel.peer && usersMap[channel.peer.id] && channel.peer.presence && (channel.peer.presence.state !== usersMap[channel.peer.id].state || channel.peer.presence.lastActiveAt !== usersMap[channel.peer.id].lastActiveAt)) {
+    if (channel.peer && usersMap[channel.peer.id] && channel.peer.presence && channel.peer.presence.state !== usersMap[channel.peer.id].state) {
       usersMap[channel.peer.id] = channel.peer.presence;
     }
   }, [channel]);
@@ -19780,7 +19783,9 @@ function ChatHeader(_ref) {
 }
 
 var _templateObject$h;
-var Container$9 = styled.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: 12px auto 4px;\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n    }\n  }\n"])), function (props) {
+var Container$9 = styled.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n    }\n  }\n"])), function (props) {
+  return props.noMargin ? '0 auto' : '16px auto 0';
+}, function (props) {
   return props.dividerVisibility ? 'flex' : 'none';
 }, function (props) {
   return props.width || '100%';
@@ -19821,7 +19826,8 @@ function MessageDivider(_ref) {
       newMessagesSeparatorBorder = _ref.newMessagesSeparatorBorder,
       newMessagesSeparatorBorderRadius = _ref.newMessagesSeparatorBorderRadius,
       newMessagesSeparatorBackground = _ref.newMessagesSeparatorBackground,
-      newMessagesSeparatorLeftRightSpaceWidth = _ref.newMessagesSeparatorLeftRightSpaceWidth;
+      newMessagesSeparatorLeftRightSpaceWidth = _ref.newMessagesSeparatorLeftRightSpaceWidth,
+      noMargin = _ref.noMargin;
   return React__default.createElement(Container$9, {
     className: unread ? 'unread' : 'divider',
     systemMessage: systemMessage,
@@ -19832,7 +19838,8 @@ function MessageDivider(_ref) {
     dateDividerBackgroundColor: dateDividerBackgroundColor || newMessagesSeparatorBackground,
     dateDividerBorderRadius: dateDividerBorderRadius || newMessagesSeparatorBorderRadius,
     width: newMessagesSeparatorWidth,
-    newMessagesSeparatorLeftRightSpaceWidth: newMessagesSeparatorLeftRightSpaceWidth
+    newMessagesSeparatorLeftRightSpaceWidth: newMessagesSeparatorLeftRightSpaceWidth,
+    noMargin: noMargin
   }, React__default.createElement("div", null, React__default.createElement("span", null, dividerText)));
 }
 
@@ -20643,6 +20650,7 @@ var EmojiIcon = function EmojiIcon(_ref) {
 function EmojisPopup(_ref2) {
   var handleAddEmoji = _ref2.handleAddEmoji,
       handleEmojiPopupToggle = _ref2.handleEmojiPopupToggle,
+      rtlDirection = _ref2.rtlDirection,
       rightSide = _ref2.rightSide;
 
   var _useState = useState('People'),
@@ -20706,7 +20714,8 @@ function EmojisPopup(_ref2) {
   }, []);
   return React__default.createElement(Container$a, {
     rightSide: rightSide,
-    id: 'emojisContainer'
+    id: 'emojisContainer',
+    rtlDirection: rtlDirection
   }, React__default.createElement(EmojiHeader, null, activeCollection), React__default.createElement(EmojiSection, {
     ref: emojiContainerRef,
     onScroll: handleEmojiListScroll
@@ -20745,8 +20754,10 @@ function EmojisPopup(_ref2) {
     }));
   })));
 }
-var Container$a = styled.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  bottom: 46px;\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  background: ", ";\n  z-index: 35;\n"])), function (props) {
-  return props.rightSide ? '-276px' : '-8px';
+var Container$a = styled.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  bottom: 46px;\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  background: ", ";\n  z-index: 35;\n"])), function (props) {
+  return props.rtlDirection ? '' : props.rightSide ? '-276px' : '0';
+}, function (props) {
+  return props.rtlDirection && '0';
 }, colors.gray1, colors.white);
 var EmojiHeader = styled.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  height: 32px;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 18px;\n  color: ", ";\n  display: flex;\n  align-items: flex-end;\n  padding: 3px 18px;\n"])), colors.gray6);
 var EmojiSection = styled.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  height: 166px;\n  overflow-x: hidden;\n"])));
@@ -20926,6 +20937,7 @@ function MessageActions(_ref) {
     ref: emojisRef,
     rtlDirection: rtlDirection
   }, reactionIsOpen && React__default.createElement(EmojisPopup, {
+    rtlDirection: rtlDirection,
     handleEmojiPopupToggle: setReactionIsOpen,
     handleAddEmoji: handleAddEmoji
   }))));
@@ -20938,7 +20950,7 @@ var MessageActionsWrapper = styled.div(_templateObject$j || (_templateObject$j =
   var rtlDirection = _ref3.rtlDirection;
   return rtlDirection && '0';
 });
-var EditMessageContainer = styled.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, colors.gray1);
 var Action = styled.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 9px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n\n  &:hover {\n    color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
@@ -20948,10 +20960,10 @@ var Action = styled.div(_templateObject3$d || (_templateObject3$d = _taggedTempl
 }, function (props) {
   return props.hoverIconColor || colors.cobalt1;
 }, ItemNote);
-var EmojiContainer = styled.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  bottom: 0;\n  z-index: 99;\n"])), function (props) {
-  return props.rtlDirection ? '-84px' : '';
+var EmojiContainer = styled.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  bottom: -10px;\n  z-index: 99;\n"])), function (props) {
+  return props.rtlDirection ? '' : '0';
 }, function (props) {
-  return props.rtlDirection ? '' : '-84px';
+  return props.rtlDirection && '0';
 });
 
 var _path$E;
@@ -28382,7 +28394,6 @@ var Message = function Message(_ref) {
       channel = _ref.channel,
       handleScrollToRepliedMessage = _ref.handleScrollToRepliedMessage,
       handleMediaItemClick = _ref.handleMediaItemClick,
-      isPendingMessage = _ref.isPendingMessage,
       prevMessage = _ref.prevMessage,
       nextMessage = _ref.nextMessage,
       firstMessage = _ref.firstMessage,
@@ -28449,8 +28460,23 @@ var Message = function Message(_ref) {
       starIconTooltipText = _ref.starIconTooltipText,
       reportIconTooltipText = _ref.reportIconTooltipText,
       messageActionIconsColor = _ref.messageActionIconsColor,
-      reactionsBorderColor = _ref.reactionsBorderColor,
       fileAttachmentsIcon = _ref.fileAttachmentsIcon,
+      _ref$reactionsDisplay = _ref.reactionsDisplayCount,
+      reactionsDisplayCount = _ref$reactionsDisplay === void 0 ? 5 : _ref$reactionsDisplay,
+      _ref$showEachReaction = _ref.showEachReactionCount,
+      showEachReactionCount = _ref$showEachReaction === void 0 ? true : _ref$showEachReaction,
+      reactionItemBorder = _ref.reactionItemBorder,
+      reactionItemBorderRadius = _ref.reactionItemBorderRadius,
+      reactionItemBackground = _ref.reactionItemBackground,
+      reactionItemPadding = _ref.reactionItemPadding,
+      reactionItemMargin = _ref.reactionItemMargin,
+      reactionsFontSize = _ref.reactionsFontSize,
+      reactionsContainerBoxShadow = _ref.reactionsContainerBoxShadow,
+      reactionsContainerBorder = _ref.reactionsContainerBorder,
+      reactionsContainerBorderRadius = _ref.reactionsContainerBorderRadius,
+      reactionsContainerBackground = _ref.reactionsContainerBackground,
+      reactionsContainerPadding = _ref.reactionsContainerPadding,
+      reactionsContainerTopPosition = _ref.reactionsContainerTopPosition,
       fileAttachmentsBoxBorder = _ref.fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor = _ref.fileAttachmentsTitleColor,
       fileAttachmentsSizeColor = _ref.fileAttachmentsSizeColor;
@@ -28477,11 +28503,13 @@ var Message = function Message(_ref) {
       messageActionsShow = _useState4[0],
       setMessageActionsShow = _useState4[1];
 
+  var reactionsList = message.reactionScores && Object.keys(message.reactionScores);
   var messageUserID = message.user ? message.user.id : 'deleted';
   var prevMessageUserID = prevMessage ? prevMessage.user ? prevMessage.user.id : 'deleted' : null;
   var nextMessageUserID = nextMessage ? nextMessage.user ? nextMessage.user.id : 'deleted' : null;
-  var firstMessageInInterval = prevMessage ? message.createdAt - prevMessage.createdAt > 300000 : false;
-  var lastMessageInInterval = nextMessage ? nextMessage.createdAt - message.createdAt > 300000 : false;
+  var current = moment(message.createdAt).startOf('day');
+  var firstMessageInInterval = !(prevMessage && current.diff(moment(prevMessage.createdAt).startOf('day'), 'days') === 0) || (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system';
+  var lastMessageInInterval = !(nextMessage && current.diff(moment(nextMessage.createdAt).startOf('day'), 'days') === 0) || nextMessage.type === 'system';
   var withAttachments = message.attachments && message.attachments.length > 0;
   var withMediaAttachment = withAttachments && (message.attachments[0].type === attachmentTypes.video || message.attachments[0].type === attachmentTypes.image);
   var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
@@ -28580,60 +28608,58 @@ var Message = function Message(_ref) {
   var isVisible = useOnScreen(messageItemRef);
 
   var MessageActionsCont = function MessageActionsCont() {
-    return useMemo(function () {
-      return React__default.createElement(MessageActions, {
-        messageFrom: message.user,
-        channel: channel,
-        editModeToggle: toggleEditMode,
-        messageStatus: message.deliveryStatus || MESSAGE_DELIVERY_STATUS.PENDING,
-        handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
-        handleDeletePendingMessage: handleDeletePendingMessage,
-        handleOpenForwardMessage: handleToggleForwardMessagePopup,
-        handleResendMessage: handleResendMessage,
-        handleReplyMessage: handleReplyMessage,
-        handleReportMessage: handleToggleReportPopupOpen,
-        handleAddEmoji: handleReactionAddDelete,
-        selfMessage: message.user && messageUserID === user.id,
-        isThreadMessage: !!isThreadMessage,
-        rtlDirection: ownMessageOnRightSide && !message.incoming,
-        showMessageReaction: messageReaction,
-        showEditMessage: editMessage && !(message.attachments && message.attachments.length && message.attachments[0].type === attachmentTypes.voice || !message.body),
-        showReplyMessage: replyMessage,
-        showReplyMessageInThread: replyMessageInThread,
-        showForwardMessage: forwardMessage,
-        showDeleteMessage: deleteMessage,
-        showReportMessage: reportMessage,
-        reactionIcon: reactionIcon,
-        editIcon: editIcon,
-        replyIcon: replyIcon,
-        replyInThreadIcon: replyInThreadIcon,
-        forwardIcon: forwardIcon,
-        deleteIcon: deleteIcon,
-        allowEditDeleteIncomingMessage: allowEditDeleteIncomingMessage,
-        starIcon: starIcon,
-        staredIcon: staredIcon,
-        reportIcon: reportIcon,
-        reactionIconOrder: reactionIconOrder,
-        editIconOrder: editIconOrder,
-        replyIconOrder: replyIconOrder,
-        replyInThreadIconOrder: replyInThreadIconOrder,
-        forwardIconOrder: forwardIconOrder,
-        deleteIconOrder: deleteIconOrder,
-        starIconOrder: starIconOrder,
-        reportIconOrder: reportIconOrder,
-        reactionIconTooltipText: reactionIconTooltipText,
-        editIconTooltipText: editIconTooltipText,
-        replyIconTooltipText: replyIconTooltipText,
-        replyInThreadIconTooltipText: replyInThreadIconTooltipText,
-        forwardIconTooltipText: forwardIconTooltipText,
-        deleteIconTooltipText: deleteIconTooltipText,
-        starIconTooltipText: starIconTooltipText,
-        reportIconTooltipText: reportIconTooltipText,
-        messageActionIconsColor: messageActionIconsColor,
-        myRole: channel.role,
-        isIncoming: message.incoming
-      });
-    }, [message.id]);
+    return React__default.createElement(MessageActions, {
+      messageFrom: message.user,
+      channel: channel,
+      editModeToggle: toggleEditMode,
+      messageStatus: message.deliveryStatus || MESSAGE_DELIVERY_STATUS.PENDING,
+      handleOpenDeleteMessage: handleToggleDeleteMessagePopup,
+      handleDeletePendingMessage: handleDeletePendingMessage,
+      handleOpenForwardMessage: handleToggleForwardMessagePopup,
+      handleResendMessage: handleResendMessage,
+      handleReplyMessage: handleReplyMessage,
+      handleReportMessage: handleToggleReportPopupOpen,
+      handleAddEmoji: handleReactionAddDelete,
+      selfMessage: message.user && messageUserID === user.id,
+      isThreadMessage: !!isThreadMessage,
+      rtlDirection: ownMessageOnRightSide && !message.incoming,
+      showMessageReaction: messageReaction,
+      showEditMessage: editMessage && !(message.attachments && message.attachments.length && message.attachments[0].type === attachmentTypes.voice || !message.body),
+      showReplyMessage: replyMessage,
+      showReplyMessageInThread: replyMessageInThread,
+      showForwardMessage: forwardMessage,
+      showDeleteMessage: deleteMessage,
+      showReportMessage: reportMessage,
+      reactionIcon: reactionIcon,
+      editIcon: editIcon,
+      replyIcon: replyIcon,
+      replyInThreadIcon: replyInThreadIcon,
+      forwardIcon: forwardIcon,
+      deleteIcon: deleteIcon,
+      allowEditDeleteIncomingMessage: allowEditDeleteIncomingMessage,
+      starIcon: starIcon,
+      staredIcon: staredIcon,
+      reportIcon: reportIcon,
+      reactionIconOrder: reactionIconOrder,
+      editIconOrder: editIconOrder,
+      replyIconOrder: replyIconOrder,
+      replyInThreadIconOrder: replyInThreadIconOrder,
+      forwardIconOrder: forwardIconOrder,
+      deleteIconOrder: deleteIconOrder,
+      starIconOrder: starIconOrder,
+      reportIconOrder: reportIconOrder,
+      reactionIconTooltipText: reactionIconTooltipText,
+      editIconTooltipText: editIconTooltipText,
+      replyIconTooltipText: replyIconTooltipText,
+      replyInThreadIconTooltipText: replyInThreadIconTooltipText,
+      forwardIconTooltipText: forwardIconTooltipText,
+      deleteIconTooltipText: deleteIconTooltipText,
+      starIconTooltipText: starIconTooltipText,
+      reportIconTooltipText: reportIconTooltipText,
+      messageActionIconsColor: messageActionIconsColor,
+      myRole: channel.role,
+      isIncoming: message.incoming
+    });
   };
 
   var MessageHeader = function MessageHeader() {
@@ -28657,7 +28683,8 @@ var Message = function Message(_ref) {
     rtl: ownMessageOnRightSide && !message.incoming,
     withAvatar: renderAvatar,
     hoverBackground: hoverBackground ? message.incoming ? incomingMessageBackground || 'rgb(238, 245, 255)' : ownMessageBackground || 'rgb(238, 245, 255)' : '',
-    topMargin: (prevMessageUserID !== messageUserID || firstMessageInInterval) && !isPendingMessage,
+    topMargin: (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system' ? '0' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px' : '8px',
+    bottomMargin: reactionsList && reactionsList.length ? reactionsContainerTopPosition : '',
     ref: messageItemRef,
     className: 'MessageItem'
   }, renderAvatar && React__default.createElement(Avatar, {
@@ -28733,7 +28760,7 @@ var Message = function Message(_ref) {
     color: colors.primary
   }, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
     showMessageSenderName: showMessageSenderName,
-    withAttachment: withAttachments && !!message.body,
+    withAttachment: withAttachments && message.attachments[0].type !== attachmentTypes.link && !!message.body,
     withMediaAttachment: withMediaAttachment,
     fontFamily: fontFamily,
     isForwarded: !!message.forwardingDetails
@@ -28772,18 +28799,41 @@ var Message = function Message(_ref) {
     onClick: function onClick() {
       return handleReplyMessage(true);
     }
-  }, message.replyCount + " replies"), message.reactionScores && React__default.createElement(ReactionsContainer, null, React__default.createElement(MessageReactionsCont, null, Object.keys(message.reactionScores).map(function (key) {
+  }, message.replyCount + " replies"), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
+    border: reactionsContainerBorder,
+    boxShadow: reactionsContainerBoxShadow,
+    borderRadius: reactionsContainerBorderRadius,
+    topPosition: reactionsContainerTopPosition,
+    padding: reactionsContainerPadding,
+    backgroundColor: reactionsContainerBackground,
+    rtlDirection: ownMessageOnRightSide && !message.incoming
+  }, React__default.createElement(MessageReactionsCont, {
+    rtlDirection: ownMessageOnRightSide && !message.incoming
+  }, reactionsList.slice(0, reactionsDisplayCount || 5).map(function (key, index) {
     return React__default.createElement(MessageReaction, {
       key: key,
       onClick: function onClick() {
         return handleReactionAddDelete(key);
       },
-      borderColor: reactionsBorderColor,
-      self: message.selfReactions.find(function (selfReaction) {
+      self: !!message.selfReactions.find(function (selfReaction) {
         return selfReaction.key === key;
-      })
-    }, key + " " + message.reactionScores[key]);
-  })))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
+      }),
+      border: reactionItemBorder,
+      borderRadius: reactionItemBorderRadius,
+      backgroundColor: reactionItemBackground,
+      padding: reactionItemPadding,
+      margin: reactionItemMargin,
+      isLastReaction: reactionsList.length === 1 || reactionsList.length <= reactionsDisplayCount && index === reactionsList.length - 1,
+      fontSize: reactionsFontSize
+    }, key + " " + (showEachReactionCount ? message.reactionScores[key] : ''));
+  }), reactionsList.length > reactionsDisplayCount && React__default.createElement(MessageReaction, {
+    border: reactionItemBorder,
+    borderRadius: reactionItemBorderRadius,
+    backgroundColor: reactionItemBackground,
+    padding: reactionItemPadding,
+    margin: '0',
+    fontSize: '12px'
+  }, reactionsList.length - (reactionsDisplayCount || 5))))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
     buttonText: 'Delete',
@@ -28801,10 +28851,26 @@ var Message = function Message(_ref) {
     title: 'Forward message'
   }));
 };
-var MessageReaction = styled.span(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  cursor: pointer;\n  margin-right: 6px;\n  border: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: 16px;\n  font-size: 13px;\n  padding: 2px 6px;\n  white-space: nowrap;\n"])), function (props) {
-  return props.self ? "1px solid " + colors.primary : "1px solid " + (props.borderColor || '#CDCDCF');
+var MessageReaction = styled.span(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
+  return props.margin || '0 6px 0 0';
+}, function (props) {
+  return props.isLastReaction && '0';
+}, function (props) {
+  return props.border || "1px solid " + colors.gray3;
+}, function (props) {
+  return props.self && colors.primary;
 }, function (props) {
   return props.self ? colors.primary : '';
+}, function (props) {
+  return props.borderRadius || '16px';
+}, function (props) {
+  return props.fontSize || '13px';
+}, function (props) {
+  return props.fontSize || '13px';
+}, function (props) {
+  return props.padding || '2px 6px';
+}, function (props) {
+  return props.backgroundColor || colors.white;
 });
 var ThreadMessageCountContainer = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
 var FailedMessageIcon = styled.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
@@ -28812,8 +28878,26 @@ var FailedMessageIcon = styled.div(_templateObject3$i || (_templateObject3$i = _
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-top: 4px;\n  justify-content: flex-end;\n"])));
-var MessageReactionsCont = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  max-width: 300px;\n  overflow-x: auto;\n"])));
+var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  ", ";\n"])), function (props) {
+  return !props.rtlDirection && 'auto';
+}, function (props) {
+  return props.rtlDirection && 'auto';
+}, function (props) {
+  return props.border;
+}, function (props) {
+  return props.boxShadow;
+}, function (props) {
+  return props.borderRadius;
+}, function (props) {
+  return props.backgroundColor;
+}, function (props) {
+  return props.padding;
+}, function (props) {
+  return props.topPosition && "\n      position: relative;\n      top: " + props.topPosition + ";\n  ";
+});
+var MessageReactionsCont = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  max-width: 300px;\n  overflow-x: auto;\n  direction: ", ";\n"])), function (props) {
+  return props.rtlDirection && 'ltr';
+});
 var MessageHeaderCont = styled.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
 var MessageTime = styled.span(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 12px;\n  margin-right: 4px;\n  color: ", ";\n"])), colors.gray6);
 var ReplyMessageContainer = styled.div(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  margin: ", ";\n  cursor: pointer;\n"])), function (props) {
@@ -28870,7 +28954,7 @@ var MessageBody = styled.div(_templateObject16$1 || (_templateObject16$1 = _tagg
 }, function (props) {
   return props.noBody && 'hidden';
 });
-var MessageContent = styled.div(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 13px;\n  margin-right: 13px;\n  //transform: ", ";\n  max-width: ", ";\n"])), function (props) {
+var MessageContent = styled.div(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 13px;\n  margin-right: 13px;\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
   return !props.withAvatar && (props.rtl ? 'translate(-32px,0)  ' : 'translate(32px,0)');
 }, function (props) {
   return props.messageWidthPercent ? props.messageWidthPercent + "%" : '100%';
@@ -28878,8 +28962,10 @@ var MessageContent = styled.div(_templateObject17$1 || (_templateObject17$1 = _t
 var VoiceIconWrapper = styled(SvgVoiceIcon)(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
-var MessageItem = styled.div(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  padding: 4px 40px;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  &:last-child {\n    margin-bottom: 0;\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
-  return props.topMargin && '12px';
+var MessageItem = styled.div(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 40px;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
+  return props.topMargin || '12px';
+}, function (props) {
+  return props.bottomMargin;
 }, function (props) {
   return !props.withAvatar && !props.rtl && '72px';
 }, function (props) {
@@ -29649,7 +29735,7 @@ var SliderPopup = function SliderPopup(_ref) {
 };
 var Container$c = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
 var SliderHeader = styled.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
-var SliderBody = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var SliderBody = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
 var FileInfo = styled.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
 var Info = styled.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
 var Actions = styled.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
@@ -29658,7 +29744,7 @@ var FileSize = styled.span(_templateObject8$9 || (_templateObject8$9 = _taggedTe
 var UserName = styled.h4(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n"])));
+var CarouselItem = styled.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n  }\n"])));
 var UploadCont = styled.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
 var ArrowButton = styled.button(_templateObject14$3 || (_templateObject14$3 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n  visibility: ", ";\n  @media (max-width: 768px) {\n    min-width: 36px;\n    max-width: 36px;\n    height: 36px;\n    margin-right: ", ";\n    margin-left: ", ";\n\n    & > svg {\n      width: 22px;\n      height: 22px;\n    }\n  }\n  @media (max-width: 450px) {\n    min-width: 32px;\n    max-width: 32px;\n    height: 32px;\n\n    & > svg {\n      width: 20px;\n      height: 20px;\n    }\n  }\n"])), function (props) {
   return !props.leftButton && '24px';
@@ -29723,7 +29809,8 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
       dateDividerTextColor = _ref.dateDividerTextColor,
       dateDividerBorder = _ref.dateDividerBorder,
       dateDividerBackgroundColor = _ref.dateDividerBackgroundColor,
-      dateDividerBorderRadius = _ref.dateDividerBorderRadius;
+      dateDividerBorderRadius = _ref.dateDividerBorderRadius,
+      noMargin = _ref.noMargin;
   var today = moment().endOf('day');
   var current = moment(currentMessageDate).endOf('day');
   var differentDays = !(nextMessageDate && current.diff(moment(nextMessageDate).endOf('day'), 'days') === 0);
@@ -29742,7 +29829,8 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
     dateDividerTextColor: dateDividerTextColor,
     dateDividerBorder: dateDividerBorder,
     dateDividerBackgroundColor: dateDividerBackgroundColor,
-    dateDividerBorderRadius: dateDividerBorderRadius
+    dateDividerBorderRadius: dateDividerBorderRadius,
+    noMargin: noMargin
   });
 };
 
@@ -29788,6 +29876,20 @@ var MessageList = function MessageList(_ref2) {
       staredIcon = _ref2.staredIcon,
       reportIcon = _ref2.reportIcon,
       reactionIconOrder = _ref2.reactionIconOrder,
+      reactionsDisplayCount = _ref2.reactionsDisplayCount,
+      showEachReactionCount = _ref2.showEachReactionCount,
+      reactionItemBorder = _ref2.reactionItemBorder,
+      reactionItemBorderRadius = _ref2.reactionItemBorderRadius,
+      reactionItemBackground = _ref2.reactionItemBackground,
+      reactionItemPadding = _ref2.reactionItemPadding,
+      reactionItemMargin = _ref2.reactionItemMargin,
+      reactionsFontSize = _ref2.reactionsFontSize,
+      reactionsContainerBoxShadow = _ref2.reactionsContainerBoxShadow,
+      reactionsContainerBorder = _ref2.reactionsContainerBorder,
+      reactionsContainerBorderRadius = _ref2.reactionsContainerBorderRadius,
+      reactionsContainerBackground = _ref2.reactionsContainerBackground,
+      reactionsContainerPadding = _ref2.reactionsContainerPadding,
+      reactionsContainerTopPosition = _ref2.reactionsContainerTopPosition,
       editIconOrder = _ref2.editIconOrder,
       replyIconOrder = _ref2.replyIconOrder,
       replyInThreadIconOrder = _ref2.replyInThreadIconOrder,
@@ -29812,7 +29914,6 @@ var MessageList = function MessageList(_ref2) {
       _ref2$showTopFixedDat = _ref2.showTopFixedDate,
       showTopFixedDate = _ref2$showTopFixedDat === void 0 ? true : _ref2$showTopFixedDat,
       inlineReactionIcon = _ref2.inlineReactionIcon,
-      reactionsBorderColor = _ref2.reactionsBorderColor,
       newMessagesSeparatorText = _ref2.newMessagesSeparatorText,
       newMessagesSeparatorFontSize = _ref2.newMessagesSeparatorFontSize,
       newMessagesSeparatorTextColor = _ref2.newMessagesSeparatorTextColor,
@@ -30287,6 +30388,7 @@ var MessageList = function MessageList(_ref2) {
     return React__default.createElement(React__default.Fragment, {
       key: message.id || message.tid
     }, React__default.createElement(CreateMessageDateDivider, {
+      noMargin: prevMessage && prevMessage.type === 'system',
       lastIndex: false,
       currentMessageDate: message.createdAt,
       nextMessageDate: prevMessage && prevMessage.createdAt,
@@ -30298,6 +30400,8 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorderRadius: dateDividerBorderRadius
     }), message.type === 'system' ? React__default.createElement(MessageTopDate, {
       systemMessage: true,
+      marginTop: message.type === 'system',
+      marginBottom: message.type === 'system' && nextMessage.type !== 'system',
       visible: showTopFixedDate,
       dividerText: message.body,
       dateDividerFontSize: dateDividerFontSize,
@@ -30372,13 +30476,26 @@ var MessageList = function MessageList(_ref2) {
       reportIconTooltipText: reportIconTooltipText,
       messageActionIconsColor: messageActionIconsColor,
       inlineReactionIcon: inlineReactionIcon,
-      reactionsBorderColor: reactionsBorderColor,
       fileAttachmentsIcon: fileAttachmentsIcon,
       fileAttachmentsBoxWidth: fileAttachmentsBoxWidth,
       fileAttachmentsBoxBackground: fileAttachmentsBoxBackground,
       fileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor: fileAttachmentsTitleColor,
-      fileAttachmentsSizeColor: fileAttachmentsSizeColor
+      fileAttachmentsSizeColor: fileAttachmentsSizeColor,
+      reactionsDisplayCount: reactionsDisplayCount,
+      showEachReactionCount: showEachReactionCount,
+      reactionItemBorder: reactionItemBorder,
+      reactionItemBorderRadius: reactionItemBorderRadius,
+      reactionItemBackground: reactionItemBackground,
+      reactionItemPadding: reactionItemPadding,
+      reactionItemMargin: reactionItemMargin,
+      reactionsFontSize: reactionsFontSize,
+      reactionsContainerBoxShadow: reactionsContainerBoxShadow,
+      reactionsContainerBorder: reactionsContainerBorder,
+      reactionsContainerBorderRadius: reactionsContainerBorderRadius,
+      reactionsContainerPadding: reactionsContainerPadding,
+      reactionsContainerBackground: reactionsContainerBackground,
+      reactionsContainerTopPosition: reactionsContainerTopPosition
     })), isUnreadMessage ? React__default.createElement(MessageDivider, {
       newMessagesSeparatorTextColor: newMessagesSeparatorTextColor,
       newMessagesSeparatorFontSize: newMessagesSeparatorFontSize,
@@ -30404,9 +30521,9 @@ var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _tag
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
 }, function (props) {
-  return props.systemMessage && '12px';
+  return props.marginTop && '16px';
 }, function (props) {
-  return props.systemMessage && '12px';
+  return props.marginBottom && '16px';
 }, function (props) {
   return !props.systemMessage && 'none';
 }, function (props) {
@@ -30734,7 +30851,8 @@ function MentionMembersPopup(_ref) {
     }
   }, [searchMention]);
   return React__default.createElement(Container$e, {
-    className: 'mention_member_popup'
+    className: 'mention_member_popup',
+    height: filteredMembers && filteredMembers.length * 44
   }, React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
   }, filteredMembers.map(function (member, index) {
@@ -30760,7 +30878,9 @@ MentionMembersPopup.defaultProps = {
   activeItemIndex: null,
   searchMention: ''
 };
-var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: 237px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])));
+var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
+  return props.height && props.height + 22;
+});
 var MemberName$1 = styled.span(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  margin: 0 0 0 12px;\n  max-width: calc(100% - 30px);\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
 var EditMemberIcon = styled.span(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList = styled.ul(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
@@ -30950,7 +31070,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     setMentionTyping(false);
-    var currentText = [messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1), mentionDisplayName, messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length)].join('');
+    var currentText = "" + messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + " " + messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
     setMessageText(currentText);
     messageInputRef.current.innerText = currentText;
     setCursorPosition(messageInputRef.current, currentMentions.start + 1 + mentionDisplayName.length);
@@ -31038,7 +31158,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setOpenMention(true);
     }
 
-    if (e.key === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
+    var lastChar = messageInputRef.current.innerText.slice(0, selPos).slice(-1);
+
+    if (lastChar === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
@@ -31051,7 +31173,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     if (e.key === 'Backspace') {
       var mentionToEdit = mentionedMembers.find(function (menMem) {
-        return menMem.start < selPos && menMem.end >= selPos;
+        return menMem.start <= selPos && menMem.end >= selPos + 1;
       });
 
       if (mentionToEdit) {
@@ -31136,35 +31258,12 @@ var SendMessageInput = function SendMessageInput(_ref) {
       } else if (messageText || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
         var mentionedMembersPositions = {};
-        var sortedMentionedMembersDspNames = mentionedMembersDisplayName.sort(function (a, b) {
-          return a.displayName < b.displayName ? 1 : b.displayName < a.displayName ? -1 : 0;
-        });
-        var findIndexes = [];
-        sortedMentionedMembersDspNames.forEach(function (menMem) {
-          var menIndex = messageTexToSend.indexOf(menMem.displayName.trim());
-          var existingIndex = findIndexes.includes(menIndex);
-          var i = 0;
-
-          while (existingIndex) {
-            menIndex = messageTexToSend.indexOf(menMem.displayName, menIndex + 1);
-            existingIndex = findIndexes.includes(menIndex);
-            i++;
-
-            if (i > sortedMentionedMembersDspNames.length) {
-              break;
-            }
-          }
-
-          var mentionDisplayLength = menMem.displayName.length;
-
-          if (!mentionedMembersPositions[menMem.id] && menIndex >= 0) {
-            var _extends2;
-
-            findIndexes.push(menIndex);
-            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends2 = {}, _extends2[menMem.id] = {
-              loc: menIndex,
-              len: mentionDisplayLength
-            }, _extends2));
+        mentionedMembers.forEach(function (menMem) {
+          if (!mentionedMembersPositions[menMem.id]) {
+            mentionedMembersPositions[menMem.id] = {
+              loc: menMem.start,
+              len: menMem.end - menMem.start
+            };
           }
         });
         var messageToSend = {
@@ -31302,13 +31401,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
           var mentionDisplayLength = mentionedMembersDisplayName.length;
 
           if (!mentionedMembersPositions[menMem.id] && menIndex >= 0) {
-            var _extends3;
+            var _extends2;
 
             findIndexes.push(menIndex);
-            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends3 = {}, _extends3[menMem.id] = {
+            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends2 = {}, _extends2[menMem.id] = {
               loc: menIndex,
               len: mentionDisplayLength
-            }, _extends3));
+            }, _extends2));
           }
         }
       });
@@ -31389,9 +31488,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var setVideoIsReadyToSend = function setVideoIsReadyToSend(attachmentId) {
-    var _extends4;
+    var _extends3;
 
-    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends4 = {}, _extends4[attachmentId] = true, _extends4)));
+    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends3 = {}, _extends3[attachmentId] = true, _extends3)));
   };
 
   var handleJoinToChannel = function handleJoinToChannel() {
@@ -32971,6 +33070,8 @@ var Members = function Members(_ref) {
       setMakeAdminPopup(!makeAdminPopup);
     }
   };
+
+  console.log('render members ********************************* ');
 
   var handleKickMember = function handleKickMember() {
     selectedMember && dispatch(kickMemberAC(channel.id, selectedMember.id));

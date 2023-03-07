@@ -58,7 +58,20 @@ interface IMessageProps {
     reportIconTooltipText?: string;
     messageActionIconsColor?: string;
     inlineReactionIcon?: JSX.Element;
-    reactionsBorderColor?: string;
+    reactionsDisplayCount?: number;
+    showEachReactionCount?: boolean;
+    reactionItemBorder?: string;
+    reactionItemBorderRadius?: string;
+    reactionItemBackground?: string;
+    reactionItemPadding?: string;
+    reactionItemMargin?: string;
+    reactionsFontSize?: string;
+    reactionsContainerBoxShadow?: string;
+    reactionsContainerBorder?: string;
+    reactionsContainerBorderRadius?: string;
+    reactionsContainerBackground?: string;
+    reactionsContainerTopPosition?: string;
+    reactionsContainerPadding?: string;
     fileAttachmentsBoxWidth?: string;
     fileAttachmentsBoxBackground?: string;
     fileAttachmentsBoxBorder?: string;
@@ -66,7 +79,7 @@ interface IMessageProps {
     fileAttachmentsSizeColor?: string;
     fileAttachmentsIcon?: JSX.Element;
 }
-declare const Message: ({ message, channel, handleScrollToRepliedMessage, handleMediaItemClick, isPendingMessage, prevMessage, nextMessage, firstMessage, setLastVisibleMessageId, isUnreadMessage, isThreadMessage, fontFamily, ownMessageOnRightSide, messageWidthPercent, showSenderNameOnDirectChannel, showSenderNameOnOwnMessages, messageTimePosition, ownMessageBackground, incomingMessageBackground, showOwnAvatar, showMessageStatus, hoverBackground, messageReaction, editMessage, replyMessage, replyMessageInThread, deleteMessage, allowEditDeleteIncomingMessage, forwardMessage, reportMessage, reactionIcon, editIcon, replyIcon, replyInThreadIcon, forwardIcon, deleteIcon, starIcon, staredIcon, reportIcon, reactionIconOrder, editIconOrder, replyIconOrder, replyInThreadIconOrder, forwardIconOrder, deleteIconOrder, starIconOrder, reportIconOrder, reactionIconTooltipText, editIconTooltipText, replyIconTooltipText, replyInThreadIconTooltipText, forwardIconTooltipText, deleteIconTooltipText, starIconTooltipText, reportIconTooltipText, messageActionIconsColor, reactionsBorderColor, fileAttachmentsIcon, fileAttachmentsBoxBorder, fileAttachmentsTitleColor, fileAttachmentsSizeColor }: IMessageProps) => JSX.Element;
+declare const Message: ({ message, channel, handleScrollToRepliedMessage, handleMediaItemClick, prevMessage, nextMessage, firstMessage, setLastVisibleMessageId, isUnreadMessage, isThreadMessage, fontFamily, ownMessageOnRightSide, messageWidthPercent, showSenderNameOnDirectChannel, showSenderNameOnOwnMessages, messageTimePosition, ownMessageBackground, incomingMessageBackground, showOwnAvatar, showMessageStatus, hoverBackground, messageReaction, editMessage, replyMessage, replyMessageInThread, deleteMessage, allowEditDeleteIncomingMessage, forwardMessage, reportMessage, reactionIcon, editIcon, replyIcon, replyInThreadIcon, forwardIcon, deleteIcon, starIcon, staredIcon, reportIcon, reactionIconOrder, editIconOrder, replyIconOrder, replyInThreadIconOrder, forwardIconOrder, deleteIconOrder, starIconOrder, reportIconOrder, reactionIconTooltipText, editIconTooltipText, replyIconTooltipText, replyInThreadIconTooltipText, forwardIconTooltipText, deleteIconTooltipText, starIconTooltipText, reportIconTooltipText, messageActionIconsColor, fileAttachmentsIcon, reactionsDisplayCount, showEachReactionCount, reactionItemBorder, reactionItemBorderRadius, reactionItemBackground, reactionItemPadding, reactionItemMargin, reactionsFontSize, reactionsContainerBoxShadow, reactionsContainerBorder, reactionsContainerBorderRadius, reactionsContainerBackground, reactionsContainerPadding, reactionsContainerTopPosition, fileAttachmentsBoxBorder, fileAttachmentsTitleColor, fileAttachmentsSizeColor }: IMessageProps) => JSX.Element;
 export default Message;
 export declare const MessageStatusAndTime: import("styled-components").StyledComponent<"div", any, {
     withAttachment?: boolean | undefined;
