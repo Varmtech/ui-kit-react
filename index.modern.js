@@ -28878,7 +28878,7 @@ var FailedMessageIcon = styled.div(_templateObject3$i || (_templateObject3$i = _
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  ", ";\n"])), function (props) {
+var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return !props.rtlDirection && 'auto';
 }, function (props) {
   return props.rtlDirection && 'auto';
