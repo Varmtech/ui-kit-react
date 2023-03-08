@@ -7911,6 +7911,7 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
       var urlArray = textArray.map(function (part) {
         if (urlRegex.test(part)) {
           return React__default.createElement("a", {
+            draggable: false,
             key: part,
             href: part,
             target: '_blank',
@@ -16423,7 +16424,10 @@ function useUpdatePresence(channel, isVisible) {
     }
   }, [connectionStatus]);
   React.useEffect(function () {
-    if (channel.peer && usersMap[channel.peer.id] && channel.peer.presence && channel.peer.presence.state !== usersMap[channel.peer.id].state) {
+    if (channel.peer && usersMap[channel.peer.id] && channel.peer.presence && (channel.peer.presence.state !== usersMap[channel.peer.id].state || channel.peer.presence.lastActiveAt && new Date(channel.peer.presence.lastActiveAt).getTime() !== new Date(usersMap[channel.peer.id].lastActiveAt).getTime())) {
+      var _updateUserStatusOnCh;
+
+      dispatch(updateUserStatusOnChannelAC((_updateUserStatusOnCh = {}, _updateUserStatusOnCh[channel.peer.id] = channel.peer, _updateUserStatusOnCh)));
       usersMap[channel.peer.id] = channel.peer.presence;
     }
   }, [channel]);
@@ -21496,6 +21500,7 @@ var VideoPreview = function VideoPreview(_ref) {
     isRepliedMessage: isRepliedMessage,
     className: 'rotate_cont'
   })), React__default.createElement("video", {
+    draggable: false,
     ref: videoRef,
     preload: 'auto',
     id: 'video',
@@ -27830,6 +27835,7 @@ var Attachment = function Attachment(_ref) {
     }
   }, [attachment]);
   return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
+    draggable: false,
     onClick: function onClick() {
       return handleMediaItemClick && handleMediaItemClick(attachment);
     },
@@ -27841,6 +27847,7 @@ var Attachment = function Attachment(_ref) {
     imgIsLoaded: imgIsLoaded,
     fitTheContainer: isDetailsView
   }, (attachment.attachmentUrl || attachmentUrl) && React__default.createElement(AttachmentImg$1, {
+    draggable: false,
     backgroundColor: backgroundColor,
     src: attachment.attachmentUrl || attachmentUrl,
     borderRadius: borderRadius,
@@ -27920,6 +27927,7 @@ var Attachment = function Attachment(_ref) {
     url: attachment.attachmentUrl || attachmentUrl,
     file: attachment
   }) : attachment.type === attachmentTypes.link ? null : React__default.createElement(AttachmentFile$1, {
+    draggable: false,
     isPrevious: isPrevious,
     isUploading: attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED,
     borderRadius: borderRadius,
@@ -28763,6 +28771,7 @@ var Message = function Message(_ref) {
     showSenderName: showMessageSenderName,
     color: colors.primary
   }, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
+    draggable: false,
     showMessageSenderName: showMessageSenderName,
     withAttachment: withAttachments && message.attachments[0].type !== attachmentTypes.link && !!message.body,
     withMediaAttachment: withMediaAttachment,
@@ -28813,7 +28822,7 @@ var Message = function Message(_ref) {
     rtlDirection: ownMessageOnRightSide && !message.incoming
   }, React__default.createElement(MessageReactionsCont, {
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, reactionsList.slice(0, reactionsDisplayCount || 5).map(function (key, index) {
+  }, reactionsList.slice(0, reactionsDisplayCount || 5).map(function (key) {
     return React__default.createElement(MessageReaction, {
       key: key,
       onClick: function onClick() {
@@ -28827,17 +28836,17 @@ var Message = function Message(_ref) {
       backgroundColor: reactionItemBackground,
       padding: reactionItemPadding,
       margin: reactionItemMargin,
-      isLastReaction: reactionsList.length === 1 || reactionsList.length <= reactionsDisplayCount && index === reactionsList.length - 1,
+      isLastReaction: reactionsList.length === 1,
       fontSize: reactionsFontSize
     }, key + " " + (showEachReactionCount ? message.reactionScores[key] : ''));
-  }), reactionsList.length > reactionsDisplayCount && React__default.createElement(MessageReaction, {
+  }), reactionsList.length > 1 && React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
     borderRadius: reactionItemBorderRadius,
     backgroundColor: reactionItemBackground,
     padding: reactionItemPadding,
     margin: '0',
     fontSize: '12px'
-  }, reactionsList.length - (reactionsDisplayCount || 5))))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
+  }, reactionsList.length)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
     buttonText: 'Delete',
@@ -28899,7 +28908,7 @@ var ReactionsContainer = styled__default.div(_templateObject4$f || (_templateObj
 }, function (props) {
   return props.topPosition && "\n      position: relative;\n      top: " + props.topPosition + ";\n  ";
 });
-var MessageReactionsCont = styled__default.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  max-width: 300px;\n  overflow-x: auto;\n  direction: ", ";\n"])), function (props) {
+var MessageReactionsCont = styled__default.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n"])), function (props) {
   return props.rtlDirection && 'ltr';
 });
 var MessageHeaderCont = styled__default.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
