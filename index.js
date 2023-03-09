@@ -16355,6 +16355,7 @@ var Avatar = function Avatar(_ref) {
   }) : !image ? setDefaultAvatar ? React__default.createElement(DefaultAvatarWrapper, {
     color: colors.defaultAvatarBackground
   }) : React__default.createElement("span", null, avatarText) : React__default.createElement(AvatarImage, {
+    draggable: false,
     showImage: true,
     src: image,
     size: size,
@@ -28516,6 +28517,9 @@ var Message = function Message(_ref) {
       setMessageActionsShow = _useState4[1];
 
   var reactionsList = message.reactionScores && Object.keys(message.reactionScores);
+  var reactionsCount = message.reactionScores && Object.values(message.reactionScores).reduce(function (prevValue, currentValue) {
+    return prevValue + currentValue;
+  }, 0);
   var messageUserID = message.user ? message.user.id : 'deleted';
   var prevMessageUserID = prevMessage ? prevMessage.user ? prevMessage.user.id : 'deleted' : null;
   var nextMessageUserID = nextMessage ? nextMessage.user ? nextMessage.user.id : 'deleted' : null;
@@ -28836,17 +28840,17 @@ var Message = function Message(_ref) {
       backgroundColor: reactionItemBackground,
       padding: reactionItemPadding,
       margin: reactionItemMargin,
-      isLastReaction: reactionsList.length === 1,
+      isLastReaction: reactionsCount === 1,
       fontSize: reactionsFontSize
     }, key + " " + (showEachReactionCount ? message.reactionScores[key] : ''));
-  }), reactionsList.length > 1 && React__default.createElement(MessageReaction, {
+  }), reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
     borderRadius: reactionItemBorderRadius,
     backgroundColor: reactionItemBackground,
     padding: reactionItemPadding,
     margin: '0',
     fontSize: '12px'
-  }, reactionsList.length)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
+  }, reactionsCount)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
     buttonText: 'Delete',
@@ -33395,6 +33399,7 @@ var Files = function Files(_ref) {
       key: file.url,
       hoverBackgroundColor: filePreviewHoverBackgroundColor
     }, file.metadata && file.metadata.tmb ? React__default.createElement(FileThumb, {
+      draggable: false,
       src: "data:image/jpeg;base64," + file.metadata.tmb
     }) : React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont, null, filePreviewIcon || React__default.createElement(SvgFileIcon$1, null)), React__default.createElement(FileHoverIconCont, null, filePreviewHoverIcon || React__default.createElement(SvgFileIcon$1, null))), React__default.createElement("div", null, React__default.createElement(AttachmentPreviewTitle, {
       color: filePreviewTitleColor
@@ -33481,8 +33486,10 @@ var LinkItem = function LinkItem(_ref) {
       linkPreviewColor = _ref.linkPreviewColor,
       linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor;
   return React__default.createElement(FileItem$1, {
+    draggable: false,
     hoverBackgroundColor: linkPreviewHoverBackgroundColor
   }, React__default.createElement("a", {
+    draggable: false,
     href: link,
     target: '_blank',
     rel: 'noreferrer'
