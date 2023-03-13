@@ -13,6 +13,7 @@ interface MessagesProps {
     showOwnAvatar?: boolean;
     messageReaction?: boolean;
     editMessage?: boolean;
+    copyMessage?: boolean;
     replyMessage?: boolean;
     replyMessageInThread?: boolean;
     forwardMessage?: boolean;
@@ -20,6 +21,7 @@ interface MessagesProps {
     reportMessage?: boolean;
     reactionIcon?: JSX.Element;
     editIcon?: JSX.Element;
+    copyIcon?: JSX.Element;
     replyIcon?: JSX.Element;
     replyInThreadIcon?: JSX.Element;
     forwardIcon?: JSX.Element;
@@ -29,6 +31,7 @@ interface MessagesProps {
     reportIcon?: JSX.Element;
     reactionIconOrder?: number;
     editIconOrder?: number;
+    copyIconOrder?: number;
     replyIconOrder?: number;
     replyInThreadIconOrder?: number;
     forwardIconOrder?: number;
@@ -39,6 +42,7 @@ interface MessagesProps {
     reactionIconTooltipText?: string;
     editIconTooltipText?: string;
     replyIconTooltipText?: string;
+    copyIconTooltipText?: string;
     replyInThreadIconTooltipText?: string;
     forwardIconTooltipText?: string;
     deleteIconTooltipText?: string;
