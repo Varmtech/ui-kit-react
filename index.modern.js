@@ -6,6 +6,7 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import FileSaver from 'file-saver';
 import { put, call, take, takeLatest, takeEvery, select, all } from 'redux-saga/effects';
 import Cropper from 'react-easy-crop';
+import Linkify from 'linkify-react';
 import Carousel from 'react-elastic-carousel';
 import { v4 } from 'uuid';
 
@@ -1978,7 +1979,7 @@ var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTe
 }, function (props) {
   return props.fontSize || '15px';
 });
-var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & > a {\n    color: ", ";\n  }\n"])), function (props) {
+var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'Inter, sans-serif';
 }, function (props) {
   return props.withAttachment && (props.showMessageSenderName ? '0 12px 10px' : props.isForwarded ? '4px 12px 10px' : '8px 12px 10px');
@@ -7901,25 +7902,6 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
     }
   }
 
-  messageText.forEach(function (textPart, index) {
-    if (urlRegex.test(textPart)) {
-      var textArray = textPart.split(urlRegex);
-      var urlArray = textArray.map(function (part) {
-        if (urlRegex.test(part)) {
-          return React__default.createElement("a", {
-            draggable: false,
-            key: part,
-            href: part,
-            target: '_blank',
-            rel: 'noreferrer'
-          }, part + " ");
-        }
-
-        return part + " ";
-      });
-      messageText.splice.apply(messageText, [index, 1].concat(urlArray));
-    }
-  });
   return messageText.length > 1 ? messageText : text;
 };
 var bytesToSize = function bytesToSize(bytes, decimals) {
@@ -8060,6 +8042,32 @@ var formatLargeText = function formatLargeText(text, maxLength) {
   } else {
     return text;
   }
+};
+var getCaretPosition1 = function getCaretPosition1(element) {
+  var caretOffset = 0;
+  var doc = element.ownerDocument || element.document;
+  var win = doc.defaultView || doc.parentWindow;
+  var sel;
+
+  if (typeof win.getSelection !== 'undefined') {
+    sel = win.getSelection();
+
+    if (sel.rangeCount > 0) {
+      var range = win.getSelection().getRangeAt(0);
+      var preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(element);
+      preCaretRange.setEnd(range.endContainer, range.endOffset);
+      caretOffset = preCaretRange.toString().length;
+    }
+  } else if ((sel = doc.selection) && sel.type !== 'Control') {
+    var textRange = sel.createRange();
+    var preCaretTextRange = doc.body.createTextRange();
+    preCaretTextRange.moveToElementText(element);
+    preCaretTextRange.setEndPoint('EndToEnd', textRange);
+    caretOffset = preCaretTextRange.text.length;
+  }
+
+  return caretOffset;
 };
 var getCaretPosition = function getCaretPosition(editableDiv) {
   var caretPos = 0;
@@ -28507,6 +28515,7 @@ var Message = function Message(_ref) {
       channel = _ref.channel,
       handleScrollToRepliedMessage = _ref.handleScrollToRepliedMessage,
       handleMediaItemClick = _ref.handleMediaItemClick,
+      stopScrolling = _ref.stopScrolling,
       prevMessage = _ref.prevMessage,
       nextMessage = _ref.nextMessage,
       firstMessage = _ref.firstMessage,
@@ -28641,28 +28650,36 @@ var Message = function Message(_ref) {
 
   var toggleEditMode = function toggleEditMode() {
     dispatch(setMessageToEditAC(message));
+    setMessageActionsShow(false);
   };
 
   var handleToggleDeleteMessagePopup = function handleToggleDeleteMessagePopup() {
     setDeletePopupOpen(!deletePopupOpen);
+    setMessageActionsShow(false);
   };
 
   var handleToggleForwardMessagePopup = function handleToggleForwardMessagePopup() {
     setForwardPopupOpen(!forwardPopupOpen);
+    setMessageActionsShow(false);
+    stopScrolling(!forwardPopupOpen);
   };
 
   var handleReplyMessage = function handleReplyMessage(threadReply) {
     if (threadReply) ; else {
       dispatch(setMessageForReplyAC(message));
     }
+
+    setMessageActionsShow(false);
   };
 
   var handleToggleReportPopupOpen = function handleToggleReportPopupOpen() {
     setReportPopupOpen(!reportPopupOpen);
+    setMessageActionsShow(false);
   };
 
   var handleDeleteMessage = function handleDeleteMessage(deleteOption) {
     dispatch(deleteMessageAC(channel.id, message.id, deleteOption));
+    setMessageActionsShow(false);
   };
 
   var handleResendMessage = function handleResendMessage() {
@@ -28678,6 +28695,7 @@ var Message = function Message(_ref) {
     }
 
     dispatch(resendMessageAC(messageToResend, channel.id, connectionStatus));
+    setMessageActionsShow(false);
   };
 
   var handleCopyMessage = function handleCopyMessage() {
@@ -28727,6 +28745,8 @@ var Message = function Message(_ref) {
       var enforceUnique = false;
       dispatch(addReactionAC(channel.id, message.id, selectedEmoji, score, reason, enforceUnique));
     }
+
+    setMessageActionsShow(false);
   };
 
   var handleSendReadMarker = function handleSendReadMarker() {
@@ -28907,12 +28927,17 @@ var Message = function Message(_ref) {
     isForwarded: !!message.forwardingDetails
   }, React__default.createElement("span", {
     ref: messageTextRef
+  }, React__default.createElement(Linkify, {
+    options: {
+      target: '_blank',
+      ignoreTags: ['script', 'style']
+    }
   }, MessageTextFormat({
     text: message.body,
     message: message,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  })), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
+  }))), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
     iconColor: colors.primary,
     lastMessage: !firstMessage
   }, messageStatusIcon(message.deliveryStatus))) : null), withAttachments && message.attachments[0].type !== attachmentTypes.link && React__default.createElement(MessageStatusAndTime, {
@@ -29210,6 +29235,7 @@ function SvgVideoPlayerPlay(props) {
   return /*#__PURE__*/createElement("svg", _extends$T({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Q || (_path$Q = /*#__PURE__*/createElement("path", {
@@ -29241,6 +29267,7 @@ function SvgVideoPlayerPause(props) {
   return /*#__PURE__*/createElement("svg", _extends$U({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
@@ -29272,6 +29299,7 @@ function SvgVolume(props) {
   return /*#__PURE__*/createElement("svg", _extends$V({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
@@ -29303,6 +29331,7 @@ function SvgVolumeMute(props) {
   return /*#__PURE__*/createElement("svg", _extends$W({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$T || (_path$T = /*#__PURE__*/createElement("path", {
@@ -29334,6 +29363,7 @@ function SvgFullscreen(props) {
   return /*#__PURE__*/createElement("svg", _extends$X({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$U || (_path$U = /*#__PURE__*/createElement("path", {
@@ -29367,6 +29397,7 @@ function SvgFullscreenExit(props) {
   return /*#__PURE__*/createElement("svg", _extends$Y({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$V || (_path$V = /*#__PURE__*/createElement("path", {
@@ -29598,15 +29629,15 @@ var VideoPlayer = function VideoPlayer(_ref) {
 var Component$1 = styled.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n"])), function (props) {
   return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
 });
-var PlayPauseWrapper = styled.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n"])));
-var ControlsContainer = styled.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 16px);\n    padding: 0 8px;\n  }\n"])));
-var ControlTime = styled.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n"])), colors.white);
+var PlayPauseWrapper = styled.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var ControlsContainer = styled.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
+var ControlTime = styled.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
 var ProgressBlock = styled.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
 var VolumeController = styled.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
-var VolumeIconWrapper = styled.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n"])));
+var VolumeIconWrapper = styled.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 var VolumeSlide = styled.input(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
 var Progress = styled.input(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
-var FullScreenWrapper = styled.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n"])));
+var FullScreenWrapper = styled.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
 var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
 
@@ -29649,10 +29680,15 @@ var SliderPopup = function SliderPopup(_ref) {
       prevButtonDisabled = _useState7[0],
       setPrevButtonDisabled = _useState7[1];
 
+  var _useState8 = useState(false),
+      visibleSlide = _useState8[0],
+      setVisibleSlide = _useState8[1];
+
   var customUploader = getCustomUploader();
   var customDownloader = getCustomDownloader();
   var contactsMap = useSelector(contactsMapSelector);
   var attachments = useSelector(attachmentsForPopupSelector, shallowEqual) || [];
+  var visibilityTimeout = useRef();
   var attachmentUserName = currentFile ? currentFile.user && makeUserName(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
 
   var handleClosePopup = function handleClosePopup() {
@@ -29660,14 +29696,21 @@ var SliderPopup = function SliderPopup(_ref) {
     setIsSliderOpen(false);
   };
 
-  var downloadImage = function downloadImage(src) {
+  var downloadImage = function downloadImage(src, setToDownloadedFiles) {
+    clearTimeout(visibilityTimeout.current);
     var image = new Image();
     image.src = src;
 
     image.onload = function () {
-      var _extends2;
+      if (setToDownloadedFiles) {
+        var _extends2;
 
-      setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.id] = src, _extends2)));
+        setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.id] = src, _extends2)));
+        visibilityTimeout.current = setTimeout(function () {
+          setVisibleSlide(true);
+        }, 100);
+      }
+
       setImageLoading(false);
     };
   };
@@ -29685,17 +29728,29 @@ var SliderPopup = function SliderPopup(_ref) {
       getAttachmentUrlFromCache(currentFile.id).then(function (cachedUrl) {
         if (cachedUrl) {
           if (!downloadedFiles[currentFile.id]) {
+            setVisibleSlide(false);
+            console.log(' 1- 1-1-1-');
+
             if (currentFile.type === 'image') {
-              downloadImage(cachedUrl);
+              downloadImage(cachedUrl, true);
             } else {
               var _extends3;
 
+              clearTimeout(visibilityTimeout.current);
               setDownloadedFiles(_extends({}, downloadedFiles, (_extends3 = {}, _extends3[currentFile.id] = cachedUrl, _extends3)));
               setPlayedVideo(currentFile.id);
+              visibilityTimeout.current = setTimeout(function () {
+                console.log('set visible slide', true);
+                setVisibleSlide(true);
+              }, 100);
             }
           }
 
-          setImageLoading(false);
+          if (currentFile.type === 'image') {
+            downloadImage(cachedUrl);
+          } else {
+            setVisibleSlide(true);
+          }
         } else {
           if (customDownloader) {
             customDownloader(currentFile.url).then(function (url) {
@@ -29708,8 +29763,13 @@ var SliderPopup = function SliderPopup(_ref) {
                   } else {
                     var _extends4;
 
+                    clearTimeout(visibilityTimeout.current);
                     setDownloadedFiles(_extends({}, downloadedFiles, (_extends4 = {}, _extends4[currentFile.id] = url, _extends4)));
                     setPlayedVideo(currentFile.id);
+                    visibilityTimeout.current = setTimeout(function () {
+                      console.log('set visible slide', true);
+                      setVisibleSlide(true);
+                    }, 100);
                   }
                 });
               } catch (e) {
@@ -29722,8 +29782,13 @@ var SliderPopup = function SliderPopup(_ref) {
             } else {
               var _extends5;
 
+              clearTimeout(visibilityTimeout.current);
               setDownloadedFiles(_extends({}, downloadedFiles, (_extends5 = {}, _extends5[currentFile.id] = currentFile.url, _extends5)));
               setPlayedVideo(currentFile.id);
+              visibilityTimeout.current = setTimeout(function () {
+                console.log('set visible slide', true);
+                setVisibleSlide(true);
+              }, 100);
             }
           }
         }
@@ -29864,7 +29929,8 @@ var SliderPopup = function SliderPopup(_ref) {
   }, attachmentsList.map(function (file) {
     return React__default.createElement(CarouselItem, {
       key: file.id,
-      draggable: false
+      draggable: false,
+      visibleSlide: visibleSlide
     }, downloadedFiles[file.id] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? React__default.createElement(React__default.Fragment, null, imageLoading ? React__default.createElement(UploadCont, null, React__default.createElement(UploadingIcon, null)) : React__default.createElement("img", {
       draggable: false,
       src: downloadedFiles[file.id],
@@ -29878,7 +29944,7 @@ var SliderPopup = function SliderPopup(_ref) {
 };
 var Container$c = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
 var SliderHeader = styled.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
-var SliderBody = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var SliderBody = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
 var FileInfo = styled.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
 var Info = styled.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
 var Actions = styled.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
@@ -29887,7 +29953,9 @@ var FileSize = styled.span(_templateObject8$9 || (_templateObject8$9 = _taggedTe
 var UserName = styled.h4(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n"])));
+var CarouselItem = styled.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n"])), function (props) {
+  return props.visibleSlide ? 1 : 0;
+});
 var UploadCont = styled.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
 var ArrowButton = styled.button(_templateObject14$3 || (_templateObject14$3 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n  visibility: ", ";\n  @media (max-width: 768px) {\n    min-width: 36px;\n    max-width: 36px;\n    height: 36px;\n    margin-right: ", ";\n    margin-left: ", ";\n\n    & > svg {\n      width: 22px;\n      height: 22px;\n    }\n  }\n  @media (max-width: 450px) {\n    min-width: 32px;\n    max-width: 32px;\n    height: 32px;\n\n    & > svg {\n      width: 20px;\n      height: 20px;\n    }\n  }\n"])), function (props) {
   return !props.leftButton && '24px';
@@ -30106,17 +30174,21 @@ var MessageList = function MessageList(_ref2) {
       showTopDate = _useState4[0],
       setShowTopDate = _useState4[1];
 
-  var _useState5 = useState(null),
-      hideTopDateTimeout = _useState5[0],
-      setHideTopDateTimeout = _useState5[1];
+  var _useState5 = useState(false),
+      stopScrolling = _useState5[0],
+      setStopScrolling = _useState5[1];
 
-  var _useState6 = useState(''),
-      lastVisibleMessageId = _useState6[0],
-      _setLastVisibleMessageId = _useState6[1];
+  var _useState6 = useState(null),
+      hideTopDateTimeout = _useState6[0],
+      setHideTopDateTimeout = _useState6[1];
 
-  var _useState7 = useState(null),
-      scrollToReply = _useState7[0],
-      setScrollToReply = _useState7[1];
+  var _useState7 = useState(''),
+      lastVisibleMessageId = _useState7[0],
+      _setLastVisibleMessageId = _useState7[1];
+
+  var _useState8 = useState(null),
+      scrollToReply = _useState8[0],
+      setScrollToReply = _useState8[1];
 
   var messages = useSelector(activeChannelMessagesSelector) || [];
   var currentChannelPendingMessages = [];
@@ -30481,6 +30553,7 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
+    console.log('messages... ', messages);
   }, [messages]);
   useEffect(function () {
     if (channel.unreadMessageCount && channel.unreadMessageCount > 0 && getUnreadScrollTo()) {
@@ -30535,6 +30608,7 @@ var MessageList = function MessageList(_ref2) {
   })), React__default.createElement(Container$d, {
     id: 'scrollableDiv',
     ref: scrollRef,
+    stopScrolling: stopScrolling,
     onScroll: handleMessagesListScroll,
     onDragEnter: handleDragIn
   }, messages.length && messages.length > 0 ? React__default.createElement(MessagesBox, {
@@ -30580,6 +30654,7 @@ var MessageList = function MessageList(_ref2) {
     }, React__default.createElement(Message, {
       message: message,
       channel: channel,
+      stopScrolling: setStopScrolling,
       handleMediaItemClick: function handleMediaItemClick(attachment) {
         return setMediaFile(attachment);
       },
@@ -30679,7 +30754,9 @@ var MessageList = function MessageList(_ref2) {
     currentMediaFile: mediaFile
   }))));
 };
-var Container$d = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  overflow: auto;\n  scroll-behavior: smooth;\n"])));
+var Container$d = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
+  return props.stopScrolling ? 'hidden' : 'auto';
+});
 var EmptyDiv = styled.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
 var MessagesBox = styled.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
 var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
@@ -31081,6 +31158,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       selectedFileAttachmentsSizeColor = _ref.selectedFileAttachmentsSizeColor,
       replyMessageIcon = _ref.replyMessageIcon;
   var dispatch = useDispatch();
+  var channelDetailsIsOpen = useSelector(channelInfoIsOpenSelector, shallowEqual);
   var getFromContacts = getShowOnlyContactUsers();
   var activeChannel = useSelector(activeChannelSelector);
   var isBlockedUserChat = activeChannel.peer && activeChannel.peer.blocked;
@@ -31218,6 +31296,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
         return menMem.id !== mentionToChange.id;
       }));
     } else {
+      console.log('set mention ....................... ', _extends({}, member, {
+        start: currentMentions.start,
+        end: currentMentions.start + 1 + mentionDisplayName.trim().length
+      }));
       setMentionedMembers(function (members) {
         return [].concat(members, [_extends({}, member, {
           start: currentMentions.start,
@@ -31286,7 +31368,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleMentionDetect = function handleMentionDetect(e) {
-    var selPos = getCaretPosition(e.currentTarget);
+    var selPos = getCaretPosition1(e.currentTarget);
 
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
       setSelectionPos(selPos);
@@ -31327,8 +31409,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     var lastChar = messageInputRef.current.innerText.slice(0, selPos).slice(-1);
+    console.log('charAt .. ... .,', messageInputRef.current.innerText.charAt(selPos - 1));
+    console.log('lastChar .. ... .,', lastChar);
 
     if (lastChar === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
+      console.log('selPos -> -> -> -> -> ', selPos);
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
@@ -32078,7 +32163,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     multiple: true,
     type: 'file'
   }), React__default.createElement(MessageInputWrapper, {
-    order: inputOrder
+    order: inputOrder,
+    channelDetailsIsOpen: channelDetailsIsOpen
   }, React__default.createElement(MessageInput, {
     contentEditable: true,
     suppressContentEditableWarning: true,
@@ -32120,7 +32206,9 @@ var SendMessageInputContainer = styled.div(_templateObject8$b || (_templateObjec
 }, AddAttachmentIcon, function (props) {
   return props.iconColor || colors.primary;
 });
-var MessageInputWrapper = styled.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  position: relative;\n  order: ", ";\n"])), function (props) {
+var MessageInputWrapper = styled.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  //max-width: ", ";\n  max-width: calc(100% - 110px);\n  position: relative;\n  order: ", ";\n"])), function (props) {
+  return props.channelDetailsIsOpen ? "calc(100% - " + (props.channelDetailsIsOpen ? 362 : 0) + "px)" : '';
+}, function (props) {
   return props.order === 0 || props.order ? props.order : 3;
 });
 var MessageInput = styled.div(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7);
@@ -33419,7 +33507,7 @@ var Media = function Media(_ref) {
   }, [channelId]);
   return React__default.createElement(Container$i, null, attachments.map(function (file) {
     return React__default.createElement(MediaItem, {
-      key: file.url,
+      key: file.id,
       onClick: function onClick() {
         return handleMediaItemClick(file);
       }
@@ -33556,7 +33644,7 @@ var Files = function Files(_ref) {
       color: filePreviewTitleColor
     }, formatLargeText(file.name, 32)), React__default.createElement(FileSizeAndDate, {
       color: filePreviewSizeColor
-    }, bytesToSize(file.fileSize))), React__default.createElement(DownloadWrapper, {
+    }, file.fileSize ? bytesToSize(file.fileSize) : '')), React__default.createElement(DownloadWrapper, {
       onClick: function onClick() {
         return downloadFile(file);
       }

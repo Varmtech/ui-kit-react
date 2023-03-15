@@ -87,7 +87,9 @@ interface MessagesProps {
 }
 declare const MessageList: React.FC<MessagesProps>;
 export default MessageList;
-export declare const Container: import("styled-components").StyledComponent<"div", any, {}, never>;
+export declare const Container: import("styled-components").StyledComponent<"div", any, {
+    stopScrolling?: boolean | undefined;
+}, never>;
 export declare const EmptyDiv: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const MessageTopDate: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const DragAndDropContainer: import("styled-components").StyledComponent<"div", any, {
