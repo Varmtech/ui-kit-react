@@ -13,7 +13,7 @@ export declare const MessageTextFormat: ({ text, message, contactsMap, getFromCo
     message: any;
     contactsMap: IContactsMap;
     getFromContacts: boolean;
-}) => string | string[];
+}) => any;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const setMessageTypeByAttachment: (attachmentType: string) => "file" | "media";
 export declare const getAttachmentType: (dataName: string) => string;

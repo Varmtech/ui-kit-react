@@ -45,6 +45,7 @@
     "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
+    "@types/linkify-it": "^3.0.2",
     "babel-eslint": "^10.0.3",
     "cross-env": "^7.0.2",
     "eslint": "7.22.0",
@@ -70,5 +71,7 @@
   "files": [
     "assets"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "linkify-it": "^4.0.1"
+  }
 }

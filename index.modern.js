@@ -4,9 +4,9 @@ import createSagaMiddleware, { eventChannel } from 'redux-saga';
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import FileSaver from 'file-saver';
+import LinkifyIt from 'linkify-it';
 import { put, call, take, takeLatest, takeEvery, select, all } from 'redux-saga/effects';
 import Cropper from 'react-easy-crop';
-import Linkify from 'linkify-react';
 import Carousel from 'react-elastic-carousel';
 import { v4 } from 'uuid';
 
@@ -7862,7 +7862,6 @@ var getFileExtension = function getFileExtension(filename) {
   if (ext === filename) return '';
   return ext;
 };
-var urlRegex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
 var MessageTextFormat = function MessageTextFormat(_ref5) {
   var text = _ref5.text,
       message = _ref5.message,
@@ -7900,6 +7899,37 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
     for (var mentionMemberId in mentionsPositions) {
       _loop2(mentionMemberId);
     }
+  }
+
+  var linkify = new LinkifyIt();
+  var match = linkify.match(text);
+
+  if (match) {
+    var newMessageText;
+    match.forEach(function (matchItem, index) {
+      if (index === 0) {
+        newMessageText = [text.split(matchItem.text)[0], React__default.createElement("a", {
+          draggable: false,
+          key: index,
+          href: matchItem.url,
+          target: '_blank',
+          rel: 'noreferrer'
+        }, matchItem.text + " "), text.split(matchItem.text)[1]];
+      } else {
+        var _newMessageText;
+
+        var msgArr = [newMessageText[index * 2].split(matchItem.text)[0], React__default.createElement("a", {
+          draggable: false,
+          key: index,
+          href: matchItem.url,
+          target: '_blank',
+          rel: 'noreferrer'
+        }, matchItem.text + " "), newMessageText[index * 2].split(matchItem.text)[1]];
+
+        (_newMessageText = newMessageText).splice.apply(_newMessageText, [index * 2, 1].concat(msgArr));
+      }
+    });
+    messageText = newMessageText;
   }
 
   return messageText.length > 1 ? messageText : text;
@@ -28927,17 +28957,12 @@ var Message = function Message(_ref) {
     isForwarded: !!message.forwardingDetails
   }, React__default.createElement("span", {
     ref: messageTextRef
-  }, React__default.createElement(Linkify, {
-    options: {
-      target: '_blank',
-      ignoreTags: ['script', 'style']
-    }
   }, MessageTextFormat({
     text: message.body,
     message: message,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  }))), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
+  })), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
     iconColor: colors.primary,
     lastMessage: !firstMessage
   }, messageStatusIcon(message.deliveryStatus))) : null), withAttachments && message.attachments[0].type !== attachmentTypes.link && React__default.createElement(MessageStatusAndTime, {
@@ -30553,7 +30578,6 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages... ', messages);
   }, [messages]);
   useEffect(function () {
     if (channel.unreadMessageCount && channel.unreadMessageCount > 0 && getUnreadScrollTo()) {
@@ -31409,11 +31433,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     var lastChar = messageInputRef.current.innerText.slice(0, selPos).slice(-1);
-    console.log('charAt .. ... .,', messageInputRef.current.innerText.charAt(selPos - 1));
-    console.log('lastChar .. ... .,', lastChar);
 
     if (lastChar === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
-      console.log('selPos -> -> -> -> -> ', selPos);
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
@@ -31537,26 +31558,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
         }
 
         if (messageTexToSend && !attachments.length) {
-          var messageTextArr = [messageTexToSend];
+          var linkify = new LinkifyIt();
+          var match = linkify.match(messageTexToSend);
           var firstUrl;
-          messageTextArr.forEach(function (textPart) {
-            if (urlRegex.test(textPart)) {
-              var textArray = textPart.split(urlRegex);
-              textArray.forEach(function (part) {
-                try {
-                  if (urlRegex.test(part)) {
-                    if (!firstUrl) {
-                      firstUrl = part;
-                    }
-                  }
 
-                  return Promise.resolve();
-                } catch (e) {
-                  return Promise.reject(e);
-                }
-              });
-            }
-          });
+          if (match) {
+            firstUrl = match[0].url;
+          }
 
           if (firstUrl) {
             messageToSend.attachments = [{
