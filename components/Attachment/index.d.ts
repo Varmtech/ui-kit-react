@@ -35,6 +35,7 @@ export declare const AttachmentImg: import("styled-components").StyledComponent<
     ref?: any;
     withBorder?: boolean | undefined;
     isPrevious?: boolean | undefined;
+    hidden?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
     fitTheContainer?: boolean | undefined;
     backgroundColor: string;
