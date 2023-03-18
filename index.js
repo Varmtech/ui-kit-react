@@ -21495,9 +21495,9 @@ var VideoPreview = function VideoPreview(_ref) {
       loading = _useState4[0],
       setLoading = _useState4[1];
 
-  var _useState5 = React.useState(true),
-      isCached = _useState5[0],
-      setIsCached = _useState5[1];
+  var _useState5 = React.useState(src),
+      videoUrl = _useState5[0],
+      setVideoUrl = _useState5[1];
 
   var _useState6 = React.useState(false),
       downloadIsCancelled = _useState6[0],
@@ -21512,7 +21512,7 @@ var VideoPreview = function VideoPreview(_ref) {
       setDownloadIsCancelled(false);
 
       if (videoRef.current) {
-        videoRef.current.src = src;
+        videoRef.current.src = videoUrl;
       }
     } else {
       setDownloadIsCancelled(true);
@@ -21613,10 +21613,12 @@ var VideoPreview = function VideoPreview(_ref) {
   React.useEffect(function () {
     getAttachmentUrlFromCache(file.id).then(function (cachedUrl) {
       if (!cachedUrl) {
-        setIsCached(false);
+        setVideoUrl(src);
+      } else if (!videoUrl) {
+        setVideoUrl(src);
       }
     });
-  }, []);
+  }, [src]);
   return React__default.createElement(Component, {
     maxWidth: maxWidth,
     maxHeight: maxHeight,
@@ -21631,7 +21633,7 @@ var VideoPreview = function VideoPreview(_ref) {
     isRepliedMessage: isRepliedMessage,
     borderRadius: borderRadius,
     backgroundImage: file.metadata && file.metadata.tmb ? file.metadata.tmb : ''
-  }, !isCached && React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
+  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
   }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
     isRepliedMessage: isRepliedMessage,
@@ -21641,7 +21643,7 @@ var VideoPreview = function VideoPreview(_ref) {
     ref: videoRef,
     preload: 'auto',
     id: 'video',
-    src: file.attachmentUrl || src || file.url,
+    src: videoUrl,
     onPause: function onPause() {
       return setVideoPlaying(false);
     },
@@ -21649,10 +21651,10 @@ var VideoPreview = function VideoPreview(_ref) {
       return setVideoPlaying(true);
     }
   }, React__default.createElement("source", {
-    src: src || file.url,
+    src: videoUrl || file.url,
     type: "video/" + getFileExtension(file.name || file.data.name)
   }), React__default.createElement("source", {
-    src: src || file.url,
+    src: videoUrl || file.url,
     type: 'video/ogg'
   }), "Your browser does not support the video tag."), videoCurrentTime && React__default.createElement(VideoControls, null, !isPreview && !!videoDuration && !isRepliedMessage && !uploading && !isDetailsView && React__default.createElement(VideoPlayButton, {
     showOnHover: videoPlaying
@@ -28027,7 +28029,7 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     onClick: handlePauseResumeUpload,
     backgroundImage: attachment.metadata && attachment.metadata.tmb ? attachment.metadata.tmb : ''
-  }, !isCached && React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
+  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
   }, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(SvgCancel, null) : React__default.createElement(SvgUpload, null)), attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING && React__default.createElement(UploadingIcon, {
     isRepliedMessage: isRepliedMessage,
@@ -33262,6 +33264,7 @@ var Members = function Members(_ref) {
       setCloseMenu = _useState8[1];
 
   var members = reactRedux.useSelector(activeChannelMembersSelector) || [];
+  console.log('members. . .. ', members);
   var contactsMap = reactRedux.useSelector(contactsMapSelector) || {};
   var membersLoading = reactRedux.useSelector(membersLoadingStateSelector) || {};
   var user = getClient().chatClient.user;
