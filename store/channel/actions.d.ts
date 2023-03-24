@@ -236,16 +236,6 @@ export declare function toggleEditChannelAC(state: boolean): {
         state: boolean;
     };
 };
-export declare function checkUserStatusAC(usersMap: {
-    [key: string]: string;
-}): {
-    type: string;
-    payload: {
-        usersMap: {
-            [key: string]: string;
-        };
-    };
-};
 export declare function updateUserStatusOnChannelAC(usersMap: {
     [key: string]: IUser;
 }): {

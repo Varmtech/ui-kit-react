@@ -57,7 +57,9 @@ export declare const CustomSwitcher: import("styled-components").StyledComponent
 export declare const SwitcherLabel: import("styled-components").StyledComponent<"label", any, {}, never>;
 export declare const UploadAvatarButton: import("styled-components").StyledComponent<"button", any, {}, never>;
 export declare const UploadAvatarHandler: import("styled-components").StyledComponent<"div", any, {}, never>;
-export declare const MentionedUser: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const MentionedUser: import("styled-components").StyledComponent<"span", any, {
+    color?: string | undefined;
+}, never>;
 export declare const MessageOwner: import("styled-components").StyledComponent<"h3", any, any, never>;
 export declare const MessageText: import("styled-components").StyledComponent<"pre", any, {
     fontFamily?: string | undefined;

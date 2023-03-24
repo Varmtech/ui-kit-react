@@ -10,6 +10,9 @@ export interface IUserStore {
     contactsMap: {
         [key: string]: IContact;
     };
+    updatedUserMap: {
+        [key: string]: IUser;
+    };
     user: IUser;
     browserTabIsActive: boolean;
 }

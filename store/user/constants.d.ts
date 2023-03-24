@@ -15,6 +15,8 @@ export declare const SET_USER = "SET_USER";
 export declare const UPDATE_PROFILE = "UPDATE_PROFILE";
 export declare const UPDATE_USER_PROFILE = "UPDATE_USER_PROFILE";
 export declare const BROWSER_TAB_IS_ACTIVE = "BROWSER_TAB_IS_ACTIVE";
+export declare const CHECK_USER_STATUS = "CHECK_USER_STATUS";
+export declare const UPDATE_USER_MAP = "UPDATE_USER_MAP";
 export declare const CONNECTION_EVENT_TYPES: {
     TOKEN_WILL_EXPIRE: string;
     CONNECTION_STATUS_CHANGED: string;

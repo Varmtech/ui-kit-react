@@ -91,6 +91,26 @@ export declare function browserTabIsActiveAC(state: boolean): {
         state: boolean;
     };
 };
+export declare function checkUserStatusAC(usersMap: {
+    [key: string]: string;
+}): {
+    type: string;
+    payload: {
+        usersMap: {
+            [key: string]: string;
+        };
+    };
+};
+export declare function updateUserStatusOnMapAC(usersMap: {
+    [key: string]: IUser;
+}): {
+    type: string;
+    payload: {
+        usersMap: {
+            [key: string]: IUser;
+        };
+    };
+};
 export declare function updateProfileAC(user: IUser, firstName?: string, lastName?: string, avatarUrl?: string, metadata?: string, avatarFile?: File, presence?: string): {
     type: string;
     payload: {

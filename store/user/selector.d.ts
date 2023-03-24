@@ -6,3 +6,4 @@ export declare const userSelector: (store: any) => any;
 export declare const usersListSelector: (store: any) => any;
 export declare const usersLoadingStateSelector: (store: any) => any;
 export declare const browserTabIsActiveSelector: (store: any) => any;
+export declare const usersMapSelector: (store: any) => any;

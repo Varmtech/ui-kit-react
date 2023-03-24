@@ -10,6 +10,8 @@ import Cropper from 'react-easy-crop';
 import WaveSurfer from 'wavesurfer.js';
 import Carousel from 'react-elastic-carousel';
 import { v4 } from 'uuid';
+import MicRecorder from 'mic-recorder-to-mp3';
+import 'wavesurfer.js/dist/plugin/wavesurfer.microphone.js';
 
 /** A function that accepts a potential "extra argument" value to be injected later,
  * and returns an instance of the thunk middleware that uses that value
@@ -892,7 +894,6 @@ var MARK_CHANNEL_AS_UNREAD = 'MARK_CHANNEL_AS_UNREAD';
 var CHANNEL_INFO_OPEN_CLOSE = 'CHANNEL_INFO_OPEN_CLOSE';
 var LEAVE_CHANNEL = 'LEAVE_CHANNEL';
 var TOGGLE_EDIT_CHANNEL = 'TOGGLE_EDIT_CHANNEL';
-var CHECK_USER_STATUS = 'CHECK_USER_STATUS';
 var UPDATE_USER_STATUS_ON_CHANNEL = 'UPDATE_USER_STATUS_ON_CHANNEL';
 var SET_CHANNEL_LIST_WIDTH = 'SET_CHANNEL_LIST_WIDTH';
 var CLEAR_HISTORY = 'CLEAR_HISTORY';
@@ -1167,6 +1168,7 @@ var ChannelReducer = (function (state, _temp) {
     case UPDATE_USER_STATUS_ON_CHANNEL:
       {
         var usersMap = payload.usersMap;
+        console.log('UPDATE_USER_STATUS_ON_CHANNEL . .  .', payload.usersMap);
 
         var _updatedChannels = newState.channels.map(function (channel) {
           if (channel.type === CHANNEL_TYPE.DIRECT && usersMap[channel.peer.id]) {
@@ -1599,6 +1601,7 @@ function SvgClose(props) {
   return /*#__PURE__*/createElement("svg", _extends$5({
     width: 12,
     height: 12,
+    viewBox: "0 0 12.01 12.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$4 || (_path$4 = /*#__PURE__*/createElement("path", {
@@ -1970,7 +1973,9 @@ var CustomSwitcher = styled.div(_templateObject27 || (_templateObject27 = _tagge
 var SwitcherLabel = styled.label(_templateObject28 || (_templateObject28 = _taggedTemplateLiteralLoose(["\n  width: 48px;\n  height: 28px;\n  background: rgb(226, 226, 226);\n  display: inline-block;\n  border-radius: 50px;\n  position: relative;\n  transition: all 0.3s ease;\n  transform-origin: 20% center;\n  border: 3px solid #fff;\n  cursor: pointer;\n\n  &:before {\n    content: '';\n    position: absolute;\n    display: block;\n    transition: all 0.2s ease;\n    width: 24px;\n    height: 24px;\n    top: 2px;\n    left: 2px;\n    border-radius: 20px;\n    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.251475), 0 2px 6px rgba(0, 0, 0, 0.404256);\n    background: #fff;\n  }\n"])));
 var UploadAvatarButton = styled.button(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.blue5);
 var UploadAvatarHandler = styled.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.blue7);
-var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: #2f81ff;\n"])));
+var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.primary;
+});
 var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
   return props.withPadding && (props.messageBody ? '8px 0 0 12px' : props.isForwarded ? '8px 0 2px 12px' : '8px 0 4px 12px');
 }, function (props) {
@@ -7867,35 +7872,23 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
   var messageText = [text];
 
   if (message.mentionedUsers && message.mentionedUsers.length > 0) {
-    var mentionsPositions = Object.entries(message.metadata).sort(function (_ref6, _ref7) {
-      var a = _ref6[1];
-      var b = _ref7[1];
+    var mentionsPositions = Array.isArray(message.metadata) ? [].concat(message.metadata).sort(function (a, b) {
       return b.loc - a.loc;
-    }).reduce(function (r, _ref8) {
-      var _extends3;
-
-      var k = _ref8[0],
-          v = _ref8[1];
-      return _extends({}, r, (_extends3 = {}, _extends3[k] = v, _extends3));
-    }, {});
-
-    var _loop2 = function _loop2(mentionMemberId) {
+    }) : [];
+    mentionsPositions.forEach(function (mention) {
       var textPart = messageText.shift();
       var mentionDisplay = message.mentionedUsers.find(function (men) {
-        return men.id === mentionMemberId;
+        return men.id === mention.id;
       });
 
       if (mentionDisplay) {
         var user = getClient().chatClient.user;
-        messageText.unshift("" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mentionsPositions[mentionMemberId].loc)), React__default.createElement(MentionedUser, {
-          key: "" + mentionMemberId
-        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mentionsPositions[mentionMemberId].loc + mentionsPositions[mentionMemberId].len)));
+        messageText.unshift("" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mention.loc)), React__default.createElement(MentionedUser, {
+          color: colors.primary,
+          key: "" + mention.loc
+        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len)));
       }
-    };
-
-    for (var mentionMemberId in mentionsPositions) {
-      _loop2(mentionMemberId);
-    }
+    });
   }
 
   var linkify = new LinkifyIt();
@@ -8072,28 +8065,27 @@ var formatLargeText = function formatLargeText(text, maxLength) {
 };
 var getCaretPosition1 = function getCaretPosition1(element) {
   var caretOffset = 0;
+  var textNodes = 0;
   var doc = element.ownerDocument || element.document;
   var win = doc.defaultView || doc.parentWindow;
-  var sel;
+  var focusOffset = win.getSelection().focusOffset;
+  var focusNode = win.getSelection().focusNode;
+  element.childNodes.forEach(function (node, index) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node === focusNode) {
+        caretOffset += focusOffset + textNodes;
+        return;
+      } else {
+        caretOffset += node.nodeValue.length;
+      }
 
-  if (typeof win.getSelection !== 'undefined') {
-    sel = win.getSelection();
+      if (element.childNodes.length === index + 1) {
+        caretOffset += textNodes;
+      }
 
-    if (sel.rangeCount > 0) {
-      var range = win.getSelection().getRangeAt(0);
-      var preCaretRange = range.cloneRange();
-      preCaretRange.selectNodeContents(element);
-      preCaretRange.setEnd(range.endContainer, range.endOffset);
-      caretOffset = preCaretRange.toString().length;
+      textNodes += 1;
     }
-  } else if ((sel = doc.selection) && sel.type !== 'Control') {
-    var textRange = sel.createRange();
-    var preCaretTextRange = doc.body.createTextRange();
-    preCaretTextRange.moveToElementText(element);
-    preCaretTextRange.setEndPoint('EndToEnd', textRange);
-    caretOffset = preCaretTextRange.text.length;
-  }
-
+  });
   return caretOffset;
 };
 var getCaretPosition = function getCaretPosition(editableDiv) {
@@ -8130,20 +8122,31 @@ var getCaretPosition = function getCaretPosition(editableDiv) {
 var setCursorPosition = function setCursorPosition(element, position) {
   var range = document.createRange();
   var sel = window.getSelection();
-  var node = element.childNodes[0];
-  var offset = 0;
+  var currentNode = element.childNodes[0];
+  var caretOffset = 0;
+  var textNodes = 0;
+  element.childNodes.forEach(function (node, index) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      var textLength = node.nodeValue.length;
+      caretOffset += textLength;
 
-  for (var i = 0; i < element.childNodes.length; i++) {
-    if (offset + element.childNodes[i].textContent.length >= position) {
-      node = element.childNodes[i];
-      offset = position - offset;
-      break;
+      if (element.childNodes.length === index + 1) {
+        caretOffset += textNodes;
+      }
+
+      if (caretOffset >= position) {
+        currentNode = node;
+        caretOffset = position - (caretOffset - textLength);
+        return;
+      }
+
+      textNodes += 1;
+    } else if (node.nodeName === 'SPAN') {
+      caretOffset += 1;
+      currentNode = node;
     }
-
-    offset += element.childNodes[i].textContent.length;
-  }
-
-  range.setStart(node, offset);
+  });
+  range.setStart(currentNode, caretOffset);
   range.collapse(true);
 
   if (sel) {
@@ -8873,6 +8876,7 @@ var MembersReducer = (function (state, _ref) {
     case UPDATE_MEMBERS:
       {
         var _members2 = payload.members;
+        console.log('UPDATE_MEMBERS . ... .. ', _members2);
         var updateMembers = [];
         var membersCopy = [].concat(newState.activeChannelMembers);
 
@@ -8995,6 +8999,8 @@ var SET_USER = 'SET_USER';
 var UPDATE_PROFILE = 'UPDATE_PROFILE';
 var UPDATE_USER_PROFILE = 'UPDATE_USER_PROFILE';
 var BROWSER_TAB_IS_ACTIVE = 'BROWSER_TAB_IS_ACTIVE';
+var CHECK_USER_STATUS = 'CHECK_USER_STATUS';
+var UPDATE_USER_MAP = 'UPDATE_USER_MAP';
 var CONNECTION_EVENT_TYPES = {
   TOKEN_WILL_EXPIRE: 'TOKEN_WILL_EXPIRE',
   CONNECTION_STATUS_CHANGED: 'CONNECTION_STATUS_CHANGED',
@@ -9014,6 +9020,7 @@ var initialState$3 = {
   usersLoadingState: null,
   rolesMap: {},
   contactsMap: {},
+  updatedUserMap: {},
   user: {
     id: '',
     firstName: '',
@@ -9060,6 +9067,12 @@ var UserReducer = (function (state, _ref) {
     case SET_USERS_LOADING_STATE:
       {
         newState.usersLoadingState = payload.state;
+        return newState;
+      }
+
+    case UPDATE_USER_MAP:
+      {
+        newState.updatedUserMap = payload.usersMap;
         return newState;
       }
 
@@ -9426,14 +9439,6 @@ function toggleEditChannelAC(state) {
     type: TOGGLE_EDIT_CHANNEL,
     payload: {
       state: state
-    }
-  };
-}
-function checkUserStatusAC(usersMap) {
-  return {
-    type: CHECK_USER_STATUS,
-    payload: {
-      usersMap: usersMap
     }
   };
 }
@@ -10039,6 +10044,22 @@ function browserTabIsActiveAC(state) {
     type: BROWSER_TAB_IS_ACTIVE,
     payload: {
       state: state
+    }
+  };
+}
+function checkUserStatusAC(usersMap) {
+  return {
+    type: CHECK_USER_STATUS,
+    payload: {
+      usersMap: usersMap
+    }
+  };
+}
+function updateUserStatusOnMapAC(usersMap) {
+  return {
+    type: UPDATE_USER_MAP,
+    payload: {
+      usersMap: usersMap
     }
   };
 }
@@ -12495,7 +12516,7 @@ function checkUsersStatus(action) {
           });
 
           if (!update) {
-            _context18.next = 16;
+            _context18.next = 18;
             break;
           }
 
@@ -12504,23 +12525,27 @@ function checkUsersStatus(action) {
 
         case 14:
           _context18.next = 16;
-          return put(updateUserStatusOnChannelAC(usersToUpdateMap));
+          return put(updateUserStatusOnMapAC(usersToUpdateMap));
 
         case 16:
-          _context18.next = 21;
-          break;
+          _context18.next = 18;
+          return put(updateUserStatusOnChannelAC(usersToUpdateMap));
 
         case 18:
-          _context18.prev = 18;
+          _context18.next = 23;
+          break;
+
+        case 20:
+          _context18.prev = 20;
           _context18.t0 = _context18["catch"](0);
           console.log('ERROR in check user status : ', _context18.t0.message);
 
-        case 21:
+        case 23:
         case "end":
           return _context18.stop();
       }
     }
-  }, _marked18, null, [[0, 18]]);
+  }, _marked18, null, [[0, 20]]);
 }
 
 function sendTyping(action) {
@@ -13074,12 +13099,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 134;
+            _context.next = 137;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 100;
+            _context.next = 103;
             break;
           }
 
@@ -13095,12 +13120,12 @@ function sendMessage(action) {
           }
 
           thumbnailMetas = getVideoThumb(messageAttachment.attachmentId);
-          _context.next = 21;
+          _context.next = 24;
           break;
 
         case 17:
           if (!(fileType === 'image')) {
-            _context.next = 21;
+            _context.next = 23;
             break;
           }
 
@@ -13109,8 +13134,18 @@ function sendMessage(action) {
 
         case 20:
           thumbnailMetas = _context.sent;
+          _context.next = 24;
+          break;
 
-        case 21:
+        case 23:
+          if (fileType === attachmentTypes.voice) {
+            thumbnailMetas = {
+              duration: 3,
+              thumbnail: messageAttachment.metadata.tmb
+            };
+          }
+
+        case 24:
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -13137,47 +13172,47 @@ function sendMessage(action) {
             createdAt: new Date(Date.now()),
             parent: message.parent
           })));
-          _context.next = 32;
+          _context.next = 35;
           return select(messagesHasNextSelector);
 
-        case 32:
+        case 35:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 41;
+            _context.next = 44;
             break;
           }
 
           if (!hasNextMessages) {
-            _context.next = 39;
+            _context.next = 42;
             break;
           }
 
-          _context.next = 37;
+          _context.next = 40;
           return put(getMessagesAC(channel));
 
-        case 37:
-          _context.next = 41;
+        case 40:
+          _context.next = 44;
           break;
 
-        case 39:
-          _context.next = 41;
+        case 42:
+          _context.next = 44;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 41:
+        case 44:
           console.log('add pending message .. ', pendingMessage);
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context.next = 46;
+          _context.next = 49;
           return put(scrollToNewMessageAC(true, true));
 
-        case 46:
-          _context.next = 48;
+        case 49:
+          _context.next = 51;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.attachmentId));
 
-        case 48:
+        case 51:
           if (!customUploader) {
-            _context.next = 98;
+            _context.next = 101;
             break;
           }
 
@@ -13206,42 +13241,42 @@ function sendMessage(action) {
             });
           };
 
-          _context.prev = 51;
+          _context.prev = 54;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 87;
+            _context.next = 90;
             break;
           }
 
-          _context.next = 55;
+          _context.next = 58;
           return call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 55:
+        case 58:
           uri = _context.sent;
           console.log('upload res .... uri, ,, ', uri);
-          _context.next = 59;
+          _context.next = 62;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
 
-        case 59:
+        case 62:
           fileSize = messageAttachment.size;
 
           if (!(messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 67;
+            _context.next = 70;
             break;
           }
 
-          _context.next = 63;
+          _context.next = 66;
           return call(getImageSize, filePath);
 
-        case 63:
+        case 66:
           fileSize = _context.sent;
-          _context.next = 66;
+          _context.next = 69;
           return call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 66:
+        case 69:
           thumbnailMetas = _context.sent;
 
-        case 67:
+        case 70:
           attachmentMeta = JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -13252,10 +13287,10 @@ function sendMessage(action) {
           attachmentToSend.attachmentId = messageAttachment.attachmentId;
           attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [attachmentToSend];
-          _context.next = 75;
+          _context.next = 78;
           return call(channel.sendMessage, messageToSend);
 
-        case 75:
+        case 78:
           messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
@@ -13271,10 +13306,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 80;
+          _context.next = 83;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 80:
+        case 83:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -13284,29 +13319,29 @@ function sendMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context.next = 85;
+          _context.next = 88;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 85:
-          _context.next = 88;
-          break;
-
-        case 87:
-          throw Error('Network error');
-
         case 88:
-          _context.next = 98;
+          _context.next = 91;
           break;
 
         case 90:
-          _context.prev = 90;
-          _context.t0 = _context["catch"](51);
-          _context.next = 94;
+          throw Error('Network error');
+
+        case 91:
+          _context.next = 101;
+          break;
+
+        case 93:
+          _context.prev = 93;
+          _context.t0 = _context["catch"](54);
+          _context.next = 97;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 94:
+        case 97:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -13316,16 +13351,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 98;
+          _context.next = 101;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 98:
-          _context.next = 134;
+        case 101:
+          _context.next = 137;
           break;
 
-        case 100:
+        case 103:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -13363,7 +13398,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 118;
+            _context.next = 121;
             break;
           }
 
@@ -13413,12 +13448,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 112;
+          _context.next = 115;
           return call(uploadAllAttachments);
 
-        case 112:
+        case 115:
           uploadedAttachments = _context.sent;
-          _context.next = 115;
+          _context.next = 118;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -13461,12 +13496,12 @@ function sendMessage(action) {
             }
           });
 
-        case 115:
+        case 118:
           attachmentsToSend = _context.sent;
-          _context.next = 121;
+          _context.next = 124;
           break;
 
-        case 118:
+        case 121:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -13478,25 +13513,25 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 121;
+          _context.next = 124;
           return put(addMessageAC(JSON.parse(JSON.stringify(_extends({}, _messageCopy2, {
             createdAt: new Date(Date.now()),
             parent: message.parent
           })))));
 
-        case 121:
+        case 124:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 134;
+            _context.next = 137;
             break;
           }
 
           console.log('message to send .... ', _messageToSend);
-          _context.next = 126;
+          _context.next = 129;
           return call(channel.sendMessage, _messageToSend);
 
-        case 126:
+        case 129:
           _messageResponse = _context.sent;
           console.log('message response ... ', _messageResponse);
           _messageUpdateData = {
@@ -13509,38 +13544,38 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 131;
+          _context.next = 134;
           return put(updateMessageAC(_messageToSend.tid, _messageUpdateData));
 
-        case 131:
+        case 134:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData
           });
-          _context.next = 134;
+          _context.next = 137;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
             id: channel.id
           }));
 
-        case 134:
-          _context.next = 136;
+        case 137:
+          _context.next = 139;
           return put(scrollToNewMessageAC(true));
 
-        case 136:
-          _context.next = 141;
+        case 139:
+          _context.next = 144;
           break;
 
-        case 138:
-          _context.prev = 138;
+        case 141:
+          _context.prev = 141;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 141:
+        case 144:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 138], [51, 90]]);
+  }, _marked$2, null, [[0, 141], [54, 93]]);
 }
 
 function sendTextMessage(action) {
@@ -16519,10 +16554,13 @@ function useUpdatePresence(channel, isVisible) {
     if (channel.peer && usersMap[channel.peer.id] && channel.peer.presence && (channel.peer.presence.state !== usersMap[channel.peer.id].state || channel.peer.presence.lastActiveAt && new Date(channel.peer.presence.lastActiveAt).getTime() !== new Date(usersMap[channel.peer.id].lastActiveAt).getTime())) {
       var _updateUserStatusOnCh;
 
+      console.log('dispatch update user status on channel');
+      console.log('usersMap ..  ..', usersMap);
+      console.log('usersMap ..  ..', channel.peer);
       dispatch(updateUserStatusOnChannelAC((_updateUserStatusOnCh = {}, _updateUserStatusOnCh[channel.peer.id] = channel.peer, _updateUserStatusOnCh)));
       usersMap[channel.peer.id] = channel.peer.presence;
     }
-  }, [channel]);
+  }, []);
 }
 
 var _g;
@@ -21793,12 +21831,6 @@ var getPlayingAudioId = function getPlayingAudioId() {
 };
 
 var _templateObject$l, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$8, _templateObject6$8;
-var Container$b = styled.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var AudioVisualization = styled.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
-var WaveContainer = styled.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
 
 var AudioPlayer = function AudioPlayer(_ref) {
   var url = _ref.url,
@@ -21927,18 +21959,16 @@ var AudioPlayer = function AudioPlayer(_ref) {
       wavesurfer.current = WaveSurfer.create({
         container: wavesurferContainer.current,
         waveColor: colors.gray9,
+        skipLength: 0,
         progressColor: colors.primary,
-        splitChannelsOptions: {
-          filterChannels: file.metadata.tmb
-        },
-        barWidth: 1.5,
         audioRate: audioRate,
+        barWidth: 1,
         barHeight: 3,
         hideScrollbar: true,
         barRadius: 1.5,
         cursorWidth: 0,
         barGap: 2,
-        barMinHeight: 8,
+        barMinHeight: 1,
         height: 20
       });
       wavesurfer.current.load(url);
@@ -21946,6 +21976,10 @@ var AudioPlayer = function AudioPlayer(_ref) {
         var audioDuration = wavesurfer.current.getDuration();
         var currentTime = wavesurfer.current.getCurrentTime();
         setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+
+        wavesurfer.current.drawBuffer = function (d) {
+          console.log('filters --- ', d);
+        };
       });
       wavesurfer.current.on('finish', function () {
         setPlayAudio(false);
@@ -21995,6 +22029,12 @@ var AudioPlayer = function AudioPlayer(_ref) {
     onClick: handleSetAudioRate
   }, audioRate, React__default.createElement("span", null, "X"))), React__default.createElement(Timer, null, currentTime));
 };
+var Container$b = styled.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var AudioVisualization = styled.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var AudioRate = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
+var WaveContainer = styled.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer = styled.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
 
 var _templateObject$m, _templateObject2$k, _templateObject3$g, _templateObject4$d, _templateObject5$9, _templateObject6$9, _templateObject7$7, _templateObject8$5, _templateObject9$4, _templateObject10$4, _templateObject11$3, _templateObject12$2;
 
@@ -25160,7 +25200,7 @@ var PRESENCE_STATUS$1 = {
   ONLINE: 'Online'
 };
 
-var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f;
+var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f, _templateObject6$f;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
       addMentionMember = _ref.addMentionMember,
@@ -25300,7 +25340,7 @@ function MentionMembersPopup(_ref) {
       size: 32,
       textSize: 14,
       setDefaultAvatar: true
-    }), member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE && React__default.createElement(UserStatus, null)), React__default.createElement(MemberName$1, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)));
+    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
   })));
 }
 MentionMembersPopup.defaultProps = {
@@ -25310,14 +25350,22 @@ MentionMembersPopup.defaultProps = {
 var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
   return props.height && props.height + 22;
 });
-var MemberName$1 = styled.span(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  margin: 0 0 0 12px;\n  max-width: calc(100% - 30px);\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var EditMemberIcon = styled.span(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled.ul(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
-var MemberItem = styled.li(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+var UserNamePresence$1 = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$1 = styled.h3(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var EditMemberIcon = styled.span(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList = styled.ul(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
+var MemberItem = styled.li(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.isActiveItem && colors.gray0;
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g;
+var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause$1 = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
+var AudioVisualization$1 = styled.div(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var WaveContainer$1 = styled.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer$1 = styled.div(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
+
+var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$l, _templateObject5$h, _templateObject6$g, _templateObject7$d, _templateObject8$b, _templateObject9$a, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -25352,6 +25400,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var draggedAttachments = useSelector(draggedAttachmentsSelector);
   var ChatClient = getClient();
   var user = ChatClient.user;
+  var recordingInitialState = {
+    recordingSeconds: 0,
+    recordingMilliseconds: 0,
+    initRecording: false,
+    mediaStream: null,
+    mediaRecorder: null,
+    audio: undefined
+  };
   var messageContRef = useRef(null);
 
   var _usePermissions = usePermissions(activeChannel.role),
@@ -25381,53 +25437,65 @@ var SendMessageInput = function SendMessageInput(_ref) {
       emojisInRightSide = _useState6[0],
       setEmojisInRightSide = _useState6[1];
 
-  var _useState7 = useState([]),
-      mentionedMembers = _useState7[0],
-      setMentionedMembers = _useState7[1];
+  var _useState7 = useState(new MicRecorder({
+    bitRate: 128
+  })),
+      setRecorder = _useState7[1];
 
-  var _useState8 = useState([]),
-      mentionedMembersDisplayName = _useState8[0],
-      setMentionedMembersDisplayName = _useState8[1];
+  var _useState8 = useState(recordingInitialState),
+      recording = _useState8[0],
+      setRecording = _useState8[1];
 
-  var _useState9 = useState(undefined),
-      currentMentions = _useState9[0],
-      setCurrentMentions = _useState9[1];
+  var _useState9 = useState(null),
+      recordedFile = _useState9[0];
 
-  var _useState10 = useState(false),
-      mentionTyping = _useState10[0],
-      setMentionTyping = _useState10[1];
+  var _useState10 = useState([]),
+      mentionedMembers = _useState10[0],
+      setMentionedMembers = _useState10[1];
 
-  var _useState11 = useState(undefined),
-      mentionEdit = _useState11[0],
-      setMentionEdit = _useState11[1];
+  var _useState11 = useState([]),
+      mentionedMembersDisplayName = _useState11[0],
+      setMentionedMembersDisplayName = _useState11[1];
 
-  var _useState12 = useState(),
-      selectionPos = _useState12[0],
-      setSelectionPos = _useState12[1];
+  var _useState12 = useState(undefined),
+      currentMentions = _useState12[0],
+      setCurrentMentions = _useState12[1];
 
-  var _useState13 = useState(),
-      typingTimout = _useState13[0],
-      setTypingTimout = _useState13[1];
+  var _useState13 = useState(false),
+      mentionTyping = _useState13[0],
+      setMentionTyping = _useState13[1];
 
-  var _useState14 = useState(),
-      inTypingStateTimout = _useState14[0],
-      setInTypingStateTimout = _useState14[1];
+  var _useState14 = useState(undefined),
+      mentionEdit = _useState14[0],
+      setMentionEdit = _useState14[1];
 
-  var _useState15 = useState(false),
-      inTypingState = _useState15[0],
-      setInTypingState = _useState15[1];
+  var _useState15 = useState(),
+      selectionPos = _useState15[0],
+      setSelectionPos = _useState15[1];
 
-  var _useState16 = useState(false),
-      sendMessageIsActive = _useState16[0],
-      setSendMessageIsActive = _useState16[1];
+  var _useState16 = useState(),
+      typingTimout = _useState16[0],
+      setTypingTimout = _useState16[1];
 
-  var _useState17 = useState(false),
-      openMention = _useState17[0],
-      setOpenMention = _useState17[1];
+  var _useState17 = useState(),
+      inTypingStateTimout = _useState17[0],
+      setInTypingStateTimout = _useState17[1];
 
-  var _useState18 = useState([]),
-      attachments = _useState18[0],
-      setAttachments = _useState18[1];
+  var _useState18 = useState(false),
+      inTypingState = _useState18[0],
+      setInTypingState = _useState18[1];
+
+  var _useState19 = useState(false),
+      sendMessageIsActive = _useState19[0],
+      setSendMessageIsActive = _useState19[1];
+
+  var _useState20 = useState(false),
+      openMention = _useState20[0],
+      setOpenMention = _useState20[1];
+
+  var _useState21 = useState([]),
+      attachments = _useState21[0],
+      setAttachments = _useState21[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
@@ -25455,6 +25523,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var selPos = getCaretPosition(messageInputRef.current);
     var newText = messageText.slice(0, selPos) + emoji + messageText.slice(selPos);
     setMessageText(newText);
+    console.log('set currentText  6 ', newText);
     messageInputRef.current.innerText = newText;
     setCursorPosition(messageInputRef.current, selPos + emoji.length);
   };
@@ -25500,7 +25569,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     setMentionTyping(false);
-    var currentText = "" + messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + " " + messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
+    var currentText = "" + messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
     setMessageText(currentText);
     messageInputRef.current.innerText = currentText;
     setCursorPosition(messageInputRef.current, currentMentions.start + 1 + mentionDisplayName.length);
@@ -25550,6 +25619,15 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var handleMentionDetect = function handleMentionDetect(e) {
     var selPos = getCaretPosition1(e.currentTarget);
 
+    if (e.key === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
+      setCurrentMentions({
+        start: selPos - 1,
+        typed: ''
+      });
+      setMentionTyping(true);
+      setOpenMention(true);
+    }
+
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
       setSelectionPos(selPos);
     } else {
@@ -25588,17 +25666,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setOpenMention(true);
     }
 
-    var lastChar = messageInputRef.current.innerText.slice(0, selPos).slice(-1);
-
-    if (lastChar === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
-      setCurrentMentions({
-        start: selPos - 1,
-        typed: ''
-      });
-      setMentionTyping(true);
-      setOpenMention(true);
-    }
-
     var shouldClose = false;
 
     if (e.key === 'Backspace') {
@@ -25609,6 +25676,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       if (mentionToEdit) {
         var currentText = [messageText.slice(0, mentionToEdit.start + 1), messageText.slice(mentionToEdit.end)].join('');
         setMessageText(currentText);
+        console.log('set currentText  1 ', currentText);
         messageInputRef.current.innerText = currentText;
         setMentionedMembers(function (prevState) {
           return prevState.filter(function (mem) {
@@ -25655,6 +25723,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var _currentText = [messageText.slice(0, mentionEdit.start + 1), messageText.slice(mentionEdit.end)].join('');
 
       setMessageText(_currentText);
+      console.log('set currentText  2 ', _currentText);
       messageInputRef.current.innerText = _currentText;
       setMentionedMembers(function (prevState) {
         return prevState.filter(function (mem) {
@@ -25675,113 +25744,138 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleSendEditMessage = function handleSendEditMessage(event) {
-    var shiftKey = event.shiftKey,
-        charCode = event.charCode,
-        type = event.type;
-    var shouldSend = charCode === 13 && shiftKey === false && !openMention || type === 'click';
+    if (recordedFile) {
+      console.log('recordedFile . . . . ', recordedFile);
+      console.log('recordedFile duration . . . . ', recordedFile.data.duration);
+      var messageToSend = {
+        metadata: '',
+        body: '',
+        mentionedMembers: [],
+        attachments: [{
+          name: v4() + ".mp3",
+          data: recordedFile.data,
+          attachmentId: v4(),
+          upload: true,
+          size: recordedFile.data.size,
+          attachmentUrl: recordedFile.attachmentURL,
+          metadata: {
+            tmb: recordedFile.thumbs
+          },
+          type: attachmentTypes.voice
+        }],
+        type: 'text'
+      };
+      dispatch(sendMessageAC(messageToSend, activeChannel.id, connectionStatus, true));
+    } else {
+      var shiftKey = event.shiftKey,
+          charCode = event.charCode,
+          type = event.type;
+      var shouldSend = charCode === 13 && shiftKey === false && !openMention || type === 'click';
 
-    if (shouldSend) {
-      event.preventDefault();
+      if (shouldSend) {
+        event.preventDefault();
 
-      if (messageToEdit) {
-        handleEditMessage();
-      } else if (messageText || attachments.length && attachments.length > 0) {
-        var messageTexToSend = messageText.trim();
-        var mentionedMembersPositions = {};
-        mentionedMembers.forEach(function (menMem) {
-          if (!mentionedMembersPositions[menMem.id]) {
-            mentionedMembersPositions[menMem.id] = {
-              loc: menMem.start,
+        if (messageToEdit) {
+          handleEditMessage();
+        } else if (messageText || attachments.length && attachments.length > 0) {
+          var messageTexToSend = messageText.trim();
+          var trimLength = messageText.length - messageText.trimStart().length;
+          var mentionedMembersPositions = [];
+          mentionedMembers.forEach(function (menMem) {
+            mentionedMembersPositions.push({
+              id: menMem.id,
+              loc: menMem.start - trimLength,
               len: menMem.end - menMem.start
-            };
-          }
-        });
-        var messageToSend = {
-          metadata: mentionedMembersPositions,
-          body: messageTexToSend,
-          mentionedMembers: [],
-          attachments: [],
-          type: 'text'
-        };
-        messageToSend.mentionedMembers = mentionedMembers.filter(function (v, i, a) {
-          return a.findIndex(function (t) {
-            return t.id === v.id;
-          }) === i;
-        });
-
-        if (messageForReply) {
-          messageToSend.parent = messageForReply;
-        }
-
-        if (messageTexToSend && !attachments.length) {
-          var linkify = new LinkifyIt();
-          var match = linkify.match(messageTexToSend);
-          var firstUrl;
-
-          if (match) {
-            firstUrl = match[0].url;
-          }
-
-          if (firstUrl) {
-            messageToSend.attachments = [{
-              type: attachmentTypes.link,
-              data: firstUrl,
-              upload: false
-            }];
-          }
-
-          dispatch(sendTextMessageAC(messageToSend, activeChannel.id, connectionStatus));
-        }
-
-        if (attachments.length) {
-          var sendAsSeparateMessage = getSendAttachmentsAsSeparateMessages();
-          messageToSend.attachments = attachments.map(function (attachment, index) {
-            var attachmentToSend = {
-              name: attachment.data.name,
-              data: attachment.data,
-              attachmentId: attachment.attachmentId,
-              upload: true,
-              attachmentUrl: attachment.attachmentUrl,
-              metadata: attachment.metadata,
-              type: attachment.type,
-              size: attachment.size
-            };
-
-            if (sendAsSeparateMessage) {
-              if (index !== 0) {
-                messageToSend.body = '';
-              }
-
-              dispatch(sendMessageAC(_extends({}, messageToSend, {
-                attachments: [attachmentToSend]
-              }), activeChannel.id, connectionStatus, true));
-            }
-
-            return attachmentToSend;
+            });
+          });
+          var _messageToSend = {
+            metadata: mentionedMembersPositions,
+            body: messageTexToSend,
+            mentionedMembers: [],
+            attachments: [],
+            type: 'text'
+          };
+          _messageToSend.mentionedMembers = mentionedMembers.filter(function (v, i, a) {
+            return a.findIndex(function (t) {
+              return t.id === v.id;
+            }) === i;
           });
 
-          if (!sendAsSeparateMessage) {
-            dispatch(sendMessageAC(messageToSend, activeChannel.id, connectionStatus, false));
+          if (messageForReply) {
+            _messageToSend.parent = messageForReply;
           }
+
+          if (messageTexToSend && !attachments.length) {
+            var linkify = new LinkifyIt();
+            var match = linkify.match(messageTexToSend);
+            var firstUrl;
+
+            if (match) {
+              firstUrl = match[0].url;
+            }
+
+            if (firstUrl) {
+              _messageToSend.attachments = [{
+                type: attachmentTypes.link,
+                data: firstUrl,
+                upload: false
+              }];
+            }
+
+            dispatch(sendTextMessageAC(_messageToSend, activeChannel.id, connectionStatus));
+          }
+
+          if (attachments.length) {
+            var sendAsSeparateMessage = getSendAttachmentsAsSeparateMessages();
+            _messageToSend.attachments = attachments.map(function (attachment, index) {
+              var attachmentToSend = {
+                name: attachment.data.name,
+                data: attachment.data,
+                attachmentId: attachment.attachmentId,
+                upload: true,
+                attachmentUrl: attachment.attachmentUrl,
+                metadata: attachment.metadata,
+                type: attachment.type,
+                size: attachment.size
+              };
+
+              if (sendAsSeparateMessage) {
+                if (index !== 0) {
+                  _messageToSend.body = '';
+                }
+
+                dispatch(sendMessageAC(_extends({}, _messageToSend, {
+                  attachments: [attachmentToSend]
+                }), activeChannel.id, connectionStatus, true));
+              }
+
+              return attachmentToSend;
+            });
+
+            if (!sendAsSeparateMessage) {
+              dispatch(sendMessageAC(_messageToSend, activeChannel.id, connectionStatus, false));
+            }
+          }
+
+          setMessageText('');
+          console.log('set currentText  3 ');
+          messageInputRef.current.innerText = '';
+          setAttachments([]);
+          handleCloseReply();
+          setMentionedMembers([]);
+          setMentionedMembersDisplayName([]);
+          setOpenMention(false);
+          setMentionTyping(false);
+          setCurrentMentions(undefined);
+          fileUploader.current.value = '';
+
+          if (inTypingState) {
+            handleSendTypingState(false);
+          }
+
+          clearTimeout(typingTimout);
+          setTypingTimout(undefined);
         }
-
-        setMessageText('');
-        messageInputRef.current.innerText = '';
-        setAttachments([]);
-        handleCloseReply();
-        setMentionedMembers([]);
-        setMentionedMembersDisplayName([]);
-        setOpenMention(false);
-        setMentionTyping(false);
-        setCurrentMentions(undefined);
-        fileUploader.current.value = '';
-
-        if (inTypingState) {
-          handleSendTypingState(false);
-        }
-
-        clearTimeout(typingTimout);
-        setTypingTimout(undefined);
       }
     }
   };
@@ -25845,6 +25939,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setEditMessageText('');
 
     if (messageInputRef.current) {
+      console.log('set currentText  4 ');
       messageInputRef.current.innerText = '';
     }
 
@@ -25924,9 +26019,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   useEffect(function () {
     if (mentionedMembers.length) {
-      var currentPos = getCaretPosition(messageInputRef.current);
       var mentionToEdit = mentionedMembers.find(function (menMem) {
-        return menMem.start < currentPos && menMem.end >= currentPos;
+        return menMem.start < selectionPos && menMem.end >= selectionPos;
       });
 
       if (mentionToEdit) {
@@ -26113,6 +26207,46 @@ var SendMessageInput = function SendMessageInput(_ref) {
       dispatch(setDraggedAttachments([], ''));
     }
   }, [draggedAttachments]);
+
+  useEffect(function () {
+    var MAX_RECORDER_TIME = 15;
+    var recordingInterval = null;
+
+    if (recording.initRecording) {
+      recordingInterval = setInterval(function () {
+        setRecording(function (prevState) {
+          if (prevState.recordingSeconds === MAX_RECORDER_TIME && prevState.recordingMilliseconds === 0) {
+            clearInterval(recordingInterval);
+            return prevState;
+          }
+
+          if (prevState.recordingMilliseconds >= 0 && prevState.recordingMilliseconds < 99) {
+            return _extends({}, prevState, {
+              recordingMilliseconds: prevState.recordingMilliseconds + 1
+            });
+          }
+
+          if (prevState.recordingMilliseconds === 99) {
+            return _extends({}, prevState, {
+              recordingSeconds: prevState.recordingSeconds + 1,
+              recordingMilliseconds: 0
+            });
+          }
+
+          return prevState;
+        });
+      }, 10);
+    } else clearInterval(recordingInterval);
+
+    return function () {
+      return clearInterval(recordingInterval);
+    };
+  }, [recording.initRecording]);
+  useEffect(function () {
+    if (recordedFile) {
+      handleSendEditMessage();
+    }
+  }, [recordedFile]);
   useEffect(function () {
     if (prevActiveChannelId && activeChannel.id && prevActiveChannelId !== activeChannel.id) {
       setMessageText('');
@@ -26197,6 +26331,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   useEffect(function () {
     if (messageToEdit && messageInputRef.current) {
       setEditMessageText(messageToEdit.body || '');
+      console.log('set currentText  5 ');
       messageInputRef.current.innerText = messageToEdit.body;
       placeCaretAtEnd(messageInputRef.current);
       messageInputRef.current.focus();
@@ -26221,10 +26356,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     document.addEventListener('mousedown', handleClick);
     return function () {
+      setRecorder(null);
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(Container$f, {
+  return React__default.createElement(Container$g, {
     margin: margin,
     border: border,
     borderRadius: borderRadius,
@@ -26337,25 +26473,25 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onKeyPress: handleSendEditMessage,
     "data-placeholder": 'Type message here ...',
     ref: messageInputRef
-  })), React__default.createElement(SendMessageIcon, {
+  })),  React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
-  }, React__default.createElement(SvgSend, null)))));
+  }, React__default.createElement(SvgSend, null)) )));
 };
 
-var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
+var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
   return props.margin || '30px 16px 16px';
 }, colors.gray1, function (props) {
   return props.border || '';
 }, function (props) {
   return props.borderRadius || '4px';
 });
-var EditReplyMessageCont = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
-var EditMessageText = styled.p(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
-var UserName$1 = styled.span(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled.h4(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var EditReplyMessageCont = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
+var EditMessageText = styled.p(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled.span(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
+var UserName$1 = styled.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageHeader = styled.h4(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
 var AddAttachmentIcon = styled.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
@@ -26384,32 +26520,38 @@ var EmojiButton = styled.span(_templateObject11$6 || (_templateObject11$6 = _tag
   return props.hoverColor || colors.primary;
 });
 var MentionsContainer = styled.div(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
-var SendMessageIcon = styled.span(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n\n  color: ", ";\n"])), function (props) {
+var RecordingWrapper = styled.div(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  order: ", ";\n  display: flex;\n"])), function (props) {
+  return props.order === 0 || props.order ? props.order : 4;
+});
+var SendMessageIcon = styled.span(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
   return props.isActive ? colors.primary : '#ccc';
+}, function (props) {
+  return props.isActive ? props.iconColor || colors.primary : '#ccc';
 });
-var ChosenAttachments = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: ", ";\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1, function (props) {
+var RecordingTimer = styled.span(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 50px;\n  font-size: 16px;\n  color: ", ";\n"])), colors.gray6);
+var ChosenAttachments = styled.div(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: ", ";\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1, function (props) {
   return props.fileBoxWidth || '200px';
 });
-var TypingIndicator$1 = styled.div(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
-var TypingIndicatorCont = styled.div(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
-var TypingFrom = styled.h5(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
-var sizeAnimation = keyframes(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
-var DotOne = styled.span(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose([""])));
-var DotTwo = styled.span(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose([""])));
-var DotThree = styled.span(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose([""])));
-var TypingAnimation = styled.div(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
-var Loading = styled.div(_templateObject23$1 || (_templateObject23$1 = _taggedTemplateLiteralLoose(["\n  height: 48px;\n"])));
-var BlockedUserInfo = styled.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.gray6);
-var JoinChannelCont = styled.div(_templateObject25$1 || (_templateObject25$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
+var TypingIndicator$1 = styled.div(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
+var TypingIndicatorCont = styled.div(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
+var TypingFrom = styled.h5(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
+var sizeAnimation = keyframes(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var DotOne = styled.span(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose([""])));
+var DotTwo = styled.span(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose([""])));
+var DotThree = styled.span(_templateObject23$1 || (_templateObject23$1 = _taggedTemplateLiteralLoose([""])));
+var TypingAnimation = styled.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
+var Loading = styled.div(_templateObject25$1 || (_templateObject25$1 = _taggedTemplateLiteralLoose(["\n  height: 48px;\n"])));
+var BlockedUserInfo = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.gray6);
+var JoinChannelCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
 }, colors.gray5);
-var ReadOnlyCont = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), colors.gray6, function (props) {
+var ReadOnlyCont = styled.div(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), colors.gray6, function (props) {
   return props.iconColor || colors.primary;
 });
-var ReplyMessageCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
-var ReplyIconWrapper = styled.span(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  min-width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageCont = styled.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
+var ReplyIconWrapper = styled.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  min-width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, colors.white);
 
@@ -26746,7 +26888,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$l, _templateObject5$h, _templateObject6$g;
+var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$m, _templateObject5$i, _templateObject6$h;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -26970,7 +27112,7 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return React__default.createElement(Container$g, {
+  return React__default.createElement(Container$h, {
     isDirect: isDirectChannel
   }, toggleable && React__default.createElement(ActionHeader, {
     onClick: handleActionsOpen
@@ -27197,16 +27339,16 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
+var Container$h = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
   return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
 });
-var ActionHeader = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
-var MenuTriggerIcon = styled.span(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
+var ActionHeader = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
+var MenuTriggerIcon = styled.span(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
-var ActionsMenu = styled.ul(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionsMenu = styled.ul(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose([""])));
+var ActionItem$1 = styled.li(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
   return props.order;
@@ -27294,7 +27436,7 @@ function SvgMoreVert(props) {
   })));
 }
 
-var _templateObject$x, _templateObject2$v, _templateObject3$p;
+var _templateObject$y, _templateObject2$w, _templateObject3$q;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
   var channelId = _ref.channelId,
@@ -27373,11 +27515,11 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }, "Save"))));
 };
 
-var RolesSelect = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
-var RoleSpan = styled.span(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
+var RolesSelect = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
+var RoleLabel = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
+var RoleSpan = styled.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$m, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c;
+var _templateObject$z, _templateObject2$x, _templateObject3$r, _templateObject4$n, _templateObject5$j, _templateObject6$i, _templateObject7$e, _templateObject8$c;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -27529,7 +27671,7 @@ var Members = function Members(_ref) {
     dispatch(getContactsAC());
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return React__default.createElement(Container$h, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
+  return React__default.createElement(Container$i, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
     onScroll: handleMembersListScroll
   }, chekActionPermission('addMember') && React__default.createElement(MemberItem$1, {
     key: 1,
@@ -27633,12 +27775,12 @@ var Members = function Members(_ref) {
     toggleCreatePopup: handleAddMemberPopup
   }));
 };
-var Container$h = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose([""])));
-var ActionsMenu$1 = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled.div(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
-var MemberName$2 = styled.h4(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
-var EditMemberIcon$1 = styled.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList$1 = styled.ul(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$i = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu$1 = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
+var MemberNamePresence = styled.div(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
+var MemberName$2 = styled.h4(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
+var EditMemberIcon$1 = styled.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList$1 = styled.ul(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var MemberItem$1 = styled.li(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
@@ -27650,7 +27792,7 @@ var RoleBadge = styled.span(_templateObject8$c || (_templateObject8$c = _taggedT
   return props.color || colors.primary;
 });
 
-var _templateObject$z, _templateObject2$x;
+var _templateObject$A, _templateObject2$y;
 
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
@@ -27670,7 +27812,7 @@ var Media = function Media(_ref) {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return React__default.createElement(Container$i, null, attachments.map(function (file) {
+  return React__default.createElement(Container$j, null, attachments.map(function (file) {
     return React__default.createElement(MediaItem, {
       key: file.id,
       onClick: function onClick() {
@@ -27694,8 +27836,8 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$i = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
-var MediaItem = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
+var Container$j = styled.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var MediaItem = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
 var _path$1c, _path2$8, _path3$4;
 
@@ -27783,7 +27925,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$A, _templateObject2$y, _templateObject3$r, _templateObject4$n, _templateObject5$j, _templateObject6$i, _templateObject7$f;
+var _templateObject$B, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$k, _templateObject6$j, _templateObject7$f;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -27798,7 +27940,7 @@ var Files = function Files(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
-  return React__default.createElement(Container$j, null, attachments.map(function (file) {
+  return React__default.createElement(Container$k, null, attachments.map(function (file) {
     return React__default.createElement(FileItem, {
       key: file.url,
       hoverBackgroundColor: filePreviewHoverBackgroundColor
@@ -27816,12 +27958,12 @@ var Files = function Files(_ref) {
     }, filePreviewDownloadIcon || React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$j = styled.ul(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled.a(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
-var FileIconCont = styled.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileHoverIconCont = styled.span(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled.img(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled.div(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var Container$k = styled.ul(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DownloadWrapper = styled.a(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
+var FileIconCont = styled.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileHoverIconCont = styled.span(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileThumb = styled.img(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var FileItem = styled.div(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
 var FileSizeAndDate = styled.span(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
@@ -27881,7 +28023,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$B, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$k;
+var _templateObject$C, _templateObject2$A, _templateObject3$t, _templateObject4$p, _templateObject5$l;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -27902,17 +28044,17 @@ var LinkItem = function LinkItem(_ref) {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled.span(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var LinkHoverIconCont = styled.span(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var LinkInfoCont = styled.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
-var FileItem$1 = styled.li(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var LinkIconCont = styled.span(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
+var LinkHoverIconCont = styled.span(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var LinkInfoCont = styled.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
+var FileItem$1 = styled.li(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
-var _templateObject$C;
+var _templateObject$D;
 
 var Links = function Links(_ref) {
   var channelId = _ref.channelId,
@@ -27926,7 +28068,7 @@ var Links = function Links(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
-  return React__default.createElement(Container$k, null, attachments.map(function (file) {
+  return React__default.createElement(Container$l, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
@@ -27938,7 +28080,7 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$k = styled.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$l = styled.ul(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
 var _rect$3, _circle$7, _path$1e;
 
@@ -28104,7 +28246,7 @@ function SvgVoicePreviewPauseHover(props) {
   })));
 }
 
-var _templateObject$D, _templateObject2$A, _templateObject3$t, _templateObject4$p, _templateObject5$l, _templateObject6$j, _templateObject7$g, _templateObject8$d;
+var _templateObject$E, _templateObject2$B, _templateObject3$u, _templateObject4$q, _templateObject5$m, _templateObject6$k, _templateObject7$g, _templateObject8$d;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -28237,16 +28379,16 @@ var VoiceItem = function VoiceItem(_ref) {
     type: 'audio/mpeg'
   })));
 };
-var FileIconCont$1 = styled.span(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
-var FileHoverIconCont$1 = styled.span(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
-var FileItem$2 = styled.li(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var FileIconCont$1 = styled.span(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled.span(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled.li(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
-var AudioInfo = styled.div(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioInfo = styled.div(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioTitle = styled.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
-var AudioDate = styled.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+var AudioDate = styled.span(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray9;
 });
 var AudioSendTime = styled.span(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
@@ -28254,7 +28396,7 @@ var AudioSendTime = styled.span(_templateObject7$g || (_templateObject7$g = _tag
 });
 var Audio = styled.audio(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$E;
+var _templateObject$F;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
@@ -28275,7 +28417,7 @@ var Voices = function Voices(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return React__default.createElement(Container$l, null, attachments.map(function (file) {
+  return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(VoiceItem, {
       key: file.id,
       file: file,
@@ -28293,9 +28435,9 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$l = styled.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$m = styled.ul(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$F, _templateObject2$B;
+var _templateObject$G, _templateObject2$C;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -28346,7 +28488,7 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return React__default.createElement(Container$m, null, React__default.createElement(DetailsTabHeader, {
+  return React__default.createElement(Container$n, null, React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
@@ -28413,8 +28555,8 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$m = styled.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
+var Container$n = styled.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
   return props.activeTabColor || colors.primary;
 });
 
@@ -28452,15 +28594,15 @@ function SvgCamera(props) {
   })));
 }
 
-var _templateObject$G, _templateObject2$C, _templateObject3$u, _templateObject4$q;
-var Container$n = styled.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
+var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$r;
+var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
 });
-var AvatarCont = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
-var DropDownWrapper = styled.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
-var EditChannelFooter = styled(ButtonBlock)(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
+var AvatarCont = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
+var DropDownWrapper = styled.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
+var EditChannelFooter = styled(ButtonBlock)(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
@@ -28586,7 +28728,7 @@ var EditChannel = function EditChannel(_ref) {
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$n, {
+  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$o, {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode
@@ -28659,7 +28801,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$r, _templateObject5$m, _templateObject6$k, _templateObject7$h;
+var _templateObject$I, _templateObject2$E, _templateObject3$w, _templateObject4$s, _templateObject5$n, _templateObject6$l, _templateObject7$h;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -28813,7 +28955,7 @@ var Details = function Details(_ref) {
   useEffect(function () {
     setMounted(true);
   }, []);
-  return React__default.createElement(Container$o, {
+  return React__default.createElement(Container$p, {
     mounted: mounted
   }, React__default.createElement(ChannelDetailsHeader, null, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
     onClick: function onClick() {
@@ -28954,16 +29096,16 @@ var Details = function Details(_ref) {
     privateChannelMakeAdminPopupDescription: privateChannelMakeAdminPopupDescription
   })));
 };
-var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
+var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
   return props.mounted && ' width: 360px';
 });
-var ChannelDetailsHeader = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
-var ChatDetails = styled.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChannelDetailsHeader = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
+var ChatDetails = styled.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
-var ChannelInfo$3 = styled.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
-var DetailsHeader = styled.div(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
-var ChannelName$1 = styled(SectionHeader)(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
+var ChannelInfo$3 = styled.div(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
+var DetailsHeader = styled.div(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
+var ChannelName$1 = styled(SectionHeader)(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
 var EditButton = styled.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
@@ -29200,12 +29342,12 @@ function SvgChatLogo(props) {
   })));
 }
 
-var _templateObject$I, _templateObject2$E;
-var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
-var Logo = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
+var _templateObject$J, _templateObject2$F;
+var Container$q = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
+var Logo = styled.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
 
 function SceytChatHeader() {
-  return React__default.createElement(Container$p, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
+  return React__default.createElement(Container$q, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
 var _path$1k;
@@ -29239,7 +29381,7 @@ function SvgChevronDown(props) {
   })));
 }
 
-var _templateObject$J, _templateObject2$F;
+var _templateObject$K, _templateObject2$G;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -29283,10 +29425,10 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";
 }, colors.white);
-var UnreadCount$1 = styled.span(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var UnreadCount$1 = styled.span(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.cobalt1;
 }, function (props) {
   return props.fontSize || '13px';
