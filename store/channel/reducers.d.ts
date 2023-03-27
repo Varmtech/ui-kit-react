@@ -32,6 +32,7 @@ declare const _default: (state?: {
         attachment: File;
         type: "file" | "media";
     }[];
+    tabIsActive: boolean;
 }, { type, payload }?: IAction) => {
     channelsLoadingState: string | null;
     channelsForForwardLoadingState: string | null;
@@ -65,5 +66,6 @@ declare const _default: (state?: {
         attachment: File;
         type: "file" | "media";
     }[];
+    tabIsActive: boolean;
 };
 export default _default;

@@ -32,6 +32,7 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
             attachment: File;
             type: "file" | "media";
         }[];
+        tabIsActive: boolean;
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;

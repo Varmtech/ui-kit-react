@@ -129,6 +129,20 @@ export declare function deleteReactionFromMessageAC(message: IMessage, reaction:
         isSelf: boolean;
     };
 };
+export declare function getReactionsAC(messageId: string, key?: string, limit?: number): {
+    type: string;
+    payload: {
+        messageId: string;
+        key: string | undefined;
+        limit: number | undefined;
+    };
+};
+export declare function loadMoreReactionsAC(limit: number): {
+    type: string;
+    payload: {
+        limit: number;
+    };
+};
 export declare function updateAttachmentUploadingStateAC(attachmentUploadingState: string, attachmentId?: any): {
     type: string;
     payload: {

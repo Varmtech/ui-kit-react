@@ -32,6 +32,7 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
             attachment: File;
             type: "file" | "media";
         }[];
+        tabIsActive: boolean;
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;

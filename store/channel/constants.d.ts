@@ -45,6 +45,7 @@ export declare const SET_CHANNEL_LIST_WIDTH = "SET_CHANNEL_LIST_WIDTH";
 export declare const CLEAR_HISTORY = "CLEAR_HISTORY";
 export declare const DELETE_ALL_MESSAGES = "DELETE_ALL_MESSAGES";
 export declare const DESTROY_SESSION = "DESTROY_SESSION";
+export declare const SET_TAB_IS_ACTIVE = "SET_TAB_IS_ACTIVE";
 export declare const CHANNEL_EVENT_TYPES: {
     CREATE: string;
     JOIN: string;

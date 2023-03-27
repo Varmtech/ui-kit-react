@@ -283,6 +283,12 @@ export declare function setDraggedAttachments(attachments: File[], type: string)
         type: string;
     };
 };
+export declare function setTabIsActiveAC(isActive: boolean): {
+    type: string;
+    payload: {
+        isActive: boolean;
+    };
+};
 export declare function watchForEventsAC(): {
     type: string;
 };

@@ -899,6 +899,7 @@ var SET_CHANNEL_LIST_WIDTH = 'SET_CHANNEL_LIST_WIDTH';
 var CLEAR_HISTORY = 'CLEAR_HISTORY';
 var DELETE_ALL_MESSAGES = 'DELETE_ALL_MESSAGES';
 var DESTROY_SESSION = 'DESTROY_SESSION';
+var SET_TAB_IS_ACTIVE = 'SET_TAB_IS_ACTIVE';
 var CHANNEL_EVENT_TYPES = {
   CREATE: 'CREATE',
   JOIN: 'JOIN',
@@ -1003,6 +1004,7 @@ var initialState = {
   channelEditMode: false,
   channelListWidth: 0,
   isDragging: false,
+  tabIsActive: true,
   draggedAttachments: []
 };
 var ChannelReducer = (function (state, _temp) {
@@ -1168,7 +1170,6 @@ var ChannelReducer = (function (state, _temp) {
     case UPDATE_USER_STATUS_ON_CHANNEL:
       {
         var usersMap = payload.usersMap;
-        console.log('UPDATE_USER_STATUS_ON_CHANNEL . .  .', payload.usersMap);
 
         var _updatedChannels = newState.channels.map(function (channel) {
           if (channel.type === CHANNEL_TYPE.DIRECT && usersMap[channel.peer.id]) {
@@ -1320,6 +1321,13 @@ var ChannelReducer = (function (state, _temp) {
         return newState;
       }
 
+    case SET_TAB_IS_ACTIVE:
+      {
+        var isActive = payload.isActive;
+        newState.tabIsActive = isActive;
+        return newState;
+      }
+
     case DESTROY_SESSION:
       {
         newState = initialState;
@@ -1364,6 +1372,8 @@ var SET_ATTACHMENTS_COMPLETE = 'SET_ATTACHMENTS_COMPLETE';
 var SET_ATTACHMENTS_COMPLETE_FOR_POPUP = 'SET_ATTACHMENTS_COMPLETE_FOR_POPUP';
 var PAUSE_ATTACHMENT_UPLOADING = 'PAUSE_ATTACHMENT_UPLOADING';
 var RESUME_ATTACHMENT_UPLOADING = 'RESUME_ATTACHMENT_UPLOADING';
+var GET_REACTIONS = 'GET_REACTIONS';
+var LOAD_MORE_REACTIONS = 'LOAD_MORE_REACTIONS';
 var SET_SEND_MESSAGE_INPUT_HEIGHT = 'SET_SEND_MESSAGE_INPUT_HEIGHT';
 var ADD_REACTION_TO_MESSAGE = 'ADD_REACTION_TO_MESSAGE';
 var DELETE_REACTION_FROM_MESSAGE = 'DELETE_REACTION_FROM_MESSAGE';
@@ -9499,6 +9509,14 @@ function setDraggedAttachments(attachments, type) {
     }
   };
 }
+function setTabIsActiveAC(isActive) {
+  return {
+    type: SET_TAB_IS_ACTIVE,
+    payload: {
+      isActive: isActive
+    }
+  };
+}
 function watchForEventsAC() {
   return {
     type: WATCH_FOR_EVENTS
@@ -9727,6 +9745,16 @@ function deleteReactionFromMessageAC(message, reaction, isSelf) {
       message: message,
       reaction: reaction,
       isSelf: isSelf
+    }
+  };
+}
+function getReactionsAC(messageId, key, limit) {
+  return {
+    type: GET_REACTIONS,
+    payload: {
+      messageId: messageId,
+      key: key,
+      limit: limit
     }
   };
 }
@@ -10044,14 +10072,6 @@ function browserTabIsActiveAC(state) {
     type: BROWSER_TAB_IS_ACTIVE,
     payload: {
       state: state
-    }
-  };
-}
-function checkUserStatusAC(usersMap) {
-  return {
-    type: CHECK_USER_STATUS,
-    payload: {
-      usersMap: usersMap
     }
   };
 }
@@ -13072,11 +13092,13 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked8$1 = /*#__PURE__*/_regeneratorRuntime().mark(loadMoreMessages),
     _marked9$1 = /*#__PURE__*/_regeneratorRuntime().mark(addReaction),
     _marked10$1 = /*#__PURE__*/_regeneratorRuntime().mark(deleteReaction),
-    _marked11$1 = /*#__PURE__*/_regeneratorRuntime().mark(getMessageAttachments),
-    _marked12$1 = /*#__PURE__*/_regeneratorRuntime().mark(loadMoreMessageAttachments),
-    _marked13$1 = /*#__PURE__*/_regeneratorRuntime().mark(pauseAttachmentUploading),
-    _marked14$1 = /*#__PURE__*/_regeneratorRuntime().mark(resumeAttachmentUploading),
-    _marked15$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
+    _marked11$1 = /*#__PURE__*/_regeneratorRuntime().mark(getReactions),
+    _marked12$1 = /*#__PURE__*/_regeneratorRuntime().mark(loadMoreReactions),
+    _marked13$1 = /*#__PURE__*/_regeneratorRuntime().mark(getMessageAttachments),
+    _marked14$1 = /*#__PURE__*/_regeneratorRuntime().mark(loadMoreMessageAttachments),
+    _marked15$1 = /*#__PURE__*/_regeneratorRuntime().mark(pauseAttachmentUploading),
+    _marked16$1 = /*#__PURE__*/_regeneratorRuntime().mark(resumeAttachmentUploading),
+    _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
   var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _messageResponse, _messageUpdateData;
@@ -14648,14 +14670,101 @@ function deleteReaction(action) {
   }, _marked10$1, null, [[0, 15]]);
 }
 
-function getMessageAttachments(action) {
-  var _action$payload2, channelId, attachmentType, limit, direction, attachmentId, forPopup, SceytChatClient, typeList, AttachmentByTypeQueryBuilder, AttachmentByTypeQuery, result;
-
-  return _regeneratorRuntime().wrap(function getMessageAttachments$(_context11) {
+function getReactions(action) {
+  var payload, messageId, key, limit, SceytChatClient, reactionQueryBuilder, reactionQuery, result;
+  return _regeneratorRuntime().wrap(function getReactions$(_context11) {
     while (1) {
       switch (_context11.prev = _context11.next) {
         case 0:
           _context11.prev = 0;
+          payload = action.payload;
+          messageId = payload.messageId, key = payload.key, limit = payload.limit;
+          SceytChatClient = getClient();
+          console.log('handle get reactions ... ', messageId, key, limit);
+          reactionQueryBuilder = new SceytChatClient.chatClient.ReactionListQueryBuilder(messageId);
+          reactionQueryBuilder.limit(limit || 1);
+
+          if (key) {
+            reactionQueryBuilder.setKey(key);
+          }
+
+          _context11.next = 10;
+          return call(reactionQueryBuilder.build);
+
+        case 10:
+          reactionQuery = _context11.sent;
+          _context11.next = 13;
+          return call(reactionQuery.loadNext);
+
+        case 13:
+          result = _context11.sent;
+          console.log('result from get reactions ... ', result);
+          _context11.next = 20;
+          break;
+
+        case 17:
+          _context11.prev = 17;
+          _context11.t0 = _context11["catch"](0);
+          console.log('ERROR in get reactions', _context11.t0.message);
+
+        case 20:
+        case "end":
+          return _context11.stop();
+      }
+    }
+  }, _marked11$1, null, [[0, 17]]);
+}
+
+function loadMoreReactions(action) {
+  var payload, channelId, messageId, key, channel, _yield$call3, _message7, reaction;
+
+  return _regeneratorRuntime().wrap(function loadMoreReactions$(_context12) {
+    while (1) {
+      switch (_context12.prev = _context12.next) {
+        case 0:
+          _context12.prev = 0;
+          payload = action.payload;
+          channelId = payload.channelId, messageId = payload.messageId, key = payload.key;
+          _context12.next = 5;
+          return call(getChannelFromMap, channelId);
+
+        case 5:
+          channel = _context12.sent;
+          _context12.next = 8;
+          return call(channel.deleteReaction, messageId, key);
+
+        case 8:
+          _yield$call3 = _context12.sent;
+          _message7 = _yield$call3.message;
+          reaction = _yield$call3.reaction;
+          _context12.next = 13;
+          return put(deleteReactionFromMessageAC(_message7, reaction, true));
+
+        case 13:
+          _context12.next = 18;
+          break;
+
+        case 15:
+          _context12.prev = 15;
+          _context12.t0 = _context12["catch"](0);
+          console.log('ERROR in delete reaction', _context12.t0.message);
+
+        case 18:
+        case "end":
+          return _context12.stop();
+      }
+    }
+  }, _marked12$1, null, [[0, 15]]);
+}
+
+function getMessageAttachments(action) {
+  var _action$payload2, channelId, attachmentType, limit, direction, attachmentId, forPopup, SceytChatClient, typeList, AttachmentByTypeQueryBuilder, AttachmentByTypeQuery, result;
+
+  return _regeneratorRuntime().wrap(function getMessageAttachments$(_context13) {
+    while (1) {
+      switch (_context13.prev = _context13.next) {
+        case 0:
+          _context13.prev = 0;
           _action$payload2 = action.payload, channelId = _action$payload2.channelId, attachmentType = _action$payload2.attachmentType, limit = _action$payload2.limit, direction = _action$payload2.direction, attachmentId = _action$payload2.attachmentId, forPopup = _action$payload2.forPopup;
           SceytChatClient = getClient();
           typeList = [attachmentTypes.video, attachmentTypes.image, attachmentTypes.file, attachmentTypes.link, attachmentTypes.voice];
@@ -14672,11 +14781,11 @@ function getMessageAttachments(action) {
 
           AttachmentByTypeQueryBuilder = new SceytChatClient.chatClient.AttachmentListQueryBuilder(channelId, typeList);
           AttachmentByTypeQueryBuilder.limit(limit || 34);
-          _context11.next = 9;
+          _context13.next = 9;
           return call(AttachmentByTypeQueryBuilder.build);
 
         case 9:
-          AttachmentByTypeQuery = _context11.sent;
+          AttachmentByTypeQuery = _context13.sent;
 
           if (forPopup) {
             AttachmentByTypeQuery.reverse = true;
@@ -14688,91 +14797,91 @@ function getMessageAttachments(action) {
           };
 
           if (!(direction === queryDirection.NEXT)) {
-            _context11.next = 18;
+            _context13.next = 18;
             break;
           }
 
-          _context11.next = 15;
+          _context13.next = 15;
           return call(AttachmentByTypeQuery.loadPrevious);
 
         case 15:
-          result = _context11.sent;
-          _context11.next = 27;
+          result = _context13.sent;
+          _context13.next = 27;
           break;
 
         case 18:
           if (!(direction === queryDirection.NEAR)) {
-            _context11.next = 24;
+            _context13.next = 24;
             break;
           }
 
-          _context11.next = 21;
+          _context13.next = 21;
           return call(AttachmentByTypeQuery.loadNearMessageId, attachmentId);
 
         case 21:
-          result = _context11.sent;
-          _context11.next = 27;
+          result = _context13.sent;
+          _context13.next = 27;
           break;
 
         case 24:
-          _context11.next = 26;
+          _context13.next = 26;
           return call(AttachmentByTypeQuery.loadPrevious);
 
         case 26:
-          result = _context11.sent;
+          result = _context13.sent;
 
         case 27:
           if (!forPopup) {
-            _context11.next = 35;
+            _context13.next = 35;
             break;
           }
 
           query.AttachmentByTypeQueryForPopup = AttachmentByTypeQuery;
-          _context11.next = 31;
+          _context13.next = 31;
           return put(setAttachmentsForPopupAC(result.attachments));
 
         case 31:
-          _context11.next = 33;
+          _context13.next = 33;
           return put(setAttachmentsCompleteForPopupAC(result.hasNext));
 
         case 33:
-          _context11.next = 40;
+          _context13.next = 40;
           break;
 
         case 35:
           query.AttachmentByTypeQuery = AttachmentByTypeQuery;
-          _context11.next = 38;
+          _context13.next = 38;
           return put(setAttachmentsCompleteAC(result.hasNext));
 
         case 38:
-          _context11.next = 40;
+          _context13.next = 40;
           return put(setAttachmentsAC(result.attachments));
 
         case 40:
-          _context11.next = 45;
+          _context13.next = 45;
           break;
 
         case 42:
-          _context11.prev = 42;
-          _context11.t0 = _context11["catch"](0);
+          _context13.prev = 42;
+          _context13.t0 = _context13["catch"](0);
           console.log('error in message attachment query');
 
         case 45:
         case "end":
-          return _context11.stop();
+          return _context13.stop();
       }
     }
-  }, _marked11$1, null, [[0, 42]]);
+  }, _marked13$1, null, [[0, 42]]);
 }
 
 function loadMoreMessageAttachments(action) {
-  var _action$payload3, limit, direction, forPopup, AttachmentQuery, _yield$call3, attachments, hasNext;
+  var _action$payload3, limit, direction, forPopup, AttachmentQuery, _yield$call4, attachments, hasNext;
 
-  return _regeneratorRuntime().wrap(function loadMoreMessageAttachments$(_context12) {
+  return _regeneratorRuntime().wrap(function loadMoreMessageAttachments$(_context14) {
     while (1) {
-      switch (_context12.prev = _context12.next) {
+      switch (_context14.prev = _context14.next) {
         case 0:
-          _context12.prev = 0;
+          _context14.prev = 0;
           _action$payload3 = action.payload, limit = _action$payload3.limit, direction = _action$payload3.direction, forPopup = _action$payload3.forPopup;
 
           if (forPopup) {
@@ -14781,209 +14890,217 @@ function loadMoreMessageAttachments(action) {
             AttachmentQuery = query.AttachmentByTypeQuery;
           }
 
-          _context12.next = 5;
+          _context14.next = 5;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADING));
 
         case 5:
           AttachmentQuery.limit = limit;
-          _context12.next = 8;
+          _context14.next = 8;
           return call(AttachmentQuery.loadPrevious);
 
         case 8:
-          _yield$call3 = _context12.sent;
-          attachments = _yield$call3.attachments;
-          hasNext = _yield$call3.hasNext;
+          _yield$call4 = _context14.sent;
+          attachments = _yield$call4.attachments;
+          hasNext = _yield$call4.hasNext;
 
           if (!forPopup) {
-            _context12.next = 16;
+            _context14.next = 16;
             break;
           }
 
-          _context12.next = 14;
+          _context14.next = 14;
           return put(addAttachmentsForPopupAC(attachments, direction));
 
         case 14:
-          _context12.next = 22;
+          _context14.next = 22;
           break;
 
         case 16:
-          _context12.next = 18;
+          _context14.next = 18;
           return put(setAttachmentsCompleteAC(hasNext));
 
         case 18:
-          _context12.next = 20;
+          _context14.next = 20;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
         case 20:
-          _context12.next = 22;
+          _context14.next = 22;
           return put(addAttachmentsAC(attachments));
 
         case 22:
-          _context12.next = 28;
+          _context14.next = 28;
           break;
 
         case 24:
-          _context12.prev = 24;
-          _context12.t0 = _context12["catch"](0);
-          console.log('error in message attachment query', _context12.t0);
+          _context14.prev = 24;
+          _context14.t0 = _context14["catch"](0);
+          console.log('error in message attachment query', _context14.t0);
 
         case 28:
         case "end":
-          return _context12.stop();
+          return _context14.stop();
       }
     }
-  }, _marked12$1, null, [[0, 24]]);
+  }, _marked14$1, null, [[0, 24]]);
 }
 
 function pauseAttachmentUploading(action) {
   var attachmentId, isPaused;
-  return _regeneratorRuntime().wrap(function pauseAttachmentUploading$(_context13) {
+  return _regeneratorRuntime().wrap(function pauseAttachmentUploading$(_context15) {
     while (1) {
-      switch (_context13.prev = _context13.next) {
+      switch (_context15.prev = _context15.next) {
         case 0:
-          _context13.prev = 0;
+          _context15.prev = 0;
           attachmentId = action.payload.attachmentId;
 
           if (!getCustomUploader()) {
-            _context13.next = 7;
+            _context15.next = 7;
             break;
           }
 
           isPaused = pauseUpload(attachmentId);
 
           if (!isPaused) {
-            _context13.next = 7;
+            _context15.next = 7;
             break;
           }
 
-          _context13.next = 7;
+          _context15.next = 7;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.PAUSED, attachmentId));
 
         case 7:
-          _context13.next = 13;
+          _context15.next = 13;
           break;
 
         case 9:
-          _context13.prev = 9;
-          _context13.t0 = _context13["catch"](0);
-          console.log('error in pause attachment uploading', _context13.t0);
+          _context15.prev = 9;
+          _context15.t0 = _context15["catch"](0);
+          console.log('error in pause attachment uploading', _context15.t0);
 
         case 13:
         case "end":
-          return _context13.stop();
+          return _context15.stop();
       }
     }
-  }, _marked13$1, null, [[0, 9]]);
+  }, _marked15$1, null, [[0, 9]]);
 }
 
 function resumeAttachmentUploading(action) {
   var attachmentId, isResumed;
-  return _regeneratorRuntime().wrap(function resumeAttachmentUploading$(_context14) {
+  return _regeneratorRuntime().wrap(function resumeAttachmentUploading$(_context16) {
     while (1) {
-      switch (_context14.prev = _context14.next) {
+      switch (_context16.prev = _context16.next) {
         case 0:
-          _context14.prev = 0;
+          _context16.prev = 0;
           attachmentId = action.payload.attachmentId;
           console.log('resume for attachment ... ', attachmentId);
 
           if (!getCustomUploader()) {
-            _context14.next = 8;
+            _context16.next = 8;
             break;
           }
 
           isResumed = resumeUpload(attachmentId);
 
           if (!isResumed) {
-            _context14.next = 8;
+            _context16.next = 8;
             break;
           }
 
-          _context14.next = 8;
+          _context16.next = 8;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, attachmentId));
 
         case 8:
-          _context14.next = 14;
+          _context16.next = 14;
           break;
 
         case 10:
-          _context14.prev = 10;
-          _context14.t0 = _context14["catch"](0);
-          console.log('error in resume attachment uploading', _context14.t0);
+          _context16.prev = 10;
+          _context16.t0 = _context16["catch"](0);
+          console.log('error in resume attachment uploading', _context16.t0);
 
         case 14:
         case "end":
-          return _context14.stop();
+          return _context16.stop();
       }
     }
-  }, _marked14$1, null, [[0, 10]]);
+  }, _marked16$1, null, [[0, 10]]);
 }
 
 function MessageSaga() {
-  return _regeneratorRuntime().wrap(function MessageSaga$(_context15) {
+  return _regeneratorRuntime().wrap(function MessageSaga$(_context17) {
     while (1) {
-      switch (_context15.prev = _context15.next) {
+      switch (_context17.prev = _context17.next) {
         case 0:
-          _context15.next = 2;
+          _context17.next = 2;
           return takeEvery(SEND_MESSAGE, sendMessage);
 
         case 2:
-          _context15.next = 4;
+          _context17.next = 4;
           return takeEvery(SEND_TEXT_MESSAGE, sendTextMessage);
 
         case 4:
-          _context15.next = 6;
+          _context17.next = 6;
           return takeEvery(FORWARD_MESSAGE, forwardMessage);
 
         case 6:
-          _context15.next = 8;
+          _context17.next = 8;
           return takeEvery(RESEND_MESSAGE, resendMessage);
 
         case 8:
-          _context15.next = 10;
+          _context17.next = 10;
           return takeLatest(EDIT_MESSAGE, editMessage);
 
         case 10:
-          _context15.next = 12;
+          _context17.next = 12;
           return takeEvery(DELETE_MESSAGE, deleteMessage);
 
         case 12:
-          _context15.next = 14;
+          _context17.next = 14;
           return takeLatest(GET_MESSAGES, getMessagesQuery);
 
         case 14:
-          _context15.next = 16;
+          _context17.next = 16;
           return takeLatest(GET_MESSAGES_ATTACHMENTS, getMessageAttachments);
 
         case 16:
-          _context15.next = 18;
+          _context17.next = 18;
           return takeLatest(LOAD_MORE_MESSAGES_ATTACHMENTS, loadMoreMessageAttachments);
 
         case 18:
-          _context15.next = 20;
+          _context17.next = 20;
           return takeLatest(ADD_REACTION, addReaction);
 
         case 20:
-          _context15.next = 22;
+          _context17.next = 22;
           return takeLatest(DELETE_REACTION, deleteReaction);
 
         case 22:
-          _context15.next = 24;
+          _context17.next = 24;
           return takeEvery(LOAD_MORE_MESSAGES, loadMoreMessages);
 
         case 24:
-          _context15.next = 26;
-          return takeEvery(PAUSE_ATTACHMENT_UPLOADING, pauseAttachmentUploading);
+          _context17.next = 26;
+          return takeEvery(GET_REACTIONS, getReactions);
 
         case 26:
-          _context15.next = 28;
-          return takeEvery(RESUME_ATTACHMENT_UPLOADING, resumeAttachmentUploading);
+          _context17.next = 28;
+          return takeEvery(LOAD_MORE_REACTIONS, loadMoreReactions);
 
         case 28:
+          _context17.next = 30;
+          return takeEvery(PAUSE_ATTACHMENT_UPLOADING, pauseAttachmentUploading);
+
+        case 30:
+          _context17.next = 32;
+          return takeEvery(RESUME_ATTACHMENT_UPLOADING, resumeAttachmentUploading);
+
+        case 32:
         case "end":
-          return _context15.stop();
+          return _context17.stop();
       }
     }
-  }, _marked15$1);
+  }, _marked17$1);
 }
 
 var _marked$3 = /*#__PURE__*/_regeneratorRuntime().mark(getMembers),
@@ -15985,6 +16102,9 @@ var isDraggingSelector = function isDraggingSelector(store) {
 var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
   return store.ChannelReducer.draggedAttachments;
 };
+var tabIsActiveSelector = function tabIsActiveSelector(store) {
+  return store.ChannelReducer.tabIsActive;
+};
 
 var hideUserPresence;
 var setHideUserPresence = function setHideUserPresence(callback) {
@@ -16066,16 +16186,22 @@ var SceytChat = function SceytChat(_ref) {
       setSceytChatClient(client);
       dispatch(setUserAC(client.chatClient.user));
       dispatch(watchForEventsAC());
-      console.log('client.chatClient.connectStatus.. ... ', client.chatClient.connectStatus);
       dispatch(setConnectionStatusAC(client.chatClient.connectStatus));
     } else {
-      console.log('destroy session... ');
       clearMessagesMap();
       removeAllMessages();
       setActiveChannelId('');
       destroyChannelsMap();
       dispatch(destroySession());
     }
+
+    window.onblur = function () {
+      setTabIsActive(false);
+    };
+
+    window.onfocus = function () {
+      setTabIsActive(true);
+    };
   }, [client]);
   useEffect(function () {
     if (CustomUploader) {
@@ -16142,9 +16268,9 @@ var SceytChat = function SceytChat(_ref) {
     };
   }, [customColors]);
   useEffect(function () {
-    if (tabIsActive) {
-      console.log('tab is active');
+    dispatch(setTabIsActiveAC(tabIsActive));
 
+    if (tabIsActive) {
       if (window.sceytTabNotifications) {
         window.sceytTabNotifications.close();
       }
@@ -16503,7 +16629,7 @@ var Container$1 = styled.div(_templateObject$3 || (_templateObject$3 = _taggedTe
 }, function (props) {
   return props.size && props.size + "px";
 });
-var AvatarImage = styled.img(_templateObject2$3 || (_templateObject2$3 = _taggedTemplateLiteralLoose(["\n  visibility: ", ";\n  width: ", ";\n  height: ", ";\n"])), function (props) {
+var AvatarImage = styled.img(_templateObject2$3 || (_templateObject2$3 = _taggedTemplateLiteralLoose(["\n  visibility: ", ";\n  width: ", ";\n  height: ", ";\n  object-fit: cover;\n"])), function (props) {
   return props.showImage ? 'visible' : 'hidden';
 }, function (props) {
   return props.size + "px";
@@ -16534,9 +16660,7 @@ function useUpdatePresence(channel, isVisible) {
 
   if (Object.keys(usersMap).length && connectionStatus === CONNECTION_STATUS.CONNECTED) {
     clearInterval(updateInterval);
-    updateInterval = setInterval(function () {
-      dispatch(checkUserStatusAC(usersMap));
-    }, 4000);
+    updateInterval = setInterval(function () {}, 4000);
   } else if (!Object.keys(usersMap).length && updateInterval) {
     clearInterval(updateInterval);
     updateInterval = undefined;
@@ -19584,8 +19708,6 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, [deletedChannel]);
   useDidUpdate(function () {
-    console.log('connectionStatus.. .. ', connectionStatus);
-
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       dispatch(getChannelsAC({
         filter: filter,
@@ -22326,7 +22448,7 @@ var Attachment = function Attachment(_ref) {
   })));
 };
 var DownloadImage = styled.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n\n  cursor: pointer;\n\n  ", "\n  //background-image: ", ";\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 396px;\n  min-height: 90px;\n  cursor: pointer;\n\n  ", "\n  //background-image: ", ";\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPrevious ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
@@ -22853,6 +22975,7 @@ var Message = function Message(_ref) {
   var user = ChatClient.user;
   var getFromContacts = getShowOnlyContactUsers();
   var connectionStatus = useSelector(connectionStatusSelector, shallowEqual);
+  var tabIsActive = useSelector(tabIsActiveSelector, shallowEqual);
   var contactsMap = useSelector(contactsMapSelector, shallowEqual);
 
   var _useState = useState(false),
@@ -22884,7 +23007,16 @@ var Message = function Message(_ref) {
   var firstMessageInInterval = !(prevMessage && current.diff(moment(prevMessage.createdAt).startOf('day'), 'days') === 0) || (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system';
   var lastMessageInInterval = !(nextMessage && current.diff(moment(nextMessage.createdAt).startOf('day'), 'days') === 0) || nextMessage.type === 'system';
   var withAttachments = message.attachments && message.attachments.length > 0;
-  var withMediaAttachment = withAttachments && (message.attachments[0].type === attachmentTypes.video || message.attachments[0].type === attachmentTypes.image);
+  var notLinkAttachment = withAttachments && message.attachments.some(function (a) {
+    return a.type !== attachmentTypes.link;
+  });
+  var parentNotLinkAttachment = message.parent && message.parent.attachments && message.parent.attachments.some(function (a) {
+    return a.type !== attachmentTypes.link;
+  });
+  var mediaAttachment = withAttachments && message.attachments.find(function (attachment) {
+    return attachment.type === attachmentTypes.video || attachment.type === attachmentTypes.image;
+  });
+  var withMediaAttachment = !!mediaAttachment;
   var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
   var borderRadius = !message.incoming && ownMessageOnRightSide ? prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 4px 16px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '16px 4px 16px 16px' : '16px 4px 4px 16px' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 16px 4px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '4px 16px 16px 16px' : '4px 16px 16px 4px';
   var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && (message.incoming || showSenderNameOnOwnMessages);
@@ -22945,6 +23077,10 @@ var Message = function Message(_ref) {
     setMessageActionsShow(false);
   };
 
+  var handleGetReactions = function handleGetReactions() {
+    dispatch(getReactionsAC(message.id));
+  };
+
   var handleRemoveFailedAttachment = function handleRemoveFailedAttachment(attachmentId) {
     console.log('remove attachment .. ', attachmentId);
   };
@@ -22992,7 +23128,7 @@ var Message = function Message(_ref) {
   };
 
   var handleSendReadMarker = function handleSendReadMarker() {
-    if (message.incoming && !(message.selfMarkers.length && message.selfMarkers.includes(MESSAGE_DELIVERY_STATUS.READ))) {
+    if (isVisible && message.incoming && !(message.selfMarkers.length && message.selfMarkers.includes(MESSAGE_DELIVERY_STATUS.READ))) {
       dispatch(markMessagesAsReadAC(channel.id, [message.id]));
     }
   };
@@ -23019,11 +23155,16 @@ var Message = function Message(_ref) {
   };
 
   useEffect(function () {
-    if (isVisible) {
+    if (isVisible && tabIsActive) {
       setLastVisibleMessageId(message.id);
       handleSendReadMarker();
     }
   }, [isVisible]);
+  useEffect(function () {
+    if (tabIsActive) {
+      handleSendReadMarker();
+    }
+  }, [tabIsActive]);
   return React__default.createElement(MessageItem, {
     key: message.id || message.tid,
     rtl: ownMessageOnRightSide && !message.incoming,
@@ -23050,12 +23191,12 @@ var Message = function Message(_ref) {
     className: 'messageBody',
     isSelfMessage: !message.incoming,
     isReplyMessage: !!(message.parent && message.parent.id && !isThreadMessage),
-    parentMessageAttachmentType: message.parent && message.parent.attachments && message.parent.attachments[0] && message.parent.attachments[0].type,
+    parentMessageIsVoice: message.parent && message.parent.attachments && message.parent.attachments[0] && message.parent.attachments[0].type === attachmentTypes.voice,
     ownMessageBackground: ownMessageBackground,
     incomingMessageBackground: incomingMessageBackground,
     borderRadius: borderRadius,
-    withAttachments: withAttachments && message.attachments[0].type !== attachmentTypes.link,
-    attachmentWidth: withAttachments ? message.attachments[0].type === attachmentTypes.image ? message.attachments[0].metadata && message.attachments[0].metadata.szw && calculateRenderedImageWidth(message.attachments[0].metadata.szw, message.attachments[0].metadata.szh)[0] : message.attachments[0].type === attachmentTypes.voice ? 254 : message.attachments[0].type === attachmentTypes.video ? 320 : undefined : undefined,
+    withAttachments: notLinkAttachment,
+    attachmentWidth: withAttachments ? mediaAttachment ? mediaAttachment.type === attachmentTypes.image ? mediaAttachment.metadata && mediaAttachment.metadata.szw && calculateRenderedImageWidth(mediaAttachment.metadata.szw, mediaAttachment.metadata.szh)[0] : mediaAttachment.type === attachmentTypes.video ? 320 : undefined : message.attachments[0].type === attachmentTypes.voice ? 254 : undefined : undefined,
     noBody: !message.body && !withAttachments,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave
@@ -23121,7 +23262,7 @@ var Message = function Message(_ref) {
     onClick: function onClick() {
       return handleScrollToRepliedMessage && handleScrollToRepliedMessage(message.parent.id);
     }
-  }, message.parent.attachments && !!message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.voice && message.parent.attachments[0].type !== attachmentTypes.link && message.parent.attachments.map(function (attachment, index) {
+  }, message.parent.attachments && !!message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.voice && parentNotLinkAttachment && message.parent.attachments.map(function (attachment, index) {
     return React__default.createElement(Attachment, {
       key: attachment.attachmentId || attachment.url,
       backgroundColor: message.incoming ? incomingMessageBackground : ownMessageBackground,
@@ -23149,7 +23290,7 @@ var Message = function Message(_ref) {
     message: message.parent,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  }) : message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.link && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, {
+  }) : parentNotLinkAttachment && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, {
     withAttachments: withAttachments,
     withMediaAttachment: withMediaAttachment,
     withBody: !!message.body,
@@ -23158,7 +23299,7 @@ var Message = function Message(_ref) {
   }, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
     draggable: false,
     showMessageSenderName: showMessageSenderName,
-    withAttachment: withAttachments && message.attachments[0].type !== attachmentTypes.link && !!message.body,
+    withAttachment: notLinkAttachment && !!message.body,
     withMediaAttachment: withMediaAttachment,
     fontFamily: fontFamily,
     isForwarded: !!message.forwardingDetails
@@ -23172,7 +23313,7 @@ var Message = function Message(_ref) {
   })), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', !withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link ? React__default.createElement(MessageStatusAndTime, null, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimePosition === 'onMessage' && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && React__default.createElement(MessageStatus, {
     iconColor: colors.primary,
     lastMessage: !firstMessage
-  }, messageStatusIcon(message.deliveryStatus))) : null), withAttachments && message.attachments[0].type !== attachmentTypes.link && React__default.createElement(MessageStatusAndTime, {
+  }, messageStatusIcon(message.deliveryStatus))) : null), notLinkAttachment && React__default.createElement(MessageStatusAndTime, {
     withAttachment: true,
     fileAttachment: message.attachments[0].type === 'file' || message.attachments[0].type === 'voice'
   }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, {
@@ -23232,7 +23373,8 @@ var Message = function Message(_ref) {
     backgroundColor: reactionItemBackground,
     padding: reactionItemPadding,
     margin: '0',
-    fontSize: '12px'
+    fontSize: '12px',
+    onClick: handleGetReactions
   }, reactionsCount)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
@@ -23346,7 +23488,7 @@ var MessageBody = styled.div(_templateObject16$1 || (_templateObject16$1 = _tagg
 }, function (props) {
   return props.borderRadius || '4px 16px 16px 4px';
 }, function (props) {
-  return props.withAttachments ? props.attachmentWidth && props.attachmentWidth < 420 ? props.attachmentWidth < 130 ? props.parentMessageAttachmentType && props.parentMessageAttachmentType === attachmentTypes.voice ? '210px' : '130px' : props.attachmentWidth + "px" : '420px' : '100%';
+  return props.withAttachments ? props.attachmentWidth && props.attachmentWidth < 420 ? props.attachmentWidth < 130 ? props.isReplyMessage ? '210px' : '130px' : props.attachmentWidth + "px" : '420px' : '100%';
 }, function (props) {
   return props.withAttachments ? props.isReplyMessage ? '1px 0 0 ' : '0' : props.isSelfMessage ? '8px 12px' : '8px 12px 8px 12px';
 }, function (props) {
@@ -24733,12 +24875,14 @@ var MessageList = function MessageList(_ref2) {
           var messagesHeight = 0;
 
           while (i !== prevMessageId) {
-            if (messages[i].id === prevMessageId) {
-              i = prevMessageId;
-            } else {
-              var currentMessage = document.getElementById(messages[i].id);
-              currentMessage ? messagesHeight += currentMessage.getBoundingClientRect().height : messagesHeight;
-              i++;
+            if (messages[i]) {
+              if (messages[i].id === prevMessageId) {
+                i = prevMessageId;
+              } else {
+                var currentMessage = document.getElementById(messages[i].id);
+                currentMessage ? messagesHeight += currentMessage.getBoundingClientRect().height : messagesHeight;
+                i++;
+              }
             }
           }
 
@@ -25523,7 +25667,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var selPos = getCaretPosition(messageInputRef.current);
     var newText = messageText.slice(0, selPos) + emoji + messageText.slice(selPos);
     setMessageText(newText);
-    console.log('set currentText  6 ', newText);
     messageInputRef.current.innerText = newText;
     setCursorPosition(messageInputRef.current, selPos + emoji.length);
   };
@@ -25676,7 +25819,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       if (mentionToEdit) {
         var currentText = [messageText.slice(0, mentionToEdit.start + 1), messageText.slice(mentionToEdit.end)].join('');
         setMessageText(currentText);
-        console.log('set currentText  1 ', currentText);
         messageInputRef.current.innerText = currentText;
         setMentionedMembers(function (prevState) {
           return prevState.filter(function (mem) {
@@ -25723,7 +25865,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var _currentText = [messageText.slice(0, mentionEdit.start + 1), messageText.slice(mentionEdit.end)].join('');
 
       setMessageText(_currentText);
-      console.log('set currentText  2 ', _currentText);
       messageInputRef.current.innerText = _currentText;
       setMentionedMembers(function (prevState) {
         return prevState.filter(function (mem) {
@@ -25858,7 +25999,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
           }
 
           setMessageText('');
-          console.log('set currentText  3 ');
           messageInputRef.current.innerText = '';
           setAttachments([]);
           handleCloseReply();
@@ -25939,7 +26079,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setEditMessageText('');
 
     if (messageInputRef.current) {
-      console.log('set currentText  4 ');
       messageInputRef.current.innerText = '';
     }
 
@@ -26248,14 +26387,16 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   }, [recordedFile]);
   useEffect(function () {
-    if (prevActiveChannelId && activeChannel.id && prevActiveChannelId !== activeChannel.id) {
-      setMessageText('');
-      handleCloseReply();
-      setMentionedMembersDisplayName([]);
-      setAttachments([]);
-      handleCloseEditMode();
-      clearTimeout(typingTimout);
-    } else if (activeChannel.id) {
+    if (activeChannel.id) {
+      if (prevActiveChannelId && prevActiveChannelId !== activeChannel.id) {
+        setMessageText('');
+        handleCloseReply();
+        setMentionedMembersDisplayName([]);
+        setAttachments([]);
+        handleCloseEditMode();
+        clearTimeout(typingTimout);
+      }
+
       prevActiveChannelId = activeChannel.id;
     }
 
@@ -26331,7 +26472,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
   useEffect(function () {
     if (messageToEdit && messageInputRef.current) {
       setEditMessageText(messageToEdit.body || '');
-      console.log('set currentText  5 ');
       messageInputRef.current.innerText = messageToEdit.body;
       placeCaretAtEnd(messageInputRef.current);
       messageInputRef.current.focus();
@@ -27573,6 +27713,7 @@ var Members = function Members(_ref) {
       setCloseMenu = _useState8[1];
 
   var members = useSelector(activeChannelMembersSelector) || [];
+  console.log('members', members);
   var contactsMap = useSelector(contactsMapSelector) || {};
   var membersLoading = useSelector(membersLoadingStateSelector) || {};
   var user = getClient().chatClient.user;
@@ -27656,7 +27797,7 @@ var Members = function Members(_ref) {
   var handleRevokeAdmin = function handleRevokeAdmin() {
     if (selectedMember) {
       var updateMember = _extends({}, selectedMember, {
-        role: 'subscriber'
+        role: channel.type === CHANNEL_TYPE.PUBLIC ? 'subscriber' : 'participant'
       });
 
       dispatch(changeMemberRoleAC(channel.id, [updateMember]));
