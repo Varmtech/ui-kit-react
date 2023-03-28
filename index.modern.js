@@ -10075,6 +10075,14 @@ function browserTabIsActiveAC(state) {
     }
   };
 }
+function checkUserStatusAC(usersMap) {
+  return {
+    type: CHECK_USER_STATUS,
+    payload: {
+      usersMap: usersMap
+    }
+  };
+}
 function updateUserStatusOnMapAC(usersMap) {
   return {
     type: UPDATE_USER_MAP,
@@ -16660,7 +16668,9 @@ function useUpdatePresence(channel, isVisible) {
 
   if (Object.keys(usersMap).length && connectionStatus === CONNECTION_STATUS.CONNECTED) {
     clearInterval(updateInterval);
-    updateInterval = setInterval(function () {}, 4000);
+    updateInterval = setInterval(function () {
+      dispatch(checkUserStatusAC(usersMap));
+    }, 4000);
   } else if (!Object.keys(usersMap).length && updateInterval) {
     clearInterval(updateInterval);
     updateInterval = undefined;
@@ -22448,7 +22458,7 @@ var Attachment = function Attachment(_ref) {
   })));
 };
 var DownloadImage = styled.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 396px;\n  min-height: 90px;\n  cursor: pointer;\n\n  ", "\n  //background-image: ", ";\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 396px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n  //background-image: ", ";\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPrevious ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
@@ -22458,6 +22468,8 @@ var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _
   return props.fitTheContainer ? '100%' : props.width && props.width + "px";
 }, function (props) {
   return props.fitTheContainer ? '100%' : props.height && props.height + "px";
+}, function (props) {
+  return props.height && '90px';
 }, function (props) {
   return props.backgroundColor && "\n    background-color: " + props.backgroundColor + ";\n    border-radius: 8px;\n    justify-content: center;\n    align-items: center;\n     & > svg:first-child {\n      width: 40px;\n      height: 40px;\n      transform: translate(2px, 3px);\n    }\n  ";
 }, function (props) {
