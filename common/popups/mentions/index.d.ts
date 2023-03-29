@@ -6,11 +6,5 @@ interface IMentionsPopupProps {
     handleMentionsPopupClose: () => void;
     searchMention: string;
 }
-declare function MentionMembersPopup({ channelId, addMentionMember, handleMentionsPopupClose, searchMention }: IMentionsPopupProps): JSX.Element;
-declare namespace MentionMembersPopup {
-    var defaultProps: {
-        activeItemIndex: null;
-        searchMention: string;
-    };
-}
-export default MentionMembersPopup;
+export default function MentionMembersPopup({ channelId, addMentionMember, handleMentionsPopupClose, searchMention }: IMentionsPopupProps): JSX.Element;
+export {};

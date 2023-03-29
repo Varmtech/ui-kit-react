@@ -35,6 +35,9 @@ export declare function updateMessageOnMap(channelId: string, updatedMessage: {
     params: any;
 }): void;
 export declare function addReactionToMessageOnMap(channelId: string, message: IMessage, reaction: IReaction, isSelf: boolean): void;
+export declare const addReactionOnAllMessages: (message: IMessage, reaction: IReaction, isSelf: boolean) => void;
+export declare function removeReactionToMessageOnMap(channelId: string, message: IMessage, reaction: IReaction, isSelf: boolean): void;
+export declare const removeReactionOnAllMessages: (message: IMessage, reaction: IReaction, isSelf: boolean) => void;
 export declare function updateMessageStatusOnMap(channelId: string, newMarkers: {
     name: string;
     markersMap: any;

@@ -1374,6 +1374,9 @@ var PAUSE_ATTACHMENT_UPLOADING = 'PAUSE_ATTACHMENT_UPLOADING';
 var RESUME_ATTACHMENT_UPLOADING = 'RESUME_ATTACHMENT_UPLOADING';
 var GET_REACTIONS = 'GET_REACTIONS';
 var LOAD_MORE_REACTIONS = 'LOAD_MORE_REACTIONS';
+var SET_REACTIONS_LIST = 'SET_REACTIONS_LIST';
+var ADD_REACTIONS_TO_LIST = 'ADD_REACTIONS_TO_LIST';
+var SET_REACTIONS_LOADING_STATE = 'SET_REACTIONS_LOADING_STATE';
 var SET_SEND_MESSAGE_INPUT_HEIGHT = 'SET_SEND_MESSAGE_INPUT_HEIGHT';
 var ADD_REACTION_TO_MESSAGE = 'ADD_REACTION_TO_MESSAGE';
 var DELETE_REACTION_FROM_MESSAGE = 'DELETE_REACTION_FROM_MESSAGE';
@@ -8398,6 +8401,73 @@ function addReactionToMessageOnMap(channelId, message, reaction, isSelf) {
     });
   }
 }
+var addReactionOnAllMessages = function addReactionOnAllMessages(message, reaction, isSelf) {
+  activeChannelAllMessages = activeChannelAllMessages.map(function (msg) {
+    if (msg.id === message.id) {
+      var slfReactions = [].concat(msg.selfReactions);
+
+      if (isSelf) {
+        if (slfReactions) {
+          slfReactions.push(reaction);
+        } else {
+          slfReactions = [reaction];
+        }
+      }
+
+      return _extends({}, msg, {
+        selfReactions: slfReactions,
+        lastReactions: message.lastReactions,
+        reactionScores: message.reactionScores
+      });
+    }
+
+    return msg;
+  });
+};
+function removeReactionToMessageOnMap(channelId, message, reaction, isSelf) {
+  if (messagesMap[channelId]) {
+    messagesMap[channelId] = messagesMap[channelId].map(function (msg) {
+      if (msg.id === message.id) {
+        var selfReactions = msg.selfReactions;
+
+        if (isSelf) {
+          selfReactions = msg.selfReactions.filter(function (selfReaction) {
+            return selfReaction.key !== reaction.key;
+          });
+        }
+
+        return _extends({}, msg, {
+          lastReactions: message.lastReactions,
+          reactionScores: message.reactionScores,
+          selfReactions: selfReactions
+        });
+      }
+
+      return msg;
+    });
+  }
+}
+var removeReactionOnAllMessages = function removeReactionOnAllMessages(message, reaction, isSelf) {
+  activeChannelAllMessages = activeChannelAllMessages.map(function (msg) {
+    if (msg.id === message.id) {
+      var selfReactions = msg.selfReactions;
+
+      if (isSelf) {
+        selfReactions = msg.selfReactions.filter(function (selfReaction) {
+          return selfReaction.key !== reaction.key;
+        });
+      }
+
+      return _extends({}, msg, {
+        lastReactions: message.lastReactions,
+        reactionScores: message.reactionScores,
+        selfReactions: selfReactions
+      });
+    }
+
+    return msg;
+  });
+};
 function updateMessageStatusOnMap(channelId, newMarkers) {
   if (messagesMap[channelId] && newMarkers && newMarkers.markersMap) {
     messagesMap[channelId] = messagesMap[channelId].map(function (mes) {
@@ -8487,7 +8557,10 @@ var initialState$1 = {
   sendMessageInputHeight: 0,
   messageForReply: null,
   attachmentsUploadingState: {},
-  scrollToMessage: null
+  scrollToMessage: null,
+  reactionsList: [],
+  reactionsHasNext: true,
+  reactionsLoadingState: null
 };
 var MessageReducer = (function (state, _temp) {
   if (state === void 0) {
@@ -8821,6 +8894,30 @@ var MessageReducer = (function (state, _temp) {
         var attachmentUploadingState = payload.attachmentUploadingState,
             attachmentId = payload.attachmentId;
         newState.attachmentsUploadingState = _extends({}, newState.attachmentsUploadingState, (_extends2 = {}, _extends2[attachmentId] = attachmentUploadingState, _extends2));
+        return newState;
+      }
+
+    case SET_REACTIONS_LIST:
+      {
+        var reactions = payload.reactions,
+            hasNext = payload.hasNext;
+        newState.reactionsHasNext = hasNext;
+        newState.reactionsList = [].concat(reactions);
+        return newState;
+      }
+
+    case ADD_REACTIONS_TO_LIST:
+      {
+        var _reactions = payload.reactions,
+            _hasNext = payload.hasNext;
+        newState.reactionsHasNext = _hasNext;
+        newState.reactionsList = [].concat(newState.reactionsList, _reactions);
+        return newState;
+      }
+
+    case SET_REACTIONS_LOADING_STATE:
+      {
+        newState.reactionsLoadingState = payload.state;
         return newState;
       }
 
@@ -9758,6 +9855,31 @@ function getReactionsAC(messageId, key, limit) {
     }
   };
 }
+function loadMoreReactionsAC(limit) {
+  return {
+    type: LOAD_MORE_REACTIONS,
+    payload: {
+      limit: limit
+    }
+  };
+}
+function setReactionsListAC(reactions, hasNext) {
+  return {
+    type: SET_REACTIONS_LIST,
+    payload: {
+      reactions: reactions,
+      hasNext: hasNext
+    }
+  };
+}
+function setReactionsLoadingStateAC(state) {
+  return {
+    type: SET_REACTIONS_LOADING_STATE,
+    payload: {
+      state: state
+    }
+  };
+}
 function updateAttachmentUploadingStateAC(attachmentUploadingState, attachmentId) {
   return {
     type: UPLOAD_ATTACHMENT_COMPILATION,
@@ -10602,7 +10724,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 214 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 222 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 228 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 245 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 250 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 255 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 260 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 265 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 269 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 273 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 280 : 284;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 216 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 226 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 232 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 249 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 254 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 259 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 264 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 269 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 277 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 284 : 288;
           break;
 
         case 14:
@@ -10627,7 +10749,7 @@ function watchForEvents() {
           return put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 24:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 25:
           channel = args.channel;
@@ -10637,7 +10759,7 @@ function watchForEvents() {
 
         case 29:
 
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 32:
           console.log('channel LEAVE ... ');
@@ -10669,7 +10791,7 @@ function watchForEvents() {
           }));
 
         case 44:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 45:
           console.log('channel BLOCK ... ');
@@ -10685,11 +10807,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 51:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 52:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 54:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -10753,7 +10875,7 @@ function watchForEvents() {
           }));
 
         case 79:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 80:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -10797,7 +10919,7 @@ function watchForEvents() {
           return put(setAddedToChannelAC(JSON.parse(JSON.stringify(_channel4))));
 
         case 98:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 99:
           updatedChannel = args.updatedChannel;
@@ -10816,7 +10938,7 @@ function watchForEvents() {
           }));
 
         case 105:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 106:
           _channel5 = args.channel, message = args.message;
@@ -10911,7 +11033,7 @@ function watchForEvents() {
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 143:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 144:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -10999,7 +11121,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 148:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -11039,7 +11161,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 152:
           _channel6 = args.channel, from = args.from;
@@ -11052,7 +11174,7 @@ function watchForEvents() {
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 156:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 157:
           channelId = args.channelId;
@@ -11095,7 +11217,7 @@ function watchForEvents() {
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 176:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 177:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -11138,7 +11260,7 @@ function watchForEvents() {
           return put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
         case 192:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 193:
           _channel9 = args.channel, _message = args.message;
@@ -11180,7 +11302,7 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 206:
           console.log('channel REACTION_ADDED ... ');
@@ -11189,7 +11311,7 @@ function watchForEvents() {
           _activeChannelId9 = getActiveChannelId();
 
           if (!(_channel10.id === _activeChannelId9)) {
-            _context3.next = 213;
+            _context3.next = 214;
             break;
           }
 
@@ -11197,164 +11319,178 @@ function watchForEvents() {
           return put(addReactionToMessageAC(_message2, reaction, isSelf));
 
         case 213:
-          return _context3.abrupt("break", 285);
+          addReactionOnAllMessages(_message2, reaction, true);
 
         case 214:
+          if (checkChannelExistsOnMessagesMap(_channel10.id)) {
+            addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
+          }
+
+          return _context3.abrupt("break", 289);
+
+        case 216:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ');
           _isSelf = _user.id === SceytChatClient.chatClient.user.id;
           _activeChannelId10 = getActiveChannelId();
 
           if (!(_channel11.id === _activeChannelId10)) {
-            _context3.next = 221;
+            _context3.next = 224;
             break;
           }
 
-          _context3.next = 221;
+          _context3.next = 223;
           return put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 221:
-          return _context3.abrupt("break", 285);
+        case 223:
+          removeReactionOnAllMessages(_message3, _reaction, true);
 
-        case 222:
+        case 224:
+          if (checkChannelExistsOnMessagesMap(_channel11.id)) {
+            removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
+          }
+
+          return _context3.abrupt("break", 289);
+
+        case 226:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 227;
+          _context3.next = 231;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 227:
-          return _context3.abrupt("break", 285);
-
-        case 228:
-          _channel13 = args.channel;
-          console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 232;
-          return call(getActiveChannelId);
+        case 231:
+          return _context3.abrupt("break", 289);
 
         case 232:
+          _channel13 = args.channel;
+          console.log('CLEAR_HISTORY: ', _channel13);
+          _context3.next = 236;
+          return call(getActiveChannelId);
+
+        case 236:
           _activeChannelId11 = _context3.sent;
-          _context3.next = 235;
+          _context3.next = 239;
           return call(checkChannelExists, _channel13.id);
 
-        case 235:
+        case 239:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId11)) {
-            _context3.next = 240;
-            break;
-          }
-
-          _context3.next = 239;
-          return put(clearMessagesAC());
-
-        case 239:
-          removeAllMessages();
-
-        case 240:
-          removeMessagesFromMap(_channel13.id);
-
-          if (!channelExist) {
             _context3.next = 244;
             break;
           }
 
-          _context3.next = 244;
+          _context3.next = 243;
+          return put(clearMessagesAC());
+
+        case 243:
+          removeAllMessages();
+
+        case 244:
+          removeMessagesFromMap(_channel13.id);
+
+          if (!channelExist) {
+            _context3.next = 248;
+            break;
+          }
+
+          _context3.next = 248;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: {},
             unreadMessageCount: 0
           }));
 
-        case 244:
-          return _context3.abrupt("break", 285);
+        case 248:
+          return _context3.abrupt("break", 289);
 
-        case 245:
+        case 249:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 249;
+          _context3.next = 253;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 249:
-          return _context3.abrupt("break", 285);
+        case 253:
+          return _context3.abrupt("break", 289);
 
-        case 250:
+        case 254:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 254;
+          _context3.next = 258;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 254:
-          return _context3.abrupt("break", 285);
-
-        case 255:
-          _channel16 = args.channel;
-          console.log('channel HIDE ... ');
-          _context3.next = 259;
-          return put(setChannelToHideAC(_channel16));
+        case 258:
+          return _context3.abrupt("break", 289);
 
         case 259:
-          return _context3.abrupt("break", 285);
+          _channel16 = args.channel;
+          console.log('channel HIDE ... ');
+          _context3.next = 263;
+          return put(setChannelToHideAC(_channel16));
 
-        case 260:
-          _channel17 = args.channel;
-          console.log('channel UNHIDE ... ');
-          _context3.next = 264;
-          return put(setChannelToUnHideAC(_channel17));
+        case 263:
+          return _context3.abrupt("break", 289);
 
         case 264:
-          return _context3.abrupt("break", 285);
-
-        case 265:
-          _channel18 = args.channel;
+          _channel17 = args.channel;
+          console.log('channel UNHIDE ... ');
           _context3.next = 268;
+          return put(setChannelToUnHideAC(_channel17));
+
+        case 268:
+          return _context3.abrupt("break", 289);
+
+        case 269:
+          _channel18 = args.channel;
+          _context3.next = 272;
           return put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 268:
-          return _context3.abrupt("break", 285);
+        case 272:
+          return _context3.abrupt("break", 289);
 
-        case 269:
+        case 273:
           _channel19 = args.channel;
-          _context3.next = 272;
+          _context3.next = 276;
           return put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 272:
-          return _context3.abrupt("break", 285);
-
-        case 273:
-          console.log('channel CHANGE_ROLE ... ');
-          _context3.next = 277;
-          return call(getActiveChannelId);
+        case 276:
+          return _context3.abrupt("break", 289);
 
         case 277:
+          console.log('channel CHANGE_ROLE ... ');
+          _context3.next = 281;
+          return call(getActiveChannelId);
 
-          return _context3.abrupt("break", 285);
+        case 281:
 
-        case 280:
-          status = args.status;
-          _context3.next = 283;
-          return put(setConnectionStatusAC(status));
-
-        case 283:
-          return _context3.abrupt("break", 285);
+          return _context3.abrupt("break", 289);
 
         case 284:
+          status = args.status;
+          _context3.next = 287;
+          return put(setConnectionStatusAC(status));
+
+        case 287:
+          return _context3.abrupt("break", 289);
+
+        case 288:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 285:
+        case 289:
           _context3.next = 5;
           break;
 
-        case 287:
+        case 291:
         case "end":
           return _context3.stop();
       }
@@ -13089,6 +13225,15 @@ var sendMessageInputHeightSelector = function sendMessageInputHeightSelector(sto
 var scrollToMessageSelector = function scrollToMessageSelector(store) {
   return store.MessageReducer.scrollToMessage;
 };
+var reactionsListSelector = function reactionsListSelector(store) {
+  return store.MessageReducer.reactionsList;
+};
+var reactionsHasNextSelector = function reactionsHasNextSelector(store) {
+  return store.MessageReducer.reactionsHasNext;
+};
+var reactionsLoadingStateSelector = function reactionsLoadingStateSelector(store) {
+  return store.MessageReducer.reactionsLoadingState;
+};
 
 var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked2$1 = /*#__PURE__*/_regeneratorRuntime().mark(sendTextMessage),
@@ -14620,20 +14765,21 @@ function addReaction(action) {
 
         case 13:
           addReactionToMessageOnMap(channelId, _message5, reaction, true);
-          _context9.next = 19;
+          addReactionOnAllMessages(_message5, reaction, true);
+          _context9.next = 20;
           break;
 
-        case 16:
-          _context9.prev = 16;
+        case 17:
+          _context9.prev = 17;
           _context9.t0 = _context9["catch"](0);
           console.log('ERROR in add reaction', _context9.t0.message);
 
-        case 19:
+        case 20:
         case "end":
           return _context9.stop();
       }
     }
-  }, _marked9$1, null, [[0, 16]]);
+  }, _marked9$1, null, [[0, 17]]);
 }
 
 function deleteReaction(action) {
@@ -14662,20 +14808,22 @@ function deleteReaction(action) {
           return put(deleteReactionFromMessageAC(_message6, reaction, true));
 
         case 13:
-          _context10.next = 18;
+          removeReactionToMessageOnMap(channelId, _message6, reaction, true);
+          removeReactionOnAllMessages(_message6, reaction, true);
+          _context10.next = 20;
           break;
 
-        case 15:
-          _context10.prev = 15;
+        case 17:
+          _context10.prev = 17;
           _context10.t0 = _context10["catch"](0);
           console.log('ERROR in delete reaction', _context10.t0.message);
 
-        case 18:
+        case 20:
         case "end":
           return _context10.stop();
       }
     }
-  }, _marked10$1, null, [[0, 15]]);
+  }, _marked10$1, null, [[0, 17]]);
 }
 
 function getReactions(action) {
@@ -14688,39 +14836,49 @@ function getReactions(action) {
           payload = action.payload;
           messageId = payload.messageId, key = payload.key, limit = payload.limit;
           SceytChatClient = getClient();
-          console.log('handle get reactions ... ', messageId, key, limit);
+          _context11.next = 6;
+          return put(setReactionsLoadingStateAC(LOADING_STATE.LOADING));
+
+        case 6:
           reactionQueryBuilder = new SceytChatClient.chatClient.ReactionListQueryBuilder(messageId);
-          reactionQueryBuilder.limit(limit || 1);
+          reactionQueryBuilder.limit(limit || 30);
 
           if (key) {
             reactionQueryBuilder.setKey(key);
           }
 
-          _context11.next = 10;
+          _context11.next = 11;
           return call(reactionQueryBuilder.build);
 
-        case 10:
+        case 11:
           reactionQuery = _context11.sent;
-          _context11.next = 13;
+          _context11.next = 14;
           return call(reactionQuery.loadNext);
 
-        case 13:
+        case 14:
           result = _context11.sent;
-          console.log('result from get reactions ... ', result);
-          _context11.next = 20;
-          break;
+          _context11.next = 17;
+          return put(setReactionsListAC(result.reactions, result.hasNext));
 
         case 17:
-          _context11.prev = 17;
+          _context11.next = 19;
+          return put(setReactionsLoadingStateAC(LOADING_STATE.LOADED));
+
+        case 19:
+          _context11.next = 24;
+          break;
+
+        case 21:
+          _context11.prev = 21;
           _context11.t0 = _context11["catch"](0);
           console.log('ERROR in get reactions', _context11.t0.message);
 
-        case 20:
+        case 24:
         case "end":
           return _context11.stop();
       }
     }
-  }, _marked11$1, null, [[0, 17]]);
+  }, _marked11$1, null, [[0, 21]]);
 }
 
 function loadMoreReactions(action) {
@@ -17629,1101 +17787,6 @@ var SelectedMemberBuble = styled.div(_templateObject9$2 || (_templateObject9$2 =
 var SelectedMemberName = styled.span(_templateObject10$2 || (_templateObject10$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
 var StyledSubtractSvg = styled(SvgCross)(_templateObject11$2 || (_templateObject11$2 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
-/** @license React v16.13.1
- * react-is.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-var b="function"===typeof Symbol&&Symbol.for,c=b?Symbol.for("react.element"):60103,d=b?Symbol.for("react.portal"):60106,e=b?Symbol.for("react.fragment"):60107,f=b?Symbol.for("react.strict_mode"):60108,g=b?Symbol.for("react.profiler"):60114,h=b?Symbol.for("react.provider"):60109,k=b?Symbol.for("react.context"):60110,l=b?Symbol.for("react.async_mode"):60111,m=b?Symbol.for("react.concurrent_mode"):60111,n=b?Symbol.for("react.forward_ref"):60112,p=b?Symbol.for("react.suspense"):60113,q=b?
-Symbol.for("react.suspense_list"):60120,r=b?Symbol.for("react.memo"):60115,t=b?Symbol.for("react.lazy"):60116,v=b?Symbol.for("react.block"):60121,w=b?Symbol.for("react.fundamental"):60117,x=b?Symbol.for("react.responder"):60118,y=b?Symbol.for("react.scope"):60119;
-function z(a){if("object"===typeof a&&null!==a){var u=a.$$typeof;switch(u){case c:switch(a=a.type,a){case l:case m:case e:case g:case f:case p:return a;default:switch(a=a&&a.$$typeof,a){case k:case n:case t:case r:case h:return a;default:return u}}case d:return u}}}function A(a){return z(a)===m}var AsyncMode=l;var ConcurrentMode=m;var ContextConsumer=k;var ContextProvider=h;var Element=c;var ForwardRef=n;var Fragment=e;var Lazy=t;var Memo=r;var Portal=d;
-var Profiler=g;var StrictMode=f;var Suspense=p;var isAsyncMode=function(a){return A(a)||z(a)===l};var isConcurrentMode=A;var isContextConsumer=function(a){return z(a)===k};var isContextProvider=function(a){return z(a)===h};var isElement=function(a){return "object"===typeof a&&null!==a&&a.$$typeof===c};var isForwardRef=function(a){return z(a)===n};var isFragment=function(a){return z(a)===e};var isLazy=function(a){return z(a)===t};
-var isMemo=function(a){return z(a)===r};var isPortal=function(a){return z(a)===d};var isProfiler=function(a){return z(a)===g};var isStrictMode=function(a){return z(a)===f};var isSuspense=function(a){return z(a)===p};
-var isValidElementType=function(a){return "string"===typeof a||"function"===typeof a||a===e||a===m||a===g||a===f||a===p||a===q||"object"===typeof a&&null!==a&&(a.$$typeof===t||a.$$typeof===r||a.$$typeof===h||a.$$typeof===k||a.$$typeof===n||a.$$typeof===w||a.$$typeof===x||a.$$typeof===y||a.$$typeof===v)};var typeOf=z;
-
-var reactIs_production_min = {
-	AsyncMode: AsyncMode,
-	ConcurrentMode: ConcurrentMode,
-	ContextConsumer: ContextConsumer,
-	ContextProvider: ContextProvider,
-	Element: Element,
-	ForwardRef: ForwardRef,
-	Fragment: Fragment,
-	Lazy: Lazy,
-	Memo: Memo,
-	Portal: Portal,
-	Profiler: Profiler,
-	StrictMode: StrictMode,
-	Suspense: Suspense,
-	isAsyncMode: isAsyncMode,
-	isConcurrentMode: isConcurrentMode,
-	isContextConsumer: isContextConsumer,
-	isContextProvider: isContextProvider,
-	isElement: isElement,
-	isForwardRef: isForwardRef,
-	isFragment: isFragment,
-	isLazy: isLazy,
-	isMemo: isMemo,
-	isPortal: isPortal,
-	isProfiler: isProfiler,
-	isStrictMode: isStrictMode,
-	isSuspense: isSuspense,
-	isValidElementType: isValidElementType,
-	typeOf: typeOf
-};
-
-var reactIs_development = createCommonjsModule(function (module, exports) {
-
-
-
-if (process.env.NODE_ENV !== "production") {
-  (function() {
-
-// The Symbol used to tag the ReactElement-like types. If there is no native Symbol
-// nor polyfill, then a plain number is used for performance.
-var hasSymbol = typeof Symbol === 'function' && Symbol.for;
-var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
-var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
-var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
-var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
-var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
-var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
-var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
-// (unstable) APIs that have been removed. Can we remove the symbols?
-
-var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
-var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
-var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
-var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
-var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
-var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
-var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
-var REACT_BLOCK_TYPE = hasSymbol ? Symbol.for('react.block') : 0xead9;
-var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
-var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
-var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
-
-function isValidElementType(type) {
-  return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
-  type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE || type.$$typeof === REACT_BLOCK_TYPE);
-}
-
-function typeOf(object) {
-  if (typeof object === 'object' && object !== null) {
-    var $$typeof = object.$$typeof;
-
-    switch ($$typeof) {
-      case REACT_ELEMENT_TYPE:
-        var type = object.type;
-
-        switch (type) {
-          case REACT_ASYNC_MODE_TYPE:
-          case REACT_CONCURRENT_MODE_TYPE:
-          case REACT_FRAGMENT_TYPE:
-          case REACT_PROFILER_TYPE:
-          case REACT_STRICT_MODE_TYPE:
-          case REACT_SUSPENSE_TYPE:
-            return type;
-
-          default:
-            var $$typeofType = type && type.$$typeof;
-
-            switch ($$typeofType) {
-              case REACT_CONTEXT_TYPE:
-              case REACT_FORWARD_REF_TYPE:
-              case REACT_LAZY_TYPE:
-              case REACT_MEMO_TYPE:
-              case REACT_PROVIDER_TYPE:
-                return $$typeofType;
-
-              default:
-                return $$typeof;
-            }
-
-        }
-
-      case REACT_PORTAL_TYPE:
-        return $$typeof;
-    }
-  }
-
-  return undefined;
-} // AsyncMode is deprecated along with isAsyncMode
-
-var AsyncMode = REACT_ASYNC_MODE_TYPE;
-var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
-var ContextConsumer = REACT_CONTEXT_TYPE;
-var ContextProvider = REACT_PROVIDER_TYPE;
-var Element = REACT_ELEMENT_TYPE;
-var ForwardRef = REACT_FORWARD_REF_TYPE;
-var Fragment = REACT_FRAGMENT_TYPE;
-var Lazy = REACT_LAZY_TYPE;
-var Memo = REACT_MEMO_TYPE;
-var Portal = REACT_PORTAL_TYPE;
-var Profiler = REACT_PROFILER_TYPE;
-var StrictMode = REACT_STRICT_MODE_TYPE;
-var Suspense = REACT_SUSPENSE_TYPE;
-var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
-
-function isAsyncMode(object) {
-  {
-    if (!hasWarnedAboutDeprecatedIsAsyncMode) {
-      hasWarnedAboutDeprecatedIsAsyncMode = true; // Using console['warn'] to evade Babel and ESLint
-
-      console['warn']('The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
-    }
-  }
-
-  return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
-}
-function isConcurrentMode(object) {
-  return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
-}
-function isContextConsumer(object) {
-  return typeOf(object) === REACT_CONTEXT_TYPE;
-}
-function isContextProvider(object) {
-  return typeOf(object) === REACT_PROVIDER_TYPE;
-}
-function isElement(object) {
-  return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
-}
-function isForwardRef(object) {
-  return typeOf(object) === REACT_FORWARD_REF_TYPE;
-}
-function isFragment(object) {
-  return typeOf(object) === REACT_FRAGMENT_TYPE;
-}
-function isLazy(object) {
-  return typeOf(object) === REACT_LAZY_TYPE;
-}
-function isMemo(object) {
-  return typeOf(object) === REACT_MEMO_TYPE;
-}
-function isPortal(object) {
-  return typeOf(object) === REACT_PORTAL_TYPE;
-}
-function isProfiler(object) {
-  return typeOf(object) === REACT_PROFILER_TYPE;
-}
-function isStrictMode(object) {
-  return typeOf(object) === REACT_STRICT_MODE_TYPE;
-}
-function isSuspense(object) {
-  return typeOf(object) === REACT_SUSPENSE_TYPE;
-}
-
-exports.AsyncMode = AsyncMode;
-exports.ConcurrentMode = ConcurrentMode;
-exports.ContextConsumer = ContextConsumer;
-exports.ContextProvider = ContextProvider;
-exports.Element = Element;
-exports.ForwardRef = ForwardRef;
-exports.Fragment = Fragment;
-exports.Lazy = Lazy;
-exports.Memo = Memo;
-exports.Portal = Portal;
-exports.Profiler = Profiler;
-exports.StrictMode = StrictMode;
-exports.Suspense = Suspense;
-exports.isAsyncMode = isAsyncMode;
-exports.isConcurrentMode = isConcurrentMode;
-exports.isContextConsumer = isContextConsumer;
-exports.isContextProvider = isContextProvider;
-exports.isElement = isElement;
-exports.isForwardRef = isForwardRef;
-exports.isFragment = isFragment;
-exports.isLazy = isLazy;
-exports.isMemo = isMemo;
-exports.isPortal = isPortal;
-exports.isProfiler = isProfiler;
-exports.isStrictMode = isStrictMode;
-exports.isSuspense = isSuspense;
-exports.isValidElementType = isValidElementType;
-exports.typeOf = typeOf;
-  })();
-}
-});
-
-var reactIs = createCommonjsModule(function (module) {
-
-if (process.env.NODE_ENV === 'production') {
-  module.exports = reactIs_production_min;
-} else {
-  module.exports = reactIs_development;
-}
-});
-
-/*
-object-assign
-(c) Sindre Sorhus
-@license MIT
-*/
-/* eslint-disable no-unused-vars */
-var getOwnPropertySymbols = Object.getOwnPropertySymbols;
-var hasOwnProperty = Object.prototype.hasOwnProperty;
-var propIsEnumerable = Object.prototype.propertyIsEnumerable;
-
-function toObject(val) {
-	if (val === null || val === undefined) {
-		throw new TypeError('Object.assign cannot be called with null or undefined');
-	}
-
-	return Object(val);
-}
-
-function shouldUseNative() {
-	try {
-		if (!Object.assign) {
-			return false;
-		}
-
-		// Detect buggy property enumeration order in older V8 versions.
-
-		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
-		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
-		test1[5] = 'de';
-		if (Object.getOwnPropertyNames(test1)[0] === '5') {
-			return false;
-		}
-
-		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
-		var test2 = {};
-		for (var i = 0; i < 10; i++) {
-			test2['_' + String.fromCharCode(i)] = i;
-		}
-		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
-			return test2[n];
-		});
-		if (order2.join('') !== '0123456789') {
-			return false;
-		}
-
-		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
-		var test3 = {};
-		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
-			test3[letter] = letter;
-		});
-		if (Object.keys(Object.assign({}, test3)).join('') !==
-				'abcdefghijklmnopqrst') {
-			return false;
-		}
-
-		return true;
-	} catch (err) {
-		// We don't expect any of the above to throw, but better to be safe.
-		return false;
-	}
-}
-
-var objectAssign = shouldUseNative() ? Object.assign : function (target, source) {
-	var from;
-	var to = toObject(target);
-	var symbols;
-
-	for (var s = 1; s < arguments.length; s++) {
-		from = Object(arguments[s]);
-
-		for (var key in from) {
-			if (hasOwnProperty.call(from, key)) {
-				to[key] = from[key];
-			}
-		}
-
-		if (getOwnPropertySymbols) {
-			symbols = getOwnPropertySymbols(from);
-			for (var i = 0; i < symbols.length; i++) {
-				if (propIsEnumerable.call(from, symbols[i])) {
-					to[symbols[i]] = from[symbols[i]];
-				}
-			}
-		}
-	}
-
-	return to;
-};
-
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-var ReactPropTypesSecret = 'SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED';
-
-var ReactPropTypesSecret_1 = ReactPropTypesSecret;
-
-var has = Function.call.bind(Object.prototype.hasOwnProperty);
-
-var printWarning = function() {};
-
-if (process.env.NODE_ENV !== 'production') {
-  var ReactPropTypesSecret$1 = ReactPropTypesSecret_1;
-  var loggedTypeFailures = {};
-  var has$1 = has;
-
-  printWarning = function(text) {
-    var message = 'Warning: ' + text;
-    if (typeof console !== 'undefined') {
-      console.error(message);
-    }
-    try {
-      // --- Welcome to debugging React ---
-      // This error was thrown as a convenience so that you can use this stack
-      // to find the callsite that caused this warning to fire.
-      throw new Error(message);
-    } catch (x) { /**/ }
-  };
-}
-
-/**
- * Assert that the values match with the type specs.
- * Error messages are memorized and will only be shown once.
- *
- * @param {object} typeSpecs Map of name to a ReactPropType
- * @param {object} values Runtime values that need to be type-checked
- * @param {string} location e.g. "prop", "context", "child context"
- * @param {string} componentName Name of the component for error messages.
- * @param {?Function} getStack Returns the component stack.
- * @private
- */
-function checkPropTypes(typeSpecs, values, location, componentName, getStack) {
-  if (process.env.NODE_ENV !== 'production') {
-    for (var typeSpecName in typeSpecs) {
-      if (has$1(typeSpecs, typeSpecName)) {
-        var error;
-        // Prop type validation may throw. In case they do, we don't want to
-        // fail the render phase where it didn't fail before. So we log it.
-        // After these have been cleaned up, we'll let them throw.
-        try {
-          // This is intentionally an invariant that gets caught. It's the same
-          // behavior as without this statement except with a better message.
-          if (typeof typeSpecs[typeSpecName] !== 'function') {
-            var err = Error(
-              (componentName || 'React class') + ': ' + location + ' type `' + typeSpecName + '` is invalid; ' +
-              'it must be a function, usually from the `prop-types` package, but received `' + typeof typeSpecs[typeSpecName] + '`.' +
-              'This often happens because of typos such as `PropTypes.function` instead of `PropTypes.func`.'
-            );
-            err.name = 'Invariant Violation';
-            throw err;
-          }
-          error = typeSpecs[typeSpecName](values, typeSpecName, componentName, location, null, ReactPropTypesSecret$1);
-        } catch (ex) {
-          error = ex;
-        }
-        if (error && !(error instanceof Error)) {
-          printWarning(
-            (componentName || 'React class') + ': type specification of ' +
-            location + ' `' + typeSpecName + '` is invalid; the type checker ' +
-            'function must return `null` or an `Error` but returned a ' + typeof error + '. ' +
-            'You may have forgotten to pass an argument to the type checker ' +
-            'creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and ' +
-            'shape all require an argument).'
-          );
-        }
-        if (error instanceof Error && !(error.message in loggedTypeFailures)) {
-          // Only monitor this failure once because there tends to be a lot of the
-          // same error.
-          loggedTypeFailures[error.message] = true;
-
-          var stack = getStack ? getStack() : '';
-
-          printWarning(
-            'Failed ' + location + ' type: ' + error.message + (stack != null ? stack : '')
-          );
-        }
-      }
-    }
-  }
-}
-
-/**
- * Resets warning cache when testing.
- *
- * @private
- */
-checkPropTypes.resetWarningCache = function() {
-  if (process.env.NODE_ENV !== 'production') {
-    loggedTypeFailures = {};
-  }
-};
-
-var checkPropTypes_1 = checkPropTypes;
-
-var printWarning$1 = function() {};
-
-if (process.env.NODE_ENV !== 'production') {
-  printWarning$1 = function(text) {
-    var message = 'Warning: ' + text;
-    if (typeof console !== 'undefined') {
-      console.error(message);
-    }
-    try {
-      // --- Welcome to debugging React ---
-      // This error was thrown as a convenience so that you can use this stack
-      // to find the callsite that caused this warning to fire.
-      throw new Error(message);
-    } catch (x) {}
-  };
-}
-
-function emptyFunctionThatReturnsNull() {
-  return null;
-}
-
-var factoryWithTypeCheckers = function(isValidElement, throwOnDirectAccess) {
-  /* global Symbol */
-  var ITERATOR_SYMBOL = typeof Symbol === 'function' && Symbol.iterator;
-  var FAUX_ITERATOR_SYMBOL = '@@iterator'; // Before Symbol spec.
-
-  /**
-   * Returns the iterator method function contained on the iterable object.
-   *
-   * Be sure to invoke the function with the iterable as context:
-   *
-   *     var iteratorFn = getIteratorFn(myIterable);
-   *     if (iteratorFn) {
-   *       var iterator = iteratorFn.call(myIterable);
-   *       ...
-   *     }
-   *
-   * @param {?object} maybeIterable
-   * @return {?function}
-   */
-  function getIteratorFn(maybeIterable) {
-    var iteratorFn = maybeIterable && (ITERATOR_SYMBOL && maybeIterable[ITERATOR_SYMBOL] || maybeIterable[FAUX_ITERATOR_SYMBOL]);
-    if (typeof iteratorFn === 'function') {
-      return iteratorFn;
-    }
-  }
-
-  /**
-   * Collection of methods that allow declaration and validation of props that are
-   * supplied to React components. Example usage:
-   *
-   *   var Props = require('ReactPropTypes');
-   *   var MyArticle = React.createClass({
-   *     propTypes: {
-   *       // An optional string prop named "description".
-   *       description: Props.string,
-   *
-   *       // A required enum prop named "category".
-   *       category: Props.oneOf(['News','Photos']).isRequired,
-   *
-   *       // A prop named "dialog" that requires an instance of Dialog.
-   *       dialog: Props.instanceOf(Dialog).isRequired
-   *     },
-   *     render: function() { ... }
-   *   });
-   *
-   * A more formal specification of how these methods are used:
-   *
-   *   type := array|bool|func|object|number|string|oneOf([...])|instanceOf(...)
-   *   decl := ReactPropTypes.{type}(.isRequired)?
-   *
-   * Each and every declaration produces a function with the same signature. This
-   * allows the creation of custom validation functions. For example:
-   *
-   *  var MyLink = React.createClass({
-   *    propTypes: {
-   *      // An optional string or URI prop named "href".
-   *      href: function(props, propName, componentName) {
-   *        var propValue = props[propName];
-   *        if (propValue != null && typeof propValue !== 'string' &&
-   *            !(propValue instanceof URI)) {
-   *          return new Error(
-   *            'Expected a string or an URI for ' + propName + ' in ' +
-   *            componentName
-   *          );
-   *        }
-   *      }
-   *    },
-   *    render: function() {...}
-   *  });
-   *
-   * @internal
-   */
-
-  var ANONYMOUS = '<<anonymous>>';
-
-  // Important!
-  // Keep this list in sync with production version in `./factoryWithThrowingShims.js`.
-  var ReactPropTypes = {
-    array: createPrimitiveTypeChecker('array'),
-    bigint: createPrimitiveTypeChecker('bigint'),
-    bool: createPrimitiveTypeChecker('boolean'),
-    func: createPrimitiveTypeChecker('function'),
-    number: createPrimitiveTypeChecker('number'),
-    object: createPrimitiveTypeChecker('object'),
-    string: createPrimitiveTypeChecker('string'),
-    symbol: createPrimitiveTypeChecker('symbol'),
-
-    any: createAnyTypeChecker(),
-    arrayOf: createArrayOfTypeChecker,
-    element: createElementTypeChecker(),
-    elementType: createElementTypeTypeChecker(),
-    instanceOf: createInstanceTypeChecker,
-    node: createNodeChecker(),
-    objectOf: createObjectOfTypeChecker,
-    oneOf: createEnumTypeChecker,
-    oneOfType: createUnionTypeChecker,
-    shape: createShapeTypeChecker,
-    exact: createStrictShapeTypeChecker,
-  };
-
-  /**
-   * inlined Object.is polyfill to avoid requiring consumers ship their own
-   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
-   */
-  /*eslint-disable no-self-compare*/
-  function is(x, y) {
-    // SameValue algorithm
-    if (x === y) {
-      // Steps 1-5, 7-10
-      // Steps 6.b-6.e: +0 != -0
-      return x !== 0 || 1 / x === 1 / y;
-    } else {
-      // Step 6.a: NaN == NaN
-      return x !== x && y !== y;
-    }
-  }
-  /*eslint-enable no-self-compare*/
-
-  /**
-   * We use an Error-like object for backward compatibility as people may call
-   * PropTypes directly and inspect their output. However, we don't use real
-   * Errors anymore. We don't inspect their stack anyway, and creating them
-   * is prohibitively expensive if they are created too often, such as what
-   * happens in oneOfType() for any type before the one that matched.
-   */
-  function PropTypeError(message, data) {
-    this.message = message;
-    this.data = data && typeof data === 'object' ? data: {};
-    this.stack = '';
-  }
-  // Make `instanceof Error` still work for returned errors.
-  PropTypeError.prototype = Error.prototype;
-
-  function createChainableTypeChecker(validate) {
-    if (process.env.NODE_ENV !== 'production') {
-      var manualPropTypeCallCache = {};
-      var manualPropTypeWarningCount = 0;
-    }
-    function checkType(isRequired, props, propName, componentName, location, propFullName, secret) {
-      componentName = componentName || ANONYMOUS;
-      propFullName = propFullName || propName;
-
-      if (secret !== ReactPropTypesSecret_1) {
-        if (throwOnDirectAccess) {
-          // New behavior only for users of `prop-types` package
-          var err = new Error(
-            'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-            'Use `PropTypes.checkPropTypes()` to call them. ' +
-            'Read more at http://fb.me/use-check-prop-types'
-          );
-          err.name = 'Invariant Violation';
-          throw err;
-        } else if (process.env.NODE_ENV !== 'production' && typeof console !== 'undefined') {
-          // Old behavior for people using React.PropTypes
-          var cacheKey = componentName + ':' + propName;
-          if (
-            !manualPropTypeCallCache[cacheKey] &&
-            // Avoid spamming the console because they are often not actionable except for lib authors
-            manualPropTypeWarningCount < 3
-          ) {
-            printWarning$1(
-              'You are manually calling a React.PropTypes validation ' +
-              'function for the `' + propFullName + '` prop on `' + componentName + '`. This is deprecated ' +
-              'and will throw in the standalone `prop-types` package. ' +
-              'You may be seeing this warning due to a third-party PropTypes ' +
-              'library. See https://fb.me/react-warning-dont-call-proptypes ' + 'for details.'
-            );
-            manualPropTypeCallCache[cacheKey] = true;
-            manualPropTypeWarningCount++;
-          }
-        }
-      }
-      if (props[propName] == null) {
-        if (isRequired) {
-          if (props[propName] === null) {
-            return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required ' + ('in `' + componentName + '`, but its value is `null`.'));
-          }
-          return new PropTypeError('The ' + location + ' `' + propFullName + '` is marked as required in ' + ('`' + componentName + '`, but its value is `undefined`.'));
-        }
-        return null;
-      } else {
-        return validate(props, propName, componentName, location, propFullName);
-      }
-    }
-
-    var chainedCheckType = checkType.bind(null, false);
-    chainedCheckType.isRequired = checkType.bind(null, true);
-
-    return chainedCheckType;
-  }
-
-  function createPrimitiveTypeChecker(expectedType) {
-    function validate(props, propName, componentName, location, propFullName, secret) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== expectedType) {
-        // `propValue` being instance of, say, date/regexp, pass the 'object'
-        // check, but we can offer a more precise error message here rather than
-        // 'of type `object`'.
-        var preciseType = getPreciseType(propValue);
-
-        return new PropTypeError(
-          'Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + preciseType + '` supplied to `' + componentName + '`, expected ') + ('`' + expectedType + '`.'),
-          {expectedType: expectedType}
-        );
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createAnyTypeChecker() {
-    return createChainableTypeChecker(emptyFunctionThatReturnsNull);
-  }
-
-  function createArrayOfTypeChecker(typeChecker) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (typeof typeChecker !== 'function') {
-        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside arrayOf.');
-      }
-      var propValue = props[propName];
-      if (!Array.isArray(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an array.'));
-      }
-      for (var i = 0; i < propValue.length; i++) {
-        var error = typeChecker(propValue, i, componentName, location, propFullName + '[' + i + ']', ReactPropTypesSecret_1);
-        if (error instanceof Error) {
-          return error;
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createElementTypeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      if (!isValidElement(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createElementTypeTypeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      if (!reactIs.isValidElementType(propValue)) {
-        var propType = getPropType(propValue);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected a single ReactElement type.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createInstanceTypeChecker(expectedClass) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (!(props[propName] instanceof expectedClass)) {
-        var expectedClassName = expectedClass.name || ANONYMOUS;
-        var actualClassName = getClassName(props[propName]);
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + actualClassName + '` supplied to `' + componentName + '`, expected ') + ('instance of `' + expectedClassName + '`.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createEnumTypeChecker(expectedValues) {
-    if (!Array.isArray(expectedValues)) {
-      if (process.env.NODE_ENV !== 'production') {
-        if (arguments.length > 1) {
-          printWarning$1(
-            'Invalid arguments supplied to oneOf, expected an array, got ' + arguments.length + ' arguments. ' +
-            'A common mistake is to write oneOf(x, y, z) instead of oneOf([x, y, z]).'
-          );
-        } else {
-          printWarning$1('Invalid argument supplied to oneOf, expected an array.');
-        }
-      }
-      return emptyFunctionThatReturnsNull;
-    }
-
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      for (var i = 0; i < expectedValues.length; i++) {
-        if (is(propValue, expectedValues[i])) {
-          return null;
-        }
-      }
-
-      var valuesString = JSON.stringify(expectedValues, function replacer(key, value) {
-        var type = getPreciseType(value);
-        if (type === 'symbol') {
-          return String(value);
-        }
-        return value;
-      });
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of value `' + String(propValue) + '` ' + ('supplied to `' + componentName + '`, expected one of ' + valuesString + '.'));
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createObjectOfTypeChecker(typeChecker) {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (typeof typeChecker !== 'function') {
-        return new PropTypeError('Property `' + propFullName + '` of component `' + componentName + '` has invalid PropType notation inside objectOf.');
-      }
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type ' + ('`' + propType + '` supplied to `' + componentName + '`, expected an object.'));
-      }
-      for (var key in propValue) {
-        if (has(propValue, key)) {
-          var error = typeChecker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret_1);
-          if (error instanceof Error) {
-            return error;
-          }
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createUnionTypeChecker(arrayOfTypeCheckers) {
-    if (!Array.isArray(arrayOfTypeCheckers)) {
-      process.env.NODE_ENV !== 'production' ? printWarning$1('Invalid argument supplied to oneOfType, expected an instance of array.') : void 0;
-      return emptyFunctionThatReturnsNull;
-    }
-
-    for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
-      var checker = arrayOfTypeCheckers[i];
-      if (typeof checker !== 'function') {
-        printWarning$1(
-          'Invalid argument supplied to oneOfType. Expected an array of check functions, but ' +
-          'received ' + getPostfixForTypeWarning(checker) + ' at index ' + i + '.'
-        );
-        return emptyFunctionThatReturnsNull;
-      }
-    }
-
-    function validate(props, propName, componentName, location, propFullName) {
-      var expectedTypes = [];
-      for (var i = 0; i < arrayOfTypeCheckers.length; i++) {
-        var checker = arrayOfTypeCheckers[i];
-        var checkerResult = checker(props, propName, componentName, location, propFullName, ReactPropTypesSecret_1);
-        if (checkerResult == null) {
-          return null;
-        }
-        if (checkerResult.data && has(checkerResult.data, 'expectedType')) {
-          expectedTypes.push(checkerResult.data.expectedType);
-        }
-      }
-      var expectedTypesMessage = (expectedTypes.length > 0) ? ', expected one of type [' + expectedTypes.join(', ') + ']': '';
-      return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`' + expectedTypesMessage + '.'));
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createNodeChecker() {
-    function validate(props, propName, componentName, location, propFullName) {
-      if (!isNode(props[propName])) {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` supplied to ' + ('`' + componentName + '`, expected a ReactNode.'));
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function invalidValidatorError(componentName, location, propFullName, key, type) {
-    return new PropTypeError(
-      (componentName || 'React class') + ': ' + location + ' type `' + propFullName + '.' + key + '` is invalid; ' +
-      'it must be a function, usually from the `prop-types` package, but received `' + type + '`.'
-    );
-  }
-
-  function createShapeTypeChecker(shapeTypes) {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
-      }
-      for (var key in shapeTypes) {
-        var checker = shapeTypes[key];
-        if (typeof checker !== 'function') {
-          return invalidValidatorError(componentName, location, propFullName, key, getPreciseType(checker));
-        }
-        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret_1);
-        if (error) {
-          return error;
-        }
-      }
-      return null;
-    }
-    return createChainableTypeChecker(validate);
-  }
-
-  function createStrictShapeTypeChecker(shapeTypes) {
-    function validate(props, propName, componentName, location, propFullName) {
-      var propValue = props[propName];
-      var propType = getPropType(propValue);
-      if (propType !== 'object') {
-        return new PropTypeError('Invalid ' + location + ' `' + propFullName + '` of type `' + propType + '` ' + ('supplied to `' + componentName + '`, expected `object`.'));
-      }
-      // We need to check all keys in case some are required but missing from props.
-      var allKeys = objectAssign({}, props[propName], shapeTypes);
-      for (var key in allKeys) {
-        var checker = shapeTypes[key];
-        if (has(shapeTypes, key) && typeof checker !== 'function') {
-          return invalidValidatorError(componentName, location, propFullName, key, getPreciseType(checker));
-        }
-        if (!checker) {
-          return new PropTypeError(
-            'Invalid ' + location + ' `' + propFullName + '` key `' + key + '` supplied to `' + componentName + '`.' +
-            '\nBad object: ' + JSON.stringify(props[propName], null, '  ') +
-            '\nValid keys: ' + JSON.stringify(Object.keys(shapeTypes), null, '  ')
-          );
-        }
-        var error = checker(propValue, key, componentName, location, propFullName + '.' + key, ReactPropTypesSecret_1);
-        if (error) {
-          return error;
-        }
-      }
-      return null;
-    }
-
-    return createChainableTypeChecker(validate);
-  }
-
-  function isNode(propValue) {
-    switch (typeof propValue) {
-      case 'number':
-      case 'string':
-      case 'undefined':
-        return true;
-      case 'boolean':
-        return !propValue;
-      case 'object':
-        if (Array.isArray(propValue)) {
-          return propValue.every(isNode);
-        }
-        if (propValue === null || isValidElement(propValue)) {
-          return true;
-        }
-
-        var iteratorFn = getIteratorFn(propValue);
-        if (iteratorFn) {
-          var iterator = iteratorFn.call(propValue);
-          var step;
-          if (iteratorFn !== propValue.entries) {
-            while (!(step = iterator.next()).done) {
-              if (!isNode(step.value)) {
-                return false;
-              }
-            }
-          } else {
-            // Iterator will provide entry [k,v] tuples rather than values.
-            while (!(step = iterator.next()).done) {
-              var entry = step.value;
-              if (entry) {
-                if (!isNode(entry[1])) {
-                  return false;
-                }
-              }
-            }
-          }
-        } else {
-          return false;
-        }
-
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  function isSymbol(propType, propValue) {
-    // Native Symbol.
-    if (propType === 'symbol') {
-      return true;
-    }
-
-    // falsy value can't be a Symbol
-    if (!propValue) {
-      return false;
-    }
-
-    // 19.4.3.5 Symbol.prototype[@@toStringTag] === 'Symbol'
-    if (propValue['@@toStringTag'] === 'Symbol') {
-      return true;
-    }
-
-    // Fallback for non-spec compliant Symbols which are polyfilled.
-    if (typeof Symbol === 'function' && propValue instanceof Symbol) {
-      return true;
-    }
-
-    return false;
-  }
-
-  // Equivalent of `typeof` but with special handling for array and regexp.
-  function getPropType(propValue) {
-    var propType = typeof propValue;
-    if (Array.isArray(propValue)) {
-      return 'array';
-    }
-    if (propValue instanceof RegExp) {
-      // Old webkits (at least until Android 4.0) return 'function' rather than
-      // 'object' for typeof a RegExp. We'll normalize this here so that /bla/
-      // passes PropTypes.object.
-      return 'object';
-    }
-    if (isSymbol(propType, propValue)) {
-      return 'symbol';
-    }
-    return propType;
-  }
-
-  // This handles more types than `getPropType`. Only used for error messages.
-  // See `createPrimitiveTypeChecker`.
-  function getPreciseType(propValue) {
-    if (typeof propValue === 'undefined' || propValue === null) {
-      return '' + propValue;
-    }
-    var propType = getPropType(propValue);
-    if (propType === 'object') {
-      if (propValue instanceof Date) {
-        return 'date';
-      } else if (propValue instanceof RegExp) {
-        return 'regexp';
-      }
-    }
-    return propType;
-  }
-
-  // Returns a string that is postfixed to a warning about an invalid type.
-  // For example, "undefined" or "of type array"
-  function getPostfixForTypeWarning(value) {
-    var type = getPreciseType(value);
-    switch (type) {
-      case 'array':
-      case 'object':
-        return 'an ' + type;
-      case 'boolean':
-      case 'date':
-      case 'regexp':
-        return 'a ' + type;
-      default:
-        return type;
-    }
-  }
-
-  // Returns class name of the object, if any.
-  function getClassName(propValue) {
-    if (!propValue.constructor || !propValue.constructor.name) {
-      return ANONYMOUS;
-    }
-    return propValue.constructor.name;
-  }
-
-  ReactPropTypes.checkPropTypes = checkPropTypes_1;
-  ReactPropTypes.resetWarningCache = checkPropTypes_1.resetWarningCache;
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-function emptyFunction() {}
-function emptyFunctionWithReset() {}
-emptyFunctionWithReset.resetWarningCache = emptyFunction;
-
-var factoryWithThrowingShims = function() {
-  function shim(props, propName, componentName, location, propFullName, secret) {
-    if (secret === ReactPropTypesSecret_1) {
-      // It is still safe when called from React.
-      return;
-    }
-    var err = new Error(
-      'Calling PropTypes validators directly is not supported by the `prop-types` package. ' +
-      'Use PropTypes.checkPropTypes() to call them. ' +
-      'Read more at http://fb.me/use-check-prop-types'
-    );
-    err.name = 'Invariant Violation';
-    throw err;
-  }  shim.isRequired = shim;
-  function getShim() {
-    return shim;
-  }  // Important!
-  // Keep this list in sync with production version in `./factoryWithTypeCheckers.js`.
-  var ReactPropTypes = {
-    array: shim,
-    bigint: shim,
-    bool: shim,
-    func: shim,
-    number: shim,
-    object: shim,
-    string: shim,
-    symbol: shim,
-
-    any: shim,
-    arrayOf: getShim,
-    element: shim,
-    elementType: shim,
-    instanceOf: getShim,
-    node: shim,
-    objectOf: getShim,
-    oneOf: getShim,
-    oneOfType: getShim,
-    shape: getShim,
-    exact: getShim,
-
-    checkPropTypes: emptyFunctionWithReset,
-    resetWarningCache: emptyFunction
-  };
-
-  ReactPropTypes.PropTypes = ReactPropTypes;
-
-  return ReactPropTypes;
-};
-
-var propTypes = createCommonjsModule(function (module) {
-/**
- * Copyright (c) 2013-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-if (process.env.NODE_ENV !== 'production') {
-  var ReactIs = reactIs;
-
-  // By explicitly using `prop-types` you are opting into new development behavior.
-  // http://fb.me/prop-types-in-prod
-  var throwOnDirectAccess = true;
-  module.exports = factoryWithTypeCheckers(ReactIs.isElement, throwOnDirectAccess);
-} else {
-  // By explicitly using `prop-types` you are opting into new production behavior.
-  // http://fb.me/prop-types-in-prod
-  module.exports = factoryWithThrowingShims();
-}
-});
-
 var _path$j;
 
 function _extends$l() {
@@ -19189,12 +18252,6 @@ function CreateChannel(_ref) {
     }
   })));
 }
-CreateChannel.propTypes = {
-  isButton: propTypes.bool
-};
-CreateChannel.defaultProps = {
-  isButton: false
-};
 var Container$3 = styled.div(_templateObject$a || (_templateObject$a = _taggedTemplateLiteralLoose([""])));
 var CrateChannelTitle = styled.h3(_templateObject2$a || (_templateObject2$a = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 400;\n  line-height: 150%;\n  margin: 0 0 20px;\n  color: ", ";\n"])), colors.gray8);
 var UploadAvatarLabel = styled.label(_templateObject3$7 || (_templateObject3$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 90px;\n  height: 90px;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border-radius: 50%;\n  cursor: pointer;\n"])), colors.gray5);
@@ -21598,6 +20655,7 @@ var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmen
           console.log('Cache success');
         })["catch"](function (e) {
           console.log('Error on cache attachment ... ', e);
+          caches["delete"](attachmentId);
         });
         return Promise.resolve();
       } catch (e) {
@@ -21613,7 +20671,7 @@ var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentId)
         if (response) {
           return Promise.resolve(response.blob()).then(URL.createObjectURL);
         } else {
-          console.log('The image or video is not cached', response);
+          console.log('The image or video is not cached', attachmentId);
           return Promise.resolve(false);
         }
       } catch (e) {
@@ -22261,7 +21319,7 @@ var Attachment = function Attachment(_ref) {
     }
   }, [attachmentUrl]);
   useEffect(function () {
-    if (!(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
+    if (!(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link || attachment.type === attachmentTypes.voice)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
         if (attachment.type === 'image' && !isPrevious) {
           if (cachedUrl) {
@@ -22883,7 +21941,196 @@ var SelectedChannelBuble = styled.div(_templateObject7$8 || (_templateObject7$8 
 var SelectedChannelName = styled.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
 var StyledSubtractSvg$1 = styled(SvgCross)(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
-var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7, _templateObject9$6, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1;
+var LOADING_STATE$1 = {
+  LOADING: 1,
+  LOADED: 2
+};
+var PRESENCE_STATUS$1 = {
+  OFFLINE: 'Offline',
+  ONLINE: 'Online'
+};
+
+var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7, _templateObject9$6;
+function ReactionsPopup(_ref) {
+  var messageId = _ref.messageId,
+      handleReactionsPopupClose = _ref.handleReactionsPopupClose,
+      bottomPosition = _ref.bottomPosition,
+      horizontalPositions = _ref.horizontalPositions,
+      reactionScores = _ref.reactionScores,
+      rtlDirection = _ref.rtlDirection;
+  var popupRef = useRef(null);
+  var reactions = useSelector(reactionsListSelector, shallowEqual);
+  var messageInputHeight = useSelector(sendMessageInputHeightSelector, shallowEqual);
+  var channelListWidth = useSelector(channelListWidthSelector, shallowEqual);
+  var channelDetailsIsOpen = useSelector(channelInfoIsOpenSelector, shallowEqual);
+  var reactionsHasNext = useSelector(reactionsHasNextSelector, shallowEqual);
+  var reactionsLoadingState = useSelector(reactionsLoadingStateSelector, shallowEqual);
+  var contactsMap = useSelector(contactsMapSelector);
+  var getFromContacts = getShowOnlyContactUsers();
+
+  var _useState = useState('all'),
+      activeTabKey = _useState[0],
+      setActiveTabKey = _useState[1];
+
+  var _useState2 = useState(''),
+      popupVerticalPosition = _useState2[0],
+      setPopupVerticalPosition = _useState2[1];
+
+  var _useState3 = useState(''),
+      popupHorizontalPosition = _useState3[0],
+      setPopupHorizontalPosition = _useState3[1];
+
+  var _useState4 = useState(0),
+      popupHeight = _useState4[0],
+      setPopupHeight = _useState4[1];
+
+  var _useState5 = useState(false),
+      calculateSizes = _useState5[0],
+      setCalculateSizes = _useState5[1];
+
+  var _useState6 = useState(false),
+      closeIsApproved = _useState6[0],
+      setCloseIsApproved = _useState6[1];
+
+  var totalReactions = 0;
+  var reactionsList = Object.keys(reactionScores).map(function (key) {
+    totalReactions += reactionScores[key];
+    return {
+      key: key,
+      count: reactionScores[key]
+    };
+  });
+  var user = getClient().chatClient.user;
+  var dispatch = useDispatch();
+
+  var handleReactionsListScroll = function handleReactionsListScroll(event) {
+    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100 && reactionsHasNext) {
+      if (reactionsLoadingState === LOADING_STATE$1.LOADED) {
+        dispatch(loadMoreReactionsAC(15));
+      }
+    }
+  };
+
+  var handleClicks = function handleClicks(e) {
+    if (e.target.closest('.reactions_popup')) {
+      return;
+    }
+
+    if (closeIsApproved) {
+      handleReactionsPopupClose();
+    }
+  };
+
+  var handleGetReactions = function handleGetReactions(key) {
+    dispatch(getReactionsAC(messageId, key));
+    setActiveTabKey(key || 'all');
+  };
+
+  useEventListener('click', handleClicks);
+  useEffect(function () {
+    handleGetReactions();
+    setCloseIsApproved(true);
+    setCalculateSizes(true);
+    return function () {
+      dispatch(setReactionsListAC([], true));
+    };
+  }, [messageId]);
+  useEffect(function () {
+    if (reactions && reactions.length) {
+      if (calculateSizes) {
+        var _popupRef$current;
+
+        var popupPos = (_popupRef$current = popupRef.current) === null || _popupRef$current === void 0 ? void 0 : _popupRef$current.getBoundingClientRect();
+
+        if (rtlDirection) {
+          setPopupHorizontalPosition(horizontalPositions.right - (channelDetailsIsOpen ? 362 : 0) > (popupPos === null || popupPos === void 0 ? void 0 : popupPos.width) ? 'right' : 'left');
+        } else {
+          setPopupHorizontalPosition(horizontalPositions.left - channelListWidth > (popupPos === null || popupPos === void 0 ? void 0 : popupPos.width) ? 'left' : 'right');
+        }
+
+        var botPost = bottomPosition - messageInputHeight - 30;
+        var reactionsHeight = reactions.length * 44 + 45;
+        setPopupHeight(reactionsHeight);
+        setPopupVerticalPosition(botPost >= (reactionsHeight > 320 ? 320 : reactionsHeight) ? 'bottom' : 'top');
+        setCalculateSizes(false);
+      }
+    }
+  }, [reactions]);
+  return React__default.createElement(Container$c, {
+    ref: popupRef,
+    popupVerticalPosition: popupVerticalPosition,
+    popupHorizontalPosition: popupHorizontalPosition,
+    className: 'reactions_popup',
+    height: popupHeight,
+    visible: !!(reactions && reactions.length && reactionsLoadingState === LOADING_STATE$1.LOADED),
+    rtlDirection: rtlDirection
+  }, React__default.createElement(ReactionScoresCont, null, React__default.createElement(ReactionScoresList, null, React__default.createElement(ReactionScoreItem, {
+    active: activeTabKey === 'all',
+    onClick: function onClick() {
+      return handleGetReactions();
+    }
+  }, React__default.createElement("span", null, "All " + totalReactions)), reactionsList.map(function (reaction) {
+    return React__default.createElement(ReactionScoreItem, {
+      key: reaction.key,
+      onClick: function onClick() {
+        return handleGetReactions(reaction.key);
+      },
+      active: activeTabKey === reaction.key,
+      activeColor: colors.primary
+    }, React__default.createElement("span", null, reaction.key + " " + reaction.count));
+  }))), React__default.createElement(ReactionsList, {
+    onScroll: handleReactionsListScroll
+  }, reactions.map(function (reaction) {
+    return React__default.createElement(ReactionItem, {
+      key: reaction.id
+    }, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+      name: reaction.user.firstName || reaction.user.id,
+      image: reaction.user.avatarUrl,
+      size: 40,
+      textSize: 14,
+      setDefaultAvatar: true
+    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, null, reaction.key));
+  })));
+}
+var Container$c = styled.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: ", ";\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
+  return props.popupHorizontalPosition === 'left' && (props.rtlDirection ? 'calc(100% - 80px)' : 0);
+}, function (props) {
+  return props.popupHorizontalPosition === 'right' && (!props.rtlDirection ? 'calc(100% - 80px)' : 0);
+}, function (props) {
+  return props.popupVerticalPosition === 'bottom' && '100%';
+}, function (props) {
+  return props.popupVerticalPosition === 'top' && '42px';
+}, function (props) {
+  return props.height && props.height + 22;
+}, function (props) {
+  return props.visible ? 'visible' : 'hidden';
+}, function (props) {
+  return props.popupHorizontalPosition === 'left' && '18px';
+}, function (props) {
+  return props.popupHorizontalPosition === 'right' && '18px';
+}, function (props) {
+  return props.popupVerticalPosition === 'bottom' && '-3px;';
+}, function (props) {
+  return props.popupVerticalPosition === 'top' && '-3px';
+}, function (props) {
+  return props.popupVerticalPosition === 'top' ? '4px 4px 5px -4px rgba(15, 34, 67, 0.12)' : '-4px -4px 5px -4px rgba(15, 34, 67, 0.12)';
+}, function (props) {
+  return props.visible ? 'visible' : 'hidden';
+}, colors.white);
+var UserNamePresence$1 = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$1 = styled.h3(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var ReactionsList = styled.ul(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])));
+var ReactionScoresCont = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
+var ReactionScoresList = styled.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
+var ReactionScoreItem = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
+  return props.active ? colors.gray6 : colors.gray9;
+}, function (props) {
+  return props.active && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n  }";
+});
+var ReactionKey = styled.span(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  font-size: 20px;\n"])));
+var ReactionItem = styled.li(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+
+var _templateObject$r, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -23006,6 +22253,23 @@ var Message = function Message(_ref) {
       messageActionsShow = _useState4[0],
       setMessageActionsShow = _useState4[1];
 
+  var _useState5 = useState(false),
+      reactionsPopupOpen = _useState5[0],
+      setReactionsPopupOpen = _useState5[1];
+
+  var _useState6 = useState(0),
+      reactionsPopupPosition = _useState6[0],
+      setReactionsPopupPosition = _useState6[1];
+
+  var _useState7 = useState({
+    left: 0,
+    right: 0
+  }),
+      reactionsPopupHorizontalPosition = _useState7[0],
+      setReactionsPopupHorizontalPosition = _useState7[1];
+
+  var messageItemRef = useRef();
+  var isVisible = useOnScreen(messageItemRef);
   var reactionsList = message.reactionScores && Object.keys(message.reactionScores);
   var reactionsCount = message.reactionScores && Object.values(message.reactionScores).reduce(function (prevValue, currentValue) {
     return prevValue + currentValue;
@@ -23089,8 +22353,19 @@ var Message = function Message(_ref) {
     setMessageActionsShow(false);
   };
 
-  var handleGetReactions = function handleGetReactions() {
-    dispatch(getReactionsAC(message.id));
+  var handleToggleReactionsPopup = function handleToggleReactionsPopup() {
+    var _messageItemRef$curre;
+
+    var reactionsContainer = document.getElementById(message.id + "_reactions_container}");
+    var reactionsContPos = reactionsContainer && reactionsContainer.getBoundingClientRect();
+    var bottomPos = (_messageItemRef$curre = messageItemRef.current) === null || _messageItemRef$curre === void 0 ? void 0 : _messageItemRef$curre.getBoundingClientRect().bottom;
+    var offsetBottom = window.innerHeight - bottomPos;
+    setReactionsPopupPosition(offsetBottom);
+    setReactionsPopupHorizontalPosition({
+      left: reactionsContainer ? reactionsContainer.getBoundingClientRect().left : 0,
+      right: reactionsContPos ? window.innerWidth - reactionsContPos.left - reactionsContPos.width : 0
+    });
+    setReactionsPopupOpen(!reactionsPopupOpen);
   };
 
   var handleRemoveFailedAttachment = function handleRemoveFailedAttachment(attachmentId) {
@@ -23152,9 +22427,6 @@ var Message = function Message(_ref) {
       });
     }
   };
-
-  var messageItemRef = useRef();
-  var isVisible = useOnScreen(messageItemRef);
 
   var MessageHeader = function MessageHeader() {
     return React__default.createElement(MessageHeaderCont, null, showMessageSenderName && React__default.createElement(MessageOwner, {
@@ -23352,7 +22624,15 @@ var Message = function Message(_ref) {
     onClick: function onClick() {
       return handleReplyMessage(true);
     }
-  }, message.replyCount + " replies"), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
+  }, message.replyCount + " replies"), reactionsPopupOpen && React__default.createElement(ReactionsPopup, {
+    bottomPosition: reactionsPopupPosition,
+    horizontalPositions: reactionsPopupHorizontalPosition,
+    reactionScores: message.reactionScores || {},
+    messageId: message.id,
+    handleReactionsPopupClose: handleToggleReactionsPopup,
+    rtlDirection: ownMessageOnRightSide && !message.incoming
+  }), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
+    id: message.id + "_reactions_container}",
     border: reactionsContainerBorder,
     boxShadow: reactionsContainerBoxShadow,
     borderRadius: reactionsContainerBorderRadius,
@@ -23386,7 +22666,7 @@ var Message = function Message(_ref) {
     padding: reactionItemPadding,
     margin: '0',
     fontSize: '12px',
-    onClick: handleGetReactions
+    onClick: handleToggleReactionsPopup
   }, reactionsCount)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
@@ -23405,7 +22685,7 @@ var Message = function Message(_ref) {
     title: 'Forward message'
   }));
 };
-var MessageReaction = styled.span(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
+var MessageReaction = styled.span(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
   return props.margin || '0 6px 0 0';
 }, function (props) {
   return props.isLastReaction && '0';
@@ -23426,13 +22706,13 @@ var MessageReaction = styled.span(_templateObject$q || (_templateObject$q = _tag
 }, function (props) {
   return props.backgroundColor || colors.white;
 });
-var ThreadMessageCountContainer = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
-var FailedMessageIcon = styled.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
+var ThreadMessageCountContainer = styled.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
+var FailedMessageIcon = styled.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
   return !props.rtl && '-24px';
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
+var ReactionsContainer = styled.div(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return !props.rtlDirection && 'auto';
 }, function (props) {
   return props.rtlDirection && 'auto';
@@ -23449,17 +22729,17 @@ var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = 
 }, function (props) {
   return props.topPosition && "\n      position: relative;\n      top: " + props.topPosition + ";\n  ";
 });
-var MessageReactionsCont = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n"])), function (props) {
+var MessageReactionsCont = styled.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n"])), function (props) {
   return props.rtlDirection && 'ltr';
 });
-var MessageHeaderCont = styled.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
-var MessageTime = styled.span(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 12px;\n  margin-right: 4px;\n  color: ", ";\n"])), colors.gray6);
-var ReplyMessageContainer = styled.div(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  margin: ", ";\n  cursor: pointer;\n"])), function (props) {
+var MessageHeaderCont = styled.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
+var MessageTime = styled.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 12px;\n  margin-right: 4px;\n  color: ", ";\n"])), colors.gray6);
+var ReplyMessageContainer = styled.div(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  margin: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.leftBorderColor || '#b8b9c2';
 }, function (props) {
   return props.withAttachments ? '8px 8px' : '0 0 8px';
 });
-var ReplyMessageBody = styled.div(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  max-width: 100%;\n"])));
+var ReplyMessageBody = styled.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  max-width: 100%;\n"])));
 var ForwardedTitle = styled.h3(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
@@ -23794,7 +23074,7 @@ function SvgFullscreenExit(props) {
   })));
 }
 
-var _templateObject$r, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$6;
+var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$6;
 var timerInterval;
 
 var VideoPlayer = function VideoPlayer(_ref) {
@@ -23968,7 +23248,8 @@ var VideoPlayer = function VideoPlayer(_ref) {
   }, []);
   return React__default.createElement(Component$1, {
     ref: containerRef,
-    fullScreen: isFullScreen
+    fullScreen: isFullScreen,
+    className: 'custom_video_player'
   }, React__default.createElement("video", {
     onClick: function onClick() {
       return videoHandler(playing ? 'pause' : 'play');
@@ -24012,20 +23293,20 @@ var VideoPlayer = function VideoPlayer(_ref) {
     onClick: handleOpenFullScreen
   }, isFullScreen ? React__default.createElement(SvgFullscreenExit, null) : React__default.createElement(SvgFullscreen, null))));
 };
-var Component$1 = styled.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n"])), function (props) {
+var Component$1 = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: '';\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
   return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
 });
-var PlayPauseWrapper = styled.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var ControlsContainer = styled.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
-var ControlTime = styled.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
-var ProgressBlock = styled.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
-var VolumeController = styled.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
-var VolumeIconWrapper = styled.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var VolumeSlide = styled.input(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
-var Progress = styled.input(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
+var PlayPauseWrapper = styled.span(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var ControlsContainer = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
+var ControlTime = styled.span(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
+var ProgressBlock = styled.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
+var VolumeController = styled.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
+var VolumeIconWrapper = styled.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var VolumeSlide = styled.input(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
+var Progress = styled.input(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
 var FullScreenWrapper = styled.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
+var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -24098,6 +23379,12 @@ var SliderPopup = function SliderPopup(_ref) {
 
       setImageLoading(false);
     };
+  };
+
+  var handleClicks = function handleClicks(e) {
+    if (!e.target.closest('.custom_carousel_item') && !e.target.closest('.custom_carousel_arrow')) {
+      handleClosePopup();
+    }
   };
 
   useDidUpdate(function () {
@@ -24254,7 +23541,7 @@ var SliderPopup = function SliderPopup(_ref) {
       setAttachmentsList([]);
     };
   }, []);
-  return React__default.createElement(Container$c, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
+  return React__default.createElement(Container$d, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
     name: attachmentUserName,
     setDefaultAvatar: true,
     size: 36,
@@ -24265,7 +23552,9 @@ var SliderPopup = function SliderPopup(_ref) {
     }
   }, React__default.createElement(SvgDownload, null)), React__default.createElement(Actions, null, React__default.createElement(ActionItem, {
     onClick: handleClosePopup
-  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, null, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
+  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, {
+    onClick: handleClicks
+  }, !!(attachmentsList && attachmentsList.length) && React__default.createElement(Carousel, {
     draggable: false,
     pagination: false,
     className: 'custom_carousel',
@@ -24295,6 +23584,7 @@ var SliderPopup = function SliderPopup(_ref) {
       var pointer = type === 'PREV' ? React__default.createElement(SvgSliderButtonLeft, null) : React__default.createElement(SvgSliderButtonRight, null);
       var disabled = type === 'PREV' ? prevButtonDisabled : nextButtonDisabled;
       return React__default.createElement(ArrowButton, {
+        className: 'custom_carousel_arrow',
         leftButton: type === 'PREV',
         type: 'button',
         onClick: function onClick(e) {
@@ -24309,6 +23599,7 @@ var SliderPopup = function SliderPopup(_ref) {
     isRTL: false
   }, attachmentsList.map(function (file) {
     return React__default.createElement(CarouselItem, {
+      className: 'custom_carousel_item',
       key: file.id,
       draggable: false,
       visibleSlide: visibleSlide
@@ -24323,15 +23614,15 @@ var SliderPopup = function SliderPopup(_ref) {
     }))) : React__default.createElement(UploadingIcon, null));
   }))));
 };
-var Container$c = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
-var SliderHeader = styled.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
-var SliderBody = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
-var FileInfo = styled.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
-var Info = styled.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
-var Actions = styled.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
-var FileDateAndSize = styled.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
-var FileSize = styled.span(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.gray9);
-var UserName = styled.h4(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
+var Container$d = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
+var SliderHeader = styled.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
+var SliderBody = styled.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var FileInfo = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
+var Info = styled.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
+var Actions = styled.div(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
+var FileDateAndSize = styled.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
+var FileSize = styled.span(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.gray9);
+var UserName = styled.h4(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
 var CarouselItem = styled.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n"])), function (props) {
@@ -24384,7 +23675,7 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9;
+var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a;
 var loading = false;
 var loadFromServer = false;
 var loadDirection = '';
@@ -24985,7 +24276,7 @@ var MessageList = function MessageList(_ref2) {
     topOffset: scrollRef && scrollRef.current && scrollRef.current.offsetTop
   }, React__default.createElement("span", {
     ref: messageTopDateRef
-  })), React__default.createElement(Container$d, {
+  })), React__default.createElement(Container$e, {
     id: 'scrollableDiv',
     ref: scrollRef,
     stopScrolling: stopScrolling,
@@ -25134,12 +24425,12 @@ var MessageList = function MessageList(_ref2) {
     currentMediaFile: mediaFile
   }))));
 };
-var Container$d = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
+var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
   return props.stopScrolling ? 'hidden' : 'auto';
 });
-var EmptyDiv = styled.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
-var MessagesBox = styled.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
-var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
+var EmptyDiv = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
+var MessagesBox = styled.div(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
+var MessageTopDate = styled.div(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
   return props.systemMessage ? '' : 'absolute';
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
@@ -25162,19 +24453,19 @@ var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _tag
 }, function (props) {
   return props.dateDividerBorderRadius || '14px';
 });
-var DragAndDropContainer = styled.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin-bottom: -31px;\n  margin-top: -2px;\n\n  position: absolute;\n  left: 0;\n  top: ", ";\n  width: 100%;\n  height: ", ";\n  background-color: ", ";\n  z-index: 999;\n"])), function (props) {
+var DragAndDropContainer = styled.div(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin-bottom: -31px;\n  margin-top: -2px;\n\n  position: absolute;\n  left: 0;\n  top: ", ";\n  width: 100%;\n  height: ", ";\n  background-color: ", ";\n  z-index: 999;\n"])), function (props) {
   return props.topOffset ? props.topOffset + 2 + "px" : 0;
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper$1 = styled.span(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, function (props) {
+var IconWrapper$1 = styled.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, function (props) {
   return props.iconColor || colors.primary;
 });
-var DropAttachmentArea = styled.div(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
+var DropAttachmentArea = styled.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
   return props.margin || '12px 32px 32px';
 }, colors.gray6, colors.gray5, IconWrapper$1, colors.white);
-var MessageWrapper = styled.div(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
-var NoMessagesContainer = styled.div(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray6);
+var MessageWrapper = styled.div(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
+var NoMessagesContainer = styled.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray6);
 
 var _circle$5, _path$X;
 
@@ -25347,16 +24638,7 @@ var membersLoadingStateSelector = function membersLoadingStateSelector(store) {
   return store.MembersReducer.membersLoadingState;
 };
 
-var LOADING_STATE$1 = {
-  LOADING: 1,
-  LOADED: 2
-};
-var PRESENCE_STATUS$1 = {
-  OFFLINE: 'Offline',
-  ONLINE: 'Online'
-};
-
-var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f, _templateObject6$f;
+var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g, _templateObject6$g;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
       addMentionMember = _ref.addMentionMember,
@@ -25436,11 +24718,13 @@ function MentionMembersPopup(_ref) {
       return;
     }
 
+    console.log('mentions members close');
     handleMentionsPopupClose();
   };
 
   useEventListener('click', handleClicks);
   useEffect(function () {
+    console.log('mentions members open');
     dispatch(getMembersAC(channelId));
   }, [channelId]);
   useEffect(function () {
@@ -25475,7 +24759,7 @@ function MentionMembersPopup(_ref) {
       setFilteredMembers(sortMembers(_searchedMembers || []));
     }
   }, [searchMention]);
-  return React__default.createElement(Container$e, {
+  return React__default.createElement(Container$f, {
     className: 'mention_member_popup',
     height: filteredMembers && filteredMembers.length * 44
   }, React__default.createElement(MembersList, {
@@ -25496,32 +24780,28 @@ function MentionMembersPopup(_ref) {
       size: 32,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
+    })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
   })));
 }
-MentionMembersPopup.defaultProps = {
-  activeItemIndex: null,
-  searchMention: ''
-};
-var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
+var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
   return props.height && props.height + 22;
 });
-var UserNamePresence$1 = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
-var MemberName$1 = styled.h3(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var EditMemberIcon = styled.span(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled.ul(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
-var MemberItem = styled.li(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+var UserNamePresence$2 = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$2 = styled.h3(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var EditMemberIcon = styled.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList = styled.ul(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
+var MemberItem = styled.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.isActiveItem && colors.gray0;
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g;
-var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause$1 = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
-var AudioVisualization$1 = styled.div(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var WaveContainer$1 = styled.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer$1 = styled.div(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
+var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$l, _templateObject5$h;
+var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause$1 = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
+var AudioVisualization$1 = styled.div(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var WaveContainer$1 = styled.div(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer$1 = styled.div(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
 
-var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$l, _templateObject5$h, _templateObject6$g, _templateObject7$d, _templateObject8$b, _templateObject9$a, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
+var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$m, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -26512,7 +25792,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(Container$g, {
+  return React__default.createElement(Container$h, {
     margin: margin,
     border: border,
     borderRadius: borderRadius,
@@ -26632,33 +25912,33 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, React__default.createElement(SvgSend, null)) )));
 };
 
-var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
+var Container$h = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
   return props.margin || '30px 16px 16px';
 }, colors.gray1, function (props) {
   return props.border || '';
 }, function (props) {
   return props.borderRadius || '4px';
 });
-var EditReplyMessageCont = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
-var EditMessageText = styled.p(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled.span(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
-var UserName$1 = styled.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled.h4(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var EditReplyMessageCont = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
+var EditMessageText = styled.p(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled.span(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
+var UserName$1 = styled.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageHeader = styled.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
-var AddAttachmentIcon = styled.span(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 1;
 }, function (props) {
   return props.isActive ? "color: " + (props.color || colors.primary) + ";" : 'color: #898B99;';
 }, function (props) {
   return props.color || colors.primary;
 });
-var SendMessageInputContainer = styled.div(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: 48px;\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n    & ", " {\n      & > svg {\n        color: ", ";\n        };\n      }\n    }\n  }\n"])), function (props) {
+var SendMessageInputContainer = styled.div(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: 48px;\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n    & ", " {\n      & > svg {\n        color: ", ";\n        };\n      }\n    }\n  }\n"])), function (props) {
   return props.messageForReply ? '0 0 4px 4px' : '4px';
 }, AddAttachmentIcon, function (props) {
   return props.iconColor || colors.primary;
 });
-var MessageInputWrapper = styled.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  //max-width: ", ";\n  max-width: calc(100% - 110px);\n  position: relative;\n  order: ", ";\n"])), function (props) {
+var MessageInputWrapper = styled.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  //max-width: ", ";\n  max-width: calc(100% - 110px);\n  position: relative;\n  order: ", ";\n"])), function (props) {
   return props.channelDetailsIsOpen ? "calc(100% - " + (props.channelDetailsIsOpen ? 362 : 0) + "px)" : '';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 3;
@@ -27040,7 +26320,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$m, _templateObject5$i, _templateObject6$h;
+var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$n, _templateObject5$j, _templateObject6$i;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -27264,7 +26544,7 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return React__default.createElement(Container$h, {
+  return React__default.createElement(Container$i, {
     isDirect: isDirectChannel
   }, toggleable && React__default.createElement(ActionHeader, {
     onClick: handleActionsOpen
@@ -27491,16 +26771,16 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$h = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
+var Container$i = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
   return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
 });
-var ActionHeader = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
-var MenuTriggerIcon = styled.span(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
+var ActionHeader = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
+var MenuTriggerIcon = styled.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
-var ActionsMenu = styled.ul(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled.li(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionsMenu = styled.ul(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose([""])));
+var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
   return props.order;
@@ -27588,7 +26868,7 @@ function SvgMoreVert(props) {
   })));
 }
 
-var _templateObject$y, _templateObject2$w, _templateObject3$q;
+var _templateObject$z, _templateObject2$x, _templateObject3$r;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
   var channelId = _ref.channelId,
@@ -27667,11 +26947,11 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }, "Save"))));
 };
 
-var RolesSelect = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
-var RoleSpan = styled.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
+var RolesSelect = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
+var RoleLabel = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
+var RoleSpan = styled.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$z, _templateObject2$x, _templateObject3$r, _templateObject4$n, _templateObject5$j, _templateObject6$i, _templateObject7$e, _templateObject8$c;
+var _templateObject$A, _templateObject2$y, _templateObject3$s, _templateObject4$o, _templateObject5$k, _templateObject6$j, _templateObject7$f, _templateObject8$d;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -27824,7 +27104,7 @@ var Members = function Members(_ref) {
     dispatch(getContactsAC());
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return React__default.createElement(Container$i, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
+  return React__default.createElement(Container$j, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
     onScroll: handleMembersListScroll
   }, chekActionPermission('addMember') && React__default.createElement(MemberItem$1, {
     key: 1,
@@ -27840,7 +27120,7 @@ var Members = function Members(_ref) {
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$2, null, member.id === user.id ? 'You' : makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
+    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
       color: colors.primary
     }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
       color: colors.purple
@@ -27928,24 +27208,24 @@ var Members = function Members(_ref) {
     toggleCreatePopup: handleAddMemberPopup
   }));
 };
-var Container$i = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose([""])));
-var ActionsMenu$1 = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled.div(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
-var MemberName$2 = styled.h4(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
-var EditMemberIcon$1 = styled.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList$1 = styled.ul(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem$1 = styled.li(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
+var Container$j = styled.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu$1 = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
+var MemberNamePresence = styled.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
+var MemberName$3 = styled.h4(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
+var EditMemberIcon$1 = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList$1 = styled.ul(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var MemberItem$1 = styled.li(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
   return props.hoverBackground || colors.gray0;
 }, EditMemberIcon$1, UserStatus);
-var RoleBadge = styled.span(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n\n  &::after {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    border-radius: 12px;\n    width: 100%;\n    height: 100%;\n    background-color: ", ";\n    opacity: 0.1;\n  }\n"])), function (props) {
+var RoleBadge = styled.span(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n\n  &::after {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    border-radius: 12px;\n    width: 100%;\n    height: 100%;\n    background-color: ", ";\n    opacity: 0.1;\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.color || colors.primary;
 });
 
-var _templateObject$A, _templateObject2$y;
+var _templateObject$B, _templateObject2$z;
 
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
@@ -27965,7 +27245,7 @@ var Media = function Media(_ref) {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return React__default.createElement(Container$j, null, attachments.map(function (file) {
+  return React__default.createElement(Container$k, null, attachments.map(function (file) {
     return React__default.createElement(MediaItem, {
       key: file.id,
       onClick: function onClick() {
@@ -27989,8 +27269,8 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$j = styled.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
-var MediaItem = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
+var Container$k = styled.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var MediaItem = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
 var _path$1c, _path2$8, _path3$4;
 
@@ -28078,7 +27358,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$B, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$k, _templateObject6$j, _templateObject7$f;
+var _templateObject$C, _templateObject2$A, _templateObject3$t, _templateObject4$p, _templateObject5$l, _templateObject6$k, _templateObject7$g;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -28093,7 +27373,7 @@ var Files = function Files(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
-  return React__default.createElement(Container$k, null, attachments.map(function (file) {
+  return React__default.createElement(Container$l, null, attachments.map(function (file) {
     return React__default.createElement(FileItem, {
       key: file.url,
       hoverBackgroundColor: filePreviewHoverBackgroundColor
@@ -28111,15 +27391,15 @@ var Files = function Files(_ref) {
     }, filePreviewDownloadIcon || React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$k = styled.ul(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled.a(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
-var FileIconCont = styled.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileHoverIconCont = styled.span(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled.img(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled.div(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var Container$l = styled.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DownloadWrapper = styled.a(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
+var FileIconCont = styled.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileHoverIconCont = styled.span(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileThumb = styled.img(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var FileItem = styled.div(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
-var FileSizeAndDate = styled.span(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
+var FileSizeAndDate = styled.span(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
@@ -28176,7 +27456,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$C, _templateObject2$A, _templateObject3$t, _templateObject4$p, _templateObject5$l;
+var _templateObject$D, _templateObject2$B, _templateObject3$u, _templateObject4$q, _templateObject5$m;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -28197,17 +27477,17 @@ var LinkItem = function LinkItem(_ref) {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled.span(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var LinkHoverIconCont = styled.span(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var LinkInfoCont = styled.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
-var FileItem$1 = styled.li(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var LinkIconCont = styled.span(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
+var LinkHoverIconCont = styled.span(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var LinkInfoCont = styled.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
+var FileItem$1 = styled.li(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
-var _templateObject$D;
+var _templateObject$E;
 
 var Links = function Links(_ref) {
   var channelId = _ref.channelId,
@@ -28221,7 +27501,7 @@ var Links = function Links(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
-  return React__default.createElement(Container$l, null, attachments.map(function (file) {
+  return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
@@ -28233,7 +27513,7 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$l = styled.ul(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$m = styled.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
 var _rect$3, _circle$7, _path$1e;
 
@@ -28399,7 +27679,7 @@ function SvgVoicePreviewPauseHover(props) {
   })));
 }
 
-var _templateObject$E, _templateObject2$B, _templateObject3$u, _templateObject4$q, _templateObject5$m, _templateObject6$k, _templateObject7$g, _templateObject8$d;
+var _templateObject$F, _templateObject2$C, _templateObject3$v, _templateObject4$r, _templateObject5$n, _templateObject6$l, _templateObject7$h, _templateObject8$e;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -28532,24 +27812,24 @@ var VoiceItem = function VoiceItem(_ref) {
     type: 'audio/mpeg'
   })));
 };
-var FileIconCont$1 = styled.span(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
-var FileHoverIconCont$1 = styled.span(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
-var FileItem$2 = styled.li(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var FileIconCont$1 = styled.span(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled.span(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled.li(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
-var AudioInfo = styled.div(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioInfo = styled.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioTitle = styled.span(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
-var AudioDate = styled.span(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+var AudioDate = styled.span(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray9;
 });
-var AudioSendTime = styled.span(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
+var AudioSendTime = styled.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
   return props.color || colors.gray9;
 });
-var Audio = styled.audio(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var Audio = styled.audio(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$F;
+var _templateObject$G;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
@@ -28570,7 +27850,7 @@ var Voices = function Voices(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return React__default.createElement(Container$m, null, attachments.map(function (file) {
+  return React__default.createElement(Container$n, null, attachments.map(function (file) {
     return React__default.createElement(VoiceItem, {
       key: file.id,
       file: file,
@@ -28588,9 +27868,9 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$m = styled.ul(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$n = styled.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$G, _templateObject2$C;
+var _templateObject$H, _templateObject2$D;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -28641,7 +27921,7 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return React__default.createElement(Container$n, null, React__default.createElement(DetailsTabHeader, {
+  return React__default.createElement(Container$o, null, React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
@@ -28708,8 +27988,8 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$n = styled.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
+var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
   return props.activeTabColor || colors.primary;
 });
 
@@ -28747,15 +28027,15 @@ function SvgCamera(props) {
   })));
 }
 
-var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$r;
-var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
+var _templateObject$I, _templateObject2$E, _templateObject3$w, _templateObject4$s;
+var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
 });
-var AvatarCont = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
-var DropDownWrapper = styled.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
-var EditChannelFooter = styled(ButtonBlock)(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
+var AvatarCont = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
+var DropDownWrapper = styled.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
+var EditChannelFooter = styled(ButtonBlock)(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
@@ -28881,7 +28161,7 @@ var EditChannel = function EditChannel(_ref) {
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$o, {
+  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$p, {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode
@@ -28954,7 +28234,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$I, _templateObject2$E, _templateObject3$w, _templateObject4$s, _templateObject5$n, _templateObject6$l, _templateObject7$h;
+var _templateObject$J, _templateObject2$F, _templateObject3$x, _templateObject4$t, _templateObject5$o, _templateObject6$m, _templateObject7$i;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -29108,7 +28388,7 @@ var Details = function Details(_ref) {
   useEffect(function () {
     setMounted(true);
   }, []);
-  return React__default.createElement(Container$p, {
+  return React__default.createElement(Container$q, {
     mounted: mounted
   }, React__default.createElement(ChannelDetailsHeader, null, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
     onClick: function onClick() {
@@ -29249,19 +28529,19 @@ var Details = function Details(_ref) {
     privateChannelMakeAdminPopupDescription: privateChannelMakeAdminPopupDescription
   })));
 };
-var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
+var Container$q = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
   return props.mounted && ' width: 360px';
 });
-var ChannelDetailsHeader = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
-var ChatDetails = styled.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChannelDetailsHeader = styled.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
+var ChatDetails = styled.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
-var ChannelInfo$3 = styled.div(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
-var DetailsHeader = styled.div(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
-var ChannelName$1 = styled(SectionHeader)(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
+var ChannelInfo$3 = styled.div(_templateObject4$t || (_templateObject4$t = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
+var DetailsHeader = styled.div(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
+var ChannelName$1 = styled(SectionHeader)(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
-var EditButton = styled.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+var EditButton = styled.span(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -29495,12 +28775,12 @@ function SvgChatLogo(props) {
   })));
 }
 
-var _templateObject$J, _templateObject2$F;
-var Container$q = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
-var Logo = styled.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
+var _templateObject$K, _templateObject2$G;
+var Container$r = styled.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
+var Logo = styled.div(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
 
 function SceytChatHeader() {
-  return React__default.createElement(Container$q, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
+  return React__default.createElement(Container$r, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
 var _path$1k;
@@ -29534,7 +28814,7 @@ function SvgChevronDown(props) {
   })));
 }
 
-var _templateObject$K, _templateObject2$G;
+var _templateObject$L, _templateObject2$H;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -29578,10 +28858,10 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";
 }, colors.white);
-var UnreadCount$1 = styled.span(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var UnreadCount$1 = styled.span(_templateObject2$H || (_templateObject2$H = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.cobalt1;
 }, function (props) {
   return props.fontSize || '13px';

@@ -99,6 +99,7 @@ export interface IChannel {
     createAttachmentBuilder: (url: string, type: string) => AttachmentBuilder;
 }
 export interface IReaction {
+    id: string;
     key: string;
     score: number;
     reason: string;

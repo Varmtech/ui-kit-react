@@ -25,3 +25,6 @@ export declare const scrollToNewMessageSelector: (store: any) => any;
 export declare const showScrollToNewMessageButtonSelector: (store: any) => any;
 export declare const sendMessageInputHeightSelector: (store: any) => any;
 export declare const scrollToMessageSelector: (store: any) => any;
+export declare const reactionsListSelector: (store: any) => any;
+export declare const reactionsHasNextSelector: (store: any) => any;
+export declare const reactionsLoadingStateSelector: (store: any) => any;

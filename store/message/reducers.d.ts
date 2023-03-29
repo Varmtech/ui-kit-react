@@ -1,4 +1,4 @@
-import { IAction, IMarker, IMessage } from '../../types';
+import { IAction, IMarker, IMessage, IReaction } from '../../types';
 export interface IMessageStore {
     messagesLoadingState: number | null;
     messagesHasNext: boolean;
@@ -33,6 +33,9 @@ export interface IMessageStore {
         [key: string]: any;
     };
     scrollToMessage: string | null;
+    reactionsList: IReaction[];
+    reactionsHasNext: boolean;
+    reactionsLoadingState: number | null;
 }
 declare const _default: (state?: IMessageStore, { type, payload }?: IAction) => IMessageStore;
 export default _default;

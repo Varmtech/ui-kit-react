@@ -143,6 +143,26 @@ export declare function loadMoreReactionsAC(limit: number): {
         limit: number;
     };
 };
+export declare function setReactionsListAC(reactions: IReaction[], hasNext: boolean): {
+    type: string;
+    payload: {
+        reactions: IReaction[];
+        hasNext: boolean;
+    };
+};
+export declare function addReactionsToListAC(reactions: IReaction[], hasNext: boolean): {
+    type: string;
+    payload: {
+        reactions: IReaction[];
+        hasNext: boolean;
+    };
+};
+export declare function setReactionsLoadingStateAC(state: number): {
+    type: string;
+    payload: {
+        state: number;
+    };
+};
 export declare function updateAttachmentUploadingStateAC(attachmentUploadingState: string, attachmentId?: any): {
     type: string;
     payload: {
