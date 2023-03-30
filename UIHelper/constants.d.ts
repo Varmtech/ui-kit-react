@@ -22,6 +22,7 @@ export declare const colors: {
     gray7: string;
     gray8: string;
     gray9: string;
+    gray10: string;
     pink1: string;
     purple1: string;
     cobalt1: string;

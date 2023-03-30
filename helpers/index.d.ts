@@ -37,3 +37,4 @@ export declare const setCursorPosition: (element: any, position: number) => void
 export declare const placeCaretAtEnd: (el: any) => void;
 export declare const detectOS: () => string | null;
 export declare const detectBrowser: () => string | undefined;
+export declare const getEmojisCategoryTitle: (categoryKey: string) => string;

@@ -1545,6 +1545,7 @@ var colors = {
   gray7: '#898B99',
   gray8: '#3A3C3E',
   gray9: '#757D8B',
+  gray10: '#F3F5F7',
   pink1: '#ff3e74',
   purple1: '#9f35e7',
   cobalt1: '#2F81FF',
@@ -8248,6 +8249,45 @@ var detectBrowser = function detectBrowser() {
 
   return browser;
 };
+var getEmojisCategoryTitle = function getEmojisCategoryTitle(categoryKey) {
+  var category = '';
+
+  switch (categoryKey) {
+    case 'People':
+      category = 'Smileys & People';
+      break;
+
+    case 'Animals':
+      category = 'Animals & Nature';
+      break;
+
+    case 'Food':
+      category = 'Food & Drink';
+      break;
+
+    case 'Travel':
+      category = 'Travel & Places';
+      break;
+
+    case 'Objects':
+      category = 'Objects';
+      break;
+
+    case 'Symbols':
+      category = 'Symbols';
+      break;
+
+    case 'Flags':
+      category = 'Flags';
+      break;
+
+    default:
+      category = '';
+      break;
+  }
+
+  return category;
+};
 
 var MESSAGES_MAX_LENGTH = 60;
 var LOAD_MAX_MESSAGE_COUNT = 20;
@@ -14887,30 +14927,29 @@ function getReactions(action) {
 
         case 14:
           result = _context11.sent;
-          console.log('result reactions ... ', result);
           query.ReactionsQuery = reactionQuery;
-          _context11.next = 19;
+          _context11.next = 18;
           return put(setReactionsListAC(result.reactions, result.hasNext));
 
-        case 19:
-          _context11.next = 21;
+        case 18:
+          _context11.next = 20;
           return put(setReactionsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 21:
-          _context11.next = 26;
+        case 20:
+          _context11.next = 25;
           break;
 
-        case 23:
-          _context11.prev = 23;
+        case 22:
+          _context11.prev = 22;
           _context11.t0 = _context11["catch"](0);
           console.log('ERROR in get reactions', _context11.t0.message);
 
-        case 26:
+        case 25:
         case "end":
           return _context11.stop();
       }
     }
-  }, _marked11$1, null, [[0, 23]]);
+  }, _marked11$1, null, [[0, 22]]);
 }
 
 function loadMoreReactions(action) {
@@ -19525,650 +19564,6 @@ function SvgThreadReply(props) {
   })));
 }
 
-var _path$y, _path2$5;
-
-function _extends$B() {
-  _extends$B = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$B.apply(this, arguments);
-}
-
-function SvgEmojiSmileIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$B({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$y || (_path$y = /*#__PURE__*/createElement("path", {
-    d: "M8.438 14.297a.9.9 0 011.273.149 2.77 2.77 0 00.516.415c.383.24.97.489 1.773.489.803 0 1.39-.25 1.773-.489a2.773 2.773 0 00.516-.415l.012-.013.002-.003a.9.9 0 011.4 1.132L15 15l.703.562-.001.001-.002.002-.002.003-.007.008-.018.022a3.487 3.487 0 01-.245.254c-.16.15-.394.344-.7.536A5.094 5.094 0 0112 17.15a5.094 5.094 0 01-2.727-.762 4.567 4.567 0 01-.7-.537 3.501 3.501 0 01-.246-.253l-.018-.022-.007-.008-.002-.003-.002-.002L9 15l-.703.562a.9.9 0 01.14-1.265zM10.25 10.25a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zM15 11.5A1.25 1.25 0 1015 9a1.25 1.25 0 000 2.5z"
-  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 2.1c-5.468 0-9.9 4.432-9.9 9.9 0 5.467 4.432 9.9 9.9 9.9s9.9-4.433 9.9-9.9c0-5.468-4.432-9.9-9.9-9.9zM3.9 12a8.1 8.1 0 1116.2 0 8.1 8.1 0 01-16.2 0z"
-  })));
-}
-
-var _path$z;
-
-function _extends$C() {
-  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$C.apply(this, arguments);
-}
-
-function SvgEmojiAnimalIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$C({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$z || (_path$z = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.068 3.405c.559-.56 1.345-.95 2.212-.804.873.147 1.481.776 1.81 1.496.33.723.424 1.61.26 2.5-.165.89-.57 1.689-1.133 2.254-.558.56-1.344.95-2.212.804-.872-.147-1.48-.776-1.81-1.497-.33-.722-.423-1.61-.258-2.5.164-.89.569-1.688 1.131-2.253zm1.215 1.21c-.291.292-.552.765-.66 1.355-.11.59-.034 1.114.132 1.476.166.364.378.492.535.518.161.027.418-.027.713-.323.291-.292.551-.765.66-1.355.11-.59.033-1.115-.132-1.476-.166-.364-.378-.492-.535-.518-.162-.027-.418.027-.713.323zM9.264 11.68c.632-.78 1.499-1.395 2.736-1.395 1.24 0 2.106.621 2.737 1.4.523.646.937 1.468 1.304 2.198l.151.299c.3.588.588 1.046.857 1.474.1.159.197.313.291.469.322.53.66 1.148.66 1.871 0 .587-.143 1.1-.44 1.517-.295.413-.69.661-1.073.809-.66.255-1.413.251-1.82.25l-.095-.001c-.464 0-.833-.065-1.16-.122l-.11-.02A7.038 7.038 0 0012 20.315c-.576 0-.953.056-1.302.116l-.11.02a6.337 6.337 0 01-1.16.12H9.24c-.447-.003-1.216-.025-1.889-.341a2.298 2.298 0 01-.964-.82C6.127 19.01 6 18.534 6 17.996c0-.695.344-1.316.658-1.839.09-.15.182-.3.277-.454.273-.441.568-.917.871-1.519l.14-.277c.37-.742.788-1.575 1.318-2.227zm.211 3.002l-.138.275c-.341.675-.691 1.24-.97 1.692-.088.14-.168.27-.239.389-.33.55-.414.794-.414.958 0 .264.06.401.108.475.05.075.127.145.258.206.298.14.723.175 1.171.179h.178c.308 0 .537-.04.87-.097l.11-.019c.4-.068.881-.14 1.591-.14s1.19.072 1.591.14l.11.02c.334.057.562.096.87.096h.034c.47 0 .918 0 1.265-.133.153-.06.24-.13.293-.205.052-.072.123-.219.123-.522 0-.2-.09-.452-.412-.983-.072-.119-.154-.25-.245-.393-.277-.441-.627-.997-.964-1.66l-.157-.31c-.381-.754-.705-1.394-1.103-1.886C12.988 12.25 12.57 12 12 12c-.57 0-.99.25-1.406.761-.403.497-.73 1.15-1.119 1.922zM11.063 5.659c-.164-.891-.569-1.69-1.131-2.254-.559-.56-1.345-.95-2.212-.804-.873.147-1.481.776-1.81 1.496-.33.723-.424 1.61-.26 2.5.165.89.57 1.689 1.132 2.254.56.56 1.345.95 2.213.804.872-.147 1.48-.776 1.81-1.497.33-.722.423-1.61.258-2.5zM8.004 4.292c.162-.027.418.027.713.323.291.292.552.765.66 1.355.11.59.034 1.114-.132 1.476-.166.364-.378.492-.535.518-.161.027-.418-.027-.713-.323-.291-.292-.551-.765-.66-1.355-.11-.59-.033-1.115.132-1.476.166-.364.378-.492.535-.518zM4.83 8.949c.648.367 1.214.975 1.588 1.723.374.746.518 1.558.398 2.285-.12.73-.526 1.445-1.298 1.78-.757.33-1.565.162-2.205-.201-.648-.367-1.214-.976-1.588-1.723-.374-.747-.518-1.558-.398-2.286.12-.73.526-1.445 1.297-1.78.757-.33 1.566-.161 2.206.202zm-.846 1.49c-.331-.187-.56-.17-.676-.12-.102.044-.237.167-.29.485-.052.32.003.768.24 1.242.236.472.576.815.9.998.332.188.561.172.677.121.101-.044.237-.167.29-.485.052-.32-.003-.768-.24-1.241-.236-.473-.576-.815-.9-1zM21.407 8.773c-.787-.38-1.627-.18-2.271.225-.65.41-1.206 1.08-1.57 1.886-.363.808-.497 1.672-.384 2.437.11.752.49 1.529 1.269 1.905.787.38 1.626.18 2.27-.226.65-.41 1.206-1.079 1.57-1.886.363-.807.497-1.671.384-2.436-.11-.753-.49-1.53-1.268-1.905zm-2.277 2.815c.247-.55.598-.936.92-1.139.327-.206.526-.174.611-.133.094.046.258.2.319.612.059.4-.006.934-.253 1.482-.247.55-.597.937-.92 1.14-.327.206-.525.173-.61.132-.095-.045-.259-.2-.32-.612-.058-.4.006-.934.253-1.482z"
-  })));
-}
-
-var _path$A;
-
-function _extends$D() {
-  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$D.apply(this, arguments);
-}
-
-function SvgEmojiFoodIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$D({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$A || (_path$A = /*#__PURE__*/createElement("path", {
-    d: "M16.375 5.336c-1.608 0-2.517.346-3.22.817.449-1.026 1.547-2.567 4.095-2.567a.875.875 0 100-1.75c-2.556 0-4.05 1.194-4.854 2.198-.056.068-.104.141-.157.213C11.764 2.588 10.949 1 9.556 1c-.55 0-1.187.248-1.931.836-1.726 1.366-1.462 2.558-.444 3.518C4.658 5.549 1.5 7.413 1.5 12.328c0 4.009 4.34 9.633 7.875 9.633 1.728 0 2.075-.426 2.625-.875.55.45.897.875 2.625.875 3.534 0 7.875-5.616 7.875-9.625 0-5.21-3.548-7-6.125-7zM8.712 3.208c.56-.445.825-.458.844-.458.373.148.853 1.23 1.188 2.673-1.337-.55-2.399-1.183-2.608-1.615.052-.098.21-.312.576-.6zm5.913 17.003c-.945 0-1.059-.096-1.364-.352l-.154-.128a1.739 1.739 0 00-1.108-.395 1.74 1.74 0 00-1.108.395l-.154.128c-.303.255-.417.352-1.362.352-2.461 0-6.125-4.716-6.125-7.883 0-5.095 3.927-5.242 4.375-5.242 1.697 0 2.174.412 2.964 1.094l.282.242a1.745 1.745 0 002.258 0l.282-.242c.79-.682 1.267-1.094 2.964-1.094.448 0 4.375.147 4.375 5.25 0 3.165-3.664 7.875-6.125 7.875z"
-  })));
-}
-
-var _path$B;
-
-function _extends$E() {
-  _extends$E = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$E.apply(this, arguments);
-}
-
-function SvgEmojiTravelIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$E({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$B || (_path$B = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M9.61 3.6H14.39c1.117 0 1.89-.001 2.59.24a4.4 4.4 0 011.643 1.016c.529.518.874 1.209 1.374 2.209l.067.134.84 1.68h1.216a.88.88 0 01.88.88v.312c0 .82-.59 1.462-1.32 1.607v7.148c0 .093 0 .209-.008.312a1.28 1.28 0 01-.131.485c-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.313.009h-.531c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.275 1.275 0 01-.558-.558 1.284 1.284 0 01-.13-.485c-.01-.103-.009-.22-.009-.313v-.265H5.84v.266c0 .093 0 .209-.008.312-.01.12-.036.298-.131.485-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.312.009h-.532c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.276 1.276 0 01-.558-.558 1.282 1.282 0 01-.13-.485 3.969 3.969 0 01-.009-.313v-7.147A1.637 1.637 0 011 10.071V9.76a.88.88 0 01.88-.88h1.216l.84-1.68.067-.135c.5-1 .845-1.691 1.374-2.209A4.4 4.4 0 017.02 3.84c.7-.241 1.472-.24 2.59-.24zM4.095 16.363a9.285 9.285 0 01-.015-.682v-4.143c.063.011.14.025.234.04.283.044.715.102 1.336.158 1.243.113 3.25.224 6.35.224 3.1 0 5.107-.111 6.35-.224a20.77 20.77 0 001.336-.158c.094-.015.171-.029.234-.04v4.03c0 .384 0 .619-.015.795a1.126 1.126 0 01-.03.19.44.44 0 01-.199.2l-.003.002a1.126 1.126 0 01-.19.03c-.176.014-.41.015-.795.015H5.312c-.384 0-.62-.001-.795-.015a1.127 1.127 0 01-.19-.03.44.44 0 01-.202-.202 1.126 1.126 0 01-.03-.19zm15.32-6.524l-.925-1.852c-.594-1.188-.807-1.588-1.098-1.873a2.64 2.64 0 00-.987-.61c-.385-.133-.839-.144-2.166-.144H9.761c-1.328 0-1.781.011-2.166.144a2.64 2.64 0 00-.987.61c-.29.285-.504.685-1.098 1.873l-.926 1.852h.004c.24.038.633.09 1.222.144 1.177.107 3.13.217 6.19.217 3.06 0 5.013-.11 6.19-.217a19.01 19.01 0 001.226-.144zm-1.146 5.194a.88.88 0 10-.218-1.746l-1.76.22a.88.88 0 00.218 1.746l1.76-.22zM4.967 14.05a.88.88 0 00.764.982l1.76.22a.88.88 0 10.218-1.746l-1.76-.22a.88.88 0 00-.982.763z"
-  })));
-}
-
-var _path$C;
-
-function _extends$F() {
-  _extends$F = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$F.apply(this, arguments);
-}
-
-function SvgEmojiObjectIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$F({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$C || (_path$C = /*#__PURE__*/createElement("path", {
-    d: "M10 16h1.19v-2.06a1.007 1.007 0 01-.16-.12L9.32 12.1a1 1 0 111.41-1.41l1.25 1.25 1.32-1.32a.97.97 0 011.38 0c.4.4.4 1.05 0 1.46L13 13.74a.998.998 0 01-.19.15V16H14v-.15a1.002 1.002 0 01.3-.73c2.71-2.58 3.71-4.17 3.71-6.27a5.93 5.93 0 00-6-5.85C8.69 3 6 5.63 6 8.85c0 2.1.98 3.66 3.7 6.26.19.18.3.45.3.72V16zm0 2v1a1 1 0 001 1h2a1 1 0 001-1v-1h-4zm-2-1.75c-2.85-2.77-4-4.7-4-7.4C4 4.51 7.6 1 12 1c4.42 0 8.01 3.51 8.01 7.85 0 2.7-1.17 4.66-4.01 7.42V19a3 3 0 01-3 3h-2a3 3 0 01-3-3v-2.75z"
-  })));
-}
-
-var _path$D;
-
-function _extends$G() {
-  _extends$G = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$G.apply(this, arguments);
-}
-
-function SvgEmojiSymbolsIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$G({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$D || (_path$D = /*#__PURE__*/createElement("path", {
-    d: "M19.1 4a4.6 4.6 0 011.37.28A4.01 4.01 0 0123 7.9c.03 2.73.03 5.47 0 8.2a4.15 4.15 0 01-.98 2.52A4.02 4.02 0 0119.1 20c-4.73.06-9.47.06-14.2 0a4.572 4.572 0 01-1.37-.28A4.02 4.02 0 011 16.1c-.03-2.73-.03-5.47 0-8.2A4.01 4.01 0 014.9 4c4.73-.06 9.47-.06 14.2 0zM5 6a2.02 2.02 0 00-2 1.95c-.034 2.7-.034 5.4 0 8.1A2.02 2.02 0 004.95 18c4.7.06 9.4.06 14.1 0A2.02 2.02 0 0021 16.05c.034-2.7.034-5.4 0-8.1A2.02 2.02 0 0019.05 6C14.37 5.94 9.68 6 5 6zm2 7.88a1.12 1.12 0 110 2.24 1.12 1.12 0 010-2.24zm4 .03a1.1 1.1 0 110 2.19 1.1 1.1 0 010-2.2v.01zm6.44-3.8l.23-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.42-.15.18 0 .37.07.5.2.23.22.18.53.12.83l-.19.92h.2c.32 0 .45.01.58.08.19.1.31.3.31.56 0 .27-.12.46-.3.56-.14.07-.27.08-.59.08h-.45l-.26 1.27h.33c.32 0 .44.02.58.09.18.1.3.29.3.55 0 .27-.12.47-.3.56-.14.07-.26.08-.58.08h-.58l-.27 1.33c-.06.3-.1.46-.26.62a.6.6 0 01-.42.15.74.74 0 01-.5-.2c-.23-.22-.18-.53-.12-.83l.21-1.07h-1.3l-.27 1.33c-.06.3-.1.46-.27.62-.1.1-.25.15-.42.15a.74.74 0 01-.49-.2c-.24-.22-.18-.53-.12-.83l.2-1.07h-.2c-.31 0-.44 0-.57-.08-.19-.1-.31-.29-.31-.56 0-.26.12-.46.3-.55.14-.07.27-.09.59-.09h.45l.26-1.27h-.33c-.32 0-.44-.01-.58-.08-.18-.1-.3-.3-.3-.56 0-.27.12-.46.3-.56.14-.07.26-.08.58-.08h.58l.24-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.41-.15.18 0 .37.07.5.2.24.22.18.53.12.83l-.18.92h1.31zm-8.14-.2c0-1.33-1.05-2.18-2.36-2.18-.68 0-1.35.23-1.78.6-.45.4-.64 1-.64 1.34 0 .23.1.42.22.53.12.12.3.2.5.2.21 0 .36-.07.5-.18.34-.25.42-.63.55-.77a.85.85 0 01.66-.27c.55 0 .76.27.76.75 0 .3-.24.67-.43.89l-.65.83c-.28.4-.4.7-.38 1.03.02.36.28.67.57.7.24.02.6 0 .79-.38.13-.25.53-.73.73-1.07l.47-.62c.34-.43.49-.8.49-1.4zm2.54-1.17c0-.36-.01-.49-.11-.68-.13-.22-.4-.37-.73-.37-.33 0-.6.15-.73.37-.1.19-.11.32-.11.68v3.45c0 .36 0 .5.11.68.13.22.4.37.73.37.33 0 .6-.15.73-.37.1-.19.11-.32.11-.68V8.74zm5.09 3.92l.25-1.27h-1.3l-.26 1.27h1.31z"
-  })));
-}
-
-var _path$E;
-
-function _extends$H() {
-  _extends$H = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$H.apply(this, arguments);
-}
-
-function SvgEmojiFlagicon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$H({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$E || (_path$E = /*#__PURE__*/createElement("path", {
-    d: "M6.63 3.23c2.13 1.12 3.18.99 5.4-.13l.03-.03c2.8-1.4 4.52-1.57 7.43.08a1 1 0 01.51.87v9.23a1 1 0 01-1.5.87c-2.69-1.52-4.13-1.43-6.62-.22-.33.158-.66.315-.99.47-1.4.62-2.6.81-3.89.43V20a1 1 0 11-2 0V4a1 1 0 011.63-.77zM7 12.66c1.05.5 1.87.42 3.08-.12.314-.137.624-.283.93-.44 2.56-1.24 4.46-1.53 6.99-.46V4.62c-1.9-.98-2.96-.81-5.03.24l-.04.02c-2.3 1.16-3.85 1.5-5.93.71v7.07z"
-  })));
-}
-
-var EMOJIS = [{
-  key: 'People',
-  array: [{
-    key: 'face-smiling',
-    array: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇']
-  }, {
-    key: 'face-affection',
-    array: ['🥰', '😍', '🤩', '😘', '😗', '😚', '😙']
-  }, {
-    key: 'face-tongue',
-    array: ['😋', '😛', '😜', '🤪', '😝', '🤑']
-  }, {
-    key: 'face-hand',
-    array: ['🤗', '🤭', '🤫', '🤔']
-  }, {
-    key: 'face-neutral-skeptical',
-    array: ['🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥']
-  }, {
-    key: 'face-sleepy',
-    array: ['😌', '😔', '😪', '🤤', '😴']
-  }, {
-    key: 'face-unwell',
-    array: ['😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯']
-  }, {
-    key: 'face-hat',
-    array: ['🤠', '🥳']
-  }, {
-    key: 'face-glasses',
-    array: ['😎', '🤓', '🧐']
-  }, {
-    key: 'face-concerned',
-    array: ['😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱']
-  }, {
-    key: 'face-negative',
-    array: ['😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️']
-  }, {
-    key: 'face-costume',
-    array: ['💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖']
-  }, {
-    key: 'cat-face',
-    array: ['😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾']
-  }, {
-    key: 'monkey-face',
-    array: ['🙈', '🙉', '🙊']
-  }, {
-    key: 'emotion',
-    array: ['💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '👁‍🗨', '🗨️', '🗯️', '💭', '💤']
-  }, {
-    key: 'hand-fingers-open',
-    array: ['👋', '🤚', '🖐️', '✋', '🖖']
-  }, {
-    key: 'hand-fingers-partial',
-    array: ['👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙']
-  }, {
-    key: 'hand-single-finger',
-    array: ['👈', '👉', '👆', '🖕', '👇', '☝️']
-  }, {
-    key: 'hand-fingers-closed',
-    array: ['👍', '👎', '✊', '👊', '🤛', '🤜']
-  }, {
-    key: 'hands',
-    array: ['👏', '🙌', '👐', '🤲', '🤝', '🙏']
-  }, {
-    key: 'hand-prop',
-    array: ['✍️', '💅', '🤳']
-  }, {
-    key: 'body-parts',
-    array: ['💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄']
-  }, {
-    key: 'person',
-    array: ['👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👱‍♂️', '👨‍🦰', '👩', '👱‍♀️', '👩‍🦰', '🧓', '👴', '👵']
-  }, {
-    key: 'person-fantasy',
-    array: ['👼', '🎅', '🤶', '🦸', '🦸‍♂️', '🦸🏻‍♂️', '🦸‍♀️', '🦸🏻‍♀️', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞']
-  }, {
-    key: 'person-activity',
-    array: ['💆', '💇', '🚶', '🧍', '🧎', '👨‍🦯', '👩‍🦯', '👨‍🦼', '👩‍🦼', '🏃', '💃', '🕺', '🕴', '👯', '🧖', '🧗']
-  }]
-}, {
-  key: 'Animals',
-  array: [{
-    key: 'animal-mammal',
-    array: ['🐵', '🐒', '🦍', '🦧', '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🦊', '🦝', '🐱', '🐈', '🦁', '🐯', '🐅', '🐆', '🐴', '🐎', '🦄', '🦓', '🦌', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦏', '🦛', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐿️', '🐿', '🦔', '🦇', '🐻', '🐨', '🐼', '🦥', '🦦', '🦨', '🦘', '🦡', '🐾']
-  }, {
-    key: 'animal-bird',
-    array: ['🦃', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🕊', '🦅', '🦆', '🦢', '🦉', '🦩', '🦚', '🦜']
-  }, {
-    key: 'animal-amphibian',
-    array: ['🐸']
-  }, {
-    key: 'animal-reptile',
-    array: ['🐊', '🐢', '🦎', '🐍', '🐲', '🐉', '🦕', '🦖']
-  }, {
-    key: 'animal-marine',
-    array: ['🐳', '🐋', '🐬', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚']
-  }, {
-    key: 'animal-bug',
-    array: ['🐌', '🦋', '🐛', '🐜', '🐝', '🐞', '🦗', '🕷️', '🕸️', '🦂', '🦟', '🦠']
-  }, {
-    key: 'plant-flower',
-    array: ['💐', '🌸', '💮', '🏵️', '🏵', '🌹', '🥀', '🌺', '🌻', '🌼', '🌷']
-  }, {
-    key: 'plant-other',
-    array: ['🌱', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '☘', '🍀', '🍁', '🍂', '🍃']
-  }]
-}, {
-  key: 'Food',
-  array: [{
-    key: 'food-fruit',
-    array: ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🥝', '🍅', '🥥']
-  }, {
-    key: 'food-vegetable',
-    array: ['🥑', '🍆', '🥔', '🥕', '🌽', '🌶️', '🌶', '🥒', '🥬', '🥦', '🧄', '🧅', '🍄', '🥜', '🌰']
-  }, {
-    key: 'food-prepared',
-    array: ['🍞', '🥐', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥙', '🧆', '🥚', '🍳', '🥘', '🍲', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫']
-  }, {
-    key: 'food-asian',
-    array: ['🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🥮', '🍡', '🥟', '🥠', '🥡']
-  }, {
-    key: 'food-marine',
-    array: ['🦀', '🦞', '🦐', '🦑', '🦪']
-  }, {
-    key: 'food-sweet',
-    array: ['🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯']
-  }, {
-    key: 'drink',
-    array: ['🍼', '🥛', '☕', '🍵', '🍶', '🍾', '🍷', '🍸', '🍹', '🍺', '🍻', '🥂', '🥃', '🥤', '🧃', '🧉', '🧊']
-  }, {
-    key: 'dishware',
-    array: ['🥢', '🍽️', '🍽', '🍴', '🥄', '🔪', '🏺']
-  }]
-}, {
-  key: 'Travel',
-  array: [{
-    key: 'place-map',
-    array: ['🌍', '🌎', '🌏', '🌐', '🗺', '🗾', '🧭']
-  }, {
-    key: 'place-geographic',
-    array: ['🏔️', '🏔', '⛰️', '⛰', '🌋', '🗻', '🏕️', '🏕', '🏖️', '🏖', '🏜️', '🏜', '🏝️', '🏝', '🏞️', '🏞']
-  }, {
-    key: 'place-building',
-    array: ['🏟️', '🏛️', '🏗️', '🏗', '🧱', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽']
-  }, {
-    key: 'place-religious',
-    array: ['⛪', '🕌', '🛕', '🕍', '⛩️', '🕋']
-  }, {
-    key: 'place-other',
-    array: ['⛲', '⛺', '🌁', '🌃', '🏙️', '🏙', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '♨', '🎠', '🎡', '🎢', '💈', '🎪']
-  }, {
-    key: 'transport-ground',
-    array: ['🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏎', '🏍️', '🏍', '🛵', '🦽', '🦼', '🛺', '🚲', '🛴', '🛹', '🚏', '🛣️', '🛤️', '🛢️', '⛽', '🚨', '🚥', '🚦', '🛑', '🚧']
-  }, {
-    key: 'transport-water',
-    array: ['⚓', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🛥', '🚢']
-  }, {
-    key: 'transport-air',
-    array: ['✈️', '✈', '🛩️', '🛫', '🛬', '🪂', '💺', '🚁', '🚟', '🚠', '🚡', '🛰️', '🛰', '🚀', '🛸']
-  }, {
-    key: 'hotel',
-    array: ['🛎️', '🧳']
-  }, {
-    key: 'time',
-    array: ['⌛', '⏳', '⌚', '⏰', '⏱️', '⏲️', '🕰️', '🕛', '🕧', '🕐', '🕜', '🕑', '🕝', '🕒', '🕞', '🕓', '🕟', '🕔', '🕠', '🕕', '🕡', '🕖', '🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦']
-  }, {
-    key: 'sky weather',
-    array: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘', '🌙', '🌚', '🌛', '🌜', '🌡️', '🌡', '☀️', '☀', '🌝', '🌞', '🪐', '⭐', '🌟', '🌠', '🌌', '☁️', '☁', '⛅', '⛈️', '⛈', '🌤️', '🌤', '🌥️', '🌥', '🌦️', '🌦', '🌧️', '🌧', '🌨️', '🌨', '🌩️', '🌩', '🌪️', '🌪', '🌫️', '🌫', '🌬️', '🌬', '🌀', '🌈', '🌂', '☂️', '☂', '☔', '⛱️', '⛱', '⚡', '❄️', '❄', '☃️', '☃', '⛄', '☄️', '☄', '🔥', '💧', '🌊']
-  }]
-}, {
-  key: 'Objects',
-  array: [{
-    key: 'event',
-    array: ['🎃', '🎄', '🎆', '🎇', '🧨', '✨', '🎈', '🎉', '🎊', '🎋', '🎍', '🎎', '🎏', '🎐', '🎑', '🧧', '🎀', '🎁', '🎗️', '🎟️', '🎫']
-  }, {
-    key: 'award-medal',
-    array: ['🎖️', '🏆', '🏅', '🥇', '🥈', '🥉']
-  }, {
-    key: 'sport',
-    array: ['⚽', '⚾', '🥎', '🏀', '🏐', '🏈', '🏉', '🎾', '🥏', '🎳', '🏏', '🏑', '🏒', '🥍', '🏓', '🏸', '🥊', '🥋', '🥅', '⛳', '⛸️', '🎣', '🤿', '🎽', '🎿', '🛷', '🥌']
-  }, {
-    key: 'game',
-    array: ['🎯', '🪀', '🪁', '🎱', '🔮', '🧿', '🎮', '🕹️', '🎰', '🎲', '🧩', '🧸', '♠️', '♥️', '♦️', '♣️', '♟️', '🃏', '🀄', '🎴']
-  }, {
-    key: 'arts crafts',
-    array: ['🎭', '🖼️', '🎨', '🧵', '🧶']
-  }, {
-    key: 'clothing',
-    array: ['👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🛍️', '🎒', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '⛑', '📿', '💄', '💍', '💎']
-  }, {
-    key: 'sound',
-    array: ['🔇', '🔈', '🔉', '🔊', '📢', '📣', '📯', '🔔', '🔕']
-  }, {
-    key: 'music',
-    array: ['🎼', '🎵', '🎶', '🎙️', '🎙', '🎚', '🎛', '🎤', '🎧', '📻']
-  }, {
-    key: 'musical-instrument',
-    array: ['🎷', '🎸', '🎹', '🎺', '🎻', '🪕', '🥁']
-  }, {
-    key: 'phone',
-    array: ['📱', '📲', '☎️', '☎', '📞', '📟', '📠']
-  }, {
-    key: 'computer',
-    array: ['🔋', '🔌', '💻', '🖥️', '🖨️', '⌨️', '⌨', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '🧮']
-  }, {
-    key: 'light video',
-    array: ['🎥', '🎞', '📽️', '📽', '🎬', '📺', '📷', '📸', '📹', '📼', '🔍', '🔎', '🕯️', '💡', '🔦', '🏮', '🪔']
-  }, {
-    key: 'book-paper',
-    array: ['📔', '📕', '📖', '📗', '📘', '📙', '📚', '📓', '📒', '📃', '📜', '📄', '📰', '🗞️', '📑', '🔖', '🏷️']
-  }, {
-    key: 'money',
-    array: ['💰', '💴', '💵', '💶', '💷', '💸', '💳', '🧾', '💹', '💱', '💲']
-  }, {
-    key: 'mail',
-    array: ['✉️', '📧', '📨', '📩', '📤', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️']
-  }, {
-    key: 'writing',
-    array: ['✏️', '✏', '✒️', '✒', '🖋️', '🖊️', '🖌️', '🖍️', '🖍', '📝']
-  }, {
-    key: 'office',
-    array: ['💼', '📁', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '✂', '🗃️', '🗄', '🗑️']
-  }, {
-    key: 'lock',
-    array: ['🔒', '🔓', '🔏', '🔐', '🔑', '🗝️']
-  }, {
-    key: 'tool',
-    array: ['🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '⚔', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜', '⚖️', '🦯', '🔗', '⛓️', '🧰', '🧲']
-  }, {
-    key: 'science',
-    array: ['⚗️', '⚗', '🧪', '🧫', '🧬', '🔬', '🔭', '📡']
-  }, {
-    key: 'medical',
-    array: ['💉', '🩸', '💊', '🩹', '🩺']
-  }, {
-    key: 'household',
-    array: ['🚪', '🛏️', '🛋️', '🛋', '🪑', '🚽', '🚿', '🛁', '🪒', '🧴', '🧷', '🧹', '🧺', '🧻', '🧼', '🧽', '🧯', '🛒']
-  }, {
-    key: 'other-object',
-    array: ['🚬', '⚰️', '⚱️', '🗿']
-  }]
-}, {
-  key: 'Symbols',
-  array: [{
-    key: 'transport-sign',
-    array: ['🏧', '🚮', '🚰', '♿', '🚹', '🚺', '🚻', '🚼', '🚾', '🛂', '🛃', '🛄', '🛅']
-  }, {
-    key: 'warning',
-    array: ['⚠️', '⚠', '🚸', '⛔', '🚫', '🚳', '🚭', '🚯', '🚱', '🚷', '📵', '🔞', '☢️', '☣️']
-  }, {
-    key: 'arrow',
-    array: ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️', '↕️', '↔️', '↔', '↩️', '↩', '↪️', '↪', '⤴️', '⤴', '⤵️', '⤵', '🔃', '🔄', '🔙', '🔚', '🔛', '🔜', '🔝']
-  }, {
-    key: 'religion',
-    array: ['🛐', '⚛️', '🕉️', '🕉', '✡️', '☸️', '☯️', '✝️', '☮️', '🕎', '🔯']
-  }, {
-    key: 'zodiac',
-    array: ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎']
-  }, {
-    key: 'other-symbol',
-    array: ['♻️', '⚜️', '🔱', '📛', '🔰', '⭕', '✅', '☑️', '✔️', '✖️', '✖', '❌', '❎', '➕', '➖', '➗', '➰', '➿', '〽️', '✳️', '✴️', '❇️', '‼️', '⁉️', '❓', '❗']
-  }]
-}, {
-  key: 'Flags',
-  array: [{
-    key: 'country-flag',
-    array: ['🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼']
-  }, {
-    key: 'subdivision-flag',
-    array: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
-  }]
-}];
-
-var _templateObject$i, _templateObject2$g, _templateObject3$c, _templateObject4$9, _templateObject5$6, _templateObject6$6, _templateObject7$5, _templateObject8$4;
-
-var EmojiIcon = function EmojiIcon(_ref) {
-  var collectionName = _ref.collectionName;
-
-  switch (collectionName) {
-    case 'People':
-      return React__default.createElement(SvgEmojiSmileIcon, null);
-
-    case 'Animals':
-      return React__default.createElement(SvgEmojiAnimalIcon, null);
-
-    case 'Food':
-      return React__default.createElement(SvgEmojiFoodIcon, null);
-
-    case 'Travel':
-      return React__default.createElement(SvgEmojiTravelIcon, null);
-
-    case 'Objects':
-      return React__default.createElement(SvgEmojiObjectIcon, null);
-
-    case 'Symbols':
-      return React__default.createElement(SvgEmojiSymbolsIcon, null);
-
-    case 'Flags':
-      return React__default.createElement(SvgEmojiFlagicon, null);
-
-    default:
-      return null;
-  }
-};
-
-function EmojisPopup(_ref2) {
-  var handleAddEmoji = _ref2.handleAddEmoji,
-      handleEmojiPopupToggle = _ref2.handleEmojiPopupToggle,
-      rtlDirection = _ref2.rtlDirection,
-      rightSide = _ref2.rightSide;
-
-  var _useState = useState('People'),
-      activeCollection = _useState[0],
-      setActiveCollection = _useState[1];
-
-  var _useState2 = useState([]),
-      collectionHeights = _useState2[0],
-      setCollectionHeights = _useState2[1];
-
-  var emojiContainerRef = useRef(null);
-  var collectionsRef = useRef(EMOJIS.map(function (col) {
-    return {
-      collectionName: col.key,
-      elem: createRef()
-    };
-  }));
-
-  var handleEmojiListScroll = function handleEmojiListScroll() {
-    var scrollPos = emojiContainerRef.current.scrollTop;
-
-    if (collectionHeights[6] < scrollPos) {
-      setActiveCollection('Flags');
-    } else if (collectionHeights[5] < scrollPos) {
-      setActiveCollection('Symbols');
-    } else if (collectionHeights[4] < scrollPos) {
-      setActiveCollection('Objects');
-    } else if (collectionHeights[3] < scrollPos) {
-      setActiveCollection('Travel');
-    } else if (collectionHeights[2] < scrollPos) {
-      setActiveCollection('Food');
-    } else if (collectionHeights[1] < scrollPos) {
-      setActiveCollection('Animals');
-    } else {
-      setActiveCollection('People');
-    }
-  };
-
-  var chooseEmoji = function chooseEmoji(selectedEmoji) {
-    handleAddEmoji(selectedEmoji);
-
-    if (handleEmojiPopupToggle) {
-      handleEmojiPopupToggle(false);
-    }
-  };
-
-  var handleEmojiCollectionClick = function handleEmojiCollectionClick(mainCollection) {
-    var collection = collectionsRef.current.find(function (el) {
-      return el.collectionName === mainCollection;
-    });
-    var pos = collection.elem.current.offsetTop - 40;
-    emojiContainerRef.current.scrollTo(0, pos);
-  };
-
-  useEffect(function () {
-    var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
-    var heights = collectionsRef.current.map(function (col) {
-      return col.elem.current.getBoundingClientRect().top - containerTop;
-    });
-    setCollectionHeights(heights);
-  }, []);
-  return React__default.createElement(Container$a, {
-    rightSide: rightSide,
-    id: 'emojisContainer',
-    rtlDirection: rtlDirection
-  }, React__default.createElement(EmojiHeader, null, activeCollection), React__default.createElement(EmojiSection, {
-    ref: emojiContainerRef,
-    onScroll: handleEmojiListScroll
-  }, React__default.createElement(AllEmojis, null, EMOJIS.map(function (emojiBigCollection, bigColIndex) {
-    var mainCollectionKey = emojiBigCollection.key;
-    return emojiBigCollection.array.map(function (emojiSmallCollection, bigIndex) {
-      var label = emojiSmallCollection.key;
-      var array = emojiSmallCollection.array;
-      return array.map(function (emoji, i) {
-        return React__default.createElement(Emoji, {
-          key: "" + emoji,
-          className: 'emoji-cont',
-          onClick: function onClick() {
-            return chooseEmoji(emoji);
-          }
-        }, bigIndex === 0 && i === 0 && React__default.createElement(CollectionPointer, {
-          ref: collectionsRef.current[bigColIndex].elem,
-          "data-emoji-sec": mainCollectionKey
-        }), React__default.createElement("span", {
-          className: 'emoji',
-          role: 'img',
-          "aria-label": label || '',
-          "aria-hidden": label ? 'false' : 'true'
-        }, emoji));
-      });
-    });
-  }))), React__default.createElement(EmojiFooter, null, EMOJIS.map(function (emoji) {
-    return React__default.createElement(EmojiCollection, {
-      activeCollection: activeCollection === emoji.key,
-      key: "" + emoji.key,
-      onClick: function onClick() {
-        return handleEmojiCollectionClick(emoji.key);
-      }
-    }, React__default.createElement(EmojiIcon, {
-      collectionName: emoji.key
-    }));
-  })));
-}
-var Container$a = styled.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  bottom: 46px;\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  background: ", ";\n  z-index: 35;\n"])), function (props) {
-  return props.rtlDirection ? '' : props.rightSide ? '-276px' : '0';
-}, function (props) {
-  return props.rtlDirection && '0';
-}, colors.gray1, colors.white);
-var EmojiHeader = styled.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  height: 32px;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 18px;\n  color: ", ";\n  display: flex;\n  align-items: flex-end;\n  padding: 3px 18px;\n"])), colors.gray6);
-var EmojiSection = styled.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  height: 166px;\n  overflow-x: hidden;\n"])));
-var EmojiCollection = styled.span(_templateObject4$9 || (_templateObject4$9 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
-  return props.activeCollection ? colors.primary : colors.gray7;
-});
-var CollectionPointer = styled.span(_templateObject5$6 || (_templateObject5$6 = _taggedTemplateLiteralLoose([""])));
-var AllEmojis = styled.ul(_templateObject6$6 || (_templateObject6$6 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 8px;\n  margin: 0;\n"])));
-var EmojiFooter = styled.div(_templateObject7$5 || (_templateObject7$5 = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: 1px solid ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), colors.gray1);
-var Emoji = styled.li(_templateObject8$4 || (_templateObject8$4 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: #f5f5f8;\n  }\n"])));
-
 function usePermissions(myRole) {
   var dispatch = useDispatch();
   var rolesMap = useSelector(rolesMapSelector, shallowEqual);
@@ -20184,7 +19579,7 @@ function usePermissions(myRole) {
   return [checkActionPermission, myPermissions];
 }
 
-var _templateObject$j, _templateObject2$h, _templateObject3$d, _templateObject4$a;
+var _templateObject$i, _templateObject2$g, _templateObject3$c;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
       channel = _ref.channel,
@@ -20195,7 +19590,6 @@ function MessageActions(_ref) {
       handleCopyMessage = _ref.handleCopyMessage,
       handleReportMessage = _ref.handleReportMessage,
       messageStatus = _ref.messageStatus,
-      handleAddEmoji = _ref.handleAddEmoji,
       handleReplyMessage = _ref.handleReplyMessage,
       isThreadMessage = _ref.isThreadMessage,
       rtlDirection = _ref.rtlDirection,
@@ -20234,13 +19628,8 @@ function MessageActions(_ref) {
       reportIconTooltipText = _ref.reportIconTooltipText,
       myRole = _ref.myRole,
       isIncoming = _ref.isIncoming,
-      messageActionIconsColor = _ref.messageActionIconsColor;
-
-  var _useState = useState(false),
-      reactionIsOpen = _useState[0],
-      setReactionIsOpen = _useState[1];
-
-  var emojisRef = useRef(null);
+      messageActionIconsColor = _ref.messageActionIconsColor,
+      handleOpenEmojis = _ref.handleOpenEmojis;
 
   var _usePermissions = usePermissions(myRole),
       checkActionPermission = _usePermissions[0];
@@ -20253,7 +19642,7 @@ function MessageActions(_ref) {
   var handleOpenReaction = function handleOpenReaction(e) {
     e.stopPropagation();
     e.preventDefault();
-    setReactionIsOpen(true);
+    handleOpenEmojis();
   };
 
   return React__default.createElement(MessageActionsWrapper, {
@@ -20339,16 +19728,9 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, reportIconTooltipText || 'Report'), reportIcon || React__default.createElement(SvgReportIcon, null)), React__default.createElement(EmojiContainer, {
-    ref: emojisRef,
-    rtlDirection: rtlDirection
-  }, reactionIsOpen && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(EmojisPopup, {
-    rtlDirection: rtlDirection,
-    handleEmojiPopupToggle: setReactionIsOpen,
-    handleAddEmoji: handleAddEmoji
-  }))));
+  }, reportIconTooltipText || 'Report'), reportIcon || React__default.createElement(SvgReportIcon, null))));
 }
-var MessageActionsWrapper = styled.div(_templateObject$j || (_templateObject$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 200;\n"])), function (_ref2) {
+var MessageActionsWrapper = styled.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 200;\n"])), function (_ref2) {
   var isThreadMessage = _ref2.isThreadMessage,
       rtlDirection = _ref2.rtlDirection;
   return !rtlDirection && (isThreadMessage ? '8px' : '0');
@@ -20356,26 +19738,21 @@ var MessageActionsWrapper = styled.div(_templateObject$j || (_templateObject$j =
   var rtlDirection = _ref3.rtlDirection;
   return rtlDirection && '0';
 });
-var EditMessageContainer = styled.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, colors.gray1);
-var Action = styled.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 9px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n\n  &:hover {\n    color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+var Action = styled.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 9px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n\n  &:hover {\n    color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.iconColor || colors.gray6;
 }, function (props) {
   return props.order || 1;
 }, function (props) {
   return props.hoverIconColor || colors.cobalt1;
 }, ItemNote);
-var EmojiContainer = styled.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  bottom: -10px;\n  z-index: 99;\n"])), function (props) {
-  return props.rtlDirection ? '' : '0';
-}, function (props) {
-  return props.rtlDirection && '0';
-});
 
-var _path$F;
+var _path$y;
 
-function _extends$I() {
-  _extends$I = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$B() {
+  _extends$B = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20388,26 +19765,26 @@ function _extends$I() {
 
     return target;
   };
-  return _extends$I.apply(this, arguments);
+  return _extends$B.apply(this, arguments);
 }
 
 function SvgCancel(props) {
-  return /*#__PURE__*/createElement("svg", _extends$I({
+  return /*#__PURE__*/createElement("svg", _extends$B({
     width: 24,
     height: 24,
     viewBox: "0 0 25 25",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$F || (_path$F = /*#__PURE__*/createElement("path", {
+  }, props), _path$y || (_path$y = /*#__PURE__*/createElement("path", {
     d: "M7.536 6.264a.9.9 0 00-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 001.272 1.272L12 13.273l4.464 4.463a.9.9 0 101.272-1.272L13.273 12l4.463-4.464a.9.9 0 10-1.272-1.272L12 10.727 7.536 6.264z",
     fill: "#fff"
   })));
 }
 
-var _path$G, _path2$6, _path3$3;
+var _path$z, _path2$5, _path3$3;
 
-function _extends$J() {
-  _extends$J = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$C() {
+  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20420,22 +19797,22 @@ function _extends$J() {
 
     return target;
   };
-  return _extends$J.apply(this, arguments);
+  return _extends$C.apply(this, arguments);
 }
 
 function SvgFileIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$J({
+  return /*#__PURE__*/createElement("svg", _extends$C({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$G || (_path$G = /*#__PURE__*/createElement("path", {
+  }, props), _path$z || (_path$z = /*#__PURE__*/createElement("path", {
     d: "M19.5 3H9a3 3 0 00-3 3v24a3 3 0 003 3h18a3 3 0 003-3V13.5L19.5 3z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
+  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
     d: "M19.5 3v10.5H30",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -20449,10 +19826,10 @@ function SvgFileIcon(props) {
   })));
 }
 
-var _circle, _path$H;
+var _circle, _path$A;
 
-function _extends$K() {
-  _extends$K = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$D() {
+  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20465,11 +19842,11 @@ function _extends$K() {
 
     return target;
   };
-  return _extends$K.apply(this, arguments);
+  return _extends$D.apply(this, arguments);
 }
 
 function SvgDeleteUpload(props) {
-  return /*#__PURE__*/createElement("svg", _extends$K({
+  return /*#__PURE__*/createElement("svg", _extends$D({
     width: 20,
     height: 20,
     fill: "none",
@@ -20481,7 +19858,7 @@ function SvgDeleteUpload(props) {
     fill: "#A3A5B0",
     stroke: "#fff",
     strokeWidth: 1.4
-  })), _path$H || (_path$H = /*#__PURE__*/createElement("path", {
+  })), _path$A || (_path$A = /*#__PURE__*/createElement("path", {
     d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
     stroke: "#fff",
     strokeWidth: 1.4,
@@ -20490,10 +19867,10 @@ function SvgDeleteUpload(props) {
   })));
 }
 
-var _circle$1, _path$I;
+var _circle$1, _path$B;
 
-function _extends$L() {
-  _extends$L = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$E() {
+  _extends$E = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20506,11 +19883,11 @@ function _extends$L() {
 
     return target;
   };
-  return _extends$L.apply(this, arguments);
+  return _extends$E.apply(this, arguments);
 }
 
 function SvgDeleteFailed(props) {
-  return /*#__PURE__*/createElement("svg", _extends$L({
+  return /*#__PURE__*/createElement("svg", _extends$E({
     width: 18,
     height: 18,
     fill: "none",
@@ -20521,7 +19898,7 @@ function SvgDeleteFailed(props) {
     r: 8.5,
     fill: "#fff",
     stroke: "#ED4D60"
-  })), _path$I || (_path$I = /*#__PURE__*/createElement("path", {
+  })), _path$B || (_path$B = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M13.014 4.994a.634.634 0 00-.899 0L9 8.101 5.885 4.987a.634.634 0 10-.899.898l3.116 3.116-3.116 3.115a.634.634 0 10.899.898L9 9.9l3.115 3.115a.634.634 0 10.899-.898L9.898 9.001l3.116-3.116a.638.638 0 000-.891z",
@@ -20529,10 +19906,10 @@ function SvgDeleteFailed(props) {
   })));
 }
 
-var _path$J;
+var _path$C;
 
-function _extends$M() {
-  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$F() {
+  _extends$F = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20545,17 +19922,17 @@ function _extends$M() {
 
     return target;
   };
-  return _extends$M.apply(this, arguments);
+  return _extends$F.apply(this, arguments);
 }
 
 function SvgUpload(props) {
-  return /*#__PURE__*/createElement("svg", _extends$M({
+  return /*#__PURE__*/createElement("svg", _extends$F({
     width: 32,
     height: 32,
     viewBox: "0 0 32.01 32.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$J || (_path$J = /*#__PURE__*/createElement("path", {
+  }, props), _path$C || (_path$C = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
@@ -20563,10 +19940,10 @@ function SvgUpload(props) {
   })));
 }
 
-var _path$K;
+var _path$D;
 
-function _extends$N() {
-  _extends$N = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$G() {
+  _extends$G = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20579,26 +19956,26 @@ function _extends$N() {
 
     return target;
   };
-  return _extends$N.apply(this, arguments);
+  return _extends$G.apply(this, arguments);
 }
 
 function SvgDownload(props) {
-  return /*#__PURE__*/createElement("svg", _extends$N({
+  return /*#__PURE__*/createElement("svg", _extends$G({
     width: 32,
     height: 32,
     viewBox: "0 0 32.01 32.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$K || (_path$K = /*#__PURE__*/createElement("path", {
+  }, props), _path$D || (_path$D = /*#__PURE__*/createElement("path", {
     d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
     fill: "#fff"
   })));
 }
 
-var _circle$2, _path$L;
+var _circle$2, _path$E;
 
-function _extends$O() {
-  _extends$O = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$H() {
+  _extends$H = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20611,11 +19988,11 @@ function _extends$O() {
 
     return target;
   };
-  return _extends$O.apply(this, arguments);
+  return _extends$H.apply(this, arguments);
 }
 
 function SvgPlayVideo(props) {
-  return /*#__PURE__*/createElement("svg", _extends$O({
+  return /*#__PURE__*/createElement("svg", _extends$H({
     width: 56,
     height: 56,
     fill: "none",
@@ -20626,7 +20003,7 @@ function SvgPlayVideo(props) {
     r: 28,
     fill: "#17191C",
     fillOpacity: 0.4
-  })), _path$L || (_path$L = /*#__PURE__*/createElement("path", {
+  })), _path$E || (_path$E = /*#__PURE__*/createElement("path", {
     d: "M38.048 26.262c1.27.767 1.27 2.706 0 3.473l-13.224 7.996c-1.258.76-2.824-.202-2.824-1.737V20.003c0-1.535 1.566-2.498 2.824-1.737l13.224 7.996z",
     fill: "#fff"
   })));
@@ -20726,7 +20103,7 @@ var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentId)
   }
 };
 
-var _templateObject$k, _templateObject2$i, _templateObject3$e, _templateObject4$b, _templateObject5$7, _templateObject6$7, _templateObject7$6;
+var _templateObject$j, _templateObject2$h, _templateObject3$d, _templateObject4$9, _templateObject5$6, _templateObject6$6, _templateObject7$5;
 
 var VideoPreview = function VideoPreview(_ref) {
   var maxWidth = _ref.maxWidth,
@@ -20925,8 +20302,8 @@ var VideoPreview = function VideoPreview(_ref) {
     isRepliedMessage: isPreview || isRepliedMessage
   }, !isRepliedMessage && !isPreview && React__default.createElement(SvgVideoCall, null), videoCurrentTime)));
 };
-var VideoControls = styled.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var VideoTime = styled.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
+var VideoControls = styled.div(_templateObject$j || (_templateObject$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var VideoTime = styled.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
   return props.isRepliedMessage ? '3px' : props.isDetailsView ? undefined : '8px';
 }, function (props) {
   return props.isDetailsView ? '8px' : undefined;
@@ -20937,10 +20314,10 @@ var VideoTime = styled.div(_templateObject2$i || (_templateObject2$i = _taggedTe
 }, function (props) {
   return props.isRepliedMessage ? '0 3px' : '4px 6px';
 }, colors.white, colors.white);
-var VideoPlayButton = styled.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
+var VideoPlayButton = styled.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
   return props.showOnHover && 'hidden';
 });
-var Component = styled.div(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: ", ";\n    max-height: ", ";\n    width: ", ";\n    height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
+var Component = styled.div(_templateObject4$9 || (_templateObject4$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: ", ";\n    max-height: ", ";\n    width: ", ";\n    height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
   return props.maxWidth || '100%';
 }, function (props) {
   return props.maxHeight || '100%';
@@ -20963,8 +20340,8 @@ var Component = styled.div(_templateObject4$b || (_templateObject4$b = _taggedTe
 }, function (props) {
   return props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
 }, VideoPlayButton);
-var DownloadFile = styled.a(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
-var AttachmentFile = styled.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
+var DownloadFile = styled.a(_templateObject5$6 || (_templateObject5$6 = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
+var AttachmentFile = styled.div(_templateObject6$6 || (_templateObject6$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
   return props.background || '#ffffff';
 }, function (props) {
   return props.border || "1px solid " + colors.gray1;
@@ -20975,14 +20352,14 @@ var AttachmentFile = styled.div(_templateObject6$7 || (_templateObject6$7 = _tag
 }, function (props) {
   return props.borderRadius || '6px';
 }, DownloadFile, AttachmentIconCont);
-var AttachmentImg = styled.img(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
+var AttachmentImg = styled.img(_templateObject7$5 || (_templateObject7$5 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
   return props.borderRadius || '6px';
 });
 
-var _circle$3, _path$M;
+var _circle$3, _path$F;
 
-function _extends$P() {
-  _extends$P = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$I() {
+  _extends$I = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -20995,11 +20372,11 @@ function _extends$P() {
 
     return target;
   };
-  return _extends$P.apply(this, arguments);
+  return _extends$I.apply(this, arguments);
 }
 
 function SvgPlay(props) {
-  return /*#__PURE__*/createElement("svg", _extends$P({
+  return /*#__PURE__*/createElement("svg", _extends$I({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -21010,16 +20387,16 @@ function SvgPlay(props) {
     cy: 16,
     r: 16,
     fill: "#0DBD8B"
-  })), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
+  })), _path$F || (_path$F = /*#__PURE__*/createElement("path", {
     d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
     fill: "#fff"
   })));
 }
 
-var _circle$4, _path$N;
+var _circle$4, _path$G;
 
-function _extends$Q() {
-  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$J() {
+  _extends$J = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -21032,11 +20409,11 @@ function _extends$Q() {
 
     return target;
   };
-  return _extends$Q.apply(this, arguments);
+  return _extends$J.apply(this, arguments);
 }
 
 function SvgPause(props) {
-  return /*#__PURE__*/createElement("svg", _extends$Q({
+  return /*#__PURE__*/createElement("svg", _extends$J({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -21047,7 +20424,7 @@ function SvgPause(props) {
     cy: 16,
     r: 16,
     fill: "#0DBD8B"
-  })), _path$N || (_path$N = /*#__PURE__*/createElement("path", {
+  })), _path$G || (_path$G = /*#__PURE__*/createElement("path", {
     d: "M13.721 10.375c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12h-1.067c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067zm5.625 0c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12H18.28c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067z",
     fill: "#fff"
   })));
@@ -21061,7 +20438,7 @@ var getPlayingAudioId = function getPlayingAudioId() {
   return playingAudioId;
 };
 
-var _templateObject$l, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$8, _templateObject6$8;
+var _templateObject$k, _templateObject2$i, _templateObject3$e, _templateObject4$a, _templateObject5$7, _templateObject6$7;
 
 var AudioPlayer = function AudioPlayer(_ref) {
   var url = _ref.url,
@@ -21252,7 +20629,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
       wavesurfer.current.pause();
     }
   }, [payingAudioId]);
-  return React__default.createElement(Container$b, null, React__default.createElement(PlayPause, {
+  return React__default.createElement(Container$a, null, React__default.createElement(PlayPause, {
     onClick: handlePlayPause
   }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioVisualization, {
     ref: wavesurferContainer
@@ -21260,14 +20637,14 @@ var AudioPlayer = function AudioPlayer(_ref) {
     onClick: handleSetAudioRate
   }, audioRate, React__default.createElement("span", null, "X"))), React__default.createElement(Timer, null, currentTime));
 };
-var Container$b = styled.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var AudioVisualization = styled.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
-var WaveContainer = styled.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
+var Container$a = styled.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause = styled.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var AudioVisualization = styled.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var AudioRate = styled.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
+var WaveContainer = styled.div(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer = styled.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
 
-var _templateObject$m, _templateObject2$k, _templateObject3$g, _templateObject4$d, _templateObject5$9, _templateObject6$9, _templateObject7$7, _templateObject8$5, _templateObject9$4, _templateObject10$4, _templateObject11$3, _templateObject12$2;
+var _templateObject$l, _templateObject2$j, _templateObject3$f, _templateObject4$b, _templateObject5$8, _templateObject6$8, _templateObject7$6, _templateObject8$4, _templateObject9$4, _templateObject10$4, _templateObject11$3, _templateObject12$2;
 
 var Attachment = function Attachment(_ref) {
   var attachment = _ref.attachment,
@@ -21556,8 +20933,8 @@ var Attachment = function Attachment(_ref) {
     }
   })));
 };
-var DownloadImage = styled.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 396px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n  //background-image: ", ";\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+var DownloadImage = styled.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
+var AttachmentImgCont = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 396px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n  //background-image: ", ";\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPrevious ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
@@ -21576,11 +20953,11 @@ var AttachmentImgCont = styled.div(_templateObject2$k || (_templateObject2$k = _
 }, DownloadImage, function (props) {
   return props.isPrevious && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
 });
-var FileThumbnail = styled.img(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
-var DownloadFile$1 = styled.span(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
+var FileThumbnail = styled.img(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
+var DownloadFile$1 = styled.span(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 });
-var AttachmentFile$1 = styled.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var AttachmentFile$1 = styled.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
   return !props.isRepliedMessage && '350px';
@@ -21595,9 +20972,9 @@ var AttachmentFile$1 = styled.div(_templateObject5$9 || (_templateObject5$9 = _t
 }, function (props) {
   return !props.isRepliedMessage && !props.isPrevious && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
-var RemoveChosenFile = styled(SvgDeleteUpload)(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
-var RemoveFailed = styled(SvgDeleteFailed)(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: calc(50% - 11px);\n  right: 18px;\n  padding: 2px;\n  cursor: pointer;\n"])));
-var AttachmentName = styled.h3(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
+var RemoveChosenFile = styled(SvgDeleteUpload)(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
+var RemoveFailed = styled(SvgDeleteFailed)(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: calc(50% - 11px);\n  right: 18px;\n  padding: 2px;\n  cursor: pointer;\n"])));
+var AttachmentName = styled.h3(_templateObject8$4 || (_templateObject8$4 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
   return props.color || colors.blue6;
 });
 var AttachmentSize = styled.span(_templateObject9$4 || (_templateObject9$4 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
@@ -21627,7 +21004,7 @@ var VideoCont = styled.div(_templateObject12$2 || (_templateObject12$2 = _tagged
   return props.isDetailsView && '100%';
 });
 
-var _templateObject$n, _templateObject2$l;
+var _templateObject$m, _templateObject2$k;
 
 var CustomRadio$1 = function CustomRadio(_ref) {
   var index = _ref.index,
@@ -21655,7 +21032,7 @@ var CustomRadio$1 = function CustomRadio(_ref) {
     }
   }));
 };
-var CustomLabel$1 = styled.label(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
+var CustomLabel$1 = styled.label(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
   return props.size || '12px';
 }, function (props) {
   return props.size || '12px';
@@ -21664,9 +21041,9 @@ var CustomLabel$1 = styled.label(_templateObject$n || (_templateObject$n = _tagg
 }, function (props) {
   return props.borderRadius || '50%';
 });
-var Radio = styled.input(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var Radio = styled.input(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$o, _templateObject2$m;
+var _templateObject$n, _templateObject2$l;
 
 function ConfirmPopup(_ref) {
   var title = _ref.title,
@@ -21765,8 +21142,8 @@ function ConfirmPopup(_ref) {
     disabled: initialRender
   }, buttonText || 'Delete'))));
 }
-var DeleteMessageOptions = styled.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
-var DeleteOptionItem = styled.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.gray8);
+var DeleteMessageOptions = styled.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
+var DeleteOptionItem = styled.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.gray8);
 
 function useOnScreen(ref) {
   var _useState = useState(false),
@@ -21786,7 +21163,7 @@ function useOnScreen(ref) {
   return isIntersecting;
 }
 
-var _templateObject$p, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$5;
+var _templateObject$o, _templateObject2$m, _templateObject3$g, _templateObject4$c, _templateObject5$9, _templateObject6$9, _templateObject7$7, _templateObject8$5, _templateObject9$5;
 
 function ForwardMessagePopup(_ref) {
   var title = _ref.title,
@@ -21970,16 +21347,16 @@ function ForwardMessagePopup(_ref) {
     onClick: handleForwardMessage
   }, buttonText || 'Forward'))));
 }
-var ForwardChannelsCont = styled.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 14px;\n"])), function (props) {
+var ForwardChannelsCont = styled.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 14px;\n"])), function (props) {
   return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
 });
-var ChannelItem = styled.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
-var ChannelInfo$2 = styled.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
-var ChannelTitle = styled.h3(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray6);
-var ChannelMembers = styled.h4(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray9);
-var SelectedChannelsContainer = styled.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedChannelBuble = styled.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.gray5);
-var SelectedChannelName = styled.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
+var ChannelItem = styled.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
+var ChannelInfo$2 = styled.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
+var ChannelTitle = styled.h3(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray6);
+var ChannelMembers = styled.h4(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray9);
+var SelectedChannelsContainer = styled.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
+var SelectedChannelBuble = styled.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.gray5);
+var SelectedChannelName = styled.span(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
 var StyledSubtractSvg$1 = styled(SvgCross)(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
 var LOADING_STATE$1 = {
@@ -21991,7 +21368,7 @@ var PRESENCE_STATUS$1 = {
   ONLINE: 'Online'
 };
 
-var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7, _templateObject9$6;
+var _templateObject$p, _templateObject2$n, _templateObject3$h, _templateObject4$d, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$6;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
       handleReactionsPopupClose = _ref.handleReactionsPopupClose,
@@ -22097,7 +21474,7 @@ function ReactionsPopup(_ref) {
       }
     }
   }, [reactions]);
-  return React__default.createElement(Container$c, {
+  return React__default.createElement(Container$b, {
     ref: popupRef,
     popupVerticalPosition: popupVerticalPosition,
     popupHorizontalPosition: popupHorizontalPosition,
@@ -22133,7 +21510,7 @@ function ReactionsPopup(_ref) {
     })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, null, reaction.key));
   })));
 }
-var Container$c = styled.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: ", ";\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
+var Container$b = styled.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: ", ";\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
   return props.popupHorizontalPosition === 'left' && (props.rtlDirection ? 'calc(100% - 80px)' : 0);
 }, function (props) {
   return props.popupHorizontalPosition === 'right' && (!props.rtlDirection ? 'calc(100% - 80px)' : 0);
@@ -22158,20 +21535,736 @@ var Container$c = styled.div(_templateObject$q || (_templateObject$q = _taggedTe
 }, function (props) {
   return props.visible ? 'visible' : 'hidden';
 }, colors.white);
-var UserNamePresence$1 = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
-var MemberName$1 = styled.h3(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var ReactionsList = styled.ul(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])));
-var ReactionScoresCont = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
-var ReactionScoresList = styled.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
-var ReactionScoreItem = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
+var UserNamePresence$1 = styled.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$1 = styled.h3(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var ReactionsList = styled.ul(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])));
+var ReactionScoresCont = styled.div(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
+var ReactionScoresList = styled.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
+var ReactionScoreItem = styled.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
   return props.active ? colors.gray6 : colors.gray9;
 }, function (props) {
   return props.active && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n  }";
 });
-var ReactionKey = styled.span(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  font-size: 20px;\n"])));
+var ReactionKey = styled.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-size: 20px;\n"])));
 var ReactionItem = styled.li(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
-var _templateObject$r, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1;
+var _path$H, _path2$6;
+
+function _extends$K() {
+  _extends$K = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$K.apply(this, arguments);
+}
+
+function SvgEmojiSmileIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$K({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$H || (_path$H = /*#__PURE__*/createElement("path", {
+    d: "M8.438 14.297a.9.9 0 011.273.149 2.77 2.77 0 00.516.415c.383.24.97.489 1.773.489.803 0 1.39-.25 1.773-.489a2.773 2.773 0 00.516-.415l.012-.013.002-.003a.9.9 0 011.4 1.132L15 15l.703.562-.001.001-.002.002-.002.003-.007.008-.018.022a3.487 3.487 0 01-.245.254c-.16.15-.394.344-.7.536A5.094 5.094 0 0112 17.15a5.094 5.094 0 01-2.727-.762 4.567 4.567 0 01-.7-.537 3.501 3.501 0 01-.246-.253l-.018-.022-.007-.008-.002-.003-.002-.002L9 15l-.703.562a.9.9 0 01.14-1.265zM10.25 10.25a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zM15 11.5A1.25 1.25 0 1015 9a1.25 1.25 0 000 2.5z"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12 2.1c-5.468 0-9.9 4.432-9.9 9.9 0 5.467 4.432 9.9 9.9 9.9s9.9-4.433 9.9-9.9c0-5.468-4.432-9.9-9.9-9.9zM3.9 12a8.1 8.1 0 1116.2 0 8.1 8.1 0 01-16.2 0z"
+  })));
+}
+
+var _path$I;
+
+function _extends$L() {
+  _extends$L = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$L.apply(this, arguments);
+}
+
+function SvgEmojiAnimalIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$L({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$I || (_path$I = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.068 3.405c.559-.56 1.345-.95 2.212-.804.873.147 1.481.776 1.81 1.496.33.723.424 1.61.26 2.5-.165.89-.57 1.689-1.133 2.254-.558.56-1.344.95-2.212.804-.872-.147-1.48-.776-1.81-1.497-.33-.722-.423-1.61-.258-2.5.164-.89.569-1.688 1.131-2.253zm1.215 1.21c-.291.292-.552.765-.66 1.355-.11.59-.034 1.114.132 1.476.166.364.378.492.535.518.161.027.418-.027.713-.323.291-.292.551-.765.66-1.355.11-.59.033-1.115-.132-1.476-.166-.364-.378-.492-.535-.518-.162-.027-.418.027-.713.323zM9.264 11.68c.632-.78 1.499-1.395 2.736-1.395 1.24 0 2.106.621 2.737 1.4.523.646.937 1.468 1.304 2.198l.151.299c.3.588.588 1.046.857 1.474.1.159.197.313.291.469.322.53.66 1.148.66 1.871 0 .587-.143 1.1-.44 1.517-.295.413-.69.661-1.073.809-.66.255-1.413.251-1.82.25l-.095-.001c-.464 0-.833-.065-1.16-.122l-.11-.02A7.038 7.038 0 0012 20.315c-.576 0-.953.056-1.302.116l-.11.02a6.337 6.337 0 01-1.16.12H9.24c-.447-.003-1.216-.025-1.889-.341a2.298 2.298 0 01-.964-.82C6.127 19.01 6 18.534 6 17.996c0-.695.344-1.316.658-1.839.09-.15.182-.3.277-.454.273-.441.568-.917.871-1.519l.14-.277c.37-.742.788-1.575 1.318-2.227zm.211 3.002l-.138.275c-.341.675-.691 1.24-.97 1.692-.088.14-.168.27-.239.389-.33.55-.414.794-.414.958 0 .264.06.401.108.475.05.075.127.145.258.206.298.14.723.175 1.171.179h.178c.308 0 .537-.04.87-.097l.11-.019c.4-.068.881-.14 1.591-.14s1.19.072 1.591.14l.11.02c.334.057.562.096.87.096h.034c.47 0 .918 0 1.265-.133.153-.06.24-.13.293-.205.052-.072.123-.219.123-.522 0-.2-.09-.452-.412-.983-.072-.119-.154-.25-.245-.393-.277-.441-.627-.997-.964-1.66l-.157-.31c-.381-.754-.705-1.394-1.103-1.886C12.988 12.25 12.57 12 12 12c-.57 0-.99.25-1.406.761-.403.497-.73 1.15-1.119 1.922zM11.063 5.659c-.164-.891-.569-1.69-1.131-2.254-.559-.56-1.345-.95-2.212-.804-.873.147-1.481.776-1.81 1.496-.33.723-.424 1.61-.26 2.5.165.89.57 1.689 1.132 2.254.56.56 1.345.95 2.213.804.872-.147 1.48-.776 1.81-1.497.33-.722.423-1.61.258-2.5zM8.004 4.292c.162-.027.418.027.713.323.291.292.552.765.66 1.355.11.59.034 1.114-.132 1.476-.166.364-.378.492-.535.518-.161.027-.418-.027-.713-.323-.291-.292-.551-.765-.66-1.355-.11-.59-.033-1.115.132-1.476.166-.364.378-.492.535-.518zM4.83 8.949c.648.367 1.214.975 1.588 1.723.374.746.518 1.558.398 2.285-.12.73-.526 1.445-1.298 1.78-.757.33-1.565.162-2.205-.201-.648-.367-1.214-.976-1.588-1.723-.374-.747-.518-1.558-.398-2.286.12-.73.526-1.445 1.297-1.78.757-.33 1.566-.161 2.206.202zm-.846 1.49c-.331-.187-.56-.17-.676-.12-.102.044-.237.167-.29.485-.052.32.003.768.24 1.242.236.472.576.815.9.998.332.188.561.172.677.121.101-.044.237-.167.29-.485.052-.32-.003-.768-.24-1.241-.236-.473-.576-.815-.9-1zM21.407 8.773c-.787-.38-1.627-.18-2.271.225-.65.41-1.206 1.08-1.57 1.886-.363.808-.497 1.672-.384 2.437.11.752.49 1.529 1.269 1.905.787.38 1.626.18 2.27-.226.65-.41 1.206-1.079 1.57-1.886.363-.807.497-1.671.384-2.436-.11-.753-.49-1.53-1.268-1.905zm-2.277 2.815c.247-.55.598-.936.92-1.139.327-.206.526-.174.611-.133.094.046.258.2.319.612.059.4-.006.934-.253 1.482-.247.55-.597.937-.92 1.14-.327.206-.525.173-.61.132-.095-.045-.259-.2-.32-.612-.058-.4.006-.934.253-1.482z"
+  })));
+}
+
+var _path$J;
+
+function _extends$M() {
+  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$M.apply(this, arguments);
+}
+
+function SvgEmojiFoodIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$M({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$J || (_path$J = /*#__PURE__*/createElement("path", {
+    d: "M16.375 5.336c-1.608 0-2.517.346-3.22.817.449-1.026 1.547-2.567 4.095-2.567a.875.875 0 100-1.75c-2.556 0-4.05 1.194-4.854 2.198-.056.068-.104.141-.157.213C11.764 2.588 10.949 1 9.556 1c-.55 0-1.187.248-1.931.836-1.726 1.366-1.462 2.558-.444 3.518C4.658 5.549 1.5 7.413 1.5 12.328c0 4.009 4.34 9.633 7.875 9.633 1.728 0 2.075-.426 2.625-.875.55.45.897.875 2.625.875 3.534 0 7.875-5.616 7.875-9.625 0-5.21-3.548-7-6.125-7zM8.712 3.208c.56-.445.825-.458.844-.458.373.148.853 1.23 1.188 2.673-1.337-.55-2.399-1.183-2.608-1.615.052-.098.21-.312.576-.6zm5.913 17.003c-.945 0-1.059-.096-1.364-.352l-.154-.128a1.739 1.739 0 00-1.108-.395 1.74 1.74 0 00-1.108.395l-.154.128c-.303.255-.417.352-1.362.352-2.461 0-6.125-4.716-6.125-7.883 0-5.095 3.927-5.242 4.375-5.242 1.697 0 2.174.412 2.964 1.094l.282.242a1.745 1.745 0 002.258 0l.282-.242c.79-.682 1.267-1.094 2.964-1.094.448 0 4.375.147 4.375 5.25 0 3.165-3.664 7.875-6.125 7.875z"
+  })));
+}
+
+var _path$K;
+
+function _extends$N() {
+  _extends$N = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$N.apply(this, arguments);
+}
+
+function SvgEmojiTravelIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$N({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$K || (_path$K = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M9.61 3.6H14.39c1.117 0 1.89-.001 2.59.24a4.4 4.4 0 011.643 1.016c.529.518.874 1.209 1.374 2.209l.067.134.84 1.68h1.216a.88.88 0 01.88.88v.312c0 .82-.59 1.462-1.32 1.607v7.148c0 .093 0 .209-.008.312a1.28 1.28 0 01-.131.485c-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.313.009h-.531c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.275 1.275 0 01-.558-.558 1.284 1.284 0 01-.13-.485c-.01-.103-.009-.22-.009-.313v-.265H5.84v.266c0 .093 0 .209-.008.312-.01.12-.036.298-.131.485-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.312.009h-.532c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.276 1.276 0 01-.558-.558 1.282 1.282 0 01-.13-.485 3.969 3.969 0 01-.009-.313v-7.147A1.637 1.637 0 011 10.071V9.76a.88.88 0 01.88-.88h1.216l.84-1.68.067-.135c.5-1 .845-1.691 1.374-2.209A4.4 4.4 0 017.02 3.84c.7-.241 1.472-.24 2.59-.24zM4.095 16.363a9.285 9.285 0 01-.015-.682v-4.143c.063.011.14.025.234.04.283.044.715.102 1.336.158 1.243.113 3.25.224 6.35.224 3.1 0 5.107-.111 6.35-.224a20.77 20.77 0 001.336-.158c.094-.015.171-.029.234-.04v4.03c0 .384 0 .619-.015.795a1.126 1.126 0 01-.03.19.44.44 0 01-.199.2l-.003.002a1.126 1.126 0 01-.19.03c-.176.014-.41.015-.795.015H5.312c-.384 0-.62-.001-.795-.015a1.127 1.127 0 01-.19-.03.44.44 0 01-.202-.202 1.126 1.126 0 01-.03-.19zm15.32-6.524l-.925-1.852c-.594-1.188-.807-1.588-1.098-1.873a2.64 2.64 0 00-.987-.61c-.385-.133-.839-.144-2.166-.144H9.761c-1.328 0-1.781.011-2.166.144a2.64 2.64 0 00-.987.61c-.29.285-.504.685-1.098 1.873l-.926 1.852h.004c.24.038.633.09 1.222.144 1.177.107 3.13.217 6.19.217 3.06 0 5.013-.11 6.19-.217a19.01 19.01 0 001.226-.144zm-1.146 5.194a.88.88 0 10-.218-1.746l-1.76.22a.88.88 0 00.218 1.746l1.76-.22zM4.967 14.05a.88.88 0 00.764.982l1.76.22a.88.88 0 10.218-1.746l-1.76-.22a.88.88 0 00-.982.763z"
+  })));
+}
+
+var _path$L;
+
+function _extends$O() {
+  _extends$O = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$O.apply(this, arguments);
+}
+
+function SvgEmojiObjectIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$O({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$L || (_path$L = /*#__PURE__*/createElement("path", {
+    d: "M10 16h1.19v-2.06a1.007 1.007 0 01-.16-.12L9.32 12.1a1 1 0 111.41-1.41l1.25 1.25 1.32-1.32a.97.97 0 011.38 0c.4.4.4 1.05 0 1.46L13 13.74a.998.998 0 01-.19.15V16H14v-.15a1.002 1.002 0 01.3-.73c2.71-2.58 3.71-4.17 3.71-6.27a5.93 5.93 0 00-6-5.85C8.69 3 6 5.63 6 8.85c0 2.1.98 3.66 3.7 6.26.19.18.3.45.3.72V16zm0 2v1a1 1 0 001 1h2a1 1 0 001-1v-1h-4zm-2-1.75c-2.85-2.77-4-4.7-4-7.4C4 4.51 7.6 1 12 1c4.42 0 8.01 3.51 8.01 7.85 0 2.7-1.17 4.66-4.01 7.42V19a3 3 0 01-3 3h-2a3 3 0 01-3-3v-2.75z"
+  })));
+}
+
+var _path$M;
+
+function _extends$P() {
+  _extends$P = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$P.apply(this, arguments);
+}
+
+function SvgEmojiSymbolsIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$P({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
+    d: "M19.1 4a4.6 4.6 0 011.37.28A4.01 4.01 0 0123 7.9c.03 2.73.03 5.47 0 8.2a4.15 4.15 0 01-.98 2.52A4.02 4.02 0 0119.1 20c-4.73.06-9.47.06-14.2 0a4.572 4.572 0 01-1.37-.28A4.02 4.02 0 011 16.1c-.03-2.73-.03-5.47 0-8.2A4.01 4.01 0 014.9 4c4.73-.06 9.47-.06 14.2 0zM5 6a2.02 2.02 0 00-2 1.95c-.034 2.7-.034 5.4 0 8.1A2.02 2.02 0 004.95 18c4.7.06 9.4.06 14.1 0A2.02 2.02 0 0021 16.05c.034-2.7.034-5.4 0-8.1A2.02 2.02 0 0019.05 6C14.37 5.94 9.68 6 5 6zm2 7.88a1.12 1.12 0 110 2.24 1.12 1.12 0 010-2.24zm4 .03a1.1 1.1 0 110 2.19 1.1 1.1 0 010-2.2v.01zm6.44-3.8l.23-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.42-.15.18 0 .37.07.5.2.23.22.18.53.12.83l-.19.92h.2c.32 0 .45.01.58.08.19.1.31.3.31.56 0 .27-.12.46-.3.56-.14.07-.27.08-.59.08h-.45l-.26 1.27h.33c.32 0 .44.02.58.09.18.1.3.29.3.55 0 .27-.12.47-.3.56-.14.07-.26.08-.58.08h-.58l-.27 1.33c-.06.3-.1.46-.26.62a.6.6 0 01-.42.15.74.74 0 01-.5-.2c-.23-.22-.18-.53-.12-.83l.21-1.07h-1.3l-.27 1.33c-.06.3-.1.46-.27.62-.1.1-.25.15-.42.15a.74.74 0 01-.49-.2c-.24-.22-.18-.53-.12-.83l.2-1.07h-.2c-.31 0-.44 0-.57-.08-.19-.1-.31-.29-.31-.56 0-.26.12-.46.3-.55.14-.07.27-.09.59-.09h.45l.26-1.27h-.33c-.32 0-.44-.01-.58-.08-.18-.1-.3-.3-.3-.56 0-.27.12-.46.3-.56.14-.07.26-.08.58-.08h.58l.24-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.41-.15.18 0 .37.07.5.2.24.22.18.53.12.83l-.18.92h1.31zm-8.14-.2c0-1.33-1.05-2.18-2.36-2.18-.68 0-1.35.23-1.78.6-.45.4-.64 1-.64 1.34 0 .23.1.42.22.53.12.12.3.2.5.2.21 0 .36-.07.5-.18.34-.25.42-.63.55-.77a.85.85 0 01.66-.27c.55 0 .76.27.76.75 0 .3-.24.67-.43.89l-.65.83c-.28.4-.4.7-.38 1.03.02.36.28.67.57.7.24.02.6 0 .79-.38.13-.25.53-.73.73-1.07l.47-.62c.34-.43.49-.8.49-1.4zm2.54-1.17c0-.36-.01-.49-.11-.68-.13-.22-.4-.37-.73-.37-.33 0-.6.15-.73.37-.1.19-.11.32-.11.68v3.45c0 .36 0 .5.11.68.13.22.4.37.73.37.33 0 .6-.15.73-.37.1-.19.11-.32.11-.68V8.74zm5.09 3.92l.25-1.27h-1.3l-.26 1.27h1.31z"
+  })));
+}
+
+var _path$N;
+
+function _extends$Q() {
+  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$Q.apply(this, arguments);
+}
+
+function SvgEmojiFlagicon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$Q({
+    width: 24,
+    height: 24,
+    fill: "currentColor",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$N || (_path$N = /*#__PURE__*/createElement("path", {
+    d: "M6.63 3.23c2.13 1.12 3.18.99 5.4-.13l.03-.03c2.8-1.4 4.52-1.57 7.43.08a1 1 0 01.51.87v9.23a1 1 0 01-1.5.87c-2.69-1.52-4.13-1.43-6.62-.22-.33.158-.66.315-.99.47-1.4.62-2.6.81-3.89.43V20a1 1 0 11-2 0V4a1 1 0 011.63-.77zM7 12.66c1.05.5 1.87.42 3.08-.12.314-.137.624-.283.93-.44 2.56-1.24 4.46-1.53 6.99-.46V4.62c-1.9-.98-2.96-.81-5.03.24l-.04.02c-2.3 1.16-3.85 1.5-5.93.71v7.07z"
+  })));
+}
+
+var EMOJIS = [{
+  key: 'People',
+  array: [{
+    key: 'face-smiling',
+    array: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇']
+  }, {
+    key: 'face-affection',
+    array: ['🥰', '😍', '🤩', '😘', '😗', '😚', '😙']
+  }, {
+    key: 'face-tongue',
+    array: ['😋', '😛', '😜', '🤪', '😝', '🤑']
+  }, {
+    key: 'face-hand',
+    array: ['🤗', '🤭', '🤫', '🤔']
+  }, {
+    key: 'face-neutral-skeptical',
+    array: ['🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥']
+  }, {
+    key: 'face-sleepy',
+    array: ['😌', '😔', '😪', '🤤', '😴']
+  }, {
+    key: 'face-unwell',
+    array: ['😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯']
+  }, {
+    key: 'face-hat',
+    array: ['🤠', '🥳']
+  }, {
+    key: 'face-glasses',
+    array: ['😎', '🤓', '🧐']
+  }, {
+    key: 'face-concerned',
+    array: ['😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱']
+  }, {
+    key: 'face-negative',
+    array: ['😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️']
+  }, {
+    key: 'face-costume',
+    array: ['💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖']
+  }, {
+    key: 'cat-face',
+    array: ['😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾']
+  }, {
+    key: 'monkey-face',
+    array: ['🙈', '🙉', '🙊']
+  }, {
+    key: 'emotion',
+    array: ['💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '👁‍🗨', '🗨️', '🗯️', '💭', '💤']
+  }, {
+    key: 'hand-fingers-open',
+    array: ['👋', '🤚', '🖐️', '✋', '🖖']
+  }, {
+    key: 'hand-fingers-partial',
+    array: ['👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙']
+  }, {
+    key: 'hand-single-finger',
+    array: ['👈', '👉', '👆', '🖕', '👇', '☝️']
+  }, {
+    key: 'hand-fingers-closed',
+    array: ['👍', '👎', '✊', '👊', '🤛', '🤜']
+  }, {
+    key: 'hands',
+    array: ['👏', '🙌', '👐', '🤲', '🤝', '🙏']
+  }, {
+    key: 'hand-prop',
+    array: ['✍️', '💅', '🤳']
+  }, {
+    key: 'body-parts',
+    array: ['💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄']
+  }, {
+    key: 'person',
+    array: ['👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👱‍♂️', '👨‍🦰', '👩', '👱‍♀️', '👩‍🦰', '🧓', '👴', '👵']
+  }, {
+    key: 'person-fantasy',
+    array: ['👼', '🎅', '🤶', '🦸', '🦸‍♂️', '🦸🏻‍♂️', '🦸‍♀️', '🦸🏻‍♀️', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞']
+  }, {
+    key: 'person-activity',
+    array: ['💆', '💇', '🚶', '🧍', '🧎', '👨‍🦯', '👩‍🦯', '👨‍🦼', '👩‍🦼', '🏃', '💃', '🕺', '🕴', '👯', '🧖', '🧗']
+  }]
+}, {
+  key: 'Animals',
+  array: [{
+    key: 'animal-mammal',
+    array: ['🐵', '🐒', '🦍', '🦧', '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🦊', '🦝', '🐱', '🐈', '🦁', '🐯', '🐅', '🐆', '🐴', '🐎', '🦄', '🦓', '🦌', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦏', '🦛', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐿️', '🐿', '🦔', '🦇', '🐻', '🐨', '🐼', '🦥', '🦦', '🦨', '🦘', '🦡', '🐾']
+  }, {
+    key: 'animal-bird',
+    array: ['🦃', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🕊', '🦅', '🦆', '🦢', '🦉', '🦩', '🦚', '🦜']
+  }, {
+    key: 'animal-amphibian',
+    array: ['🐸']
+  }, {
+    key: 'animal-reptile',
+    array: ['🐊', '🐢', '🦎', '🐍', '🐲', '🐉', '🦕', '🦖']
+  }, {
+    key: 'animal-marine',
+    array: ['🐳', '🐋', '🐬', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚']
+  }, {
+    key: 'animal-bug',
+    array: ['🐌', '🦋', '🐛', '🐜', '🐝', '🐞', '🦗', '🕷️', '🕸️', '🦂', '🦟', '🦠']
+  }, {
+    key: 'plant-flower',
+    array: ['💐', '🌸', '💮', '🏵️', '🏵', '🌹', '🥀', '🌺', '🌻', '🌼', '🌷']
+  }, {
+    key: 'plant-other',
+    array: ['🌱', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '☘', '🍀', '🍁', '🍂', '🍃']
+  }]
+}, {
+  key: 'Food',
+  array: [{
+    key: 'food-fruit',
+    array: ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🥝', '🍅', '🥥']
+  }, {
+    key: 'food-vegetable',
+    array: ['🥑', '🍆', '🥔', '🥕', '🌽', '🌶️', '🌶', '🥒', '🥬', '🥦', '🧄', '🧅', '🍄', '🥜', '🌰']
+  }, {
+    key: 'food-prepared',
+    array: ['🍞', '🥐', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥙', '🧆', '🥚', '🍳', '🥘', '🍲', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫']
+  }, {
+    key: 'food-asian',
+    array: ['🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🥮', '🍡', '🥟', '🥠', '🥡']
+  }, {
+    key: 'food-marine',
+    array: ['🦀', '🦞', '🦐', '🦑', '🦪']
+  }, {
+    key: 'food-sweet',
+    array: ['🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯']
+  }, {
+    key: 'drink',
+    array: ['🍼', '🥛', '☕', '🍵', '🍶', '🍾', '🍷', '🍸', '🍹', '🍺', '🍻', '🥂', '🥃', '🥤', '🧃', '🧉', '🧊']
+  }, {
+    key: 'dishware',
+    array: ['🥢', '🍽️', '🍽', '🍴', '🥄', '🔪', '🏺']
+  }]
+}, {
+  key: 'Travel',
+  array: [{
+    key: 'place-map',
+    array: ['🌍', '🌎', '🌏', '🌐', '🗺', '🗾', '🧭']
+  }, {
+    key: 'place-geographic',
+    array: ['🏔️', '🏔', '⛰️', '⛰', '🌋', '🗻', '🏕️', '🏕', '🏖️', '🏖', '🏜️', '🏜', '🏝️', '🏝', '🏞️', '🏞']
+  }, {
+    key: 'place-building',
+    array: ['🏟️', '🏛️', '🏗️', '🏗', '🧱', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽']
+  }, {
+    key: 'place-religious',
+    array: ['⛪', '🕌', '🛕', '🕍', '⛩️', '🕋']
+  }, {
+    key: 'place-other',
+    array: ['⛲', '⛺', '🌁', '🌃', '🏙️', '🏙', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '♨', '🎠', '🎡', '🎢', '💈', '🎪']
+  }, {
+    key: 'transport-ground',
+    array: ['🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏎', '🏍️', '🏍', '🛵', '🦽', '🦼', '🛺', '🚲', '🛴', '🛹', '🚏', '🛣️', '🛤️', '🛢️', '⛽', '🚨', '🚥', '🚦', '🛑', '🚧']
+  }, {
+    key: 'transport-water',
+    array: ['⚓', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🛥', '🚢']
+  }, {
+    key: 'transport-air',
+    array: ['✈️', '✈', '🛩️', '🛫', '🛬', '🪂', '💺', '🚁', '🚟', '🚠', '🚡', '🛰️', '🛰', '🚀', '🛸']
+  }, {
+    key: 'hotel',
+    array: ['🛎️', '🧳']
+  }, {
+    key: 'time',
+    array: ['⌛', '⏳', '⌚', '⏰', '⏱️', '⏲️', '🕰️', '🕛', '🕧', '🕐', '🕜', '🕑', '🕝', '🕒', '🕞', '🕓', '🕟', '🕔', '🕠', '🕕', '🕡', '🕖', '🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦']
+  }, {
+    key: 'sky weather',
+    array: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘', '🌙', '🌚', '🌛', '🌜', '🌡️', '🌡', '☀️', '☀', '🌝', '🌞', '🪐', '⭐', '🌟', '🌠', '🌌', '☁️', '☁', '⛅', '⛈️', '⛈', '🌤️', '🌤', '🌥️', '🌥', '🌦️', '🌦', '🌧️', '🌧', '🌨️', '🌨', '🌩️', '🌩', '🌪️', '🌪', '🌫️', '🌫', '🌬️', '🌬', '🌀', '🌈', '🌂', '☂️', '☂', '☔', '⛱️', '⛱', '⚡', '❄️', '❄', '☃️', '☃', '⛄', '☄️', '☄', '🔥', '💧', '🌊']
+  }]
+}, {
+  key: 'Objects',
+  array: [{
+    key: 'event',
+    array: ['🎃', '🎄', '🎆', '🎇', '🧨', '✨', '🎈', '🎉', '🎊', '🎋', '🎍', '🎎', '🎏', '🎐', '🎑', '🧧', '🎀', '🎁', '🎗️', '🎟️', '🎫']
+  }, {
+    key: 'award-medal',
+    array: ['🎖️', '🏆', '🏅', '🥇', '🥈', '🥉']
+  }, {
+    key: 'sport',
+    array: ['⚽', '⚾', '🥎', '🏀', '🏐', '🏈', '🏉', '🎾', '🥏', '🎳', '🏏', '🏑', '🏒', '🥍', '🏓', '🏸', '🥊', '🥋', '🥅', '⛳', '⛸️', '🎣', '🤿', '🎽', '🎿', '🛷', '🥌']
+  }, {
+    key: 'game',
+    array: ['🎯', '🪀', '🪁', '🎱', '🔮', '🧿', '🎮', '🕹️', '🎰', '🎲', '🧩', '🧸', '♠️', '♥️', '♦️', '♣️', '♟️', '🃏', '🀄', '🎴']
+  }, {
+    key: 'arts crafts',
+    array: ['🎭', '🖼️', '🎨', '🧵', '🧶']
+  }, {
+    key: 'clothing',
+    array: ['👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🛍️', '🎒', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '⛑', '📿', '💄', '💍', '💎']
+  }, {
+    key: 'sound',
+    array: ['🔇', '🔈', '🔉', '🔊', '📢', '📣', '📯', '🔔', '🔕']
+  }, {
+    key: 'music',
+    array: ['🎼', '🎵', '🎶', '🎙️', '🎙', '🎚', '🎛', '🎤', '🎧', '📻']
+  }, {
+    key: 'musical-instrument',
+    array: ['🎷', '🎸', '🎹', '🎺', '🎻', '🪕', '🥁']
+  }, {
+    key: 'phone',
+    array: ['📱', '📲', '☎️', '☎', '📞', '📟', '📠']
+  }, {
+    key: 'computer',
+    array: ['🔋', '🔌', '💻', '🖥️', '🖨️', '⌨️', '⌨', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '🧮']
+  }, {
+    key: 'light video',
+    array: ['🎥', '🎞', '📽️', '📽', '🎬', '📺', '📷', '📸', '📹', '📼', '🔍', '🔎', '🕯️', '💡', '🔦', '🏮', '🪔']
+  }, {
+    key: 'book-paper',
+    array: ['📔', '📕', '📖', '📗', '📘', '📙', '📚', '📓', '📒', '📃', '📜', '📄', '📰', '🗞️', '📑', '🔖', '🏷️']
+  }, {
+    key: 'money',
+    array: ['💰', '💴', '💵', '💶', '💷', '💸', '💳', '🧾', '💹', '💱', '💲']
+  }, {
+    key: 'mail',
+    array: ['✉️', '📧', '📨', '📩', '📤', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️']
+  }, {
+    key: 'writing',
+    array: ['✏️', '✏', '✒️', '✒', '🖋️', '🖊️', '🖌️', '🖍️', '🖍', '📝']
+  }, {
+    key: 'office',
+    array: ['💼', '📁', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '✂', '🗃️', '🗄', '🗑️']
+  }, {
+    key: 'lock',
+    array: ['🔒', '🔓', '🔏', '🔐', '🔑', '🗝️']
+  }, {
+    key: 'tool',
+    array: ['🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '⚔', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜', '⚖️', '🦯', '🔗', '⛓️', '🧰', '🧲']
+  }, {
+    key: 'science',
+    array: ['⚗️', '⚗', '🧪', '🧫', '🧬', '🔬', '🔭', '📡']
+  }, {
+    key: 'medical',
+    array: ['💉', '🩸', '💊', '🩹', '🩺']
+  }, {
+    key: 'household',
+    array: ['🚪', '🛏️', '🛋️', '🛋', '🪑', '🚽', '🚿', '🛁', '🪒', '🧴', '🧷', '🧹', '🧺', '🧻', '🧼', '🧽', '🧯', '🛒']
+  }, {
+    key: 'other-object',
+    array: ['🚬', '⚰️', '⚱️', '🗿']
+  }]
+}, {
+  key: 'Symbols',
+  array: [{
+    key: 'transport-sign',
+    array: ['🏧', '🚮', '🚰', '♿', '🚹', '🚺', '🚻', '🚼', '🚾', '🛂', '🛃', '🛄', '🛅']
+  }, {
+    key: 'warning',
+    array: ['⚠️', '⚠', '🚸', '⛔', '🚫', '🚳', '🚭', '🚯', '🚱', '🚷', '📵', '🔞', '☢️', '☣️']
+  }, {
+    key: 'arrow',
+    array: ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️', '↕️', '↔️', '↔', '↩️', '↩', '↪️', '↪', '⤴️', '⤴', '⤵️', '⤵', '🔃', '🔄', '🔙', '🔚', '🔛', '🔜', '🔝']
+  }, {
+    key: 'religion',
+    array: ['🛐', '⚛️', '🕉️', '🕉', '✡️', '☸️', '☯️', '✝️', '☮️', '🕎', '🔯']
+  }, {
+    key: 'zodiac',
+    array: ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎']
+  }, {
+    key: 'other-symbol',
+    array: ['♻️', '⚜️', '🔱', '📛', '🔰', '⭕', '✅', '☑️', '✔️', '✖️', '✖', '❌', '❎', '➕', '➖', '➗', '➰', '➿', '〽️', '✳️', '✴️', '❇️', '‼️', '⁉️', '❓', '❗']
+  }]
+}, {
+  key: 'Flags',
+  array: [{
+    key: 'country-flag',
+    array: ['🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼']
+  }, {
+    key: 'subdivision-flag',
+    array: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
+  }]
+}];
+
+var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$e, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7;
+
+var EmojiIcon = function EmojiIcon(_ref) {
+  var collectionName = _ref.collectionName;
+
+  switch (collectionName) {
+    case 'People':
+      return React__default.createElement(SvgEmojiSmileIcon, null);
+
+    case 'Animals':
+      return React__default.createElement(SvgEmojiAnimalIcon, null);
+
+    case 'Food':
+      return React__default.createElement(SvgEmojiFoodIcon, null);
+
+    case 'Travel':
+      return React__default.createElement(SvgEmojiTravelIcon, null);
+
+    case 'Objects':
+      return React__default.createElement(SvgEmojiObjectIcon, null);
+
+    case 'Symbols':
+      return React__default.createElement(SvgEmojiSymbolsIcon, null);
+
+    case 'Flags':
+      return React__default.createElement(SvgEmojiFlagicon, null);
+
+    default:
+      return null;
+  }
+};
+
+function EmojisPopup(_ref2) {
+  var handleAddEmoji = _ref2.handleAddEmoji,
+      handleEmojiPopupToggle = _ref2.handleEmojiPopupToggle,
+      rtlDirection = _ref2.rtlDirection,
+      rightSide = _ref2.rightSide,
+      bottomPosition = _ref2.bottomPosition,
+      emojisContainerBorderRadius = _ref2.emojisContainerBorderRadius,
+      emojisCategoryIconsPosition = _ref2.emojisCategoryIconsPosition,
+      separateEmojiCategoriesWithTitle = _ref2.separateEmojiCategoriesWithTitle,
+      relativePosition = _ref2.relativePosition;
+
+  var _useState = useState('People'),
+      activeCollection = _useState[0],
+      setActiveCollection = _useState[1];
+
+  var _useState2 = useState([]),
+      collectionHeights = _useState2[0],
+      setCollectionHeights = _useState2[1];
+
+  var emojiContainerRef = useRef(null);
+  var collectionsRef = useRef(EMOJIS.map(function (col) {
+    return {
+      collectionName: col.key,
+      elem: createRef()
+    };
+  }));
+
+  var handleEmojiListScroll = function handleEmojiListScroll() {
+    var scrollPos = emojiContainerRef.current.scrollTop;
+
+    if (collectionHeights[6] < scrollPos) {
+      setActiveCollection('Flags');
+    } else if (collectionHeights[5] < scrollPos) {
+      setActiveCollection('Symbols');
+    } else if (collectionHeights[4] < scrollPos) {
+      setActiveCollection('Objects');
+    } else if (collectionHeights[3] < scrollPos) {
+      setActiveCollection('Travel');
+    } else if (collectionHeights[2] < scrollPos) {
+      setActiveCollection('Food');
+    } else if (collectionHeights[1] < scrollPos) {
+      setActiveCollection('Animals');
+    } else {
+      setActiveCollection('People');
+    }
+  };
+
+  var chooseEmoji = function chooseEmoji(selectedEmoji) {
+    handleAddEmoji(selectedEmoji);
+
+    if (handleEmojiPopupToggle) {
+      handleEmojiPopupToggle(false);
+    }
+  };
+
+  var handleEmojiCollectionClick = function handleEmojiCollectionClick(mainCollection) {
+    var collection = collectionsRef.current.find(function (el) {
+      return el.collectionName === mainCollection;
+    });
+    var pos = collection.elem.current.offsetTop - 40;
+    emojiContainerRef.current.scrollTo(0, pos);
+  };
+
+  useEffect(function () {
+    var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
+    var heights = collectionsRef.current.map(function (col) {
+      return col.elem.current.getBoundingClientRect().top - 80 - containerTop;
+    });
+    setCollectionHeights(heights);
+  }, []);
+  return React__default.createElement(Container$c, {
+    relativePosition: relativePosition,
+    borderRadius: emojisContainerBorderRadius,
+    rightSide: rightSide,
+    id: 'emojisContainer',
+    rtlDirection: rtlDirection,
+    bottomPosition: bottomPosition
+  }, emojisCategoryIconsPosition === 'top' && React__default.createElement(EmojiFooter, {
+    emojisCategoryIconsPosition: emojisCategoryIconsPosition
+  }, EMOJIS.map(function (emoji) {
+    return React__default.createElement(EmojiCollection, {
+      activeCollection: activeCollection === emoji.key,
+      key: "" + emoji.key,
+      onClick: function onClick() {
+        return handleEmojiCollectionClick(emoji.key);
+      }
+    }, React__default.createElement(EmojiIcon, {
+      collectionName: emoji.key
+    }));
+  })), !separateEmojiCategoriesWithTitle && React__default.createElement(EmojiHeader, {
+    padding: emojisCategoryIconsPosition !== 'top' ? '10px 18px 6px' : ''
+  }, getEmojisCategoryTitle(activeCollection)), React__default.createElement(EmojiSection, {
+    ref: emojiContainerRef,
+    onScroll: handleEmojiListScroll
+  }, React__default.createElement(AllEmojis, null, EMOJIS.map(function (emojiBigCollection, bigColIndex) {
+    var mainCollectionKey = emojiBigCollection.key;
+    return React__default.createElement(React__default.Fragment, {
+      key: mainCollectionKey
+    }, separateEmojiCategoriesWithTitle && React__default.createElement(EmojiHeader, {
+      padding: '6px 8px'
+    }, getEmojisCategoryTitle(mainCollectionKey)), emojiBigCollection.array.map(function (emojiSmallCollection, bigIndex) {
+      var label = emojiSmallCollection.key;
+      var array = emojiSmallCollection.array;
+      return array.map(function (emoji, i) {
+        return React__default.createElement(Emoji, {
+          key: "" + emoji,
+          className: 'emoji-cont',
+          onClick: function onClick() {
+            return chooseEmoji(emoji);
+          }
+        }, bigIndex === 0 && i === 0 && React__default.createElement(CollectionPointer, {
+          ref: collectionsRef.current[bigColIndex].elem,
+          "data-emoji-sec": mainCollectionKey
+        }), React__default.createElement("span", {
+          className: 'emoji',
+          role: 'img',
+          "aria-label": label || '',
+          "aria-hidden": label ? 'false' : 'true'
+        }, emoji));
+      });
+    }));
+  }))), emojisCategoryIconsPosition !== 'top' && React__default.createElement(EmojiFooter, null, EMOJIS.map(function (emoji) {
+    return React__default.createElement(EmojiCollection, {
+      activeCollection: activeCollection === emoji.key,
+      key: "" + emoji.key,
+      onClick: function onClick() {
+        return handleEmojiCollectionClick(emoji.key);
+      }
+    }, React__default.createElement(EmojiIcon, {
+      collectionName: emoji.key
+    }));
+  })));
+}
+var Container$c = styled.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n"])), function (props) {
+  return props.relativePosition ? 'relative' : 'absolute';
+}, function (props) {
+  return props.rtlDirection ? '' : props.rightSide ? '-276px' : '0';
+}, function (props) {
+  return props.rtlDirection && '0';
+}, function (props) {
+  return props.bottomPosition;
+}, colors.gray1, function (props) {
+  return props.borderRadius || '6px';
+}, colors.white);
+var EmojiHeader = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.gray9, function (props) {
+  return props.padding || '6px 18px';
+});
+var EmojiSection = styled.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  height: 200px;\n  overflow-x: hidden;\n"])));
+var EmojiCollection = styled.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.activeCollection ? colors.primary : colors.gray7;
+});
+var CollectionPointer = styled.span(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose([""])));
+var AllEmojis = styled.ul(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 8px;\n  margin: 0;\n"])));
+var EmojiFooter = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
+  return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + colors.gray1;
+}, function (props) {
+  return props.emojisCategoryIconsPosition === 'top' && "1px solid " + colors.gray1;
+});
+var Emoji = styled.li(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: #f5f5f8;\n  }\n"])));
+
+var _templateObject$r, _templateObject2$p, _templateObject3$j;
+
+function FrequentlyEmojis(_ref) {
+  var handleAddEmoji = _ref.handleAddEmoji,
+      handleEmojiPopupToggle = _ref.handleEmojiPopupToggle;
+  var emojis = ['👍', '😍', '❤️', '🤝', '😂', '😏'];
+
+  var chooseEmoji = function chooseEmoji(selectedEmoji) {
+    handleAddEmoji(selectedEmoji);
+
+    if (handleEmojiPopupToggle) {
+      handleEmojiPopupToggle(false);
+    }
+  };
+
+  return React__default.createElement(Container$d, {
+    id: 'emojisContainer'
+  }, emojis.map(function (emoji) {
+    return React__default.createElement(EmojiItem, {
+      key: emoji,
+      onClick: function onClick() {
+        return chooseEmoji(emoji);
+      }
+    }, emoji);
+  }), React__default.createElement(OpenMoreEmojis, {
+    onClick: function onClick() {
+      return handleEmojiPopupToggle(true);
+    }
+  }, React__default.createElement(SvgClose, null)));
+}
+var Container$d = styled.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 6px;\n  background: ", ";\n  box-shadow: 0 3px 10px -4px rgba(0, 0, 0, 0.2);\n  border-radius: 24px;\n"])), colors.white);
+var EmojiItem = styled.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  margin-right: 8px;\n  font-size: 28px;\n  line-height: 32px;\n  cursor: pointer;\n"])));
+var OpenMoreEmojis = styled.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 12px;\n    width: 12px;\n  }\n  border-radius: 50%;\n"])), colors.gray10, colors.gray4);
+
+var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$f, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -22232,6 +22325,7 @@ var Message = function Message(_ref) {
       staredIcon = _ref.staredIcon,
       reportIcon = _ref.reportIcon,
       reactionIconOrder = _ref.reactionIconOrder,
+      openFrequentlyUsedReactions = _ref.openFrequentlyUsedReactions,
       editIconOrder = _ref.editIconOrder,
       copyIconOrder = _ref.copyIconOrder,
       replyIconOrder = _ref.replyIconOrder,
@@ -22269,7 +22363,10 @@ var Message = function Message(_ref) {
       reactionsContainerTopPosition = _ref.reactionsContainerTopPosition,
       fileAttachmentsBoxBorder = _ref.fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor = _ref.fileAttachmentsTitleColor,
-      fileAttachmentsSizeColor = _ref.fileAttachmentsSizeColor;
+      fileAttachmentsSizeColor = _ref.fileAttachmentsSizeColor,
+      emojisCategoryIconsPosition = _ref.emojisCategoryIconsPosition,
+      emojisContainerBorderRadius = _ref.emojisContainerBorderRadius,
+      separateEmojiCategoriesWithTitle = _ref.separateEmojiCategoriesWithTitle;
   var dispatch = useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
@@ -22295,19 +22392,31 @@ var Message = function Message(_ref) {
       setMessageActionsShow = _useState4[1];
 
   var _useState5 = useState(false),
-      reactionsPopupOpen = _useState5[0],
-      setReactionsPopupOpen = _useState5[1];
+      emojisPopupOpen = _useState5[0],
+      setEmojisPopupOpen = _useState5[1];
 
-  var _useState6 = useState(0),
-      reactionsPopupPosition = _useState6[0],
-      setReactionsPopupPosition = _useState6[1];
+  var _useState6 = useState(false),
+      frequentlyEmojisOpen = _useState6[0],
+      setFrequentlyEmojisOpen = _useState6[1];
 
-  var _useState7 = useState({
+  var _useState7 = useState(false),
+      reactionsPopupOpen = _useState7[0],
+      setReactionsPopupOpen = _useState7[1];
+
+  var _useState8 = useState(0),
+      reactionsPopupPosition = _useState8[0],
+      setReactionsPopupPosition = _useState8[1];
+
+  var _useState9 = useState(''),
+      emojisPopupPosition = _useState9[0],
+      setEmojisPopupPosition = _useState9[1];
+
+  var _useState10 = useState({
     left: 0,
     right: 0
   }),
-      reactionsPopupHorizontalPosition = _useState7[0],
-      setReactionsPopupHorizontalPosition = _useState7[1];
+      reactionsPopupHorizontalPosition = _useState10[0],
+      setReactionsPopupHorizontalPosition = _useState10[1];
 
   var messageItemRef = useRef();
   var isVisible = useOnScreen(messageItemRef);
@@ -22479,6 +22588,27 @@ var Message = function Message(_ref) {
     }, message.user.id === user.id && message.user.firstName ? message.user.firstName + " " + message.user.lastName : makeUserName(contactsMap[message.user.id], message.user, getFromContacts)), messageTimePosition === 'topOfMessage' && React__default.createElement(MessageTime, null, "" + moment(message.createdAt).format('HH:mm')));
   };
 
+  var handleClick = function handleClick(e) {
+    var emojisContainer = document.getElementById('emojisContainer');
+    var frequentlyEmojisContainer = document.getElementById('frequently_emojis_container');
+
+    if (emojisContainer && !emojisContainer.contains(e.target)) {
+      setEmojisPopupOpen(false);
+    }
+
+    if (frequentlyEmojisContainer && !frequentlyEmojisContainer.contains(e.target)) {
+      setFrequentlyEmojisOpen(false);
+    }
+  };
+
+  var handleOpenEmojis = function handleOpenEmojis() {
+    if (openFrequentlyUsedReactions) {
+      setFrequentlyEmojisOpen(true);
+    } else {
+      setEmojisPopupOpen(true);
+    }
+  };
+
   useEffect(function () {
     if (isVisible && tabIsActive) {
       setLastVisibleMessageId(message.id);
@@ -22490,6 +22620,21 @@ var Message = function Message(_ref) {
       handleSendReadMarker();
     }
   }, [tabIsActive]);
+  useEffect(function () {
+    if (emojisPopupOpen) {
+      var bottomPos = messageItemRef.current ? messageItemRef.current.getBoundingClientRect().bottom : 0;
+      var offsetBottom = window.innerHeight - bottomPos;
+      setEmojisPopupPosition(offsetBottom < 300 ? 'top' : 'bottom');
+    } else {
+      setEmojisPopupPosition('');
+    }
+  }, [emojisPopupOpen]);
+  useEffect(function () {
+    document.addEventListener('mousedown', handleClick);
+    return function () {
+      document.removeEventListener('mousedown', handleClick);
+    };
+  }, []);
   return React__default.createElement(MessageItem, {
     key: message.id || message.tid,
     rtl: ownMessageOnRightSide && !message.incoming,
@@ -22525,7 +22670,7 @@ var Message = function Message(_ref) {
     noBody: !message.body && !withAttachments,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave
-  }, (showMessageSenderName || messageTimePosition === 'topOfMessage') && React__default.createElement(MessageHeader, null), !isThreadMessage && messageActionsShow && React__default.createElement(MessageActions, {
+  }, (showMessageSenderName || messageTimePosition === 'topOfMessage') && React__default.createElement(MessageHeader, null), !isThreadMessage && messageActionsShow && !emojisPopupOpen && !frequentlyEmojisOpen && React__default.createElement(MessageActions, {
     messageFrom: message.user,
     channel: channel,
     editModeToggle: toggleEditMode,
@@ -22580,7 +22725,8 @@ var Message = function Message(_ref) {
     reportIconTooltipText: reportIconTooltipText,
     messageActionIconsColor: messageActionIconsColor,
     myRole: channel.role,
-    isIncoming: message.incoming
+    isIncoming: message.incoming,
+    handleOpenEmojis: handleOpenEmojis
   }), message.parent && message.parent.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
     withAttachments: withAttachments,
     leftBorderColor: colors.primary,
@@ -22661,7 +22807,25 @@ var Message = function Message(_ref) {
         return setMessageActionsShow(state);
       }
     });
-  })), message.replyCount && message.replyCount > 0 && !isThreadMessage && React__default.createElement(ThreadMessageCountContainer, {
+  }), emojisPopupOpen && emojisPopupPosition && React__default.createElement(EmojiContainer, {
+    id: message.id + "_emoji_popup_container",
+    position: emojisPopupPosition,
+    rtlDirection: ownMessageOnRightSide && !message.incoming
+  }, message.deliveryStatus && message.deliveryStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(EmojisPopup, {
+    relativePosition: true,
+    emojisCategoryIconsPosition: emojisCategoryIconsPosition,
+    emojisContainerBorderRadius: emojisContainerBorderRadius,
+    separateEmojiCategoriesWithTitle: separateEmojiCategoriesWithTitle,
+    rtlDirection: ownMessageOnRightSide && !message.incoming,
+    handleEmojiPopupToggle: setEmojisPopupOpen,
+    handleAddEmoji: handleReactionAddDelete
+  })), frequentlyEmojisOpen && !emojisPopupOpen && React__default.createElement(FrequentlyEmojisContainer, {
+    id: 'frequently_emojis_container',
+    rtlDirection: ownMessageOnRightSide && !message.incoming
+  }, React__default.createElement(FrequentlyEmojis, {
+    handleAddEmoji: handleReactionAddDelete,
+    handleEmojiPopupToggle: setEmojisPopupOpen
+  }))), message.replyCount && message.replyCount > 0 && !isThreadMessage && React__default.createElement(ThreadMessageCountContainer, {
     onClick: function onClick() {
       return handleReplyMessage(true);
     }
@@ -22673,7 +22837,7 @@ var Message = function Message(_ref) {
     handleReactionsPopupClose: handleToggleReactionsPopup,
     rtlDirection: ownMessageOnRightSide && !message.incoming
   }), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
-    id: message.id + "_reactions_container}",
+    id: message.id + "_reactions_container",
     border: reactionsContainerBorder,
     boxShadow: reactionsContainerBoxShadow,
     borderRadius: reactionsContainerBorderRadius,
@@ -22726,7 +22890,7 @@ var Message = function Message(_ref) {
     title: 'Forward message'
   }));
 };
-var MessageReaction = styled.span(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
+var MessageReaction = styled.span(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
   return props.margin || '0 6px 0 0';
 }, function (props) {
   return props.isLastReaction && '0';
@@ -22747,13 +22911,13 @@ var MessageReaction = styled.span(_templateObject$r || (_templateObject$r = _tag
 }, function (props) {
   return props.backgroundColor || colors.white;
 });
-var ThreadMessageCountContainer = styled.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
-var FailedMessageIcon = styled.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
+var ThreadMessageCountContainer = styled.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
+var FailedMessageIcon = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
   return !props.rtl && '-24px';
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ReactionsContainer = styled.div(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
+var ReactionsContainer = styled.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return !props.rtlDirection && 'auto';
 }, function (props) {
   return props.rtlDirection && 'auto';
@@ -22850,6 +23014,18 @@ var MessageItem = styled.div(_templateObject19$1 || (_templateObject19$1 = _tagg
 }, function (props) {
   return props.hoverBackground || '';
 }, HiddenMessageTime, MessageStatusAndTime, MessageStatus);
+var EmojiContainer = styled.div(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: ", ";\n  z-index: 99;\n"])), function (props) {
+  return props.rtlDirection ? '' : '0';
+}, function (props) {
+  return props.rtlDirection && '0';
+}, function (props) {
+  return props.position === 'top' ? '-250px' : 'calc(100% + 6px)';
+});
+var FrequentlyEmojisContainer = styled.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -50px;\n  z-index: 99;\n"])), function (props) {
+  return props.rtlDirection ? '' : '0';
+}, function (props) {
+  return props.rtlDirection && '0';
+});
 
 var _path$O;
 
@@ -23115,7 +23291,7 @@ function SvgFullscreenExit(props) {
   })));
 }
 
-var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$6;
+var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$g, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$6;
 var timerInterval;
 
 var VideoPlayer = function VideoPlayer(_ref) {
@@ -23334,12 +23510,12 @@ var VideoPlayer = function VideoPlayer(_ref) {
     onClick: handleOpenFullScreen
   }, isFullScreen ? React__default.createElement(SvgFullscreenExit, null) : React__default.createElement(SvgFullscreen, null))));
 };
-var Component$1 = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: '';\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
+var Component$1 = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: '';\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
   return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
 });
-var PlayPauseWrapper = styled.span(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var ControlsContainer = styled.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
-var ControlTime = styled.span(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
+var PlayPauseWrapper = styled.span(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var ControlsContainer = styled.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
+var ControlTime = styled.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
 var ProgressBlock = styled.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
 var VolumeController = styled.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
 var VolumeIconWrapper = styled.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
@@ -23347,7 +23523,7 @@ var VolumeSlide = styled.input(_templateObject8$9 || (_templateObject8$9 = _tagg
 var Progress = styled.input(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
 var FullScreenWrapper = styled.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
+var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$h, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -23582,7 +23758,7 @@ var SliderPopup = function SliderPopup(_ref) {
       setAttachmentsList([]);
     };
   }, []);
-  return React__default.createElement(Container$d, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
+  return React__default.createElement(Container$e, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
     name: attachmentUserName,
     setDefaultAvatar: true,
     size: 36,
@@ -23655,10 +23831,10 @@ var SliderPopup = function SliderPopup(_ref) {
     }))) : React__default.createElement(UploadingIcon, null));
   }))));
 };
-var Container$d = styled.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
-var SliderHeader = styled.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
-var SliderBody = styled.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
-var FileInfo = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
+var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
+var SliderHeader = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
+var SliderBody = styled.div(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var FileInfo = styled.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
 var Info = styled.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
 var Actions = styled.div(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
 var FileDateAndSize = styled.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
@@ -23716,7 +23892,7 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$j, _templateObject5$f, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a;
+var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$i, _templateObject5$f, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a;
 var loading = false;
 var loadFromServer = false;
 var loadDirection = '';
@@ -23803,6 +23979,10 @@ var MessageList = function MessageList(_ref2) {
       staredIcon = _ref2.staredIcon,
       reportIcon = _ref2.reportIcon,
       reactionIconOrder = _ref2.reactionIconOrder,
+      openFrequentlyUsedReactions = _ref2.openFrequentlyUsedReactions,
+      separateEmojiCategoriesWithTitle = _ref2.separateEmojiCategoriesWithTitle,
+      emojisCategoryIconsPosition = _ref2.emojisCategoryIconsPosition,
+      emojisContainerBorderRadius = _ref2.emojisContainerBorderRadius,
       reactionsDisplayCount = _ref2.reactionsDisplayCount,
       showEachReactionCount = _ref2.showEachReactionCount,
       reactionItemBorder = _ref2.reactionItemBorder,
@@ -24317,7 +24497,7 @@ var MessageList = function MessageList(_ref2) {
     topOffset: scrollRef && scrollRef.current && scrollRef.current.offsetTop
   }, React__default.createElement("span", {
     ref: messageTopDateRef
-  })), React__default.createElement(Container$e, {
+  })), React__default.createElement(Container$f, {
     id: 'scrollableDiv',
     ref: scrollRef,
     stopScrolling: stopScrolling,
@@ -24410,6 +24590,10 @@ var MessageList = function MessageList(_ref2) {
       staredIcon: staredIcon,
       reportIcon: reportIcon,
       reactionIconOrder: reactionIconOrder,
+      openFrequentlyUsedReactions: openFrequentlyUsedReactions,
+      emojisCategoryIconsPosition: emojisCategoryIconsPosition,
+      emojisContainerBorderRadius: emojisContainerBorderRadius,
+      separateEmojiCategoriesWithTitle: separateEmojiCategoriesWithTitle,
       editIconOrder: editIconOrder,
       copyIconOrder: copyIconOrder,
       replyIconOrder: replyIconOrder,
@@ -24466,12 +24650,12 @@ var MessageList = function MessageList(_ref2) {
     currentMediaFile: mediaFile
   }))));
 };
-var Container$e = styled.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
+var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
   return props.stopScrolling ? 'hidden' : 'auto';
 });
-var EmptyDiv = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
-var MessagesBox = styled.div(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
-var MessageTopDate = styled.div(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
+var EmptyDiv = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
+var MessagesBox = styled.div(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
+var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
   return props.systemMessage ? '' : 'absolute';
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
@@ -24679,7 +24863,7 @@ var membersLoadingStateSelector = function membersLoadingStateSelector(store) {
   return store.MembersReducer.membersLoadingState;
 };
 
-var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$k, _templateObject5$g, _templateObject6$g;
+var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$j, _templateObject5$g, _templateObject6$g;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
       addMentionMember = _ref.addMentionMember,
@@ -24799,7 +24983,7 @@ function MentionMembersPopup(_ref) {
       setFilteredMembers(sortMembers(_searchedMembers || []));
     }
   }, [searchMention]);
-  return React__default.createElement(Container$f, {
+  return React__default.createElement(Container$g, {
     className: 'mention_member_popup',
     height: filteredMembers && filteredMembers.length * 44
   }, React__default.createElement(MembersList, {
@@ -24823,25 +25007,25 @@ function MentionMembersPopup(_ref) {
     })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
   })));
 }
-var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
+var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
   return props.height && props.height + 22;
 });
-var UserNamePresence$2 = styled.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
-var MemberName$2 = styled.h3(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var EditMemberIcon = styled.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var UserNamePresence$2 = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$2 = styled.h3(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var EditMemberIcon = styled.span(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList = styled.ul(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
 var MemberItem = styled.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.isActiveItem && colors.gray0;
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$l, _templateObject5$h;
-var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause$1 = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
-var AudioVisualization$1 = styled.div(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var WaveContainer$1 = styled.div(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$k, _templateObject5$h;
+var Container$h = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause$1 = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
+var AudioVisualization$1 = styled.div(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var WaveContainer$1 = styled.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
 var Timer$1 = styled.div(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
 
-var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$m, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
+var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$l, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -25815,7 +25999,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(Container$h, {
+  return React__default.createElement(Container$i, {
     margin: margin,
     border: border,
     borderRadius: borderRadius,
@@ -25831,6 +26015,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName || typingIndicator.from.id, ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
     handleAddEmoji: handleAddEmoji,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
+    bottomPosition: '46px',
     rightSide: emojisInRightSide
   }), messageToEdit && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
     onClick: handleCloseEditMode
@@ -25935,16 +26120,16 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, React__default.createElement(SvgSend, null)) )));
 };
 
-var Container$h = styled.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
+var Container$i = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border-top: 1px solid ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
   return props.margin || '30px 16px 16px';
 }, colors.gray1, function (props) {
   return props.border || '';
 }, function (props) {
   return props.borderRadius || '4px';
 });
-var EditReplyMessageCont = styled.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
-var EditMessageText = styled.p(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled.span(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
+var EditReplyMessageCont = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
+var EditMessageText = styled.p(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled.span(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
 var UserName$1 = styled.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
 var EditReplyMessageHeader = styled.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
@@ -25992,8 +26177,8 @@ var ChosenAttachments = styled.div(_templateObject16$2 || (_templateObject16$2 =
 var TypingIndicator$1 = styled.div(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
 var TypingIndicatorCont = styled.div(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
 var TypingFrom = styled.h5(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
-var sizeAnimation = keyframes(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
-var DotOne = styled.span(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose([""])));
+var sizeAnimation = keyframes(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var DotOne = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
 var DotTwo = styled.span(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled.span(_templateObject23$1 || (_templateObject23$1 = _taggedTemplateLiteralLoose([""])));
 var TypingAnimation = styled.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
@@ -26343,7 +26528,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$n, _templateObject5$j, _templateObject6$i;
+var _templateObject$z, _templateObject2$x, _templateObject3$r, _templateObject4$m, _templateObject5$j, _templateObject6$i;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -26567,7 +26752,7 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return React__default.createElement(Container$i, {
+  return React__default.createElement(Container$j, {
     isDirect: isDirectChannel
   }, toggleable && React__default.createElement(ActionHeader, {
     onClick: handleActionsOpen
@@ -26794,14 +26979,14 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$i = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
+var Container$j = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
   return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
 });
-var ActionHeader = styled.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
-var MenuTriggerIcon = styled.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
+var ActionHeader = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
+var MenuTriggerIcon = styled.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
-var ActionsMenu = styled.ul(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var ActionsMenu = styled.ul(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose([""])));
 var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
@@ -26891,7 +27076,7 @@ function SvgMoreVert(props) {
   })));
 }
 
-var _templateObject$z, _templateObject2$x, _templateObject3$r;
+var _templateObject$A, _templateObject2$y, _templateObject3$s;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
   var channelId = _ref.channelId,
@@ -26970,11 +27155,11 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }, "Save"))));
 };
 
-var RolesSelect = styled.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
-var RoleSpan = styled.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
+var RolesSelect = styled.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
+var RoleLabel = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
+var RoleSpan = styled.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$A, _templateObject2$y, _templateObject3$s, _templateObject4$o, _templateObject5$k, _templateObject6$j, _templateObject7$f, _templateObject8$d;
+var _templateObject$B, _templateObject2$z, _templateObject3$t, _templateObject4$n, _templateObject5$k, _templateObject6$j, _templateObject7$f, _templateObject8$d;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -27127,7 +27312,7 @@ var Members = function Members(_ref) {
     dispatch(getContactsAC());
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return React__default.createElement(Container$j, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
+  return React__default.createElement(Container$k, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
     onScroll: handleMembersListScroll
   }, chekActionPermission('addMember') && React__default.createElement(MemberItem$1, {
     key: 1,
@@ -27231,10 +27416,10 @@ var Members = function Members(_ref) {
     toggleCreatePopup: handleAddMemberPopup
   }));
 };
-var Container$j = styled.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose([""])));
-var ActionsMenu$1 = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
-var MemberName$3 = styled.h4(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
+var Container$k = styled.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu$1 = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
+var MemberNamePresence = styled.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
+var MemberName$3 = styled.h4(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
 var EditMemberIcon$1 = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList$1 = styled.ul(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var MemberItem$1 = styled.li(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
@@ -27248,7 +27433,7 @@ var RoleBadge = styled.span(_templateObject8$d || (_templateObject8$d = _taggedT
   return props.color || colors.primary;
 });
 
-var _templateObject$B, _templateObject2$z;
+var _templateObject$C, _templateObject2$A;
 
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
@@ -27268,7 +27453,7 @@ var Media = function Media(_ref) {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return React__default.createElement(Container$k, null, attachments.map(function (file) {
+  return React__default.createElement(Container$l, null, attachments.map(function (file) {
     return React__default.createElement(MediaItem, {
       key: file.id,
       onClick: function onClick() {
@@ -27292,8 +27477,8 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$k = styled.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
-var MediaItem = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
+var Container$l = styled.div(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var MediaItem = styled.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
 var _path$1c, _path2$8, _path3$4;
 
@@ -27381,7 +27566,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$C, _templateObject2$A, _templateObject3$t, _templateObject4$p, _templateObject5$l, _templateObject6$k, _templateObject7$g;
+var _templateObject$D, _templateObject2$B, _templateObject3$u, _templateObject4$o, _templateObject5$l, _templateObject6$k, _templateObject7$g;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -27396,7 +27581,7 @@ var Files = function Files(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
-  return React__default.createElement(Container$l, null, attachments.map(function (file) {
+  return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(FileItem, {
       key: file.url,
       hoverBackgroundColor: filePreviewHoverBackgroundColor
@@ -27414,10 +27599,10 @@ var Files = function Files(_ref) {
     }, filePreviewDownloadIcon || React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$l = styled.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled.a(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
-var FileIconCont = styled.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileHoverIconCont = styled.span(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var Container$m = styled.ul(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DownloadWrapper = styled.a(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
+var FileIconCont = styled.span(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileHoverIconCont = styled.span(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileThumb = styled.img(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
 var FileItem = styled.div(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
@@ -27479,7 +27664,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$D, _templateObject2$B, _templateObject3$u, _templateObject4$q, _templateObject5$m;
+var _templateObject$E, _templateObject2$C, _templateObject3$v, _templateObject4$p, _templateObject5$m;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -27500,17 +27685,17 @@ var LinkItem = function LinkItem(_ref) {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled.span(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var LinkHoverIconCont = styled.span(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var LinkInfoCont = styled.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
-var FileItem$1 = styled.li(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var LinkIconCont = styled.span(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
+var LinkHoverIconCont = styled.span(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var LinkInfoCont = styled.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
+var FileItem$1 = styled.li(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
 var LinkUrl = styled.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
-var _templateObject$E;
+var _templateObject$F;
 
 var Links = function Links(_ref) {
   var channelId = _ref.channelId,
@@ -27524,7 +27709,7 @@ var Links = function Links(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
-  return React__default.createElement(Container$m, null, attachments.map(function (file) {
+  return React__default.createElement(Container$n, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
@@ -27536,7 +27721,7 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$m = styled.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$n = styled.ul(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
 var _rect$3, _circle$7, _path$1e;
 
@@ -27702,7 +27887,7 @@ function SvgVoicePreviewPauseHover(props) {
   })));
 }
 
-var _templateObject$F, _templateObject2$C, _templateObject3$v, _templateObject4$r, _templateObject5$n, _templateObject6$l, _templateObject7$h, _templateObject8$e;
+var _templateObject$G, _templateObject2$D, _templateObject3$w, _templateObject4$q, _templateObject5$n, _templateObject6$l, _templateObject7$h, _templateObject8$e;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -27835,12 +28020,12 @@ var VoiceItem = function VoiceItem(_ref) {
     type: 'audio/mpeg'
   })));
 };
-var FileIconCont$1 = styled.span(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
-var FileHoverIconCont$1 = styled.span(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
-var FileItem$2 = styled.li(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var FileIconCont$1 = styled.span(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled.span(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled.li(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
-var AudioInfo = styled.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioInfo = styled.div(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
 var AudioTitle = styled.span(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
@@ -27852,7 +28037,7 @@ var AudioSendTime = styled.span(_templateObject7$h || (_templateObject7$h = _tag
 });
 var Audio = styled.audio(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$G;
+var _templateObject$H;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
@@ -27873,7 +28058,7 @@ var Voices = function Voices(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return React__default.createElement(Container$n, null, attachments.map(function (file) {
+  return React__default.createElement(Container$o, null, attachments.map(function (file) {
     return React__default.createElement(VoiceItem, {
       key: file.id,
       file: file,
@@ -27891,9 +28076,9 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$n = styled.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$o = styled.ul(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$H, _templateObject2$D;
+var _templateObject$I, _templateObject2$E;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -27944,7 +28129,7 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return React__default.createElement(Container$o, null, React__default.createElement(DetailsTabHeader, {
+  return React__default.createElement(Container$p, null, React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
@@ -28011,8 +28196,8 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$o = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
+var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
   return props.activeTabColor || colors.primary;
 });
 
@@ -28050,15 +28235,15 @@ function SvgCamera(props) {
   })));
 }
 
-var _templateObject$I, _templateObject2$E, _templateObject3$w, _templateObject4$s;
-var Container$p = styled.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
+var _templateObject$J, _templateObject2$F, _templateObject3$x, _templateObject4$r;
+var Container$q = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
 });
-var AvatarCont = styled.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
-var DropDownWrapper = styled.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
-var EditChannelFooter = styled(ButtonBlock)(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
+var AvatarCont = styled.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
+var DropDownWrapper = styled.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
+var EditChannelFooter = styled(ButtonBlock)(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
@@ -28184,7 +28369,7 @@ var EditChannel = function EditChannel(_ref) {
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$p, {
+  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$q, {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode
@@ -28257,7 +28442,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$J, _templateObject2$F, _templateObject3$x, _templateObject4$t, _templateObject5$o, _templateObject6$m, _templateObject7$i;
+var _templateObject$K, _templateObject2$G, _templateObject3$y, _templateObject4$s, _templateObject5$o, _templateObject6$m, _templateObject7$i;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -28411,7 +28596,7 @@ var Details = function Details(_ref) {
   useEffect(function () {
     setMounted(true);
   }, []);
-  return React__default.createElement(Container$q, {
+  return React__default.createElement(Container$r, {
     mounted: mounted
   }, React__default.createElement(ChannelDetailsHeader, null, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
     onClick: function onClick() {
@@ -28552,14 +28737,14 @@ var Details = function Details(_ref) {
     privateChannelMakeAdminPopupDescription: privateChannelMakeAdminPopupDescription
   })));
 };
-var Container$q = styled.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
+var Container$r = styled.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
   return props.mounted && ' width: 360px';
 });
-var ChannelDetailsHeader = styled.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
-var ChatDetails = styled.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChannelDetailsHeader = styled.div(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
+var ChatDetails = styled.div(_templateObject3$y || (_templateObject3$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 360px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
-var ChannelInfo$3 = styled.div(_templateObject4$t || (_templateObject4$t = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
+var ChannelInfo$3 = styled.div(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
 var DetailsHeader = styled.div(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
 var ChannelName$1 = styled(SectionHeader)(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
@@ -28798,12 +28983,12 @@ function SvgChatLogo(props) {
   })));
 }
 
-var _templateObject$K, _templateObject2$G;
-var Container$r = styled.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
-var Logo = styled.div(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
+var _templateObject$L, _templateObject2$H;
+var Container$s = styled.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
+var Logo = styled.div(_templateObject2$H || (_templateObject2$H = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
 
 function SceytChatHeader() {
-  return React__default.createElement(Container$r, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
+  return React__default.createElement(Container$s, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
 var _path$1k;
@@ -28837,7 +29022,7 @@ function SvgChevronDown(props) {
   })));
 }
 
-var _templateObject$L, _templateObject2$H;
+var _templateObject$M, _templateObject2$I;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -28881,10 +29066,10 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";
 }, colors.white);
-var UnreadCount$1 = styled.span(_templateObject2$H || (_templateObject2$H = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var UnreadCount$1 = styled.span(_templateObject2$I || (_templateObject2$I = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.cobalt1;
 }, function (props) {
   return props.fontSize || '13px';

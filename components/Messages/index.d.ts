@@ -29,6 +29,10 @@ interface MessagesProps {
     starIcon?: JSX.Element;
     staredIcon?: JSX.Element;
     reportIcon?: JSX.Element;
+    openFrequentlyUsedReactions?: boolean;
+    separateEmojiCategoriesWithTitle?: boolean;
+    emojisCategoryIconsPosition?: 'top' | 'bottom';
+    emojisContainerBorderRadius?: string;
     reactionIconOrder?: number;
     editIconOrder?: number;
     copyIconOrder?: number;
