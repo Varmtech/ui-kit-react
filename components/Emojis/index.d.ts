@@ -1,5 +1,5 @@
 /// <reference types="react" />
-declare function EmojisPopup({ handleAddEmoji, handleEmojiPopupToggle, rtlDirection, rightSide, bottomPosition, emojisContainerBorderRadius, emojisCategoryIconsPosition, separateEmojiCategoriesWithTitle, relativePosition }: {
+declare function EmojisPopup({ handleAddEmoji, handleEmojiPopupToggle, rtlDirection, rightSide, bottomPosition, emojisContainerBorderRadius, emojisCategoryIconsPosition, separateEmojiCategoriesWithTitle, emojisPopupPosition, relativePosition }: {
     handleAddEmoji: (selectedEmoji: string) => void;
     handleEmojiPopupToggle?: (state: boolean) => void;
     rtlDirection?: boolean;
@@ -8,6 +8,7 @@ declare function EmojisPopup({ handleAddEmoji, handleEmojiPopupToggle, rtlDirect
     bottomPosition?: string;
     emojisContainerBorderRadius?: string;
     emojisCategoryIconsPosition?: 'top' | 'bottom';
+    emojisPopupPosition?: string;
     separateEmojiCategoriesWithTitle?: boolean;
 }): JSX.Element;
 export default EmojisPopup;

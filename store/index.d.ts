@@ -30,9 +30,8 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
         isDragging: boolean;
         draggedAttachments: {
             attachment: File;
-            type: "file" | "media";
+            type: "media" | "file";
         }[];
-        tabIsActive: boolean;
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;
