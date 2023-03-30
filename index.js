@@ -1990,8 +1990,10 @@ var CustomSwitcher = styled__default.div(_templateObject27 || (_templateObject27
 var SwitcherLabel = styled__default.label(_templateObject28 || (_templateObject28 = _taggedTemplateLiteralLoose(["\n  width: 48px;\n  height: 28px;\n  background: rgb(226, 226, 226);\n  display: inline-block;\n  border-radius: 50px;\n  position: relative;\n  transition: all 0.3s ease;\n  transform-origin: 20% center;\n  border: 3px solid #fff;\n  cursor: pointer;\n\n  &:before {\n    content: '';\n    position: absolute;\n    display: block;\n    transition: all 0.2s ease;\n    width: 24px;\n    height: 24px;\n    top: 2px;\n    left: 2px;\n    border-radius: 20px;\n    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.251475), 0 2px 6px rgba(0, 0, 0, 0.404256);\n    background: #fff;\n  }\n"])));
 var UploadAvatarButton = styled__default.button(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.blue5);
 var UploadAvatarHandler = styled__default.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.blue7);
-var MentionedUser = styled__default.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.primary;
+var MentionedUser = styled__default.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: ", ";\n"])), function (props) {
+  return props.isLastMessage ? colors.gray9 : props.color || colors.primary;
+}, function (props) {
+  return props.isLastMessage && '500';
 });
 var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
   return props.withPadding && (props.messageBody ? '8px 0 0 12px' : props.isForwarded ? '8px 0 2px 12px' : '8px 0 4px 12px');
@@ -7885,7 +7887,8 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
   var text = _ref5.text,
       message = _ref5.message,
       contactsMap = _ref5.contactsMap,
-      getFromContacts = _ref5.getFromContacts;
+      getFromContacts = _ref5.getFromContacts,
+      isLastMessage = _ref5.isLastMessage;
   var messageText = [text];
 
   if (message.mentionedUsers && message.mentionedUsers.length > 0) {
@@ -7901,6 +7904,7 @@ var MessageTextFormat = function MessageTextFormat(_ref5) {
       if (mentionDisplay) {
         var user = getClient().chatClient.user;
         messageText.unshift("" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mention.loc)), React__default.createElement(MentionedUser, {
+          isLastMessage: isLastMessage,
           color: colors.primary,
           key: "" + mention.loc
         }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len)));
@@ -8087,20 +8091,22 @@ var getCaretPosition1 = function getCaretPosition1(element) {
   var win = doc.defaultView || doc.parentWindow;
   var focusOffset = win.getSelection().focusOffset;
   var focusNode = win.getSelection().focusNode;
+  var textNodesAdded = false;
   element.childNodes.forEach(function (node, index) {
     if (node.nodeType === Node.TEXT_NODE) {
       if (node === focusNode) {
+        textNodesAdded = true;
         caretOffset += focusOffset + textNodes;
         return;
       } else {
         caretOffset += node.nodeValue.length;
       }
 
-      if (element.childNodes.length === index + 1) {
-        caretOffset += textNodes;
-      }
-
       textNodes += 1;
+    }
+
+    if (element.childNodes.length === index + 1 && !textNodesAdded) {
+      caretOffset += textNodes;
     }
   });
   return caretOffset;
@@ -8142,16 +8148,21 @@ var setCursorPosition = function setCursorPosition(element, position) {
   var currentNode = element.childNodes[0];
   var caretOffset = 0;
   var textNodes = 0;
+  var textNodesAdded = false;
+  var currentNodeIsFind = false;
   element.childNodes.forEach(function (node, index) {
     if (node.nodeType === Node.TEXT_NODE) {
+      currentNode = node;
       var textLength = node.nodeValue.length;
-      caretOffset += textLength;
+      caretOffset = caretOffset + textLength;
 
       if (element.childNodes.length === index + 1) {
+        textNodesAdded = true;
         caretOffset += textNodes;
       }
 
       if (caretOffset >= position) {
+        currentNodeIsFind = true;
         currentNode = node;
         caretOffset = position - (caretOffset - textLength);
         return;
@@ -8161,6 +8172,15 @@ var setCursorPosition = function setCursorPosition(element, position) {
     } else if (node.nodeName === 'SPAN') {
       caretOffset += 1;
       currentNode = node;
+    }
+
+    if (element.childNodes.length === index + 1 && !currentNodeIsFind) {
+      if (!textNodesAdded) {
+        caretOffset += textNodes;
+      }
+
+      currentNodeIsFind = true;
+      caretOffset = caretOffset - position;
     }
   });
   range.setStart(currentNode, caretOffset);
@@ -9673,7 +9693,8 @@ var query = {
   messageQuery: null,
   blockedMembersQuery: null,
   AttachmentByTypeQuery: null,
-  AttachmentByTypeQueryForPopup: null
+  AttachmentByTypeQueryForPopup: null,
+  ReactionsQuery: null
 };
 var unreadScrollTo = {
   isScrolled: true
@@ -9870,6 +9891,15 @@ function loadMoreReactionsAC(limit) {
 function setReactionsListAC(reactions, hasNext) {
   return {
     type: SET_REACTIONS_LIST,
+    payload: {
+      reactions: reactions,
+      hasNext: hasNext
+    }
+  };
+}
+function addReactionsToListAC(reactions, hasNext) {
+  return {
+    type: ADD_REACTIONS_TO_LIST,
     payload: {
       reactions: reactions,
       hasNext: hasNext
@@ -14845,7 +14875,7 @@ function getReactions(action) {
 
         case 6:
           reactionQueryBuilder = new SceytChatClient.chatClient.ReactionListQueryBuilder(messageId);
-          reactionQueryBuilder.limit(limit || 30);
+          reactionQueryBuilder.limit(limit || 10);
 
           if (key) {
             reactionQueryBuilder.setKey(key);
@@ -14861,70 +14891,78 @@ function getReactions(action) {
 
         case 14:
           result = _context11.sent;
-          _context11.next = 17;
+          console.log('result reactions ... ', result);
+          query.ReactionsQuery = reactionQuery;
+          _context11.next = 19;
           return effects.put(setReactionsListAC(result.reactions, result.hasNext));
 
-        case 17:
-          _context11.next = 19;
+        case 19:
+          _context11.next = 21;
           return effects.put(setReactionsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 19:
-          _context11.next = 24;
+        case 21:
+          _context11.next = 26;
           break;
 
-        case 21:
-          _context11.prev = 21;
+        case 23:
+          _context11.prev = 23;
           _context11.t0 = _context11["catch"](0);
           console.log('ERROR in get reactions', _context11.t0.message);
 
-        case 24:
+        case 26:
         case "end":
           return _context11.stop();
       }
     }
-  }, _marked11$1, null, [[0, 21]]);
+  }, _marked11$1, null, [[0, 23]]);
 }
 
 function loadMoreReactions(action) {
-  var payload, channelId, messageId, key, channel, _yield$call3, _message7, reaction;
-
+  var payload, limit, ReactionQuery, result;
   return _regeneratorRuntime().wrap(function loadMoreReactions$(_context12) {
     while (1) {
       switch (_context12.prev = _context12.next) {
         case 0:
           _context12.prev = 0;
           payload = action.payload;
-          channelId = payload.channelId, messageId = payload.messageId, key = payload.key;
+          limit = payload.limit;
           _context12.next = 5;
-          return effects.call(getChannelFromMap, channelId);
+          return effects.put(setReactionsLoadingStateAC(LOADING_STATE.LOADING));
 
         case 5:
-          channel = _context12.sent;
-          _context12.next = 8;
-          return effects.call(channel.deleteReaction, messageId, key);
+          ReactionQuery = query.ReactionsQuery;
 
-        case 8:
-          _yield$call3 = _context12.sent;
-          _message7 = _yield$call3.message;
-          reaction = _yield$call3.reaction;
-          _context12.next = 13;
-          return effects.put(deleteReactionFromMessageAC(_message7, reaction, true));
+          if (limit) {
+            ReactionQuery.limit = limit;
+          }
 
-        case 13:
-          _context12.next = 18;
+          _context12.next = 9;
+          return effects.call(ReactionQuery.loadNext);
+
+        case 9:
+          result = _context12.sent;
+          _context12.next = 12;
+          return effects.put(addReactionsToListAC(result.reactions, result.hasNext));
+
+        case 12:
+          _context12.next = 14;
+          return effects.put(setReactionsLoadingStateAC(LOADING_STATE.LOADED));
+
+        case 14:
+          _context12.next = 19;
           break;
 
-        case 15:
-          _context12.prev = 15;
+        case 16:
+          _context12.prev = 16;
           _context12.t0 = _context12["catch"](0);
-          console.log('ERROR in delete reaction', _context12.t0.message);
+          console.log('ERROR in load more reactions', _context12.t0.message);
 
-        case 18:
+        case 19:
         case "end":
           return _context12.stop();
       }
     }
-  }, _marked12$1, null, [[0, 15]]);
+  }, _marked12$1, null, [[0, 16]]);
 }
 
 function getMessageAttachments(action) {
@@ -15045,7 +15083,7 @@ function getMessageAttachments(action) {
 }
 
 function loadMoreMessageAttachments(action) {
-  var _action$payload3, limit, direction, forPopup, AttachmentQuery, _yield$call4, attachments, hasNext;
+  var _action$payload3, limit, direction, forPopup, AttachmentQuery, _yield$call3, attachments, hasNext;
 
   return _regeneratorRuntime().wrap(function loadMoreMessageAttachments$(_context14) {
     while (1) {
@@ -15069,9 +15107,9 @@ function loadMoreMessageAttachments(action) {
           return effects.call(AttachmentQuery.loadPrevious);
 
         case 8:
-          _yield$call4 = _context14.sent;
-          attachments = _yield$call4.attachments;
-          hasNext = _yield$call4.hasNext;
+          _yield$call3 = _context14.sent;
+          attachments = _yield$call3.attachments;
+          hasNext = _yield$call3.hasNext;
 
           if (!forPopup) {
             _context14.next = 16;
@@ -16850,9 +16888,6 @@ function useUpdatePresence(channel, isVisible) {
     if (channel.peer && usersMap[channel.peer.id] && channel.peer.presence && (channel.peer.presence.state !== usersMap[channel.peer.id].state || channel.peer.presence.lastActiveAt && new Date(channel.peer.presence.lastActiveAt).getTime() !== new Date(usersMap[channel.peer.id].lastActiveAt).getTime())) {
       var _updateUserStatusOnCh;
 
-      console.log('dispatch update user status on channel');
-      console.log('usersMap ..  ..', usersMap);
-      console.log('usersMap ..  ..', channel.peer);
       dispatch(updateUserStatusOnChannelAC((_updateUserStatusOnCh = {}, _updateUserStatusOnCh[channel.peer.id] = channel.peer, _updateUserStatusOnCh)));
       usersMap[channel.peer.id] = channel.peer.presence;
     }
@@ -16975,7 +17010,13 @@ var Channel = function Channel(_ref) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), lastMessage.body)))), React__default.createElement(ChannelStatus, {
+  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), MessageTextFormat({
+    text: lastMessage.body,
+    message: lastMessage,
+    contactsMap: contactsMap,
+    getFromContacts: getFromContacts,
+    isLastMessage: true
+  }))))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), React__default.createElement(UnreadInfo, null, !!(channel.unreadMentionsCount && channel.unreadMentionsCount > 0) && React__default.createElement(UnreadMentionIconWrapper, {
     iconColor: colors.primary,
@@ -23629,7 +23670,7 @@ var FileSize = styled__default.span(_templateObject8$a || (_templateObject8$a = 
 var UserName = styled__default.h4(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled__default.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n"])), function (props) {
+var CarouselItem = styled__default.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
   return props.visibleSlide ? 1 : 0;
 });
 var UploadCont = styled__default.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
@@ -24728,7 +24769,6 @@ function MentionMembersPopup(_ref) {
 
   useEventListener('click', handleClicks);
   React.useEffect(function () {
-    console.log('mentions members open');
     dispatch(getMembersAC(channelId));
   }, [channelId]);
   React.useEffect(function () {
@@ -25018,7 +25058,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     updateCurrentMentions.typed = mentionDisplayName;
     updateCurrentMentions.id = member.id;
     updateCurrentMentions.end = updateCurrentMentions.start + mentionDisplayName.length;
-    setCurrentMentions(updateCurrentMentions);
+    setCurrentMentions(undefined);
     setMentionEdit(undefined);
     messageInputRef.current.focus();
   };
@@ -25057,8 +25097,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   var handleMentionDetect = function handleMentionDetect(e) {
     var selPos = getCaretPosition1(e.currentTarget);
+    var lastChar = e.currentTarget.innerText.slice(0, selPos).slice(-1);
 
-    if (e.key === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
+    if (lastChar === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
@@ -25068,36 +25109,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
+      console.log('selPos', selPos);
       setSelectionPos(selPos);
-    } else {
-      if (mentionedMembers.length) {
-        var edited = false;
-        var editMentions = mentionedMembers.map(function (men) {
-          if (men.start > selPos) {
-            if (!edited) {
-              edited = true;
-            }
-
-            var newMen = _extends({}, men);
-
-            if (e.key === 'Delete' || e.key === 'Backspace') {
-              newMen.start -= 1;
-              newMen.end -= 1;
-            } else {
-              newMen.start += 1;
-              newMen.end += 1;
-            }
-
-            return newMen;
-          }
-
-          return men;
-        });
-
-        if (edited) {
-          setMentionedMembers(editMentions);
-        }
-      }
     }
 
     if (currentMentions && currentMentions.start === selPos - 1 && !mentionTyping) {
@@ -25108,12 +25121,30 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var shouldClose = false;
 
     if (e.key === 'Backspace') {
+      console.log('mentionedMembers. . . . . ', mentionedMembers);
+      console.log('selPos. . . . . ', selPos);
       var mentionToEdit = mentionedMembers.find(function (menMem) {
         return menMem.start <= selPos && menMem.end >= selPos + 1;
       });
+      console.log('mentionToEdit .. . . ', mentionToEdit);
 
-      if (mentionToEdit) {
+      if (currentMentions) {
+        console.log('currentMentions .  . . . . ', currentMentions);
+
+        if (currentMentions.start >= selPos) {
+          shouldClose = true;
+          setCurrentMentions(undefined);
+          setOpenMention(false);
+          setMentionTyping(false);
+        } else {
+          setCurrentMentions({
+            start: currentMentions.start,
+            typed: messageText.slice(currentMentions.start + 1, selPos)
+          });
+        }
+      } else if (mentionToEdit) {
         var currentText = [messageText.slice(0, mentionToEdit.start + 1), messageText.slice(mentionToEdit.end)].join('');
+        console.log('currentText . . . ', currentText);
         setMessageText(currentText);
         messageInputRef.current.innerText = currentText;
         setMentionedMembers(function (prevState) {
@@ -25129,18 +25160,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
           start: mentionToEdit.start,
           typed: ''
         });
-      } else if (currentMentions) {
-        if (currentMentions.start >= selPos) {
-          shouldClose = true;
-          setCurrentMentions(undefined);
-          setOpenMention(false);
-          setMentionTyping(false);
-        } else {
-          setCurrentMentions({
-            start: currentMentions.start,
-            typed: messageText.slice(currentMentions.start + 1, selPos)
-          });
-        }
       }
     }
 
@@ -25168,6 +25187,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
         });
       });
       setMentionEdit(undefined);
+      console.log('mentionEdit. . . . . . ', mentionEdit);
+      console.log('setCursorPosition ', mentionEdit.start + 1);
       setCursorPosition(messageInputRef.current, mentionEdit.start + 1);
       setCurrentMentions({
         start: mentionEdit.start,
@@ -25457,6 +25478,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var mentionToEdit = mentionedMembers.find(function (menMem) {
         return menMem.start < selectionPos && menMem.end >= selectionPos;
       });
+      console.log('selectionPos .. . ', selectionPos);
+      console.log('mentionToEdit .. . ', mentionToEdit);
 
       if (mentionToEdit) {
         setMentionEdit(mentionToEdit);

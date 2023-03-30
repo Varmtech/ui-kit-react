@@ -8,11 +8,12 @@ export declare const MessageTextFormatForEdit: ({ text, message }: {
     message: any;
 }) => string;
 export declare const urlRegex: RegExp;
-export declare const MessageTextFormat: ({ text, message, contactsMap, getFromContacts }: {
+export declare const MessageTextFormat: ({ text, message, contactsMap, getFromContacts, isLastMessage }: {
     text: string;
     message: any;
     contactsMap: IContactsMap;
     getFromContacts: boolean;
+    isLastMessage?: boolean | undefined;
 }) => any;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const setMessageTypeByAttachment: (attachmentType: string) => "file" | "media";

@@ -59,6 +59,7 @@ export declare const UploadAvatarButton: import("styled-components").StyledCompo
 export declare const UploadAvatarHandler: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const MentionedUser: import("styled-components").StyledComponent<"span", any, {
     color?: string | undefined;
+    isLastMessage?: boolean | undefined;
 }, never>;
 export declare const MessageOwner: import("styled-components").StyledComponent<"h3", any, any, never>;
 export declare const MessageText: import("styled-components").StyledComponent<"pre", any, {
