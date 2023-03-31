@@ -49,4 +49,5 @@ export declare const UnreadMentionIconWrapper: import("styled-components").Style
     rightMargin?: boolean | undefined;
 }, never>;
 export declare const TypingIndicator: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const ReactionItem: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UnreadInfo: import("styled-components").StyledComponent<"span", any, {}, never>;

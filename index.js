@@ -446,7 +446,6 @@ function configureStore(options) {
     var composedEnhancer = finalCompose.apply(void 0, storeEnhancers);
     return redux.createStore(rootReducer, preloadedState, composedEnhancer);
 }
-//# sourceMappingURL=redux-toolkit.esm.js.map
 
 function _regeneratorRuntime() {
   /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
@@ -1381,6 +1380,8 @@ var GET_REACTIONS = 'GET_REACTIONS';
 var LOAD_MORE_REACTIONS = 'LOAD_MORE_REACTIONS';
 var SET_REACTIONS_LIST = 'SET_REACTIONS_LIST';
 var ADD_REACTIONS_TO_LIST = 'ADD_REACTIONS_TO_LIST';
+var DELETE_REACTION_FROM_LIST = 'DELETE_REACTION_FROM_LIST';
+var ADD_REACTION_TO_LIST = 'ADD_REACTION_TO_LIST';
 var SET_REACTIONS_LOADING_STATE = 'SET_REACTIONS_LOADING_STATE';
 var SET_SEND_MESSAGE_INPUT_HEIGHT = 'SET_SEND_MESSAGE_INPUT_HEIGHT';
 var ADD_REACTION_TO_MESSAGE = 'ADD_REACTION_TO_MESSAGE';
@@ -8980,6 +8981,21 @@ var MessageReducer = (function (state, _temp) {
         return newState;
       }
 
+    case ADD_REACTION_TO_LIST:
+      {
+        newState.reactionsList = [].concat(newState.reactionsList, [payload.reaction]);
+        return newState;
+      }
+
+    case DELETE_REACTION_FROM_LIST:
+      {
+        var _reaction2 = payload.reaction;
+        newState.reactionsList = [].concat(newState.reactionsList).filter(function (item) {
+          return item.id !== _reaction2.id;
+        });
+        return newState;
+      }
+
     case SET_REACTIONS_LOADING_STATE:
       {
         newState.reactionsLoadingState = payload.state;
@@ -9702,11 +9718,19 @@ function getActiveChannelId() {
   return activeChannelId;
 }
 function setChannelsInMap(channels) {
+  var channelsForUpdateLastReactionMessage = [];
   channels.forEach(function (channel) {
+
+    if (channel.userMessageReactions && channel.userMessageReactions.length && channel.lastMessage.id < channel.userMessageReactions[0].id && channel.lastMessage.id !== channel.userMessageReactions[0].messageId) {
+      channelsForUpdateLastReactionMessage.push(channel);
+    }
 
     channelsMap[channel.id] = channel;
   });
-  return JSON.parse(JSON.stringify(channels));
+  return {
+    channels: JSON.parse(JSON.stringify(channels)),
+    channelsForUpdateLastReactionMessage: channelsForUpdateLastReactionMessage
+  };
 }
 function getChannelFromMap(channelId) {
   return channelsMap[channelId];
@@ -9881,13 +9905,14 @@ function addReactionAC(channelId, messageId, key, score, reason, enforceUnique) 
     }
   };
 }
-function deleteReactionAC(channelId, messageId, key) {
+function deleteReactionAC(channelId, messageId, key, isLastReaction) {
   return {
     type: DELETE_REACTION,
     payload: {
       channelId: channelId,
       messageId: messageId,
-      key: key
+      key: key,
+      isLastReaction: isLastReaction
     }
   };
 }
@@ -9944,6 +9969,22 @@ function addReactionsToListAC(reactions, hasNext) {
     payload: {
       reactions: reactions,
       hasNext: hasNext
+    }
+  };
+}
+function addReactionToListAC(reaction) {
+  return {
+    type: ADD_REACTION_TO_LIST,
+    payload: {
+      reaction: reaction
+    }
+  };
+}
+function deleteReactionFromListAC(reaction) {
+  return {
+    type: DELETE_REACTION_FROM_LIST,
+    payload: {
+      reaction: reaction
     }
   };
 }
@@ -10461,7 +10502,7 @@ function changeMemberRoleAC(channelId, members) {
 
 var _marked = /*#__PURE__*/_regeneratorRuntime().mark(watchForEvents);
 function watchForEvents() {
-  var SceytChatClient, channelListener, connectionListener, typingUsersTimeout, chan, _yield$take, type, args, createdChannel, channelExists, channel, _channel, member, _channelExists, _activeChannelId, _channel2, _channelExists2, _channel3, removedMembers, _activeChannelId2, _channelExists3, activeChannel, _channel4, addedMembers, _activeChannelId3, _channelExists4, updatedChannel, _channelExists5, subject, avatarUrl, _channel5, message, _activeChannelId4, _channelExists6, channelForAdd, _ret, _ret2, _channel6, from, channelId, _activeChannelId6, _channel7, _activeChannel, _channel8, deletedMessage, _activeChannelId7, _channelExists7, _channel9, _message, _activeChannelId8, _channelExists8, _channel10, user, _message2, reaction, isSelf, _activeChannelId9, _channel11, _user, _message3, _reaction, _isSelf, _activeChannelId10, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId11, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _channel19, status;
+  var SceytChatClient, channelListener, connectionListener, typingUsersTimeout, chan, _yield$take, type, args, createdChannel, channelExists, channel, _channel, member, _channelExists, _activeChannelId, _channel2, _channelExists2, _channel3, removedMembers, _activeChannelId2, _channelExists3, activeChannel, _channel4, addedMembers, _activeChannelId3, _channelExists4, updatedChannel, _channelExists5, subject, avatarUrl, _channel5, message, _activeChannelId4, _channelExists6, channelForAdd, _ret, _ret2, _channel6, from, channelId, _activeChannelId6, _channel7, _activeChannel, _channel8, deletedMessage, _activeChannelId7, _channelExists7, _channel9, _message, _activeChannelId8, _channelExists8, _channel10, user, _message2, reaction, isSelf, _activeChannelId9, channelUpdateParams, _channel11, _user, _message3, _reaction, _isSelf, _activeChannelId10, _channelUpdateParams, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId11, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _channel19, status;
 
   return _regeneratorRuntime().wrap(function watchForEvents$(_context3) {
     while (1) {
@@ -10799,7 +10840,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 216 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 226 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 232 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 249 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 254 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 259 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 264 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 269 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 277 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 284 : 288;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 220 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 236 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 242 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 259 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 264 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 269 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 274 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 279 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 283 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 287 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 294 : 298;
           break;
 
         case 14:
@@ -10824,7 +10865,7 @@ function watchForEvents() {
           return effects.put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 24:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 25:
           channel = args.channel;
@@ -10834,7 +10875,7 @@ function watchForEvents() {
 
         case 29:
 
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 32:
           console.log('channel LEAVE ... ');
@@ -10866,7 +10907,7 @@ function watchForEvents() {
           }));
 
         case 44:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 45:
           console.log('channel BLOCK ... ');
@@ -10882,11 +10923,11 @@ function watchForEvents() {
           return effects.put(removeChannelAC(_channel2.id));
 
         case 51:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 52:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 54:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -10950,7 +10991,7 @@ function watchForEvents() {
           }));
 
         case 79:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 80:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -10994,7 +11035,7 @@ function watchForEvents() {
           return effects.put(setAddedToChannelAC(JSON.parse(JSON.stringify(_channel4))));
 
         case 98:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 99:
           updatedChannel = args.updatedChannel;
@@ -11013,7 +11054,7 @@ function watchForEvents() {
           }));
 
         case 105:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 106:
           _channel5 = args.channel, message = args.message;
@@ -11108,7 +11149,7 @@ function watchForEvents() {
           return effects.put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 143:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 144:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -11196,7 +11237,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 148:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -11236,7 +11277,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 152:
           _channel6 = args.channel, from = args.from;
@@ -11249,7 +11290,7 @@ function watchForEvents() {
           return effects.put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 156:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 157:
           channelId = args.channelId;
@@ -11292,7 +11333,7 @@ function watchForEvents() {
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 176:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 177:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -11335,7 +11376,7 @@ function watchForEvents() {
           return effects.put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
         case 192:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 193:
           _channel9 = args.channel, _message = args.message;
@@ -11377,7 +11418,7 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 206:
           console.log('channel REACTION_ADDED ... ');
@@ -11397,175 +11438,204 @@ function watchForEvents() {
           addReactionOnAllMessages(_message2, reaction, true);
 
         case 214:
+          if (!(_channel10.userMessageReactions && _channel10.userMessageReactions.length)) {
+            _context3.next = 218;
+            break;
+          }
+
+          channelUpdateParams = {
+            userMessageReactions: _channel10.userMessageReactions,
+            lastReactedMessage: _message2
+          };
+          _context3.next = 218;
+          return effects.put(updateChannelDataAC(_channel10.id, channelUpdateParams));
+
+        case 218:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
-        case 216:
+        case 220:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ');
           _isSelf = _user.id === SceytChatClient.chatClient.user.id;
           _activeChannelId10 = getActiveChannelId();
 
           if (!(_channel11.id === _activeChannelId10)) {
-            _context3.next = 224;
+            _context3.next = 228;
             break;
           }
 
-          _context3.next = 223;
+          _context3.next = 227;
           return effects.put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 223:
+        case 227:
           removeReactionOnAllMessages(_message3, _reaction, true);
 
-        case 224:
+        case 228:
+          console.log('reactions deleted ..... ', _channel11);
+
+          if (_channel11.userMessageReactions && _channel11.userMessageReactions.length) {
+            _context3.next = 234;
+            break;
+          }
+
+          console.log('update channel params .....');
+          _channelUpdateParams = {
+            userMessageReactions: [],
+            lastReactedMessage: null
+          };
+          _context3.next = 234;
+          return effects.put(updateChannelDataAC(_channel11.id, _channelUpdateParams));
+
+        case 234:
           if (checkChannelExistsOnMessagesMap(_channel11.id)) {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
-        case 226:
+        case 236:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 231;
+          _context3.next = 241;
           return effects.put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 231:
-          return _context3.abrupt("break", 289);
+        case 241:
+          return _context3.abrupt("break", 299);
 
-        case 232:
+        case 242:
           _channel13 = args.channel;
           console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 236;
+          _context3.next = 246;
           return effects.call(getActiveChannelId);
 
-        case 236:
+        case 246:
           _activeChannelId11 = _context3.sent;
-          _context3.next = 239;
+          _context3.next = 249;
           return effects.call(checkChannelExists, _channel13.id);
 
-        case 239:
+        case 249:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId11)) {
-            _context3.next = 244;
+            _context3.next = 254;
             break;
           }
 
-          _context3.next = 243;
+          _context3.next = 253;
           return effects.put(clearMessagesAC());
 
-        case 243:
+        case 253:
           removeAllMessages();
 
-        case 244:
+        case 254:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 248;
+            _context3.next = 258;
             break;
           }
 
-          _context3.next = 248;
+          _context3.next = 258;
           return effects.put(updateChannelDataAC(_channel13.id, {
             lastMessage: {},
             unreadMessageCount: 0
           }));
 
-        case 248:
-          return _context3.abrupt("break", 289);
+        case 258:
+          return _context3.abrupt("break", 299);
 
-        case 249:
+        case 259:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 253;
+          _context3.next = 263;
           return effects.put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 253:
-          return _context3.abrupt("break", 289);
+        case 263:
+          return _context3.abrupt("break", 299);
 
-        case 254:
+        case 264:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 258;
+          _context3.next = 268;
           return effects.put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 258:
-          return _context3.abrupt("break", 289);
-
-        case 259:
-          _channel16 = args.channel;
-          console.log('channel HIDE ... ');
-          _context3.next = 263;
-          return effects.put(setChannelToHideAC(_channel16));
-
-        case 263:
-          return _context3.abrupt("break", 289);
-
-        case 264:
-          _channel17 = args.channel;
-          console.log('channel UNHIDE ... ');
-          _context3.next = 268;
-          return effects.put(setChannelToUnHideAC(_channel17));
-
         case 268:
-          return _context3.abrupt("break", 289);
+          return _context3.abrupt("break", 299);
 
         case 269:
+          _channel16 = args.channel;
+          console.log('channel HIDE ... ');
+          _context3.next = 273;
+          return effects.put(setChannelToHideAC(_channel16));
+
+        case 273:
+          return _context3.abrupt("break", 299);
+
+        case 274:
+          _channel17 = args.channel;
+          console.log('channel UNHIDE ... ');
+          _context3.next = 278;
+          return effects.put(setChannelToUnHideAC(_channel17));
+
+        case 278:
+          return _context3.abrupt("break", 299);
+
+        case 279:
           _channel18 = args.channel;
-          _context3.next = 272;
+          _context3.next = 282;
           return effects.put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 272:
-          return _context3.abrupt("break", 289);
+        case 282:
+          return _context3.abrupt("break", 299);
 
-        case 273:
+        case 283:
           _channel19 = args.channel;
-          _context3.next = 276;
+          _context3.next = 286;
           return effects.put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 276:
-          return _context3.abrupt("break", 289);
-
-        case 277:
-          console.log('channel CHANGE_ROLE ... ');
-          _context3.next = 281;
-          return effects.call(getActiveChannelId);
-
-        case 281:
-
-          return _context3.abrupt("break", 289);
-
-        case 284:
-          status = args.status;
-          _context3.next = 287;
-          return effects.put(setConnectionStatusAC(status));
+        case 286:
+          return _context3.abrupt("break", 299);
 
         case 287:
-          return _context3.abrupt("break", 289);
+          console.log('channel CHANGE_ROLE ... ');
+          _context3.next = 291;
+          return effects.call(getActiveChannelId);
 
-        case 288:
+        case 291:
+
+          return _context3.abrupt("break", 299);
+
+        case 294:
+          status = args.status;
+          _context3.next = 297;
+          return effects.put(setConnectionStatusAC(status));
+
+        case 297:
+          return _context3.abrupt("break", 299);
+
+        case 298:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 289:
+        case 299:
           _context3.next = 5;
           break;
 
-        case 291:
+        case 301:
         case "end":
           return _context3.stop();
       }
@@ -11701,7 +11771,7 @@ function createChannel(action) {
 }
 
 function getChannels(action) {
-  var payload, params, SceytChatClient, searchBy, directChannelQueryBuilder, directChannelQuery, directChannelsData, groupChannelQueryBuilder, groupChannelQuery, groupChannelsData, allChannels, mappedChannels, channelQueryBuilder, channelQuery, channelsData, channelId, activeChannel, _mappedChannels, _channelsData$channel;
+  var payload, params, SceytChatClient, searchBy, directChannelQueryBuilder, directChannelQuery, directChannelsData, groupChannelQueryBuilder, groupChannelQuery, groupChannelsData, allChannels, _yield$call, mappedChannels, channelsForUpdateLastReactionMessage, channelMessageMap, channelQueryBuilder, channelQuery, channelsData, channelId, activeChannel, _yield$call2, _mappedChannels, _channelsForUpdateLastReactionMessage, _channelMessageMap, _channelsData$channel;
 
   return _regeneratorRuntime().wrap(function getChannels$(_context2) {
     while (1) {
@@ -11718,7 +11788,7 @@ function getChannels(action) {
           searchBy = params.search;
 
           if (!searchBy) {
-            _context2.next = 39;
+            _context2.next = 46;
             break;
           }
 
@@ -11760,110 +11830,184 @@ function getChannels(action) {
           return effects.call(setChannelsInMap, allChannels);
 
         case 34:
-          mappedChannels = _context2.sent;
-          _context2.next = 37;
+          _yield$call = _context2.sent;
+          mappedChannels = _yield$call.channels;
+          channelsForUpdateLastReactionMessage = _yield$call.channelsForUpdateLastReactionMessage;
+          console.log('channelsForUpdateLastReactionMessage saga. . . . ..', channelsForUpdateLastReactionMessage);
+
+          if (!channelsForUpdateLastReactionMessage.length) {
+            _context2.next = 42;
+            break;
+          }
+
+          channelMessageMap = {};
+          _context2.next = 42;
+          return effects.call(function () {
+            try {
+              console.log('call promise all. . . . ..');
+              return Promise.resolve(Promise.all(channelsForUpdateLastReactionMessage.map(function (channel) {
+                try {
+                  return Promise.resolve(new Promise(function (resolve) {
+                    channel.getMessagesById([channel.userMessageReactions[0].messageId]).then(function (messages) {
+                      channelMessageMap[channel.id] = messages[0];
+                      resolve(true);
+                    });
+                  }));
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              })));
+            } catch (e) {
+              return Promise.reject(e);
+            }
+          });
+
+        case 42:
+          _context2.next = 44;
           return effects.put(setChannelsAC(mappedChannels));
 
-        case 37:
-          _context2.next = 88;
+        case 44:
+          _context2.next = 102;
           break;
 
-        case 39:
+        case 46:
           channelQueryBuilder = new SceytChatClient.chatClient.ChannelListQueryBuilder();
 
           if (!(params.filter && params.filter.channelType)) {
-            _context2.next = 55;
+            _context2.next = 62;
             break;
           }
 
           console.log('params.filter.channelType ... ', params.filter.channelType);
 
           if (!(params.filter.channelType.toLowerCase() === 'direct')) {
-            _context2.next = 46;
+            _context2.next = 53;
             break;
           }
 
           channelQueryBuilder.direct();
-          _context2.next = 55;
+          _context2.next = 62;
           break;
 
-        case 46:
+        case 53:
           if (!(params.filter.channelType.toLowerCase() === 'public')) {
-            _context2.next = 50;
+            _context2.next = 57;
             break;
           }
 
           channelQueryBuilder["public"]();
-          _context2.next = 55;
+          _context2.next = 62;
           break;
 
-        case 50:
+        case 57:
           if (!(params.filter.channelType.toLowerCase() === 'private')) {
-            _context2.next = 54;
+            _context2.next = 61;
             break;
           }
 
           channelQueryBuilder["private"]();
-          _context2.next = 55;
+          _context2.next = 62;
           break;
 
-        case 54:
+        case 61:
           throw new Error('Bad filter type');
 
-        case 55:
+        case 62:
           channelQueryBuilder.sortByLastMessage();
           channelQueryBuilder.limit(params.limit || 20);
-          _context2.next = 59;
+          _context2.next = 66;
           return effects.call(channelQueryBuilder.build);
 
-        case 59:
+        case 66:
           channelQuery = _context2.sent;
-          _context2.next = 62;
+          _context2.next = 69;
           return effects.call(channelQuery.loadNextPage);
 
-        case 62:
+        case 69:
           channelsData = _context2.sent;
-          _context2.next = 65;
+          _context2.next = 72;
           return effects.put(channelHasNextAC(channelsData.hasNext));
 
-        case 65:
-          _context2.next = 67;
+        case 72:
+          _context2.next = 74;
           return effects.call(getActiveChannelId);
 
-        case 67:
+        case 74:
           channelId = _context2.sent;
 
           if (!channelId) {
-            _context2.next = 74;
+            _context2.next = 81;
             break;
           }
 
-          _context2.next = 71;
+          _context2.next = 78;
           return effects.call(getChannelFromMap, channelId);
 
-        case 71:
+        case 78:
           _context2.t0 = _context2.sent;
-          _context2.next = 75;
+          _context2.next = 82;
           break;
 
-        case 74:
+        case 81:
           _context2.t0 = null;
 
-        case 75:
+        case 82:
           activeChannel = _context2.t0;
-          _context2.next = 78;
+          _context2.next = 85;
           return effects.call(destroyChannelsMap);
 
-        case 78:
-          _context2.next = 80;
+        case 85:
+          _context2.next = 87;
           return effects.call(setChannelsInMap, channelsData.channels);
 
-        case 80:
-          _mappedChannels = _context2.sent;
-          _context2.next = 83;
+        case 87:
+          _yield$call2 = _context2.sent;
+          _mappedChannels = _yield$call2.channels;
+          _channelsForUpdateLastReactionMessage = _yield$call2.channelsForUpdateLastReactionMessage;
+
+          if (!_channelsForUpdateLastReactionMessage.length) {
+            _context2.next = 95;
+            break;
+          }
+
+          _channelMessageMap = {};
+          _context2.next = 94;
+          return effects.call(function () {
+            try {
+              return Promise.resolve(Promise.all(_channelsForUpdateLastReactionMessage.map(function (channel) {
+                try {
+                  return Promise.resolve(new Promise(function (resolve) {
+                    channel.getMessagesById([channel.userMessageReactions[0].messageId]).then(function (messages) {
+                      _channelMessageMap[channel.id] = messages[0];
+                      resolve(true);
+                    })["catch"](function (e) {
+                      console.log(e, 'Error on getMessagesById');
+                      resolve(true);
+                    });
+                  }));
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              })));
+            } catch (e) {
+              return Promise.reject(e);
+            }
+          });
+
+        case 94:
+          _mappedChannels = _mappedChannels.map(function (channel) {
+            if (_channelMessageMap[channel.id]) {
+              channel.lastReactedMessage = _channelMessageMap[channel.id];
+            }
+
+            return channel;
+          });
+
+        case 95:
+          _context2.next = 97;
           return effects.put(setChannelsAC(_mappedChannels));
 
-        case 83:
+        case 97:
           if (!channelId) {
             _channelsData$channel = channelsData.channels;
             activeChannel = _channelsData$channel[0];
@@ -11872,36 +12016,36 @@ function getChannels(action) {
           query.channelQuery = channelQuery;
 
           if (!activeChannel) {
-            _context2.next = 88;
+            _context2.next = 102;
             break;
           }
 
-          _context2.next = 88;
+          _context2.next = 102;
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(activeChannel))));
 
-        case 88:
-          _context2.next = 90;
+        case 102:
+          _context2.next = 104;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 90:
-          _context2.next = 96;
+        case 104:
+          _context2.next = 110;
           break;
 
-        case 92:
-          _context2.prev = 92;
+        case 106:
+          _context2.prev = 106;
           _context2.t1 = _context2["catch"](0);
           console.log(_context2.t1, 'Error on get channels');
 
-        case 96:
+        case 110:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2, null, [[0, 92]]);
+  }, _marked2, null, [[0, 106]]);
 }
 
 function getChannelsForForward(action) {
-  var payload, searchValue, SceytChatClient, directChannelQueryBuilder, directChannelQuery, directChannelsData, directChannelsToAdd, groupChannelQueryBuilder, groupChannelQuery, groupChannelsData, groupChannelsToAdd, allChannels, mappedChannels, channelQueryBuilder, channelQuery, channelsData, channelsToAdd, _mappedChannels2;
+  var payload, searchValue, SceytChatClient, directChannelQueryBuilder, directChannelQuery, directChannelsData, directChannelsToAdd, groupChannelQueryBuilder, groupChannelQuery, groupChannelsData, groupChannelsToAdd, allChannels, _yield$call3, mappedChannels, channelQueryBuilder, channelQuery, channelsData, channelsToAdd, _yield$call4, _mappedChannels2;
 
   return _regeneratorRuntime().wrap(function getChannelsForForward$(_context3) {
     while (1) {
@@ -11916,7 +12060,7 @@ function getChannelsForForward(action) {
 
         case 6:
           if (!searchValue) {
-            _context3.next = 40;
+            _context3.next = 41;
             break;
           }
 
@@ -11960,73 +12104,76 @@ function getChannelsForForward(action) {
           return effects.call(setChannelsInMap, allChannels);
 
         case 33:
-          mappedChannels = _context3.sent;
-          _context3.next = 36;
+          _yield$call3 = _context3.sent;
+          mappedChannels = _yield$call3.channels;
+          _context3.next = 37;
           return effects.put(setChannelsFroForwardAC(mappedChannels));
 
-        case 36:
-          _context3.next = 38;
+        case 37:
+          _context3.next = 39;
           return effects.put(channelHasNextAC(false, true));
 
-        case 38:
-          _context3.next = 58;
+        case 39:
+          _context3.next = 60;
           break;
 
-        case 40:
+        case 41:
           channelQueryBuilder = new SceytChatClient.chatClient.ChannelListQueryBuilder();
           channelQueryBuilder.sortByLastMessage();
           channelQueryBuilder.limit(20);
-          _context3.next = 45;
+          _context3.next = 46;
           return effects.call(channelQueryBuilder.build);
 
-        case 45:
+        case 46:
           channelQuery = _context3.sent;
-          _context3.next = 48;
+          _context3.next = 49;
           return effects.call(channelQuery.loadNextPage);
 
-        case 48:
+        case 49:
           channelsData = _context3.sent;
-          _context3.next = 51;
+          _context3.next = 52;
           return effects.put(channelHasNextAC(channelsData.hasNext, true));
 
-        case 51:
+        case 52:
           channelsToAdd = channelsData.channels.filter(function (channel) {
             return channel.type === CHANNEL_TYPE.PUBLIC ? channel.role === 'admin' || channel.role === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.id : true;
           });
-          _context3.next = 54;
+          _context3.next = 55;
           return effects.call(setChannelsInMap, channelsToAdd);
 
-        case 54:
-          _mappedChannels2 = _context3.sent;
-          _context3.next = 57;
+        case 55:
+          _yield$call4 = _context3.sent;
+          _mappedChannels2 = _yield$call4.channels;
+          _context3.next = 59;
           return effects.put(setChannelsFroForwardAC(_mappedChannels2));
 
-        case 57:
+        case 59:
           query.channelQueryForward = channelQuery;
 
-        case 58:
-          _context3.next = 60;
+        case 60:
+          _context3.next = 62;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED, true));
 
-        case 60:
-          _context3.next = 66;
+        case 62:
+          _context3.next = 68;
           break;
 
-        case 62:
-          _context3.prev = 62;
+        case 64:
+          _context3.prev = 64;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0, 'Error on get for forward channels');
 
-        case 66:
+        case 68:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3, null, [[0, 62]]);
+  }, _marked3, null, [[0, 64]]);
 }
 
 function channelsLoadMore(action) {
-  var payload, limit, channelQuery, channelsData, mappedChannels;
+  var payload, limit, channelQuery, channelsData, _yield$call5, mappedChannels;
+
   return _regeneratorRuntime().wrap(function channelsLoadMore$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
@@ -12057,33 +12204,35 @@ function channelsLoadMore(action) {
           return effects.call(setChannelsInMap, channelsData.channels);
 
         case 14:
-          mappedChannels = _context4.sent;
-          _context4.next = 17;
+          _yield$call5 = _context4.sent;
+          mappedChannels = _yield$call5.channels;
+          _context4.next = 18;
           return effects.put(addChannelsAC(mappedChannels));
 
-        case 17:
-          _context4.next = 19;
+        case 18:
+          _context4.next = 20;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 19:
-          _context4.next = 24;
+        case 20:
+          _context4.next = 25;
           break;
 
-        case 21:
-          _context4.prev = 21;
+        case 22:
+          _context4.prev = 22;
           _context4.t0 = _context4["catch"](0);
           console.log(_context4.t0, 'Error in load more channels');
 
-        case 24:
+        case 25:
         case "end":
           return _context4.stop();
       }
     }
-  }, _marked4, null, [[0, 21]]);
+  }, _marked4, null, [[0, 22]]);
 }
 
 function channelsForForwardLoadMore(action) {
-  var payload, limit, channelQueryForward, channelsData, channelsToAdd, mappedChannels;
+  var payload, limit, channelQueryForward, channelsData, channelsToAdd, _yield$call6, mappedChannels;
+
   return _regeneratorRuntime().wrap(function channelsForForwardLoadMore$(_context5) {
     while (1) {
       switch (_context5.prev = _context5.next) {
@@ -12117,29 +12266,30 @@ function channelsForForwardLoadMore(action) {
           return effects.call(setChannelsInMap, channelsToAdd);
 
         case 15:
-          mappedChannels = _context5.sent;
-          _context5.next = 18;
+          _yield$call6 = _context5.sent;
+          mappedChannels = _yield$call6.channels;
+          _context5.next = 19;
           return effects.put(addChannelsForForwardAC(mappedChannels));
 
-        case 18:
-          _context5.next = 20;
+        case 19:
+          _context5.next = 21;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 20:
-          _context5.next = 25;
+        case 21:
+          _context5.next = 26;
           break;
 
-        case 22:
-          _context5.prev = 22;
+        case 23:
+          _context5.prev = 23;
           _context5.t0 = _context5["catch"](0);
           console.log(_context5.t0, 'Error in load more channels for forward');
 
-        case 25:
+        case 26:
         case "end":
           return _context5.stop();
       }
     }
-  }, _marked5, null, [[0, 22]]);
+  }, _marked5, null, [[0, 23]]);
 }
 
 function markMessagesRead(action) {
@@ -12642,7 +12792,7 @@ function blockChannel(action) {
 }
 
 function updateChannel(action) {
-  var payload, channelId, config, SceytChatClient, channel, paramsToUpdate, fileToUpload, _yield$call, subject, avatarUrl, label, metadata;
+  var payload, channelId, config, SceytChatClient, channel, paramsToUpdate, fileToUpload, _yield$call7, subject, avatarUrl, label, metadata;
 
   return _regeneratorRuntime().wrap(function updateChannel$(_context17) {
     while (1) {
@@ -12699,11 +12849,11 @@ function updateChannel(action) {
           return effects.call(channel.update, paramsToUpdate);
 
         case 18:
-          _yield$call = _context17.sent;
-          subject = _yield$call.subject;
-          avatarUrl = _yield$call.avatarUrl;
-          label = _yield$call.label;
-          metadata = _yield$call.metadata;
+          _yield$call7 = _context17.sent;
+          subject = _yield$call7.subject;
+          avatarUrl = _yield$call7.avatarUrl;
+          label = _yield$call7.label;
+          metadata = _yield$call7.metadata;
           _context17.next = 25;
           return effects.put(updateChannelDataAC(channelId, {
             subject: subject,
@@ -14814,7 +14964,7 @@ function loadMoreMessages(action) {
 }
 
 function addReaction(action) {
-  var payload, channelId, messageId, key, score, reason, enforceUnique, channel, _yield$call, _message5, reaction;
+  var payload, channelId, messageId, key, score, reason, enforceUnique, user, channel, _yield$call, _message5, reaction, channelUpdateParam;
 
   return _regeneratorRuntime().wrap(function addReaction$(_context9) {
     while (1) {
@@ -14823,42 +14973,61 @@ function addReaction(action) {
           _context9.prev = 0;
           payload = action.payload;
           channelId = payload.channelId, messageId = payload.messageId, key = payload.key, score = payload.score, reason = payload.reason, enforceUnique = payload.enforceUnique;
-          _context9.next = 5;
+          user = getClient().chatClient.user;
+          _context9.next = 6;
           return effects.call(getChannelFromMap, channelId);
 
-        case 5:
+        case 6:
           channel = _context9.sent;
-          _context9.next = 8;
+          _context9.next = 9;
           return effects.call(channel.addReaction, messageId, key, score, reason, enforceUnique);
 
-        case 8:
+        case 9:
           _yield$call = _context9.sent;
           _message5 = _yield$call.message;
           reaction = _yield$call.reaction;
-          _context9.next = 13;
+
+          if (!(user.id === _message5.user.id)) {
+            _context9.next = 16;
+            break;
+          }
+
+          channelUpdateParam = {
+            userMessageReactions: [reaction],
+            lastReactedMessage: _message5
+          };
+          _context9.next = 16;
+          return effects.put(updateChannelDataAC(channel.id, channelUpdateParam));
+
+        case 16:
+          _context9.next = 18;
+          return effects.put(addReactionToListAC(reaction));
+
+        case 18:
+          _context9.next = 20;
           return effects.put(addReactionToMessageAC(_message5, reaction, true));
 
-        case 13:
+        case 20:
           addReactionToMessageOnMap(channelId, _message5, reaction, true);
           addReactionOnAllMessages(_message5, reaction, true);
-          _context9.next = 20;
+          _context9.next = 27;
           break;
 
-        case 17:
-          _context9.prev = 17;
+        case 24:
+          _context9.prev = 24;
           _context9.t0 = _context9["catch"](0);
           console.log('ERROR in add reaction', _context9.t0.message);
 
-        case 20:
+        case 27:
         case "end":
           return _context9.stop();
       }
     }
-  }, _marked9$1, null, [[0, 17]]);
+  }, _marked9$1, null, [[0, 24]]);
 }
 
 function deleteReaction(action) {
-  var payload, channelId, messageId, key, channel, _yield$call2, _message6, reaction;
+  var payload, channelId, messageId, key, isLastReaction, channel, _yield$call2, _message6, reaction, channelUpdateParam;
 
   return _regeneratorRuntime().wrap(function deleteReaction$(_context10) {
     while (1) {
@@ -14866,7 +15035,7 @@ function deleteReaction(action) {
         case 0:
           _context10.prev = 0;
           payload = action.payload;
-          channelId = payload.channelId, messageId = payload.messageId, key = payload.key;
+          channelId = payload.channelId, messageId = payload.messageId, key = payload.key, isLastReaction = payload.isLastReaction;
           _context10.next = 5;
           return effects.call(getChannelFromMap, channelId);
 
@@ -14879,26 +15048,44 @@ function deleteReaction(action) {
           _yield$call2 = _context10.sent;
           _message6 = _yield$call2.message;
           reaction = _yield$call2.reaction;
-          _context10.next = 13;
-          return effects.put(deleteReactionFromMessageAC(_message6, reaction, true));
 
-        case 13:
-          removeReactionToMessageOnMap(channelId, _message6, reaction, true);
-          removeReactionOnAllMessages(_message6, reaction, true);
-          _context10.next = 20;
-          break;
+          if (!isLastReaction) {
+            _context10.next = 15;
+            break;
+          }
+
+          channelUpdateParam = {
+            userMessageReactions: [],
+            lastReactedMessage: null
+          };
+          _context10.next = 15;
+          return effects.put(updateChannelDataAC(channel.id, channelUpdateParam));
+
+        case 15:
+          _context10.next = 17;
+          return effects.put(deleteReactionFromListAC(reaction));
 
         case 17:
-          _context10.prev = 17;
+          _context10.next = 19;
+          return effects.put(deleteReactionFromMessageAC(_message6, reaction, true));
+
+        case 19:
+          removeReactionToMessageOnMap(channelId, _message6, reaction, true);
+          removeReactionOnAllMessages(_message6, reaction, true);
+          _context10.next = 26;
+          break;
+
+        case 23:
+          _context10.prev = 23;
           _context10.t0 = _context10["catch"](0);
           console.log('ERROR in delete reaction', _context10.t0.message);
 
-        case 20:
+        case 26:
         case "end":
           return _context10.stop();
       }
     }
-  }, _marked10$1, null, [[0, 17]]);
+  }, _marked10$1, null, [[0, 23]]);
 }
 
 function getReactions(action) {
@@ -16971,7 +17158,7 @@ function SvgNotificationsOff3(props) {
   }))));
 }
 
-var _templateObject$4, _templateObject2$4, _templateObject3$4, _templateObject4$3, _templateObject5$1, _templateObject6$1, _templateObject7$1, _templateObject8$1, _templateObject9$1, _templateObject10$1, _templateObject11$1, _templateObject12$1, _templateObject13$1, _templateObject14$1, _templateObject15$1;
+var _templateObject$4, _templateObject2$4, _templateObject3$4, _templateObject4$3, _templateObject5$1, _templateObject6$1, _templateObject7$1, _templateObject8$1, _templateObject9$1, _templateObject10$1, _templateObject11$1, _templateObject12$1, _templateObject13$1, _templateObject14$1, _templateObject15$1, _templateObject16$1;
 
 var Channel = function Channel(_ref) {
   var channel = _ref.channel,
@@ -16987,7 +17174,7 @@ var Channel = function Channel(_ref) {
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var withAvatar = avatar === undefined ? true : avatar;
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(channel.id));
-  var lastMessage = channel.lastMessage;
+  var lastMessage = channel.lastReactedMessage || channel.lastMessage;
 
   var _useState = React.useState(0),
       statusWidth = _useState[0],
@@ -17038,7 +17225,11 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : '')) : null : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : '')) : null : channel.userMessageReactions && channel.userMessageReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.userMessageReactions[0].user && channel.userMessageReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+    minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
+  }, React__default.createElement("span", {
+    ref: messageAuthorRef
+  }, channel.userMessageReactions[0].user.id === user.id ? 'You' : contactsMap[channel.userMessageReactions[0].user.id] ? contactsMap[channel.userMessageReactions[0].user.id].firstName : channel.userMessageReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
@@ -17050,7 +17241,7 @@ var Channel = function Channel(_ref) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), MessageTextFormat({
+  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "reacted", React__default.createElement(ReactionItem, null, channel.userMessageReactions && channel.userMessageReactions[0].key), "to", ' '), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), MessageTextFormat({
     text: lastMessage.body,
     message: lastMessage,
     contactsMap: contactsMap,
@@ -17118,8 +17309,9 @@ var UnreadMentionIconWrapper = styled__default.span(_templateObject12$1 || (_tem
   return props.iconColor || colors.primary;
 });
 var TypingIndicator = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  font-style: italic;\n"])));
-var UnreadInfo = styled__default.span(_templateObject14$1 || (_templateObject14$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  display: flex;\n  margin-top: 7px;\n  align-items: center;\n  flex: 0 0 auto;\n  margin-left: auto;\n"])));
-var UnreadCount = styled__default.span(_templateObject15$1 || (_templateObject15$1 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var ReactionItem = styled__default.span(_templateObject14$1 || (_templateObject14$1 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  padding: 0 3px;\n"])));
+var UnreadInfo = styled__default.span(_templateObject15$1 || (_templateObject15$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  display: flex;\n  margin-top: 7px;\n  align-items: center;\n  flex: 0 0 auto;\n  margin-left: auto;\n"])));
+var UnreadCount = styled__default.span(_templateObject16$1 || (_templateObject16$1 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.cobalt1;
 }, function (props) {
   return props.fontSize || '13px';
@@ -20742,7 +20934,7 @@ var Attachment = function Attachment(_ref) {
     }
   }, [attachmentUrl]);
   React.useEffect(function () {
-    if (!(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link || attachment.type === attachmentTypes.voice)) {
+    if (!(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
         if (attachment.type === 'image' && !isPrevious) {
           if (cachedUrl) {
@@ -20765,26 +20957,17 @@ var Attachment = function Attachment(_ref) {
             }
           }
         } else {
-          if (attachment.type === attachmentTypes.video && cachedUrl) {
+          if (cachedUrl) {
             setAttachmentUrl(cachedUrl);
             setIsCached(true);
           } else {
             if (customDownloader) {
               customDownloader(attachment.url).then(function (url) {
                 try {
-                  var _temp3 = function _temp3() {
+                  return Promise.resolve(fetch(url)).then(function (response) {
+                    setAttachmentToCache(attachment.id, response);
                     setAttachmentUrl(url);
-                  };
-
-                  var _temp4 = function () {
-                    if (attachment.type === attachmentTypes.video) {
-                      return Promise.resolve(fetch(url)).then(function (response) {
-                        setAttachmentToCache(attachment.id, response);
-                      });
-                    }
-                  }();
-
-                  return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+                  });
                 } catch (e) {
                   return Promise.reject(e);
                 }
@@ -21373,10 +21556,12 @@ var PRESENCE_STATUS$1 = {
   ONLINE: 'Online'
 };
 
-var _templateObject$p, _templateObject2$n, _templateObject3$h, _templateObject4$d, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$6;
+var _templateObject$p, _templateObject2$n, _templateObject3$h, _templateObject4$d, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$6, _templateObject10$5;
+var reactionsPrevLength = 0;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
       handleReactionsPopupClose = _ref.handleReactionsPopupClose,
+      handleAddDeleteEmoji = _ref.handleAddDeleteEmoji,
       bottomPosition = _ref.bottomPosition,
       horizontalPositions = _ref.horizontalPositions,
       reactionScores = _ref.reactionScores,
@@ -21459,6 +21644,19 @@ function ReactionsPopup(_ref) {
     };
   }, [messageId]);
   React.useEffect(function () {
+    if (reactions && reactionsPrevLength < reactions.length) {
+      var reactionsHeight = reactions.length * 44 + 45;
+
+      if (reactionsHeight > popupHeight) {
+        setPopupHeight(reactionsHeight);
+      }
+
+      reactionsPrevLength = reactions.length;
+    } else {
+      reactionsPrevLength = !reactions ? 0 : reactions.length;
+    }
+  }, [reactions]);
+  React.useEffect(function () {
     if (reactions && reactions.length) {
       if (calculateSizes) {
         var _popupRef$current;
@@ -21471,7 +21669,7 @@ function ReactionsPopup(_ref) {
           setPopupHorizontalPosition(horizontalPositions.left - channelListWidth > (popupPos === null || popupPos === void 0 ? void 0 : popupPos.width) ? 'left' : 'right');
         }
 
-        var botPost = bottomPosition - messageInputHeight - 30;
+        var botPost = bottomPosition - messageInputHeight - 40;
         var reactionsHeight = reactions.length * 44 + 45;
         setPopupHeight(reactionsHeight);
         setPopupVerticalPosition(botPost >= (reactionsHeight > 320 ? 320 : reactionsHeight) ? 'bottom' : 'top');
@@ -21500,11 +21698,12 @@ function ReactionsPopup(_ref) {
       },
       active: activeTabKey === reaction.key,
       activeColor: colors.primary
-    }, React__default.createElement("span", null, reaction.key + " " + reaction.count));
+    }, React__default.createElement("span", null, React__default.createElement(TabKey, null, reaction.key), reaction.count));
   }))), React__default.createElement(ReactionsList, {
-    onScroll: handleReactionsListScroll
+    onScroll: handleReactionsListScroll,
+    popupHeight: popupHeight
   }, reactions.map(function (reaction) {
-    return React__default.createElement(ReactionItem, {
+    return React__default.createElement(ReactionItem$1, {
       key: reaction.id
     }, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
       name: reaction.user.firstName || reaction.user.id,
@@ -21512,10 +21711,14 @@ function ReactionsPopup(_ref) {
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, null, reaction.key));
+    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, {
+      onClick: function onClick() {
+        return handleAddDeleteEmoji(reaction.key);
+      }
+    }, reaction.key));
   })));
 }
-var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: ", ";\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
+var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: ", ";\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
   return props.popupHorizontalPosition === 'left' && (props.rtlDirection ? 'calc(100% - 80px)' : 0);
 }, function (props) {
   return props.popupHorizontalPosition === 'right' && (!props.rtlDirection ? 'calc(100% - 80px)' : 0);
@@ -21525,6 +21728,8 @@ var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = 
   return props.popupVerticalPosition === 'top' && '42px';
 }, function (props) {
   return props.height && props.height + 22;
+}, function (props) {
+  return !props.height && 'hidden';
 }, function (props) {
   return props.visible ? 'visible' : 'hidden';
 }, function (props) {
@@ -21542,16 +21747,19 @@ var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = 
 }, colors.white);
 var UserNamePresence$1 = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
 var MemberName$1 = styled__default.h3(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var ReactionsList = styled__default.ul(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])));
+var ReactionsList = styled__default.ul(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])), function (props) {
+  return !props.popupHeight && 'hidden';
+});
 var ReactionScoresCont = styled__default.div(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
 var ReactionScoresList = styled__default.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
-var ReactionScoreItem = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
+var ReactionScoreItem = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
   return props.active ? colors.gray6 : colors.gray9;
 }, function (props) {
   return props.active && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n  }";
 });
-var ReactionKey = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-size: 20px;\n"])));
-var ReactionItem = styled__default.li(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+var TabKey = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  margin-right: 4px;\n  font-size: 15px;\n"])));
+var ReactionKey = styled__default.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
+var ReactionItem$1 = styled__default.li(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
 var _path$H, _path2$6;
 
@@ -22408,11 +22616,11 @@ var Container$d = styled__default.div(_templateObject$r || (_templateObject$r = 
   return props.rendered && "\n    transform: scale(1, 1);\n  ";
 });
 var EmojiItem = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 8px;\n  font-size: 28px;\n  line-height: 32px;\n  cursor: pointer;\n  border-radius: 50%;\n  width: 36px;\n  height: 36px;\n  background-color: ", ";\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
-  return props.active && colors.gray10;
-}, colors.gray10);
-var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  border-radius: 50%;\n"])), colors.gray10, colors.gray4);
+  return props.active && colors.gray5;
+}, colors.gray5);
+var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  border-radius: 50%;\n"])), colors.gray5, colors.gray4);
 
-var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$f, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$5, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1;
+var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$f, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$3, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$1, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1, _templateObject22$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -22701,7 +22909,7 @@ var Message = function Message(_ref) {
     if (message.selfReactions && message.selfReactions.some(function (item) {
       return item.key === selectedEmoji;
     })) {
-      dispatch(deleteReactionAC(channel.id, message.id, selectedEmoji));
+      dispatch(deleteReactionAC(channel.id, message.id, selectedEmoji, channel.userMessageReactions && channel.userMessageReactions[0] && channel.userMessageReactions[0].messageId === message.id && channel.userMessageReactions[0].key === selectedEmoji));
     } else {
       var score = 1;
       var reason = 'mmm';
@@ -22982,13 +23190,14 @@ var Message = function Message(_ref) {
     onClick: function onClick() {
       return handleReplyMessage(true);
     }
-  }, message.replyCount + " replies"), reactionsPopupOpen && !frequentlyEmojisOpen && React__default.createElement(ReactionsPopup, {
+  }, message.replyCount + " replies"), reactionsPopupOpen && React__default.createElement(ReactionsPopup, {
     bottomPosition: reactionsPopupPosition,
     horizontalPositions: reactionsPopupHorizontalPosition,
     reactionScores: message.reactionScores || {},
     messageId: message.id,
     handleReactionsPopupClose: handleToggleReactionsPopup,
-    rtlDirection: ownMessageOnRightSide && !message.incoming
+    rtlDirection: ownMessageOnRightSide && !message.incoming,
+    handleAddDeleteEmoji: handleReactionAddDelete
   }), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
     id: message.id + "_reactions_container",
     border: reactionsContainerBorder,
@@ -22999,13 +23208,11 @@ var Message = function Message(_ref) {
     backgroundColor: reactionsContainerBackground,
     rtlDirection: ownMessageOnRightSide && !message.incoming
   }, React__default.createElement(MessageReactionsCont, {
-    rtlDirection: ownMessageOnRightSide && !message.incoming
+    rtlDirection: ownMessageOnRightSide && !message.incoming,
+    onClick: handleToggleReactionsPopup
   }, reactionsList.slice(0, reactionsDisplayCount || 5).map(function (key) {
     return React__default.createElement(MessageReaction, {
       key: key,
-      onClick: function onClick() {
-        return handleReactionAddDelete(key);
-      },
       self: !!message.selfReactions.find(function (selfReaction) {
         return selfReaction.key === key;
       }),
@@ -23016,15 +23223,14 @@ var Message = function Message(_ref) {
       margin: reactionItemMargin,
       isLastReaction: reactionsCount === 1,
       fontSize: reactionsFontSize
-    }, key + " " + (showEachReactionCount ? message.reactionScores[key] : ''));
+    }, React__default.createElement(MessageReactionKey, null, key + " " + (showEachReactionCount ? message.reactionScores[key] : '')));
   }), reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
     borderRadius: reactionItemBorderRadius,
     backgroundColor: reactionItemBackground,
     padding: reactionItemPadding,
     margin: '0',
-    fontSize: '12px',
-    onClick: handleToggleReactionsPopup
+    fontSize: '12px'
   }, reactionsCount)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
@@ -23043,7 +23249,8 @@ var Message = function Message(_ref) {
     title: 'Forward message'
   }));
 };
-var MessageReaction = styled__default.span(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
+var MessageReactionKey = styled__default.span(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
+var MessageReaction = styled__default.span(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
   return props.margin || '0 6px 0 0';
 }, function (props) {
   return props.isLastReaction && '0';
@@ -23064,16 +23271,16 @@ var MessageReaction = styled__default.span(_templateObject$s || (_templateObject
 }, function (props) {
   return props.backgroundColor || colors.white;
 });
-var ThreadMessageCountContainer = styled__default.div(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
-var FailedMessageIcon = styled__default.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
+var ThreadMessageCountContainer = styled__default.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.cobalt1);
+var FailedMessageIcon = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
   return !props.rtl && '-24px';
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ReactionsContainer = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
-  return !props.rtlDirection && 'auto';
-}, function (props) {
+var ReactionsContainer = styled__default.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return props.rtlDirection && 'auto';
+}, function (props) {
+  return !props.rtlDirection && 'auto';
 }, function (props) {
   return props.border;
 }, function (props) {
@@ -23087,18 +23294,18 @@ var ReactionsContainer = styled__default.div(_templateObject4$f || (_templateObj
 }, function (props) {
   return props.topPosition && "\n      position: relative;\n      top: " + props.topPosition + ";\n  ";
 });
-var MessageReactionsCont = styled__default.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n"])), function (props) {
+var MessageReactionsCont = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.rtlDirection && 'ltr';
 });
-var MessageHeaderCont = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
-var MessageTime = styled__default.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 12px;\n  margin-right: 4px;\n  color: ", ";\n"])), colors.gray6);
-var ReplyMessageContainer = styled__default.div(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  margin: ", ";\n  cursor: pointer;\n"])), function (props) {
+var MessageHeaderCont = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
+var MessageTime = styled__default.span(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 12px;\n  margin-right: 4px;\n  color: ", ";\n"])), colors.gray6);
+var ReplyMessageContainer = styled__default.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  margin: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.leftBorderColor || '#b8b9c2';
 }, function (props) {
   return props.withAttachments ? '8px 8px' : '0 0 8px';
 });
-var ReplyMessageBody = styled__default.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  max-width: 100%;\n"])));
-var ForwardedTitle = styled__default.h3(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageBody = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  max-width: 100%;\n"])));
+var ForwardedTitle = styled__default.h3(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.withAttachments && props.withBody ? '0' : '0 0 4px';
@@ -23111,14 +23318,14 @@ var ForwardedTitle = styled__default.h3(_templateObject10$5 || (_templateObject1
 }, function (props) {
   return props.color || colors.primary;
 });
-var MessageStatus = styled__default.span(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
+var MessageStatus = styled__default.span(_templateObject12$3 || (_templateObject12$3 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
   var lastMessage = _ref2.lastMessage;
   return lastMessage ? 'visible' : 'hidden';
 });
-var HiddenMessageTime = styled__default.span(_templateObject12$3 || (_templateObject12$3 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
+var HiddenMessageTime = styled__default.span(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.hide && 'none';
 }, colors.gray9);
-var MessageStatusAndTime = styled__default.div(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-left: 12px;\n  transform: translate(0px, 4px);\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
+var MessageStatusAndTime = styled__default.div(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-left: 12px;\n  transform: translate(0px, 4px);\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
   return props.hide ? 'none' : 'flex';
 }, function (props) {
   return props.withAttachment && '4px 6px';
@@ -23129,11 +23336,11 @@ var MessageStatusAndTime = styled__default.div(_templateObject13$2 || (_template
 }, function (props) {
   return props.withAttachment && "\n    position: absolute;\n    z-index: 3;\n    right: " + (props.fileAttachment ? '6px' : '10px') + ";\n    bottom: " + (props.fileAttachment ? '9px' : '14px') + ";\n  ";
 });
-var MessageStatusUpdated = styled__default.span(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
+var MessageStatusUpdated = styled__default.span(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray4;
 });
-var MessageStatusDeleted = styled__default.span(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
-var MessageBody = styled__default.div(_templateObject16$1 || (_templateObject16$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  max-width: ", ";\n  padding: ", ";\n  direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n  &:hover .message_actions_cont {\n      visibility: visible;\n      opacity: 1;\n    }\n  }\n"])), function (props) {
+var MessageStatusDeleted = styled__default.span(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
+var MessageBody = styled__default.div(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  max-width: ", ";\n  padding: ", ";\n  direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n  &:hover .message_actions_cont {\n      visibility: visible;\n      opacity: 1;\n    }\n  }\n"])), function (props) {
   return props.isSelfMessage ? props.ownMessageBackground : props.incomingMessageBackground;
 }, function (props) {
   return props.borderRadius || '4px 16px 16px 4px';
@@ -23146,15 +23353,15 @@ var MessageBody = styled__default.div(_templateObject16$1 || (_templateObject16$
 }, function (props) {
   return props.noBody && 'hidden';
 });
-var MessageContent = styled__default.div(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 13px;\n  margin-right: 13px;\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+var MessageContent = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 13px;\n  margin-right: 13px;\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
   return !props.withAvatar && (props.rtl ? 'translate(-32px,0)  ' : 'translate(32px,0)');
 }, function (props) {
   return props.messageWidthPercent ? props.messageWidthPercent + "%" : '100%';
 });
-var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
+var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
-var MessageItem = styled__default.div(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 40px;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
+var MessageItem = styled__default.div(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 40px;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
   return props.topMargin || '12px';
 }, function (props) {
   return props.bottomMargin;
@@ -23167,14 +23374,14 @@ var MessageItem = styled__default.div(_templateObject19$1 || (_templateObject19$
 }, function (props) {
   return props.hoverBackground || '';
 }, HiddenMessageTime, MessageStatusAndTime, MessageStatus);
-var EmojiContainer = styled__default.div(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: ", ";\n  z-index: 99;\n"])), function (props) {
+var EmojiContainer = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: ", ";\n  z-index: 99;\n"])), function (props) {
   return props.rtlDirection ? '' : '0';
 }, function (props) {
   return props.rtlDirection && '0';
 }, function (props) {
   return props.position === 'top' ? '-250px' : 'calc(100% + 6px)';
 });
-var FrequentlyEmojisContainer = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -50px;\n  z-index: 99;\n"])), function (props) {
+var FrequentlyEmojisContainer = styled__default.div(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -50px;\n  z-index: 99;\n"])), function (props) {
   return props.rtlDirection ? '' : '0';
 }, function (props) {
   return props.rtlDirection && '0';
@@ -23444,7 +23651,7 @@ function SvgFullscreenExit(props) {
   })));
 }
 
-var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$g, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$6;
+var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$g, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$7;
 var timerInterval;
 
 var VideoPlayer = function VideoPlayer(_ref) {
@@ -23674,9 +23881,9 @@ var VolumeController = styled__default.div(_templateObject6$d || (_templateObjec
 var VolumeIconWrapper = styled__default.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 var VolumeSlide = styled__default.input(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
 var Progress = styled__default.input(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
-var FullScreenWrapper = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var FullScreenWrapper = styled__default.div(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$h, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$7, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
+var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$h, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$8, _templateObject11$5, _templateObject12$4, _templateObject13$3, _templateObject14$3;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -23993,7 +24200,7 @@ var Actions = styled__default.div(_templateObject6$e || (_templateObject6$e = _t
 var FileDateAndSize = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
 var FileSize = styled__default.span(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.gray9);
 var UserName = styled__default.h4(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
-var ActionItem = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
+var ActionItem = styled__default.span(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
 var CarouselItem = styled__default.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
   return props.visibleSlide ? 1 : 0;
@@ -25176,7 +25383,7 @@ var AudioVisualization$1 = styled__default.div(_templateObject3$p || (_templateO
 var WaveContainer$1 = styled__default.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
 var Timer$1 = styled__default.div(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
 
-var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$l, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$8, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
+var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$l, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$5, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -26302,7 +26509,7 @@ var MessageInputWrapper = styled__default.div(_templateObject9$b || (_templateOb
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 3;
 });
-var MessageInput = styled__default.div(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7);
+var MessageInput = styled__default.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7);
 var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 2;
 }, function (props) {
@@ -26322,7 +26529,7 @@ var SendMessageIcon = styled__default.span(_templateObject14$4 || (_templateObje
   return props.isActive ? props.iconColor || colors.primary : '#ccc';
 });
 var RecordingTimer = styled__default.span(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 50px;\n  font-size: 16px;\n  color: ", ";\n"])), colors.gray6);
-var ChosenAttachments = styled__default.div(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: ", ";\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1, function (props) {
+var ChosenAttachments = styled__default.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: ", ";\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1, function (props) {
   return props.fileBoxWidth || '200px';
 });
 var TypingIndicator$1 = styled__default.div(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
@@ -26330,7 +26537,7 @@ var TypingIndicatorCont = styled__default.div(_templateObject18$2 || (_templateO
 var TypingFrom = styled__default.h5(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
 var sizeAnimation = styled.keyframes(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
 var DotOne = styled__default.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
-var DotTwo = styled__default.span(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose([""])));
+var DotTwo = styled__default.span(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled__default.span(_templateObject23$1 || (_templateObject23$1 = _taggedTemplateLiteralLoose([""])));
 var TypingAnimation = styled__default.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
 var Loading = styled__default.div(_templateObject25$1 || (_templateObject25$1 = _taggedTemplateLiteralLoose(["\n  height: 48px;\n"])));

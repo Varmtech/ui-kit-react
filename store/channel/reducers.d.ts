@@ -30,7 +30,7 @@ declare const _default: (state?: {
     isDragging: boolean;
     draggedAttachments: {
         attachment: File;
-        type: "media" | "file";
+        type: "file" | "media";
     }[];
     tabIsActive: boolean;
 }, { type, payload }?: IAction) => {
@@ -64,7 +64,7 @@ declare const _default: (state?: {
     isDragging: boolean;
     draggedAttachments: {
         attachment: File;
-        type: "media" | "file";
+        type: "file" | "media";
     }[];
     tabIsActive: boolean;
 };

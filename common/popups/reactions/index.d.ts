@@ -1,6 +1,7 @@
 /// <reference types="react" />
 interface IReactionsPopupProps {
     messageId: string;
+    handleAddDeleteEmoji: (selectedEmoji: string) => void;
     handleReactionsPopupClose: () => void;
     bottomPosition: number;
     horizontalPositions: {
@@ -12,5 +13,5 @@ interface IReactionsPopupProps {
     };
     rtlDirection?: boolean;
 }
-export default function ReactionsPopup({ messageId, handleReactionsPopupClose, bottomPosition, horizontalPositions, reactionScores, rtlDirection }: IReactionsPopupProps): JSX.Element;
+export default function ReactionsPopup({ messageId, handleReactionsPopupClose, handleAddDeleteEmoji, bottomPosition, horizontalPositions, reactionScores, rtlDirection }: IReactionsPopupProps): JSX.Element;
 export {};

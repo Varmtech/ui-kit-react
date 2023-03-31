@@ -38,7 +38,7 @@ export declare function deleteMessageAC(channelId: string, messageId: string, de
     payload: {
         channelId: string;
         messageId: string;
-        deleteOption: "forMe" | "forEveryone";
+        deleteOption: "forEveryone" | "forMe";
     };
 };
 export declare function deleteMessageFromListAC(messageId: string): {
@@ -105,12 +105,13 @@ export declare function addReactionAC(channelId: string, messageId: string, key:
         enforceUnique: boolean;
     };
 };
-export declare function deleteReactionAC(channelId: string, messageId: string, key: string): {
+export declare function deleteReactionAC(channelId: string, messageId: string, key: string, isLastReaction?: boolean): {
     type: string;
     payload: {
         channelId: string;
         messageId: string;
         key: string;
+        isLastReaction: boolean | undefined;
     };
 };
 export declare function addReactionToMessageAC(message: IMessage, reaction: IReaction, isSelf: boolean): {
@@ -155,6 +156,18 @@ export declare function addReactionsToListAC(reactions: IReaction[], hasNext: bo
     payload: {
         reactions: IReaction[];
         hasNext: boolean;
+    };
+};
+export declare function addReactionToListAC(reaction: IReaction): {
+    type: string;
+    payload: {
+        reaction: IReaction;
+    };
+};
+export declare function deleteReactionFromListAC(reaction: IReaction): {
+    type: string;
+    payload: {
+        reaction: IReaction;
     };
 };
 export declare function setReactionsLoadingStateAC(state: number): {
