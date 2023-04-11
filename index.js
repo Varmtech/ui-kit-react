@@ -7954,7 +7954,7 @@ var bytesToSize = function bytesToSize(bytes, decimals) {
   }
 
   if (bytes === 0) return '0 Bytes';
-  var k = 1024;
+  var k = 1000;
   var dm = decimals < 0 ? 0 : decimals;
   var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   var i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -10849,7 +10849,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 221 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 237 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 243 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 260 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 265 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 270 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 275 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 280 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 284 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 288 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 295 : 299;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 221 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 235 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 241 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 258 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 263 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 268 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 278 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 282 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 286 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 293 : 297;
           break;
 
         case 14:
@@ -10874,7 +10874,7 @@ function watchForEvents() {
           return effects.put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 24:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 25:
           channel = args.channel;
@@ -10884,7 +10884,7 @@ function watchForEvents() {
 
         case 29:
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 32:
           console.log('channel LEAVE ... ');
@@ -10916,7 +10916,7 @@ function watchForEvents() {
           }));
 
         case 44:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 45:
           console.log('channel BLOCK ... ');
@@ -10932,11 +10932,11 @@ function watchForEvents() {
           return effects.put(removeChannelAC(_channel2.id));
 
         case 51:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 52:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 54:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -11000,7 +11000,7 @@ function watchForEvents() {
           }));
 
         case 79:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 80:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -11044,7 +11044,7 @@ function watchForEvents() {
           return effects.put(setAddedToChannelAC(JSON.parse(JSON.stringify(_channel4))));
 
         case 98:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 99:
           updatedChannel = args.updatedChannel;
@@ -11063,7 +11063,7 @@ function watchForEvents() {
           }));
 
         case 105:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 106:
           _channel5 = args.channel, message = args.message;
@@ -11127,7 +11127,10 @@ function watchForEvents() {
           }
 
           _context3.next = 134;
-          return effects.put(updateChannelDataAC(_channel5.id, _extends({}, channelForAdd)));
+          return effects.put(updateChannelDataAC(_channel5.id, _extends({}, channelForAdd, {
+            userMessageReactions: [],
+            lastReactedMessage: null
+          })));
 
         case 134:
           if (!(message.user.id !== SceytChatClient.chatClient.user.id && !_channel5.muted)) {
@@ -11158,7 +11161,7 @@ function watchForEvents() {
           return effects.put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 143:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 144:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -11246,7 +11249,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 148:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -11286,7 +11289,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 152:
           _channel6 = args.channel, from = args.from;
@@ -11299,7 +11302,7 @@ function watchForEvents() {
           return effects.put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 156:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 157:
           channelId = args.channelId;
@@ -11342,7 +11345,7 @@ function watchForEvents() {
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 176:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 177:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -11385,7 +11388,7 @@ function watchForEvents() {
           return effects.put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
         case 192:
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 193:
           _channel9 = args.channel, _message = args.message;
@@ -11427,7 +11430,7 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 206:
           console.log('channel REACTION_ADDED ... ');
@@ -11472,7 +11475,7 @@ function watchForEvents() {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
         case 221:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
@@ -11492,167 +11495,164 @@ function watchForEvents() {
           removeReactionOnAllMessages(_message3, _reaction, true);
 
         case 229:
-          console.log('reactions deleted ..... ', _channel11);
-
           if (_channel11.userMessageReactions && _channel11.userMessageReactions.length) {
-            _context3.next = 235;
+            _context3.next = 233;
             break;
           }
 
-          console.log('update channel params .....');
           _channelUpdateParams = {
             userMessageReactions: [],
             lastReactedMessage: null
           };
-          _context3.next = 235;
+          _context3.next = 233;
           return effects.put(updateChannelDataAC(_channel11.id, _channelUpdateParams));
 
-        case 235:
+        case 233:
           if (checkChannelExistsOnMessagesMap(_channel11.id)) {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
-        case 237:
+        case 235:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 242;
+          _context3.next = 240;
           return effects.put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 242:
-          return _context3.abrupt("break", 300);
+        case 240:
+          return _context3.abrupt("break", 298);
 
-        case 243:
+        case 241:
           _channel13 = args.channel;
           console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 247;
+          _context3.next = 245;
           return effects.call(getActiveChannelId);
 
-        case 247:
+        case 245:
           _activeChannelId11 = _context3.sent;
-          _context3.next = 250;
+          _context3.next = 248;
           return effects.call(checkChannelExists, _channel13.id);
 
-        case 250:
+        case 248:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId11)) {
-            _context3.next = 255;
+            _context3.next = 253;
             break;
           }
 
-          _context3.next = 254;
+          _context3.next = 252;
           return effects.put(clearMessagesAC());
 
-        case 254:
+        case 252:
           removeAllMessages();
 
-        case 255:
+        case 253:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 259;
+            _context3.next = 257;
             break;
           }
 
-          _context3.next = 259;
+          _context3.next = 257;
           return effects.put(updateChannelDataAC(_channel13.id, {
             lastMessage: {},
             unreadMessageCount: 0
           }));
 
-        case 259:
-          return _context3.abrupt("break", 300);
+        case 257:
+          return _context3.abrupt("break", 298);
 
-        case 260:
+        case 258:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 264;
+          _context3.next = 262;
           return effects.put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 264:
-          return _context3.abrupt("break", 300);
+        case 262:
+          return _context3.abrupt("break", 298);
 
-        case 265:
+        case 263:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 269;
+          _context3.next = 267;
           return effects.put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 269:
-          return _context3.abrupt("break", 300);
+        case 267:
+          return _context3.abrupt("break", 298);
 
-        case 270:
+        case 268:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context3.next = 274;
+          _context3.next = 272;
           return effects.put(setChannelToHideAC(_channel16));
 
-        case 274:
-          return _context3.abrupt("break", 300);
+        case 272:
+          return _context3.abrupt("break", 298);
 
-        case 275:
+        case 273:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context3.next = 279;
+          _context3.next = 277;
           return effects.put(setChannelToUnHideAC(_channel17));
 
-        case 279:
-          return _context3.abrupt("break", 300);
+        case 277:
+          return _context3.abrupt("break", 298);
 
-        case 280:
+        case 278:
           _channel18 = args.channel;
-          _context3.next = 283;
+          _context3.next = 281;
           return effects.put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 283:
-          return _context3.abrupt("break", 300);
+        case 281:
+          return _context3.abrupt("break", 298);
 
-        case 284:
+        case 282:
           _channel19 = args.channel;
-          _context3.next = 287;
+          _context3.next = 285;
           return effects.put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 287:
-          return _context3.abrupt("break", 300);
+        case 285:
+          return _context3.abrupt("break", 298);
 
-        case 288:
+        case 286:
           console.log('channel CHANGE_ROLE ... ');
-          _context3.next = 292;
+          _context3.next = 290;
           return effects.call(getActiveChannelId);
 
-        case 292:
+        case 290:
 
-          return _context3.abrupt("break", 300);
+          return _context3.abrupt("break", 298);
 
-        case 295:
+        case 293:
           status = args.status;
-          _context3.next = 298;
+          _context3.next = 296;
           return effects.put(setConnectionStatusAC(status));
 
-        case 298:
-          return _context3.abrupt("break", 300);
+        case 296:
+          return _context3.abrupt("break", 298);
 
-        case 299:
+        case 297:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 300:
+        case 298:
           _context3.next = 5;
           break;
 
-        case 302:
+        case 300:
         case "end":
           return _context3.stop();
       }
@@ -17242,7 +17242,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : '')) : null : channel.userMessageReactions && channel.userMessageReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.userMessageReactions[0].user && channel.userMessageReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : '')) : null : channel.lastReactedMessage && channel.userMessageReactions && channel.userMessageReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.userMessageReactions[0].user && channel.userMessageReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
