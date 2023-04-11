@@ -10355,8 +10355,8 @@ var setNotification = function setNotification(body, user, channel, reaction) {
   var notification;
 
   if (reaction) {
-    notification = new Notification(makeUserName(contactsMap[user.id], user, getFromContacts) + " reacted " + reaction + " to ", {
-      body: body,
+    notification = new Notification("" + (channel.type === CHANNEL_TYPE.DIRECT ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : channel.subject), {
+      body: (channel.type !== CHANNEL_TYPE.DIRECT ? makeUserName(contactsMap[user.id], user, getFromContacts) + ': ' : '') + " reacted " + reaction + " to \"" + body + "\"",
       icon: logoSrc
     });
   } else {
@@ -10845,7 +10845,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 221 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 235 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 241 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 258 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 263 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 268 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 278 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 282 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 286 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 293 : 297;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 144 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 148 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 152 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 177 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 193 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 222 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 236 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 242 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 259 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 264 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 269 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 274 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 279 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 283 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 287 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 294 : 298;
           break;
 
         case 14:
@@ -10870,7 +10870,7 @@ function watchForEvents() {
           return put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 24:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 25:
           channel = args.channel;
@@ -10880,7 +10880,7 @@ function watchForEvents() {
 
         case 29:
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 32:
           console.log('channel LEAVE ... ');
@@ -10912,7 +10912,7 @@ function watchForEvents() {
           }));
 
         case 44:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 45:
           console.log('channel BLOCK ... ');
@@ -10928,11 +10928,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 51:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 52:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 54:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -10996,7 +10996,7 @@ function watchForEvents() {
           }));
 
         case 79:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 80:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -11040,7 +11040,7 @@ function watchForEvents() {
           return put(setAddedToChannelAC(JSON.parse(JSON.stringify(_channel4))));
 
         case 98:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 99:
           updatedChannel = args.updatedChannel;
@@ -11059,7 +11059,7 @@ function watchForEvents() {
           }));
 
         case 105:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 106:
           _channel5 = args.channel, message = args.message;
@@ -11157,7 +11157,7 @@ function watchForEvents() {
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 143:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 144:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -11245,7 +11245,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 148:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -11285,7 +11285,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 152:
           _channel6 = args.channel, from = args.from;
@@ -11298,7 +11298,7 @@ function watchForEvents() {
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 156:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 157:
           channelId = args.channelId;
@@ -11341,7 +11341,7 @@ function watchForEvents() {
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 176:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 177:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -11384,7 +11384,7 @@ function watchForEvents() {
           return put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
         case 192:
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 193:
           _channel9 = args.channel, _message = args.message;
@@ -11426,7 +11426,7 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
         case 206:
           console.log('channel REACTION_ADDED ... ');
@@ -11446,16 +11446,19 @@ function watchForEvents() {
           addReactionOnAllMessages(_message2, reaction, true);
 
         case 214:
-          if (_message2.user.id === SceytChatClient.chatClient.user.id) {
-            if (Notification.permission === 'granted') {
-              if (document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId9) {
-                setNotification(_message2.body, reaction.user, _channel10, reaction.key);
-              }
+          if (!(_message2.user.id === SceytChatClient.chatClient.user.id)) {
+            _context3.next = 220;
+            break;
+          }
+
+          if (!isSelf && Notification.permission === 'granted') {
+            if (document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId9) {
+              setNotification(_message2.body, reaction.user, _channel10, reaction.key);
             }
           }
 
           if (!(_channel10.userMessageReactions && _channel10.userMessageReactions.length)) {
-            _context3.next = 219;
+            _context3.next = 220;
             break;
           }
 
@@ -11463,36 +11466,36 @@ function watchForEvents() {
             userMessageReactions: _channel10.userMessageReactions,
             lastReactedMessage: _message2
           };
-          _context3.next = 219;
+          _context3.next = 220;
           return put(updateChannelDataAC(_channel10.id, channelUpdateParams));
 
-        case 219:
+        case 220:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
-        case 221:
+        case 222:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ');
           _isSelf = _user.id === SceytChatClient.chatClient.user.id;
           _activeChannelId10 = getActiveChannelId();
 
           if (!(_channel11.id === _activeChannelId10)) {
-            _context3.next = 229;
+            _context3.next = 230;
             break;
           }
 
-          _context3.next = 228;
+          _context3.next = 229;
           return put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 228:
+        case 229:
           removeReactionOnAllMessages(_message3, _reaction, true);
 
-        case 229:
+        case 230:
           if (_channel11.userMessageReactions && _channel11.userMessageReactions.length) {
-            _context3.next = 233;
+            _context3.next = 234;
             break;
           }
 
@@ -11500,155 +11503,155 @@ function watchForEvents() {
             userMessageReactions: [],
             lastReactedMessage: null
           };
-          _context3.next = 233;
+          _context3.next = 234;
           return put(updateChannelDataAC(_channel11.id, _channelUpdateParams));
 
-        case 233:
+        case 234:
           if (checkChannelExistsOnMessagesMap(_channel11.id)) {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
-        case 235:
+        case 236:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 240;
+          _context3.next = 241;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 240:
-          return _context3.abrupt("break", 298);
-
         case 241:
+          return _context3.abrupt("break", 299);
+
+        case 242:
           _channel13 = args.channel;
           console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 245;
+          _context3.next = 246;
           return call(getActiveChannelId);
 
-        case 245:
+        case 246:
           _activeChannelId11 = _context3.sent;
-          _context3.next = 248;
+          _context3.next = 249;
           return call(checkChannelExists, _channel13.id);
 
-        case 248:
+        case 249:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId11)) {
-            _context3.next = 253;
+            _context3.next = 254;
             break;
           }
 
-          _context3.next = 252;
+          _context3.next = 253;
           return put(clearMessagesAC());
 
-        case 252:
+        case 253:
           removeAllMessages();
 
-        case 253:
+        case 254:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 257;
+            _context3.next = 258;
             break;
           }
 
-          _context3.next = 257;
+          _context3.next = 258;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: {},
             unreadMessageCount: 0
           }));
 
-        case 257:
-          return _context3.abrupt("break", 298);
-
         case 258:
+          return _context3.abrupt("break", 299);
+
+        case 259:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 262;
+          _context3.next = 263;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             muteExpireDate: _channel14.muteExpireDate
           }));
 
-        case 262:
-          return _context3.abrupt("break", 298);
-
         case 263:
+          return _context3.abrupt("break", 299);
+
+        case 264:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 267;
+          _context3.next = 268;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             muteExpireDate: _channel15.muteExpireDate
           }));
 
-        case 267:
-          return _context3.abrupt("break", 298);
-
         case 268:
+          return _context3.abrupt("break", 299);
+
+        case 269:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context3.next = 272;
+          _context3.next = 273;
           return put(setChannelToHideAC(_channel16));
 
-        case 272:
-          return _context3.abrupt("break", 298);
-
         case 273:
+          return _context3.abrupt("break", 299);
+
+        case 274:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context3.next = 277;
+          _context3.next = 278;
           return put(setChannelToUnHideAC(_channel17));
 
-        case 277:
-          return _context3.abrupt("break", 298);
-
         case 278:
+          return _context3.abrupt("break", 299);
+
+        case 279:
           _channel18 = args.channel;
-          _context3.next = 281;
+          _context3.next = 282;
           return put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.markedAsUnread
           }));
 
-        case 281:
-          return _context3.abrupt("break", 298);
-
         case 282:
+          return _context3.abrupt("break", 299);
+
+        case 283:
           _channel19 = args.channel;
-          _context3.next = 285;
+          _context3.next = 286;
           return put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.markedAsUnread
           }));
 
-        case 285:
-          return _context3.abrupt("break", 298);
-
         case 286:
+          return _context3.abrupt("break", 299);
+
+        case 287:
           console.log('channel CHANGE_ROLE ... ');
-          _context3.next = 290;
+          _context3.next = 291;
           return call(getActiveChannelId);
 
-        case 290:
+        case 291:
 
-          return _context3.abrupt("break", 298);
+          return _context3.abrupt("break", 299);
 
-        case 293:
+        case 294:
           status = args.status;
-          _context3.next = 296;
+          _context3.next = 297;
           return put(setConnectionStatusAC(status));
 
-        case 296:
-          return _context3.abrupt("break", 298);
-
         case 297:
-          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+          return _context3.abrupt("break", 299);
 
         case 298:
+          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+
+        case 299:
           _context3.next = 5;
           break;
 
-        case 300:
+        case 301:
         case "end":
           return _context3.stop();
       }
@@ -14033,49 +14036,50 @@ function sendTextMessage(action) {
             createdAt: new Date(Date.now()),
             parent: _message.parent
           })));
-          _context2.next = 17;
+          pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
+          _context2.next = 18;
           return select(messagesHasNextSelector);
 
-        case 17:
+        case 18:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 26;
+            _context2.next = 27;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 24;
+            _context2.next = 25;
             break;
           }
 
-          _context2.next = 22;
+          _context2.next = 23;
           return put(getMessagesAC(channel));
 
-        case 22:
-          _context2.next = 26;
+        case 23:
+          _context2.next = 27;
           break;
 
-        case 24:
-          _context2.next = 26;
+        case 25:
+          _context2.next = 27;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 26:
+        case 27:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context2.next = 30;
+          _context2.next = 31;
           return put(scrollToNewMessageAC(true, true));
 
-        case 30:
+        case 31:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 41;
+            _context2.next = 42;
             break;
           }
 
-          _context2.next = 33;
+          _context2.next = 34;
           return call(channel.sendMessage, messageToSend);
 
-        case 33:
+        case 34:
           messageResponse = _context2.sent;
           messageUpdateData = {
             id: messageResponse.id,
@@ -14087,35 +14091,35 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 37;
+          _context2.next = 38;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 37:
+        case 38:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 41;
+          _context2.next = 42;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 41:
-          _context2.next = 46;
+        case 42:
+          _context2.next = 47;
           break;
 
-        case 43:
-          _context2.prev = 43;
+        case 44:
+          _context2.prev = 44;
           _context2.t0 = _context2["catch"](0);
           console.log('error on send message ... ', _context2.t0);
 
-        case 46:
+        case 47:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[0, 43]]);
+  }, _marked2$1, null, [[0, 44]]);
 }
 
 function forwardMessage(action) {
@@ -17208,7 +17212,7 @@ var Channel = function Channel(_ref) {
     if (messageTimeAndStatusRef.current) {
       setStatusWidth(messageTimeAndStatusRef.current.offsetWidth);
     }
-  }, [messageTimeAndStatusRef]);
+  }, [messageTimeAndStatusRef, lastMessage]);
   return React__default.createElement(Container$2, {
     selectedChannel: channel.id === activeChannel.id,
     selectedBorderColor: customColors && customColors.selectedChannelLeftBorder,
@@ -17290,7 +17294,7 @@ var Container$2 = styled.div({
 var ChannelInfo = styled.div(_templateObject$4 || (_templateObject$4 = _taggedTemplateLiteralLoose(["\n  text-align: left;\n  margin-left: ", ";\n  width: 100%;\n  max-width: calc(100% - 62px);\n\n  h3 {\n    display: inline-block;\n    margin: 0;\n    font-size: 15px;\n    font-weight: 500;\n    text-overflow: ellipsis;\n    line-height: 18px;\n    letter-spacing: -0.2px;%;\n    max-width: ", ";\n    overflow: hidden;\n    white-space: nowrap;\n    color: ", ";\n  }\n"])), function (props) {
   return props.avatar && '12px';
 }, function (props) {
-  return "calc(100% - " + (props.statusWidth + (props.isMuted ? 20 : 0)) + "px)";
+  return "calc(100% - " + (props.statusWidth + (props.isMuted ? 20 : 0) + 2) + "px)";
 }, colors.gray6);
 var MutedIcon = styled.span(_templateObject2$4 || (_templateObject2$4 = _taggedTemplateLiteralLoose(["\n  & > svg {\n    height: 16px;\n    width: 16px;\n    margin-left: 5px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || '#818C99';
@@ -17305,7 +17309,7 @@ var UserStatus = styled.span(_templateObject5$1 || (_templateObject5$1 = _tagged
 var LastMessageAuthor = styled.div(_templateObject6$1 || (_templateObject6$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  font-style: ", ";\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
   return props.typing && 'italic';
 }, colors.gray8);
-var Points = styled.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 2px;\n"])));
+var Points = styled.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n"])));
 var LastMessageText = styled.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), colors.gray9, function (props) {
   return props.deletedMessage && 'italic';
 }, function (props) {
@@ -24908,7 +24912,7 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorder: dateDividerBorder,
       dateDividerBackgroundColor: dateDividerBackgroundColor,
       dateDividerBorderRadius: dateDividerBorderRadius
-    }, React__default.createElement("span", null, message.incoming ? makeUserName(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (message.metadata && message.metadata.m && message.metadata.m.slice(0, 5).map(function (mem) {
+    }, React__default.createElement("span", null, message.incoming ? makeUserName(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(message.metadata && message.metadata.m) && message.metadata.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
     })) + " " + (message.metadata && message.metadata.m && message.metadata.m.length > 5 ? "and " + (message.metadata.m.length - 5) + " more" : '') : message.body === 'RM' ? " removed " + (message.metadata && message.metadata.m && message.metadata.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
@@ -26482,7 +26486,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onKeyUp: handleTyping,
     onPaste: handlePastAttachments,
     onKeyPress: handleSendEditMessage,
-    "data-placeholder": 'Type message here ...',
+    "data-placeholder": 'Write a message...',
     ref: messageInputRef
   })),  React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
