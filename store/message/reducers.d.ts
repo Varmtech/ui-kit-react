@@ -36,6 +36,7 @@ export interface IMessageStore {
     reactionsList: IReaction[];
     reactionsHasNext: boolean;
     reactionsLoadingState: number | null;
+    openedMessageMenu: string;
 }
 declare const _default: (state?: IMessageStore, { type, payload }?: IAction) => IMessageStore;
 export default _default;

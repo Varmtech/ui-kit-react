@@ -18,6 +18,7 @@ interface IProps {
     newMessagesSeparatorBackground?: string;
     newMessagesSeparatorLeftRightSpaceWidth?: string;
     noMargin?: boolean;
+    marginBottom?: boolean;
 }
-export default function MessageDivider({ dividerText, visibility, unread, dateDividerFontSize, dateDividerTextColor, dateDividerBorder, dateDividerBackgroundColor, dateDividerBorderRadius, systemMessage, newMessagesSeparatorTextColor, newMessagesSeparatorFontSize, newMessagesSeparatorWidth, newMessagesSeparatorBorder, newMessagesSeparatorBorderRadius, newMessagesSeparatorBackground, newMessagesSeparatorLeftRightSpaceWidth, noMargin }: IProps): JSX.Element;
+export default function MessageDivider({ dividerText, visibility, unread, dateDividerFontSize, dateDividerTextColor, dateDividerBorder, dateDividerBackgroundColor, dateDividerBorderRadius, systemMessage, newMessagesSeparatorTextColor, newMessagesSeparatorFontSize, newMessagesSeparatorWidth, newMessagesSeparatorBorder, newMessagesSeparatorBorderRadius, newMessagesSeparatorBackground, newMessagesSeparatorLeftRightSpaceWidth, noMargin, marginBottom }: IProps): JSX.Element;
 export {};

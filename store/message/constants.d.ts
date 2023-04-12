@@ -60,6 +60,7 @@ export declare const SET_THREAD_MESSAGES_NEXT_COMPLETE = "SET_THREAD_MESSAGES_NE
 export declare const REPORT_MESSAGE = "REPORT_MESSAGE";
 export declare const SET_SCROLL_TO_NEW_MESSAGE = "SET_SCROLL_TO_NEW_MESSAGE";
 export declare const SET_SHOW_SCROLL_TO_NEW_MESSAGE_BUTTON = "SET_SHOW_SCROLL_TO_NEW_MESSAGE_BUTTON";
+export declare const SET_MESSAGE_MENU_OPENED = "SET_MESSAGE_MENU_OPENED";
 export declare const queryDirection: {
     PREV: string;
     NEXT: string;

@@ -320,6 +320,12 @@ export declare function setSendMessageInputHeightAC(height: number): {
         height: number;
     };
 };
+export declare function setMessageMenuOpenedAC(messageId: string): {
+    type: string;
+    payload: {
+        messageId: string;
+    };
+};
 export declare function setMessageForReplyAC(message: IMessage | null): {
     type: string;
     payload: {
