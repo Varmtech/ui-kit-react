@@ -17403,7 +17403,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (typingIndicator ? !isDirectChannel : lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), !isDirectChannel && (typingIndicator || lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
@@ -17411,13 +17411,13 @@ var Channel = function Channel(_ref) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "reacted", React__default.createElement(ReactionItem, null, channel.userMessageReactions && channel.userMessageReactions[0].key), "to", ' '), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
+  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "Reacted", React__default.createElement(ReactionItem, null, channel.userMessageReactions && channel.userMessageReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
     text: lastMessage.body,
     message: lastMessage,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts,
     isLastMessage: true
-  }))))), React__default.createElement(ChannelStatus, {
+  }), channel.lastReactedMessage && '"')))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
   }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), React__default.createElement(UnreadInfo, null, !!(channel.unreadMentionsCount && channel.unreadMentionsCount > 0) && React__default.createElement(UnreadMentionIconWrapper, {
     iconColor: colors.primary,
@@ -19511,8 +19511,8 @@ function SvgInfo(props) {
 
 var _templateObject$g, _templateObject2$f, _templateObject3$b, _templateObject4$8;
 var Container$8 = styled.div(_templateObject$g || (_templateObject$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
-var ChannelInfo$1 = styled.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
-var ChannelName = styled.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n"])));
+var ChannelInfo$1 = styled.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+var ChannelName = styled.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n  width: 100%;\n\n  & > ", " {\n    max-width: calc(100% - 8px);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), SectionHeader);
 var ChanelInfo = styled.span(_templateObject4$8 || (_templateObject4$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.infoIconColor;
 });
@@ -27750,7 +27750,6 @@ var Members = function Members(_ref) {
       setCloseMenu = _useState8[1];
 
   var members = useSelector(activeChannelMembersSelector) || [];
-  console.log('members', members);
   var contactsMap = useSelector(contactsMapSelector) || {};
   var membersLoading = useSelector(membersLoadingStateSelector) || {};
   var user = getClient().chatClient.user;
@@ -27811,8 +27810,6 @@ var Members = function Members(_ref) {
     }
   };
 
-  console.log('render members ********************************* ');
-
   var handleKickMember = function handleKickMember() {
     selectedMember && dispatch(kickMemberAC(channel.id, selectedMember.id));
   };
@@ -27869,7 +27866,7 @@ var Members = function Members(_ref) {
       color: colors.primary
     }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
       color: colors.purple
-    }, "Admin") : ''), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && member.role !== 'owner' && React__default.createElement(DropDown, {
+    }, "Admin") : ''), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && member.role !== 'owner' && member.id !== user.id && React__default.createElement(DropDown, {
       isSelect: true,
       forceClose: !!(closeMenu && closeMenu !== member.id),
       watchToggleState: function watchToggleState(state) {
