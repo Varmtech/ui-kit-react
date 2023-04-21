@@ -8,6 +8,7 @@ interface IProps {
     tickColor?: string;
     borderRadius?: string;
     size?: string;
+    disabled?: boolean;
 }
-declare const CustomCheckbox: ({ index, state, onChange, checkedBackgroundColor, backgroundColor, tickColor, borderRadius, size }: IProps) => JSX.Element;
+declare const CustomCheckbox: ({ index, state, onChange, checkedBackgroundColor, backgroundColor, tickColor, borderRadius, disabled, size }: IProps) => JSX.Element;
 export default CustomCheckbox;

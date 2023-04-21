@@ -8108,7 +8108,7 @@ var getCaretPosition1 = function getCaretPosition1(element) {
       } else {
         caretOffset += node.nodeValue.length;
       }
-
+    } else {
       textNodes += 1;
     }
 
@@ -8157,6 +8157,8 @@ var setCursorPosition = function setCursorPosition(element, position) {
   var textNodes = 0;
   var textNodesAdded = false;
   var currentNodeIsFind = false;
+  console.log('element.childNodes. . . . .', element.childNodes);
+  console.log('position. . . . .', position);
   element.childNodes.forEach(function (node, index) {
     if (node.nodeType === Node.TEXT_NODE) {
       currentNode = node;
@@ -8174,7 +8176,7 @@ var setCursorPosition = function setCursorPosition(element, position) {
         caretOffset = position - (caretOffset - textLength);
         return;
       }
-
+    } else {
       textNodes += 1;
     }
 
@@ -10902,7 +10904,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 153 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 161 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 166 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 186 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 202 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 215 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 231 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 245 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 251 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 268 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 278 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 283 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 288 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 292 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 296 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 314 : 319;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 25 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 32 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 45 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 52 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 80 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 106 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 153 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 157 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 161 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 166 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 186 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 202 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 215 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 231 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 245 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 251 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 268 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 278 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 283 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 288 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 292 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 296 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 314 : 318;
           break;
 
         case 14:
@@ -10927,7 +10929,7 @@ function watchForEvents() {
           return effects.put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 24:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 25:
           channel = args.channel;
@@ -10937,7 +10939,7 @@ function watchForEvents() {
 
         case 29:
 
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 32:
           console.log('channel LEAVE ... ');
@@ -10969,7 +10971,7 @@ function watchForEvents() {
           }));
 
         case 44:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 45:
           console.log('channel BLOCK ... ');
@@ -10985,11 +10987,11 @@ function watchForEvents() {
           return effects.put(removeChannelAC(_channel2.id));
 
         case 51:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 52:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 54:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -11053,7 +11055,7 @@ function watchForEvents() {
           }));
 
         case 79:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 80:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -11097,7 +11099,7 @@ function watchForEvents() {
           return effects.put(setAddedToChannelAC(JSON.parse(JSON.stringify(_channel4))));
 
         case 98:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 99:
           updatedChannel = args.updatedChannel;
@@ -11116,7 +11118,7 @@ function watchForEvents() {
           }));
 
         case 105:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 106:
           _channel5 = args.channel, message = args.message;
@@ -11238,7 +11240,7 @@ function watchForEvents() {
           return effects.put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
         case 152:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 153:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -11326,7 +11328,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 157:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -11366,7 +11368,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 161:
           _channel6 = args.channel, from = args.from;
@@ -11379,7 +11381,7 @@ function watchForEvents() {
           return effects.put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 165:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 166:
           channelId = args.channelId;
@@ -11422,7 +11424,7 @@ function watchForEvents() {
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
 
         case 185:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 186:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -11465,7 +11467,7 @@ function watchForEvents() {
           return effects.put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
         case 201:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 202:
           _channel9 = args.channel, _message = args.message;
@@ -11507,7 +11509,7 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 215:
           _channel10 = args.channel, user = args.user, _message2 = args.message, reaction = args.reaction;
@@ -11555,7 +11557,7 @@ function watchForEvents() {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 231:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
@@ -11592,7 +11594,7 @@ function watchForEvents() {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 245:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
@@ -11602,7 +11604,7 @@ function watchForEvents() {
           return effects.put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
         case 250:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 251:
           _channel13 = args.channel;
@@ -11644,7 +11646,7 @@ function watchForEvents() {
           }));
 
         case 267:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 268:
           _channel14 = args.channel;
@@ -11656,7 +11658,7 @@ function watchForEvents() {
           }));
 
         case 272:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 273:
           _channel15 = args.channel;
@@ -11668,7 +11670,7 @@ function watchForEvents() {
           }));
 
         case 277:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 278:
           _channel16 = args.channel;
@@ -11677,7 +11679,7 @@ function watchForEvents() {
           return effects.put(setChannelToHideAC(_channel16));
 
         case 282:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 283:
           _channel17 = args.channel;
@@ -11686,7 +11688,7 @@ function watchForEvents() {
           return effects.put(setChannelToUnHideAC(_channel17));
 
         case 287:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 288:
           _channel18 = args.channel;
@@ -11696,7 +11698,7 @@ function watchForEvents() {
           }));
 
         case 291:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 292:
           _channel19 = args.channel;
@@ -11706,7 +11708,7 @@ function watchForEvents() {
           }));
 
         case 295:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 296:
           _channel20 = args.channel, members = args.members;
@@ -11751,25 +11753,24 @@ function watchForEvents() {
           break;
 
         case 313:
-          return _context3.abrupt("break", 320);
+          return _context3.abrupt("break", 319);
 
         case 314:
           status = args.status;
-          console.log('setConnectionStatusAC -  -- -___---***********************... ', status);
-          _context3.next = 318;
+          _context3.next = 317;
           return effects.put(setConnectionStatusAC(status));
 
-        case 318:
-          return _context3.abrupt("break", 320);
+        case 317:
+          return _context3.abrupt("break", 319);
 
-        case 319:
+        case 318:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 320:
+        case 319:
           _context3.next = 5;
           break;
 
-        case 322:
+        case 321:
         case "end":
           return _context3.stop();
       }
@@ -17970,6 +17971,7 @@ var CustomCheckbox = function CustomCheckbox(_ref) {
       backgroundColor = _ref.backgroundColor,
       tickColor = _ref.tickColor,
       borderRadius = _ref.borderRadius,
+      disabled = _ref.disabled,
       size = _ref.size;
   return React__default.createElement(React__default.Fragment, null, React__default.createElement(CustomLabel, {
     isChecked: state,
@@ -17978,9 +17980,11 @@ var CustomCheckbox = function CustomCheckbox(_ref) {
     backgroundColor: backgroundColor,
     tickColor: tickColor,
     borderRadius: borderRadius,
-    htmlFor: "checkbox-" + index
+    htmlFor: "checkbox-" + index,
+    disabled: disabled
   }, state && React__default.createElement(SvgTick, null)), React__default.createElement(Checkbox, {
     type: 'checkbox',
+    disabled: disabled,
     id: "checkbox-" + index,
     checked: state,
     onChange: function onChange(e) {
@@ -17988,18 +17992,22 @@ var CustomCheckbox = function CustomCheckbox(_ref) {
     }
   }));
 };
-var CustomLabel = styled__default.label(_templateObject$7 || (_templateObject$7 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  min-width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n\n  & > svg {\n    width: calc(100% - 4px);\n    height: calc(100% - 8px);\n  }\n"])), function (props) {
+var CustomLabel = styled__default.label(_templateObject$7 || (_templateObject$7 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  min-width: ", ";\n  height: ", ";\n  cursor: ", ";\n  border: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  opacity: ", ";\n\n  & > svg {\n    width: calc(100% - 4px);\n    height: calc(100% - 8px);\n  }\n"])), function (props) {
   return props.size || '12px';
 }, function (props) {
   return props.size || '12px';
 }, function (props) {
   return props.size || '12px';
+}, function (props) {
+  return !props.disabled && 'pointer';
 }, function (props) {
   return props.isChecked ? 'none' : '1px solid #818C99';
 }, function (props) {
   return props.borderRadius || '4px';
 }, function (props) {
   return props.isChecked ? props.checkedBackgroundColor || colors.primary : props.backgroundColor || '#fff';
+}, function (props) {
+  return props.disabled && 0.4;
 });
 var Checkbox = styled__default.input(_templateObject2$7 || (_templateObject2$7 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
@@ -21164,6 +21172,12 @@ var Attachment = function Attachment(_ref) {
     }
   };
 
+  var handleMouseEvent = function handleMouseEvent(enter) {
+    if (closeMessageActions) {
+      closeMessageActions(enter);
+    }
+  };
+
   React.useEffect(function () {
     if (downloadIsCancelled) {
       setAttachmentUrl('');
@@ -21324,10 +21338,10 @@ var Attachment = function Attachment(_ref) {
       return downloadFile(attachment);
     },
     onMouseEnter: function onMouseEnter() {
-      return closeMessageActions && closeMessageActions(false);
+      return handleMouseEvent(true);
     },
     onMouseLeave: function onMouseLeave() {
-      return closeMessageActions && closeMessageActions(true);
+      return handleMouseEvent(false);
     }
   }, React__default.createElement(SvgDownload, null)), !isPrevious && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
     fileAttachment: true,
@@ -21646,7 +21660,7 @@ function ForwardMessagePopup(_ref) {
   var handleChannelSelect = function handleChannelSelect(event, channel) {
     var newSelectedChannels = [].concat(selectedChannels);
 
-    if (event.target.checked) {
+    if (event.target.checked && selectedChannels.length < 5) {
       newSelectedChannels.push({
         id: channel.id,
         displayName: channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')
@@ -21742,6 +21756,7 @@ function ForwardMessagePopup(_ref) {
       setDefaultAvatar: isDirectChannel
     }), React__default.createElement(ChannelInfo$2, null, React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), React__default.createElement(ChannelMembers, null, isDirectChannel ? (hideUserPresence(channel.peer) ? '' : channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), React__default.createElement(CustomCheckbox, {
       index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
       state: isSelected,
       onChange: function onChange(e) {
         return handleChannelSelect(e, channel);
@@ -23050,7 +23065,6 @@ var Message = function Message(_ref) {
   };
 
   var handleDeleteMessage = function handleDeleteMessage(deleteOption) {
-    console.log('delete message .. ', message);
     dispatch(deleteMessageAC(channel.id, message.id, deleteOption));
     setMessageActionsShow(false);
   };
@@ -23100,6 +23114,14 @@ var Message = function Message(_ref) {
       setMessageActionsShow(true);
       dispatch(setMessageMenuOpenedAC(message.id || message.tid));
     }, 450);
+  };
+
+  var closeMessageActions = function closeMessageActions(close) {
+    setMessageActionsShow(!close);
+
+    if (close && !messageActionsShow && messageActionsTimeout.current) {
+      clearTimeout(messageActionsTimeout.current);
+    }
   };
 
   var handleMouseLeave = function handleMouseLeave() {
@@ -23206,8 +23228,8 @@ var Message = function Message(_ref) {
       setEmojisPopupPosition('');
     }
   }, [emojisPopupOpen]);
-  React.useEffect(function () {
-    if (openedMessageMenuId !== message.id) {
+  useDidUpdate(function () {
+    if (openedMessageMenuId && openedMessageMenuId !== message.id) {
       setMessageActionsShow(false);
     }
   }, [openedMessageMenuId]);
@@ -23389,9 +23411,7 @@ var Message = function Message(_ref) {
       selectedFileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
       selectedFileAttachmentsTitleColor: fileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor: fileAttachmentsSizeColor,
-      closeMessageActions: function closeMessageActions(state) {
-        return setMessageActionsShow(state);
-      }
+      closeMessageActions: closeMessageActions
     });
   }), emojisPopupOpen && emojisPopupPosition && React__default.createElement(EmojiContainer, {
     id: message.id + "_emoji_popup_container",
@@ -23573,7 +23593,7 @@ var MessageStatusUpdated = styled__default.span(_templateObject16$2 || (_templat
   return props.color || colors.gray4;
 });
 var MessageStatusDeleted = styled__default.span(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
-var MessageBody = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  max-width: ", ";\n  padding: ", ";\n  direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n  &:hover .message_actions_cont {\n      visibility: visible;\n      opacity: 1;\n    }\n  }\n"])), function (props) {
+var MessageBody = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  max-width: ", ";\n  padding: ", ";\n  direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n"])), function (props) {
   return props.isSelfMessage ? props.ownMessageBackground : props.incomingMessageBackground;
 }, function (props) {
   return props.borderRadius || '4px 16px 16px 4px';
@@ -26060,7 +26080,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                 delete messageToSend.mentionedMembers;
               }
 
-              console.log('messageToSend. . . . .  .', messageToSend);
               dispatch(sendMessageAC(_extends({}, messageToSend, {
                 attachments: [attachmentToSend]
               }), activeChannel.id, connectionStatus, true));
@@ -26645,7 +26664,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onPaste: handlePastAttachments,
     onKeyPress: handleSendEditMessage,
     "data-placeholder": 'Type message here ...',
-    ref: messageInputRef
+    ref: messageInputRef,
+    mentionColor: colors.primary
   })), React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
@@ -26684,7 +26704,9 @@ var MessageInputWrapper = styled__default.div(_templateObject9$b || (_templateOb
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 3;
 });
-var MessageInput = styled__default.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7);
+var MessageInput = styled__default.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7, function (props) {
+  return props.mentionColor || colors.primary;
+});
 var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.order === 0 || props.order ? props.order : 2;
 }, function (props) {
