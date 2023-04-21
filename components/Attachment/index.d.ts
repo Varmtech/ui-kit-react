@@ -8,7 +8,6 @@ interface AttachmentPops {
     removeSelected?: (attachmentUrl: string) => void;
     setVideoIsReadyToSend?: (attachmentId: string) => void;
     handleMediaItemClick?: (attachment: IAttachment) => void;
-    attachments?: IAttachment[];
     borderRadius?: string;
     backgroundColor: string;
     selectedFileAttachmentsBoxBorder?: string;

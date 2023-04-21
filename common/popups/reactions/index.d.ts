@@ -13,5 +13,5 @@ interface IReactionsPopupProps {
     };
     rtlDirection?: boolean;
 }
-export default function ReactionsPopup({ messageId, handleReactionsPopupClose, handleAddDeleteEmoji, bottomPosition, horizontalPositions, reactionScores, rtlDirection }: IReactionsPopupProps): JSX.Element;
+export default function ReactionsPopup({ messageId, handleReactionsPopupClose, handleAddDeleteEmoji, bottomPosition, reactionScores, rtlDirection }: IReactionsPopupProps): JSX.Element;
 export {};
