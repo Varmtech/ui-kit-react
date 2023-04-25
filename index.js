@@ -14192,6 +14192,7 @@ function sendTextMessage(action) {
             attachments = [att];
           }
 
+          console.log('send measage ... ', message);
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
@@ -14214,49 +14215,51 @@ function sendTextMessage(action) {
             pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
           }
 
-          _context2.next = 19;
+          _context2.next = 20;
           return effects.select(messagesHasNextSelector);
 
-        case 19:
+        case 20:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 28;
+            _context2.next = 29;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 26;
+            _context2.next = 27;
             break;
           }
 
-          _context2.next = 24;
+          _context2.next = 25;
           return effects.put(getMessagesAC(channel));
 
-        case 24:
-          _context2.next = 28;
+        case 25:
+          _context2.next = 29;
           break;
 
-        case 26:
-          _context2.next = 28;
+        case 27:
+          _context2.next = 29;
           return effects.put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 28:
+        case 29:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context2.next = 32;
+          _context2.next = 33;
           return effects.put(scrollToNewMessageAC(true, true));
 
-        case 32:
+        case 33:
+          console.log('messageToSend. . .', messageToSend);
+
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 45;
+            _context2.next = 47;
             break;
           }
 
-          _context2.next = 35;
+          _context2.next = 37;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 35:
+        case 37:
           messageResponse = _context2.sent;
           messageUpdateData = {
             id: messageResponse.id,
@@ -14268,33 +14271,33 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 39;
+          _context2.next = 41;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 39:
+        case 41:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 43;
+          _context2.next = 45;
           return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 43:
-          _context2.next = 46;
+        case 45:
+          _context2.next = 48;
           break;
 
-        case 45:
+        case 47:
           throw new Error('Connection required to send message');
 
-        case 46:
-          _context2.next = 55;
+        case 48:
+          _context2.next = 57;
           break;
 
-        case 48:
-          _context2.prev = 48;
+        case 50:
+          _context2.prev = 50;
           _context2.t0 = _context2["catch"](5);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
@@ -14306,17 +14309,17 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 55;
+          _context2.next = 57;
           return effects.put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 55:
+        case 57:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[5, 48]]);
+  }, _marked2$1, null, [[5, 50]]);
 }
 
 function forwardMessage(action) {
@@ -17411,6 +17414,7 @@ var Channel = function Channel(_ref) {
   var withAvatar = avatar === undefined ? true : avatar;
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(channel.id));
   var lastMessage = channel.lastReactedMessage || channel.lastMessage;
+  var lastMessageMetas = lastMessage.type === 'system' && lastMessage.metadata && JSON.parse(lastMessage.metadata);
 
   var _useState = React.useState(0),
       statusWidth = _useState[0],
@@ -17432,6 +17436,10 @@ var Channel = function Channel(_ref) {
       setStatusWidth(messageTimeAndStatusRef.current.offsetWidth);
     }
   }, [messageTimeAndStatusRef, lastMessage]);
+  console.log('channel.lastReactedMessage. . . ', channel.lastReactedMessage);
+  console.log('channel.lastMessage. . . ', channel.lastMessage);
+  console.log('lastMessage. . . ', lastMessage);
+  console.log('lastMessage.user.id === user.id && !channel.lastReactedMessage. . . ', lastMessage.user.id === user.id && !channel.lastReactedMessage);
   return React__default.createElement(Container$2, {
     selectedChannel: channel.id === activeChannel.id,
     selectedBorderColor: customColors && customColors.selectedChannelLeftBorder,
@@ -17473,11 +17481,11 @@ var Channel = function Channel(_ref) {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
-  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
+  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.slice(0, 5).map(function (mem) {
+  })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessage.metadata && lastMessage.metadata.m && lastMessage.metadata.m.length > 5 ? "and " + (lastMessage.metadata.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "Reacted", React__default.createElement(ReactionItem, null, channel.userMessageReactions && channel.userMessageReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
+  })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "Reacted", React__default.createElement(ReactionItem, null, channel.userMessageReactions && channel.userMessageReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
     text: lastMessage.body,
     message: lastMessage,
     contactsMap: contactsMap,
@@ -25132,6 +25140,7 @@ var MessageList = function MessageList(_ref2) {
     var prevMessage = messages[index - 1];
     var nextMessage = messages[index + 1] || currentChannelPendingMessages.length > 0 && currentChannelPendingMessages[0];
     var isUnreadMessage = !!(unreadMessageId && unreadMessageId === message.id);
+    var messageMetas = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
     return React__default.createElement(React__default.Fragment, {
       key: message.id || message.tid
     }, React__default.createElement(CreateMessageDateDivider, {
@@ -25157,15 +25166,15 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorder: dateDividerBorder,
       dateDividerBackgroundColor: dateDividerBackgroundColor,
       dateDividerBorderRadius: dateDividerBorderRadius
-    }, React__default.createElement("span", null, message.incoming ? makeUserName(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(message.metadata && message.metadata.m) && message.metadata.m.slice(0, 5).map(function (mem) {
+    }, React__default.createElement("span", null, message.incoming ? makeUserName(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(messageMetas && messageMetas.m) && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
-    })) + " " + (message.metadata && message.metadata.m && message.metadata.m.length > 5 ? "and " + (message.metadata.m.length - 5) + " more" : '') : message.body === 'RM' ? " removed " + (message.metadata && message.metadata.m && message.metadata.m.slice(0, 5).map(function (mem) {
+    })) + " " + (messageMetas && messageMetas.m && messageMetas.m.length > 5 ? "and " + (messageMetas.m.length - 5) + " more" : '') : message.body === 'RM' ? " removed " + (messageMetas && messageMetas.m && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
-    })) + " " + (message.metadata && message.metadata.m && message.metadata.m.length > 5 ? "and " + (message.metadata.m.length - 5) + " more" : '') : message.body === 'LG' ? ' left the group' : '')) : React__default.createElement(MessageWrapper, {
+    })) + " " + (messageMetas && messageMetas.m && messageMetas.m.length > 5 ? "and " + (messageMetas.m.length - 5) + " more" : '') : message.body === 'LG' ? ' left the group' : '')) : React__default.createElement(MessageWrapper, {
       id: message.id
     }, React__default.createElement(Message, {
       message: _extends({}, message, {
-        metadata: isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata
+        metadata: messageMetas
       }),
       channel: channel,
       stopScrolling: setStopScrolling,
