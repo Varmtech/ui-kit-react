@@ -17414,7 +17414,7 @@ var Channel = function Channel(_ref) {
   var withAvatar = avatar === undefined ? true : avatar;
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(channel.id));
   var lastMessage = channel.lastReactedMessage || channel.lastMessage;
-  var lastMessageMetas = lastMessage.type === 'system' && lastMessage.metadata && JSON.parse(lastMessage.metadata);
+  var lastMessageMetas = lastMessage && lastMessage.type === 'system' && lastMessage.metadata && JSON.parse(lastMessage.metadata);
 
   var _useState = React.useState(0),
       statusWidth = _useState[0],
@@ -17436,10 +17436,6 @@ var Channel = function Channel(_ref) {
       setStatusWidth(messageTimeAndStatusRef.current.offsetWidth);
     }
   }, [messageTimeAndStatusRef, lastMessage]);
-  console.log('channel.lastReactedMessage. . . ', channel.lastReactedMessage);
-  console.log('channel.lastMessage. . . ', channel.lastMessage);
-  console.log('lastMessage. . . ', lastMessage);
-  console.log('lastMessage.user.id === user.id && !channel.lastReactedMessage. . . ', lastMessage.user.id === user.id && !channel.lastReactedMessage);
   return React__default.createElement(Container$2, {
     selectedChannel: channel.id === activeChannel.id,
     selectedBorderColor: customColors && customColors.selectedChannelLeftBorder,
