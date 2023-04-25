@@ -38,7 +38,7 @@ export declare function deleteMessageAC(channelId: string, messageId: string, de
     payload: {
         channelId: string;
         messageId: string;
-        deleteOption: "forMe" | "forEveryone";
+        deleteOption: "forEveryone" | "forMe";
     };
 };
 export declare function deleteMessageFromListAC(messageId: string): {

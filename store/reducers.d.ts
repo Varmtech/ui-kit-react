@@ -30,7 +30,7 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
         isDragging: boolean;
         draggedAttachments: {
             attachment: File;
-            type: "media" | "file";
+            type: "file" | "media";
         }[];
         tabIsActive: boolean;
     };
