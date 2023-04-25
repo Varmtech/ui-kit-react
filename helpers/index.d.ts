@@ -17,7 +17,7 @@ export declare const MessageTextFormat: ({ text, message, contactsMap, getFromCo
     isNotification?: boolean | undefined;
 }) => any;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
-export declare const setMessageTypeByAttachment: (attachmentType: string) => "file" | "media";
+export declare const setMessageTypeByAttachment: (attachmentType: string) => "media" | "file";
 export declare const getAttachmentType: (dataName: string) => string;
 export declare const doesTextHasLink: (text: string) => any[];
 export declare const makeUserName: (contact?: IContact | undefined, user?: IUser | undefined, fromContact?: boolean | undefined) => string;

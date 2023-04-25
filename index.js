@@ -1176,7 +1176,9 @@ var ChannelReducer = (function (state, _temp) {
         var _updatedChannels = newState.channels.map(function (channel) {
           if (channel.type === CHANNEL_TYPE.DIRECT && usersMap[channel.peer.id]) {
             return _extends({}, channel, {
-              peer: usersMap[channel.peer.id]
+              peer: _extends({}, channel.peer, {
+                presence: usersMap[channel.peer.id].presence
+              })
             });
           }
 
@@ -1184,9 +1186,13 @@ var ChannelReducer = (function (state, _temp) {
         });
 
         if (newState.activeChannel.type === CHANNEL_TYPE.DIRECT && usersMap[newState.activeChannel.peer.id]) {
-          newState.activeChannel = _extends({}, newState.activeChannel, {
-            peer: usersMap[newState.activeChannel.peer.id]
-          });
+          if ('peer' in newState.activeChannel) {
+            newState.activeChannel = _extends({}, newState.activeChannel, {
+              peer: _extends({}, newState.activeChannel.peer && newState.activeChannel.peer, {
+                presence: usersMap[newState.activeChannel.peer.id].presence
+              })
+            });
+          }
         }
 
         newState.channels = [].concat(_updatedChannels);
@@ -17463,7 +17469,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (typingIndicator || lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (typingIndicator && !isDirectChannel || lastMessage && lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
@@ -23328,7 +23334,7 @@ var Message = function Message(_ref) {
     starIconTooltipText: starIconTooltipText,
     reportIconTooltipText: reportIconTooltipText,
     messageActionIconsColor: messageActionIconsColor,
-    myRole: channel.type === CHANNEL_TYPE.DIRECT ? channel.peer.role : channel.role,
+    myRole: channel.role || channel.peer && channel.peer.role,
     isIncoming: message.incoming,
     handleOpenEmojis: handleOpenEmojis
   }), message.parent && message.parent.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
