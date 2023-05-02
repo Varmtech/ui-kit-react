@@ -7893,17 +7893,88 @@ var getFileExtension = function getFileExtension(filename) {
   if (ext === filename) return '';
   return ext;
 };
-var MessageTextFormat = function MessageTextFormat(_ref5) {
+var typingTextFormat = function typingTextFormat(_ref5) {
   var text = _ref5.text,
-      message = _ref5.message,
-      contactsMap = _ref5.contactsMap,
-      getFromContacts = _ref5.getFromContacts,
-      isLastMessage = _ref5.isLastMessage,
-      isNotification = _ref5.isNotification;
+      mentionedMembers = _ref5.mentionedMembers,
+      currentMentionEnd = _ref5.currentMentionEnd;
+  var messageText = '';
+
+  if (mentionedMembers.length > 0) {
+    var mentionsPositions = Array.isArray(mentionedMembers) ? [].concat(mentionedMembers).sort(function (a, b) {
+      return a.start - b.start;
+    }) : [];
+    var prevEnd = 0;
+    var separateLines = text.split(/\r?\n|\r|\n/g);
+    var addedMembers = 0;
+    var textLengthInCurrentIteration = 0;
+
+    for (var i = 0; i < separateLines.length; i++) {
+      var nextTextPart = '';
+      var currentLine = separateLines[i];
+      var lastFoundIndexOnTheLine = 0;
+      textLengthInCurrentIteration += currentLine.length + 1;
+
+      if (mentionsPositions.length > addedMembers) {
+        for (var j = addedMembers; j < mentionsPositions.length; j++) {
+          var mention = mentionsPositions[j];
+
+          if (mention.start >= textLengthInCurrentIteration) {
+            var addPart = (nextTextPart || currentLine.substring(prevEnd)).trimStart();
+            messageText = messageText + " " + addPart;
+            prevEnd = 0;
+            break;
+          }
+
+          if (!nextTextPart || nextTextPart === '') {
+            var mentionStartInCurrentLine = currentLine.indexOf(mention.displayName, lastFoundIndexOnTheLine);
+            lastFoundIndexOnTheLine = mentionStartInCurrentLine + mention.displayName.length;
+            nextTextPart = currentLine.substring(mentionStartInCurrentLine + mention.displayName.length);
+            var setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextTextPart.trim() && !separateLines[i + 1];
+            messageText += currentLine.substring(0, mentionStartInCurrentLine) + "<span class='mention_user'>" + mention.displayName + "</span>" + (setSpaceToEnd ? '&nbsp;' : '');
+            prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
+          } else {
+            var _mentionStartInCurrentLine = nextTextPart.indexOf(mention.displayName);
+
+            lastFoundIndexOnTheLine = _mentionStartInCurrentLine + mention.displayName.length;
+            var nextPart = nextTextPart.substring(_mentionStartInCurrentLine + mention.displayName.length);
+
+            var _setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextPart.trim() && !separateLines[i + 1];
+
+            messageText += nextTextPart.substring(0, _mentionStartInCurrentLine) + "<span class=\"mention_user\">" + mention.displayName + "</span>" + (_setSpaceToEnd ? '&nbsp;' : '');
+            nextTextPart = nextPart;
+            prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
+          }
+
+          addedMembers++;
+
+          if (addedMembers === mentionsPositions.length && nextTextPart.trim()) {
+            messageText += nextTextPart;
+          }
+        }
+      } else {
+        messageText += "" + currentLine;
+      }
+
+      if (separateLines.length > i + 1) {
+        messageText += '<br/>';
+      }
+    }
+  }
+
+  return messageText.length > 1 ? messageText : text;
+};
+var MessageTextFormat = function MessageTextFormat(_ref6) {
+  var text = _ref6.text,
+      message = _ref6.message,
+      contactsMap = _ref6.contactsMap,
+      getFromContacts = _ref6.getFromContacts,
+      isLastMessage = _ref6.isLastMessage,
+      isNotification = _ref6.isNotification;
   var messageText = [text];
 
   if (message.mentionedUsers && message.mentionedUsers.length > 0) {
-    var mentionsPositions = Array.isArray(message.metadata) ? [].concat(message.metadata).sort(function (a, b) {
+    var messageMetadata = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
+    var mentionsPositions = Array.isArray(messageMetadata) ? [].concat(messageMetadata).sort(function (a, b) {
       return b.loc - a.loc;
     }) : [];
     mentionsPositions.forEach(function (mention) {
@@ -8097,7 +8168,7 @@ var formatLargeText = function formatLargeText(text, maxLength) {
     return text;
   }
 };
-var getCaretPosition1 = function getCaretPosition1(element) {
+var getCaretPosition = function getCaretPosition(element) {
   var caretOffset = 0;
   var textNodes = 0;
   var doc = element.ownerDocument || element.document;
@@ -8105,55 +8176,36 @@ var getCaretPosition1 = function getCaretPosition1(element) {
   var focusOffset = win.getSelection().focusOffset;
   var focusNode = win.getSelection().focusNode;
   var textNodesAdded = false;
-  element.childNodes.forEach(function (node, index) {
+
+  for (var i = 0; i < element.childNodes.length; i++) {
+    var node = element.childNodes[i];
+
     if (node.nodeType === Node.TEXT_NODE) {
       if (node === focusNode) {
         textNodesAdded = true;
         caretOffset += focusOffset + textNodes;
-        return;
+        break;
       } else {
         caretOffset += node.nodeValue.length;
+      }
+    } else if (node.nodeName === 'SPAN') {
+      if (node.contains(focusNode)) {
+        textNodesAdded = true;
+        caretOffset += focusOffset + textNodes;
+        break;
+      } else {
+        caretOffset += node.innerText.length;
       }
     } else {
       textNodes += 1;
     }
 
-    if (element.childNodes.length === index + 1 && !textNodesAdded) {
+    if (element.childNodes.length === i + 1 && !textNodesAdded) {
       caretOffset += textNodes;
-    }
-  });
-  return caretOffset;
-};
-var getCaretPosition = function getCaretPosition(editableDiv) {
-  var caretPos = 0;
-  var sel;
-  var range;
-
-  if (window.getSelection) {
-    sel = window.getSelection();
-
-    if (sel.rangeCount) {
-      range = sel.getRangeAt(0);
-
-      if (range.commonAncestorContainer.parentNode === editableDiv) {
-        caretPos = range.endOffset;
-      }
-    }
-  } else {
-    if (document.selection && document.selection.createRange) {
-      range = document.selection.createRange();
-
-      if (range.parentElement() === editableDiv) {
-        var tempEl = document.createElement('span');
-        editableDiv.childNodes.forEach(function (node) {
-          editableDiv.insertBefore(tempEl, node);
-          caretPos += node.textContent.length;
-        });
-      }
     }
   }
 
-  return caretPos;
+  return caretOffset;
 };
 var setCursorPosition = function setCursorPosition(element, position) {
   var range = document.createRange();
@@ -8163,10 +8215,8 @@ var setCursorPosition = function setCursorPosition(element, position) {
   var textNodes = 0;
   var textNodesAdded = false;
   var currentNodeIsFind = false;
-  console.log('element.childNodes. . . . .', element.childNodes);
-  console.log('position. . . . .', position);
   element.childNodes.forEach(function (node, index) {
-    if (node.nodeType === Node.TEXT_NODE) {
+    if (!currentNodeIsFind && node.nodeType === Node.TEXT_NODE) {
       currentNode = node;
       var textLength = node.nodeValue.length;
       caretOffset = caretOffset + textLength;
@@ -8182,8 +8232,23 @@ var setCursorPosition = function setCursorPosition(element, position) {
         caretOffset = position - (caretOffset - textLength);
         return;
       }
-    } else {
-      textNodes += 1;
+    } else if (!currentNodeIsFind) {
+      if (node.nodeName === 'SPAN') {
+        caretOffset += node.innerText.length;
+
+        if (caretOffset >= position) {
+          currentNodeIsFind = true;
+          currentNode = node;
+          caretOffset = position - (caretOffset - node.innerText.length);
+          return;
+        }
+
+        if (element.childNodes[index + 1] && element.childNodes[index + 1].nodeName === 'BR') {
+          caretOffset += 1;
+        }
+      } else {
+        textNodes += 1;
+      }
     }
 
     if (element.childNodes.length === index + 1 && !currentNodeIsFind) {
@@ -8192,6 +8257,11 @@ var setCursorPosition = function setCursorPosition(element, position) {
       }
 
       currentNodeIsFind = true;
+
+      if (position > caretOffset) {
+        caretOffset++;
+      }
+
       caretOffset = caretOffset - position;
     }
   });
@@ -25782,7 +25852,21 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var selPos = getCaretPosition(messageInputRef.current);
     var newText = messageText.slice(0, selPos) + emoji + messageText.slice(selPos);
     setMessageText(newText);
-    messageInputRef.current.innerText = newText;
+
+    if (mentionedMembers.length && mentionedMembers.length > 0) {
+      var currentTextCont = typingTextFormat({
+        text: newText,
+        mentionedMembers: [].concat(mentionedMembers.map(function (menMem) {
+          return _extends({}, menMem, {
+            displayName: mentionedMembersDisplayName[menMem.id].displayName
+          });
+        }))
+      });
+      messageInputRef.current.innerHTML = currentTextCont;
+    } else {
+      messageInputRef.current.innerText = newText;
+    }
+
     setCursorPosition(messageInputRef.current, selPos + emoji.length);
   };
 
@@ -25830,9 +25914,40 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     setMentionTyping(false);
     var currentText = "" + messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
+    var mentionedMembersPositions = [];
+
+    if (mentionedMembers && mentionedMembers.length > 0) {
+      var lastFoundIndex = 0;
+      var starts = {};
+      mentionedMembers.forEach(function (menMem) {
+        var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
+        var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
+        lastFoundIndex = menIndex + mentionDisplayName.length;
+
+        if (!starts[menMem.start]) {
+          mentionedMembersPositions.push({
+            displayName: mentionedMembersDisplayName[menMem.id].displayName,
+            start: menIndex,
+            end: menIndex + mentionDisplayName.length
+          });
+        }
+
+        starts[menMem.start] = true;
+      });
+    }
+
+    var currentTextCont = typingTextFormat({
+      text: currentText,
+      mentionedMembers: [].concat(mentionedMembersPositions, [{
+        displayName: "@" + mentionDisplayName,
+        start: mentionToChange ? mentionToChange.start : currentMentions.start,
+        end: mentionToChange ? mentionToChange.end : currentMentions.start + 1 + mentionDisplayName.length
+      }]),
+      currentMentionEnd: mentionToChange ? mentionToChange.end : currentMentions.start + 1 + mentionDisplayName.length
+    });
     setMessageText(currentText);
-    messageInputRef.current.innerText = currentText;
-    setCursorPosition(messageInputRef.current, currentMentions.start + 1 + mentionDisplayName.length);
+    messageInputRef.current.innerHTML = currentTextCont;
+    setCursorPosition(messageInputRef.current, currentMentions.start + 2 + mentionDisplayName.length);
 
     var updateCurrentMentions = _extends({}, currentMentions);
 
@@ -25877,39 +25992,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleMentionDetect = function handleMentionDetect(e) {
-    var selPos = getCaretPosition1(e.currentTarget);
+    var selPos = getCaretPosition(e.currentTarget);
 
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
       setSelectionPos(selPos);
-    } else {
-      if (mentionedMembers.length) {
-        var edited = false;
-        var editMentions = mentionedMembers.map(function (men) {
-          if (men.start > selPos) {
-            if (!edited) {
-              edited = true;
-            }
-
-            var newMen = _extends({}, men);
-
-            if (e.key === 'Delete' || e.key === 'Backspace') {
-              newMen.start -= 1;
-              newMen.end -= 1;
-            } else {
-              newMen.start += 1;
-              newMen.end += 1;
-            }
-
-            return newMen;
-          }
-
-          return men;
-        });
-
-        if (edited) {
-          setMentionedMembers(editMentions);
-        }
-      }
     }
 
     if (currentMentions && currentMentions.start === selPos - 1 && !mentionTyping) {
@@ -25936,20 +26022,51 @@ var SendMessageInput = function SendMessageInput(_ref) {
       });
 
       if (mentionToEdit) {
-        var currentText = [messageText.slice(0, mentionToEdit.start + 1), messageText.slice(mentionToEdit.end)].join('');
+        var editingMentionPosition = 0;
+        var mentionedMembersPositions = [];
+
+        if (mentionedMembers && mentionedMembers.length > 0) {
+          var lastFoundIndex = 0;
+          var starts = {};
+          mentionedMembers.forEach(function (menMem) {
+            var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
+            var menIndex = messageText.indexOf(mentionDisplayName, lastFoundIndex);
+            lastFoundIndex = menIndex + mentionDisplayName.length;
+
+            if (menMem.start === mentionToEdit.start) {
+              editingMentionPosition = menIndex;
+            }
+
+            if (!starts[menMem.start] && menMem.start !== mentionToEdit.start) {
+              mentionedMembersPositions.push({
+                displayName: mentionedMembersDisplayName[menMem.id].displayName,
+                start: menIndex,
+                end: menIndex + mentionDisplayName.length
+              });
+            }
+
+            starts[menMem.start] = true;
+          });
+        }
+
+        var currentText = [messageText.slice(0, editingMentionPosition + 1), messageText.slice(editingMentionPosition + mentionedMembersDisplayName[mentionToEdit.id].displayName.length)].join('');
+        var currentTextCont = typingTextFormat({
+          text: currentText,
+          mentionedMembers: [].concat(mentionedMembersPositions)
+        });
         setMessageText(currentText);
-        messageInputRef.current.innerText = currentText;
+        messageInputRef.current.innerHTML = currentTextCont;
         setMentionedMembers(function (prevState) {
           return prevState.filter(function (mem) {
             return mem.start !== mentionToEdit.start;
           });
         });
         setMentionEdit(undefined);
-        setCursorPosition(messageInputRef.current, mentionToEdit.start + 1);
+        setCursorPosition(messageInputRef.current, selPos - (mentionedMembersDisplayName[mentionToEdit.id].displayName.length - 2));
         setOpenMention(true);
         setMentionTyping(true);
         setCurrentMentions({
-          start: mentionToEdit.start,
+          start: editingMentionPosition,
           typed: ''
         });
       } else if (currentMentions) {
@@ -26021,15 +26138,21 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
         if (mentionedMembers && mentionedMembers.length > 0) {
           var lastFoundIndex = 0;
+          var starts = {};
           mentionedMembers.forEach(function (menMem) {
             var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
             var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
             lastFoundIndex = menIndex + mentionDisplayName.length;
-            mentionedMembersPositions.push({
-              id: menMem.id,
-              loc: menMem.start - trimLength,
-              len: menMem.end - menMem.start
-            });
+
+            if (!starts[menMem.start - trimLength]) {
+              mentionedMembersPositions.push({
+                id: menMem.id,
+                loc: menIndex,
+                len: mentionDisplayName.length
+              });
+            }
+
+            starts[menMem.start - trimLength] = true;
           });
         }
 
@@ -26263,20 +26386,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   React.useEffect(function () {
     if (mentionedMembers.length) {
-      var currentPos = getCaretPosition(messageInputRef.current);
-      var mentionToEdit = mentionedMembers.find(function (menMem) {
-        return menMem.start < currentPos && menMem.end >= currentPos;
-      });
-
-      if (mentionToEdit) {
-        setMentionEdit(mentionToEdit);
-        setCurrentMentions({
-          start: mentionToEdit.start,
-          typed: ''
-        });
-        setOpenMention(true);
-        setMentionTyping(true);
-      } else if (openMention || mentionTyping) {
+      if (openMention || mentionTyping) {
         handleCloseMentionsPopup();
         setMentionTyping(false);
         setOpenMention(false);
@@ -26579,7 +26689,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName || typingIndicator.from.id, ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
     handleAddEmoji: handleAddEmoji,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
-    rightSide: emojisInRightSide
+    rightSide: emojisInRightSide,
+    bottomPosition: '100%'
   }), messageToEdit && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
     onClick: handleCloseEditMode
   }, React__default.createElement(SvgClose, null)), React__default.createElement(EditReplyMessageHeader, {

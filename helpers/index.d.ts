@@ -8,6 +8,12 @@ export declare const MessageTextFormatForEdit: ({ text, message }: {
     message: any;
 }) => string;
 export declare const urlRegex: RegExp;
+export declare const typingTextFormat: ({ text, mentionedMembers, currentMentionEnd }: {
+    text: string;
+    mentionedMembers: any;
+    currentMentionEnd?: number | undefined;
+    setEmoji?: any;
+}) => any;
 export declare const MessageTextFormat: ({ text, message, contactsMap, getFromContacts, isLastMessage, isNotification }: {
     text: string;
     message: any;
@@ -32,9 +38,7 @@ export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;
 export declare const getMetadataFromUrl: (url: string) => Promise<any>;
 export declare const formatAudioVideoTime: (duration: number, currentTime: number) => string;
 export declare const formatLargeText: (text: string, maxLength: number) => any;
-export declare const getCaretPosition1: (element: any) => number;
-export declare const getCaretPositionAsText: (element: any) => number;
-export declare const getCaretPosition: (editableDiv: any) => number;
+export declare const getCaretPosition: (element: any) => number;
 export declare const setCursorPosition: (element: any, position: number) => void;
 export declare const placeCaretAtEnd: (el: any) => void;
 export declare const detectOS: () => string | null;
