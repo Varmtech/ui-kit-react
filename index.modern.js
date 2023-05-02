@@ -26013,6 +26013,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var shouldClose = false;
 
     if (e.key === 'Backspace') {
+      if (!messageInputRef.current.innerText.trim()) {
+        setMessageText('');
+        setMentionedMembers([]);
+      }
+
       var mentionToEdit = mentionedMembers.find(function (menMem) {
         return menMem.start <= selPos && menMem.end >= selPos + 1;
       });
