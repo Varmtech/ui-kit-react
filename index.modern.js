@@ -4,8 +4,8 @@ import createSagaMiddleware, { eventChannel } from 'redux-saga';
 import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import FileSaver from 'file-saver';
-import LinkifyIt from 'linkify-it';
 import { put, call, take, select, takeLatest, takeEvery, all } from 'redux-saga/effects';
+import LinkifyIt from 'linkify-it';
 import Cropper from 'react-easy-crop';
 import WaveSurfer from 'wavesurfer.js';
 import Carousel from 'react-elastic-carousel';
@@ -1528,562 +1528,6 @@ function SvgPendingIcon(props) {
     fill: "CurrentColor"
   })));
 }
-
-var colors = {
-  white: '#ffffff',
-  black1: '#383B51',
-  blue1: '#172268',
-  blue2: '#438CED',
-  blue3: '#63afff',
-  blue4: '#1F223C',
-  blue5: '#172268',
-  blue6: '#18273A',
-  blue7: '#383B51',
-  blue8: '#9AABFB',
-  blue9: '#2d44bf',
-  blue10: '#060A26',
-  gray0: '#F3F5F8',
-  gray1: '#EDEDED',
-  gray2: '#ecedf0',
-  gray3: '#B2B6BE',
-  gray4: '#818C99',
-  gray5: '#F0F2F5',
-  gray6: '#17191C',
-  gray7: '#898B99',
-  gray8: '#3A3C3E',
-  gray9: '#757D8B',
-  gray10: '#F3F5F7',
-  pink1: '#ff3e74',
-  purple1: '#9f35e7',
-  cobalt1: '#2F81FF',
-  primary: '#2F81FF',
-  red1: '#FA4C56',
-  red2: '#d7596c',
-  red3: '#F94C56',
-  yellow1: '#FCD36E',
-  purple: '#7A6EF6',
-  defaultAvatarBackground: '#D0D8E3',
-  deleteUserIconBackground: '#D0D8E3'
-};
-var size = {
-  mobileS: '320px',
-  mobileM: '375px',
-  mobileL: '425px',
-  tablet: '768px',
-  laptop: '1024px',
-  laptopL: '1440px',
-  max: '2560px'
-};
-var device = {
-  mobileS: "(min-width: " + size.mobileS + ")",
-  mobileM: "(min-width: " + size.mobileM + ")",
-  mobileL: "(min-width: " + size.mobileL + ")",
-  tablet: "screen and (max-width: " + size.tablet + ")",
-  laptop: "screen and (max-width: " + size.laptop + ")",
-  laptopL: "screen and (min-width: " + size.laptopL + ")",
-  max: "screen and (max-width: " + size.max + ")"
-};
-var customColors = {};
-var setCustomColors = function setCustomColors(colorsKeyValues) {
-  var colorsKeys = Object.keys(colorsKeyValues);
-  colorsKeys.forEach(function (key) {
-    customColors[key] = colorsKeyValues[key];
-  });
-};
-
-var _avatarColors = ['#FF3E74', '#4F6AFF', '#FBB019', '#00CC99', '#9F35E7', '#63AFFF'];
-var setAvatarColor = function setAvatarColor(colors) {
-  _avatarColors = colors;
-};
-var getAvatarColors = function getAvatarColors() {
-  return _avatarColors;
-};
-
-var _path$4;
-
-function _extends$5() {
-  _extends$5 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$5.apply(this, arguments);
-}
-
-function SvgClose(props) {
-  return /*#__PURE__*/createElement("svg", _extends$5({
-    width: 12,
-    height: 12,
-    viewBox: "0 0 12.01 12.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$4 || (_path$4 = /*#__PURE__*/createElement("path", {
-    d: "M11 1L1 11M1 1l10 10",
-    stroke: "CurrentColor",
-    strokeWidth: 1.6,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _path$5;
-
-function _extends$6() {
-  _extends$6 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$6.apply(this, arguments);
-}
-
-function SvgSearch(props) {
-  return /*#__PURE__*/createElement("svg", _extends$6({
-    width: 14,
-    height: 14,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$5 || (_path$5 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M13.743 12.574L9.91 8.74a5.425 5.425 0 001.05-3.232A5.531 5.531 0 005.46 0 5.436 5.436 0 000 5.468a5.532 5.532 0 005.5 5.508 5.409 5.409 0 003.242-1.061l.004-.003 3.83 3.831a.827.827 0 101.167-1.169zM5.496 9.878a4.426 4.426 0 01-4.4-4.406 4.35 4.35 0 014.368-4.374 4.425 4.425 0 014.4 4.406 4.35 4.35 0 01-4.368 4.374z",
-    fill: "#9294A1"
-  })));
-}
-
-var _templateObject, _templateObject2, _templateObject3, _templateObject4, _templateObject5, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44;
-function md5(inputString) {
-  var hc = '0123456789abcdef';
-
-  function rh(n) {
-    var j;
-    var s = '';
-
-    for (j = 0; j <= 3; j++) {
-      s += hc.charAt(n >> j * 8 + 4 & 0x0f) + hc.charAt(n >> j * 8 & 0x0f);
-    }
-
-    return s;
-  }
-
-  function ad(x, y) {
-    var l = (x & 0xffff) + (y & 0xffff);
-    var m = (x >> 16) + (y >> 16) + (l >> 16);
-    return m << 16 | l & 0xffff;
-  }
-
-  function rl(n, c) {
-    return n << c | n >>> 32 - c;
-  }
-
-  function cm(q, a, b, x, s, t) {
-    return ad(rl(ad(ad(a, q), ad(x, t)), s), b);
-  }
-
-  function ff(a, b, c, d, x, s, t) {
-    return cm(b & c | ~b & d, a, b, x, s, t);
-  }
-
-  function gg(a, b, c, d, x, s, t) {
-    return cm(b & d | c & ~d, a, b, x, s, t);
-  }
-
-  function hh(a, b, c, d, x, s, t) {
-    return cm(b ^ c ^ d, a, b, x, s, t);
-  }
-
-  function ii(a, b, c, d, x, s, t) {
-    return cm(c ^ (b | ~d), a, b, x, s, t);
-  }
-
-  function sb(x) {
-    var i;
-    var nblk = (x.length + 8 >> 6) + 1;
-    var blks = new Array(nblk * 16);
-
-    for (i = 0; i < nblk * 16; i++) {
-      blks[i] = 0;
-    }
-
-    for (i = 0; i < x.length; i++) {
-      blks[i >> 2] |= x.charCodeAt(i) << i % 4 * 8;
-    }
-
-    blks[i >> 2] |= 0x80 << i % 4 * 8;
-    blks[nblk * 16 - 2] = x.length * 8;
-    return blks;
-  }
-
-  var i;
-  var x = sb(inputString);
-  var a = 1732584193;
-  var b = -271733879;
-  var c = -1732584194;
-  var d = 271733878;
-  var olda;
-  var oldb;
-  var oldc;
-  var oldd;
-
-  for (i = 0; i < x.length; i += 16) {
-    olda = a;
-    oldb = b;
-    oldc = c;
-    oldd = d;
-    a = ff(a, b, c, d, x[i + 0], 7, -680876936);
-    d = ff(d, a, b, c, x[i + 1], 12, -389564586);
-    c = ff(c, d, a, b, x[i + 2], 17, 606105819);
-    b = ff(b, c, d, a, x[i + 3], 22, -1044525330);
-    a = ff(a, b, c, d, x[i + 4], 7, -176418897);
-    d = ff(d, a, b, c, x[i + 5], 12, 1200080426);
-    c = ff(c, d, a, b, x[i + 6], 17, -1473231341);
-    b = ff(b, c, d, a, x[i + 7], 22, -45705983);
-    a = ff(a, b, c, d, x[i + 8], 7, 1770035416);
-    d = ff(d, a, b, c, x[i + 9], 12, -1958414417);
-    c = ff(c, d, a, b, x[i + 10], 17, -42063);
-    b = ff(b, c, d, a, x[i + 11], 22, -1990404162);
-    a = ff(a, b, c, d, x[i + 12], 7, 1804603682);
-    d = ff(d, a, b, c, x[i + 13], 12, -40341101);
-    c = ff(c, d, a, b, x[i + 14], 17, -1502002290);
-    b = ff(b, c, d, a, x[i + 15], 22, 1236535329);
-    a = gg(a, b, c, d, x[i + 1], 5, -165796510);
-    d = gg(d, a, b, c, x[i + 6], 9, -1069501632);
-    c = gg(c, d, a, b, x[i + 11], 14, 643717713);
-    b = gg(b, c, d, a, x[i + 0], 20, -373897302);
-    a = gg(a, b, c, d, x[i + 5], 5, -701558691);
-    d = gg(d, a, b, c, x[i + 10], 9, 38016083);
-    c = gg(c, d, a, b, x[i + 15], 14, -660478335);
-    b = gg(b, c, d, a, x[i + 4], 20, -405537848);
-    a = gg(a, b, c, d, x[i + 9], 5, 568446438);
-    d = gg(d, a, b, c, x[i + 14], 9, -1019803690);
-    c = gg(c, d, a, b, x[i + 3], 14, -187363961);
-    b = gg(b, c, d, a, x[i + 8], 20, 1163531501);
-    a = gg(a, b, c, d, x[i + 13], 5, -1444681467);
-    d = gg(d, a, b, c, x[i + 2], 9, -51403784);
-    c = gg(c, d, a, b, x[i + 7], 14, 1735328473);
-    b = gg(b, c, d, a, x[i + 12], 20, -1926607734);
-    a = hh(a, b, c, d, x[i + 5], 4, -378558);
-    d = hh(d, a, b, c, x[i + 8], 11, -2022574463);
-    c = hh(c, d, a, b, x[i + 11], 16, 1839030562);
-    b = hh(b, c, d, a, x[i + 14], 23, -35309556);
-    a = hh(a, b, c, d, x[i + 1], 4, -1530992060);
-    d = hh(d, a, b, c, x[i + 4], 11, 1272893353);
-    c = hh(c, d, a, b, x[i + 7], 16, -155497632);
-    b = hh(b, c, d, a, x[i + 10], 23, -1094730640);
-    a = hh(a, b, c, d, x[i + 13], 4, 681279174);
-    d = hh(d, a, b, c, x[i + 0], 11, -358537222);
-    c = hh(c, d, a, b, x[i + 3], 16, -722521979);
-    b = hh(b, c, d, a, x[i + 6], 23, 76029189);
-    a = hh(a, b, c, d, x[i + 9], 4, -640364487);
-    d = hh(d, a, b, c, x[i + 12], 11, -421815835);
-    c = hh(c, d, a, b, x[i + 15], 16, 530742520);
-    b = hh(b, c, d, a, x[i + 2], 23, -995338651);
-    a = ii(a, b, c, d, x[i + 0], 6, -198630844);
-    d = ii(d, a, b, c, x[i + 7], 10, 1126891415);
-    c = ii(c, d, a, b, x[i + 14], 15, -1416354905);
-    b = ii(b, c, d, a, x[i + 5], 21, -57434055);
-    a = ii(a, b, c, d, x[i + 12], 6, 1700485571);
-    d = ii(d, a, b, c, x[i + 3], 10, -1894986606);
-    c = ii(c, d, a, b, x[i + 10], 15, -1051523);
-    b = ii(b, c, d, a, x[i + 1], 21, -2054922799);
-    a = ii(a, b, c, d, x[i + 8], 6, 1873313359);
-    d = ii(d, a, b, c, x[i + 15], 10, -30611744);
-    c = ii(c, d, a, b, x[i + 6], 15, -1560198380);
-    b = ii(b, c, d, a, x[i + 13], 21, 1309151649);
-    a = ii(a, b, c, d, x[i + 4], 6, -145523070);
-    d = ii(d, a, b, c, x[i + 11], 10, -1120210379);
-    c = ii(c, d, a, b, x[i + 2], 15, 718787259);
-    b = ii(b, c, d, a, x[i + 9], 21, -343485551);
-    a = ad(a, olda);
-    b = ad(b, oldb);
-    c = ad(c, oldc);
-    d = ad(d, oldd);
-  }
-
-  return rh(a) + rh(b) + rh(c) + rh(d);
-}
-var GlobalStyles = createGlobalStyle(_templateObject || (_templateObject = _taggedTemplateLiteralLoose(["\n\n  .rc-mentions {\n    position: relative;\n\n    // ================= Input Area =================\n    > textarea {\n\n      resize: none;\n      //padding: 16px 45px 16px 108px;\n      padding: 16px 45px 16px 80px;\n      width: 100%;\n      display: block;\n      border: none;\n      font: inherit;\n      box-sizing: border-box;\n      border-radius: 6px;\n      font-size: 15px;\n      line-height: 17px;\n\n      &::placeholder {\n        font-size: 15px;\n        color: ", ";\n        opacity: 1;\n      }\n\n      & {\n        border: none;\n        outline: none !important;\n      }\n    }\n\n    & .rc-mentions-measure {\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      pointer-events: none;\n      // color: rgba(255, 0, 0, 0.3);\n      color: transparent;\n      z-index: -1;\n\n      font-size: inherit;\n      font-size-adjust: inherit;\n      font-style: inherit;\n      font-variant: inherit;\n      font-stretch: inherit;\n      font-weight: inherit;\n      font-family: inherit;\n\n      padding: 0;\n      margin: 0;\n      line-height: inherit;\n      vertical-align: top;\n      overflow: inherit;\n      word-break: inherit;\n      white-space: inherit;\n      word-wrap: break-word;\n      overflow-x: initial;\n      overflow-y: auto;\n      text-align: inherit;\n      letter-spacing: inherit;\n      white-space: inherit;\n      tab-size: inherit;\n      direction: inherit;\n    }\n\n    // ================== Dropdown ==================\n    & .rc-mentions-dropdown {\n      position: absolute;\n\n      & .rc-mentions-menu {\n        list-style: none;\n        margin: 0;\n        padding: 0;\n\n        & .rc-mentions-item {\n          cursor: pointer;\n        }\n      }\n    }\n  }\n\n  // Customize style\n  .rc-mentions-dropdown {\n    width: 300px;\n    height: 237px;\n    overflow-y: auto;\n    background: #FFFFFF;\n    border: 1px solid ", ";\n    box-sizing: border-box;\n    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n    border-radius: 6px;\n    & ul {\n      padding: 16px 0;\n      margin: 0;\n      list-style: none;\n    }\n  }\n\n  .mention_menu_item-active {\n    background: #e6f7ff;\n  }\n  /*.mention_menu_item {\n    display: flex;\n    align-items: center;\n    font-size: 15px;\n    padding: 6px 16px;\n    transition: all 0.2s;\n    cursor: pointer;\n\n    &:hover {\n      background-color: ", ";\n    }\n\n    & .dropdown-wrapper {\n      margin-left: auto;\n    }\n\n    & .dropdown-body {\n      bottom: -100px;\n      right: 0;\n    }\n  }*/\n  .rc-mentions-dropdown-menu-item-active {\n    background-color: ", ";\n  }\n\n  .rc-mentions-disabled {\n    opacity: 0.5;\n  }\n\n  .button {\n    display: inline-block;\n    box-sizing: border-box;\n    text-decoration: none;\n    outline: none;\n    cursor: pointer;\n    text-align: center;\n    font-style: normal;\n    border-radius: 4px;\n    font-weight: 500;\n    font-size: 0.875rem;\n    line-height: 1.25rem;\n    padding: 0.375rem 0.75rem;\n    background-color: white;\n    border: 1px solid ", ";\n    margin: 0;\n    user-select: none;\n    //border: none;\n    //transition: all 0.2s;\n    //box-shadow: 0 0 4px rgba(0,0,0,0.1);\n\n    //&:hover, &:focus {\n    //    box-shadow: 0 0 10px -2px rgba(0,0,0,0.25);\n    //}\n\n\n    &.blue {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n\n      &:disabled {\n        background-color: #D7D8E3;\n        border: 1px solid #D7D8E3;\n        pointer-events: none;\n      }\n    }\n\n    &.blue-dark {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.green {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.red {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.gray {\n      color: black;\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    @media ", " {\n      font-size: 0.812rem;\n      line-height: 1.25rem;\n      padding: 0.375rem 0.625rem;\n    }\n  }\n\n  @keyframes makeVisible {\n    0% {\n      opacity: 0;\n      visibility: visible;\n    }\n    100% {\n      opacity: 1;\n      visibility: visible;\n    }\n  }\n"])), colors.gray7, colors.gray1, colors.gray0, colors.gray0, colors.gray2, colors.blue1, colors.cobalt1, colors.cobalt1, colors.blue2, colors.blue5, colors.blue5, colors.blue5, colors.blue4, colors.primary, colors.primary, colors.primary, colors.primary, colors.red1, colors.red1, colors.red1, colors.red2, colors.gray2, colors.gray2, colors.gray2, device.tablet);
-function generateAvatarColor(itemName) {
-  var avatarColors = getAvatarColors();
-
-  if (itemName && itemName !== '') {
-    var hash = md5(itemName).toString().padStart(32, '0').slice(-6);
-    var hashInt = parseInt(hash, 16);
-    var colorIndex = hashInt % avatarColors.length;
-    return avatarColors[colorIndex];
-  }
-
-  return null;
-}
-var DropdownOptionsUl = styled.ul(_templateObject2 || (_templateObject2 = _taggedTemplateLiteralLoose(["\n  list-style: none;\n  margin: 0;\n  padding: 0;\n"])));
-var DropdownOptionLi = styled.li(_templateObject3 || (_templateObject3 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n  padding: 6px 6px 6px 16px;\n\n  &:hover {\n    background: ", ";\n  }\n\n  & > svg {\n    width: ", ";\n    min-width: ", ";\n    height: ", ";\n    color: ", ";\n    margin-right: 10px;\n  }\n"])), function (props) {
-  return props.textColor || colors.blue6;
-}, function (props) {
-  return props.margin;
-}, function (props) {
-  return props.hoverBackground || colors.gray0;
-}, function (props) {
-  return props.iconWidth;
-}, function (props) {
-  return props.iconWidth;
-}, function (props) {
-  return props.iconWidth;
-}, function (props) {
-  return props.iconColor;
-});
-var CustomSelect = styled.div(_templateObject4 || (_templateObject4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 40px;\n  min-height: 40px;\n  width: 100%;\n  min-width: ", ";\n  max-width: ", ";\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: ", ";\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  &:disabled {\n    background-color: ", ";\n  }\n\n  .dropdown-wrapper {\n    width: 100%;\n  }\n\n  .dropdown-body {\n    width: 100%;\n  }\n\n  .dropdown-trigger {\n    & .default-selection {\n      color: ", ";\n    }\n\n    //width: calc(100% - 20px);\n\n    &::after {\n      border-color: black;\n    }\n  }\n"])), function (props) {
-  return props.minWidth;
-}, function (props) {
-  return props.maxWidth;
-}, function (props) {
-  return props.isError ? "1px solid " + colors.red1 : "1px solid " + colors.gray2;
-}, colors.blue7, function (props) {
-  return props.marginTop;
-}, colors.gray7, colors.gray2, colors.gray7);
-var CustomSelectTrigger = styled.span(_templateObject5 || (_templateObject5 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: calc(100% - 22px);\n  padding: 8px 10px 8px 15px;\n  text-align: left;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  text-transform: capitalize;\n"])), colors.blue7);
-var Label = styled.label(_templateObject6 || (_templateObject6 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  margin-top: 20px;\n  margin-bottom: 4px;\n  color: ", ";\n"])), colors.gray6);
-var UploadFile = styled.input(_templateObject7 || (_templateObject7 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var UploadFileLabel = styled.label(_templateObject8 || (_templateObject8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 100%;\n  display: block;\n"])));
-var InputErrorMessage = styled.p(_templateObject9 || (_templateObject9 = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  color: ", ";\n  margin: 4px 0 0;\n"])), colors.red1);
-var CustomInput = styled.input(_templateObject10 || (_templateObject10 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding: 11px 14px;\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  opacity: 1;\n  outline: none;\n\n  &:focus {\n    border: 1px solid ", ";\n    outline: 2px solid ", ";\n  }\n  &:disabled {\n    background-color: ", ";\n    opacity: 1;\n    color: #383b51;\n  }\n  &::placeholder {\n    opacity: 1;\n    color: ", ";\n  }\n"])), function (props) {
-  return props.error ? "1px solid " + colors.red1 : '1px solid #ededed';
-}, function (props) {
-  return props.error ? "1px solid " + colors.red1 : colors.primary;
-}, function (props) {
-  return props.error ? "1px solid " + colors.red2 : '#ebf7f1';
-}, colors.gray0, colors.gray7);
-var FilterField = styled.div(_templateObject11 || (_templateObject11 = _taggedTemplateLiteralLoose(["\n  border: 1px solid #d7d8e3;\n  border-radius: 4px;\n  background-color: transparent;\n  margin-left: 12px;\n\n  .dropdown-trigger::after {\n    border-color: black;\n  }\n"])));
-var FilterFieldSpan = styled.span(_templateObject12 || (_templateObject12 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: 100px;\n  padding: 8px 0 8px 8px;\n  text-align: left;\n  font-size: 0.875rem;\n  line-height: 1rem;\n"])));
-var CustomRadioWrapper = styled.div(_templateObject13 || (_templateObject13 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: 16px;\n  label {\n    font-size: 14px;\n    line-height: 16px;\n    color: ", ";\n  }\n"])), colors.blue7);
-var CustomRadio = styled.input(_templateObject14 || (_templateObject14 = _taggedTemplateLiteralLoose(["\n  height: 16px;\n  width: 16px;\n  margin: 0 10px 0 0;\n  cursor: pointer;\n"])));
-var Row = styled.div(_templateObject15 || (_templateObject15 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: row;\n  margin: ", ";\n  margin-top: ", ";\n  margin-bottom: ", ";\n  margin-right: ", ";\n  margin-left: ", ";\n  align-items: ", ";\n  justify-content: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  padding: ", ";\n  padding-left: ", ";\n  padding-right: ", ";\n  flex-wrap: ", ";\n"])), function (props) {
-  return props.margin;
-}, function (props) {
-  return props.marginTop;
-}, function (props) {
-  return props.marginBottom;
-}, function (props) {
-  return props.marginRight;
-}, function (props) {
-  return props.marginLeft;
-}, function (props) {
-  return props.align;
-}, function (props) {
-  return props.justify;
-}, function (props) {
-  return props.width;
-}, function (props) {
-  return props.height;
-}, function (props) {
-  return props.minHeight;
-}, function (props) {
-  return props.padding;
-}, function (props) {
-  return props.paddingLeft;
-}, function (props) {
-  return props.paddingRight;
-}, function (props) {
-  return props.flexWrap;
-});
-var Button = styled.button(_templateObject16 || (_templateObject16 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  box-sizing: border-box;\n  text-decoration: none;\n  outline: none;\n  cursor: ", ";\n  text-align: center;\n  font-style: normal;\n  border-radius: ", ";\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  padding: 8px 16px;\n  background-color: ", ";\n  color: ", ";\n  border: 1px solid ", ";\n  margin: ", ";\n  user-select: none;\n  transition: opacity 0.1s;\n  opacity: ", ";\n  &:hover,\n  &:focus {\n    opacity: ", ";\n  }\n"])), function (props) {
-  return !props.disabled && 'pointer';
-}, function (props) {
-  return props.borderRadius || '4px';
-}, function (props) {
-  return props.backgroundColor || colors.white;
-}, function (props) {
-  return props.color || (props.backgroundColor ? colors.white : colors.gray6);
-}, function (props) {
-  return props.backgroundColor || colors.gray2;
-}, function (props) {
-  return props.margin || '0';
-}, function (props) {
-  return props.disabled ? 0.5 : 1;
-}, function (props) {
-  return props.disabled ? 0.5 : 0.8;
-});
-var PopupName = styled.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.gray6, function (props) {
-  return props.marginTop;
-}, function (props) {
-  return props.marginBottom;
-}, function (props) {
-  if (props.isDelete) {
-    return "\n            max-width: calc(100% - 20px);\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n        ";
-  }
-
-  return '';
-});
-var PopupContainer = styled.div(_templateObject18 || (_templateObject18 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 200;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(0, 0, 0, 0.4);\n"])));
-var ButtonBlock = styled.div(_templateObject19 || (_templateObject19 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: ", ";\n  padding-right: ", ";\n  justify-content: ", ";\n  height: ", ";\n  min-height: ", ";\n  background-color: ", ";\n\n  a {\n    width: 88px;\n    height: 40px;\n    margin: 0 4px;\n    font-size: 15px;\n    font-weight: 500;\n  }\n"])), function (props) {
-  return props.marginTop || '10px';
-}, function (props) {
-  return props.paddingRight || '0px';
-}, function (props) {
-  return props.justify || 'flex-end';
-}, function (props) {
-  return props.height;
-}, function (props) {
-  return props.height;
-}, function (props) {
-  return props.backgroundColor;
-});
-var Popup = styled.div(_templateObject20 || (_templateObject20 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  min-height: 150px;\n  min-width: ", ";\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  display: ", ";\n  flex-direction: column;\n  padding: ", ";\n  background: #ffffff;\n  box-shadow: 4px 4px 30px rgba(0, 0, 0, 0.06);\n  border-radius: 8px;\n  box-sizing: border-box;\n\n  ", ";\n"])), function (props) {
-  return props.minWidth || '400px';
-}, function (props) {
-  return props.maxWidth || '600px';
-}, function (props) {
-  return props.maxHeight || '650px';
-}, function (props) {
-  return props.width || 'unset';
-}, function (props) {
-  return props.height || 'unset';
-}, function (props) {
-  return props.display || 'flex';
-}, function (props) {
-  return props.padding ? props.padding : '22px 24px';
-}, function (props) {
-  return props.isLoading && "\n        user-select: none;\n\n        & > * {\n           pointer-events: none;\n           user-select: none;\n        }\n\n         " + ButtonBlock + " {\n          a, button {\n            pointer-events: none;\n            user-select: none;\n            opacity: 0.7;\n          }\n        }\n    ";
-});
-var PopupBody = styled.div(_templateObject21 || (_templateObject21 = _taggedTemplateLiteralLoose(["\n  padding: ", ";\n  margin-bottom: 8px;\n\n  height: ", ";\n"])), function (props) {
-  return props.padding + "px";
-}, function (props) {
-  return props.withFooter ? "calc(100% - (54px + " + props.padding + "px))" : 'calc(100% - 54px)';
-});
-var PopupDescription = styled.span(_templateObject22 || (_templateObject22 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 22px;\n  color: ", ";\n  cursor: default;\n  white-space: pre-line;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  .highlight {\n    text-decoration: underline;\n    font-weight: 500;\n    color: ", ";\n  }\n"])), colors.gray8, function (props) {
-  return props.marginTop || '10px';
-}, function (props) {
-  return props.marginBottom || '10px';
-}, colors.blue1);
-var BoltText = styled.span(_templateObject23 || (_templateObject23 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n"])));
-var PopupFooter = styled(ButtonBlock)(_templateObject24 || (_templateObject24 = _taggedTemplateLiteralLoose(["\n  margin-top: ", ";\n  padding: 8px 16px;\n  border-radius: 0 0 8px 8px;\n"])), function (props) {
-  return props.marginTop || '0';
-});
-var SectionHeader = styled.h4(_templateObject25 || (_templateObject25 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n"])), colors.gray6, function (props) {
-  return props.margin || 0;
-});
-var ItemNote = styled.div(_templateObject26 || (_templateObject26 = _taggedTemplateLiteralLoose(["\n  display: none;\n  position: absolute;\n  z-index: 301;\n  padding: 10px 12px;\n  background-color: ", ";\n  border-radius: 4px;\n  font-size: 0.75rem;\n  white-space: nowrap;\n  font-weight: 600;\n  color: white;\n  pointer-events: none;\n  user-select: none;\n\n  &::before {\n    content: '';\n    position: absolute;\n    z-index: -1;\n    background-color: ", ";\n    border-radius: 1px;\n    width: 14px;\n    height: 14px;\n\n    ", " ", "\n  }\n\n  ", " ", " ", " ", "\n"])), colors.blue6, colors.blue6, function (props) {
-  return props.direction === 'right' && "\n            left: -5px;\n            top: 50%;\n            transform: translateY(-50%) rotate(45deg);\n        ";
-}, function (props) {
-  return props.direction === 'top' && "\n            bottom: -5px;\n            left: 50%;\n            transform: translateX(-50%) rotate(45deg);\n        ";
-}, function (props) {
-  return props.visible && "\n       display: block;\n    ";
-}, function (props) {
-  return props.direction === 'right' && "\n        top: 50%;\n        left: calc(100% + 15px);\n        transform: translateY(-50%);\n    ";
-}, function (props) {
-  return props.direction === 'top' && "\n        bottom: calc(100% + 15px);\n        left: 50%;\n        transform: translateX(-50%);\n    ";
-}, function (props) {
-  return props.disabled && "\n        color: " + colors.gray4 + ";\n    ";
-});
-var CustomSwitcher = styled.div(_templateObject27 || (_templateObject27 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  position: relative;\n"])));
-var SwitcherLabel = styled.label(_templateObject28 || (_templateObject28 = _taggedTemplateLiteralLoose(["\n  width: 48px;\n  height: 28px;\n  background: rgb(226, 226, 226);\n  display: inline-block;\n  border-radius: 50px;\n  position: relative;\n  transition: all 0.3s ease;\n  transform-origin: 20% center;\n  border: 3px solid #fff;\n  cursor: pointer;\n\n  &:before {\n    content: '';\n    position: absolute;\n    display: block;\n    transition: all 0.2s ease;\n    width: 24px;\n    height: 24px;\n    top: 2px;\n    left: 2px;\n    border-radius: 20px;\n    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.251475), 0 2px 6px rgba(0, 0, 0, 0.404256);\n    background: #fff;\n  }\n"])));
-var UploadAvatarButton = styled.button(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.blue5);
-var UploadAvatarHandler = styled.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.blue7);
-var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: ", ";\n"])), function (props) {
-  return props.isLastMessage ? colors.gray9 : props.color || colors.primary;
-}, function (props) {
-  return props.isLastMessage && '500';
-});
-var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
-  return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReply && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
-}, function (props) {
-  return props.color || colors.primary;
-}, function (props) {
-  return props.rtlDirection && 'auto';
-}, function (props) {
-  return props.fontSize || '15px';
-});
-var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
-  return props.fontFamily || 'Inter, sans-serif';
-}, function (props) {
-  return props.withAttachment && (props.showMessageSenderName ? '0 12px 10px' : props.isForwarded ? '4px 12px 10px' : '8px 12px 10px');
-}, function (props) {
-  return props.withAttachment && !props.withMediaAttachment && '2px';
-}, function (props) {
-  return props.fontSize || '15px';
-}, function (props) {
-  return props.lineHeight || '20px';
-}, colors.gray6, function (props) {
-  return props.isRepliedMessage && "\n      display: -webkit-box;\n      -webkit-line-clamp: 1;\n      -webkit-box-orient: vertical;\n      overflow: hidden;\n      text-overflow: ellipsis;\n  ";
-}, colors.blue2);
-var ReplyMessageText = styled.span(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
-  return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
-}, function (props) {
-  return props.fontSize || '15px';
-}, function (props) {
-  return props.lineHeight || '20px';
-}, colors.gray6);
-var CloseIcon = styled(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n"])));
-var ClearTypedText = styled(CloseIcon)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
-var StyledSearchSvg = styled(SvgSearch)(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: 14px;\n"])));
-var SubTitle = styled.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
-var AttachmentIconCont = styled.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var UploadingIcon = styled.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border: ", " solid rgba(255, 255, 255, 0.8);\n  border-top: ", " solid rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
-  return props.fileAttachment ? '2px' : '3px';
-}, function (props) {
-  return props.fileAttachment ? '2px' : '3px';
-}, function (props) {
-  return props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px';
-}, function (props) {
-  return props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px';
-});
-var TextInOneLine = styled.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var UploadPercent = styled.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  background-color: rgba(0,0,0,0.4);\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
-  return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
-}, function (props) {
-  return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
-}, function (props) {
-  return props.borderRadius ? props.borderRadius : props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
-}, function (props) {
-  return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
-});
-var UploadProgress = styled.div(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
-  return !props.positionStatic && 'absolute';
-}, function (props) {
-  return props.fileAttachment ? '8px' : '0';
-}, function (props) {
-  return props.fileAttachment ? '12px' : '0';
-}, function (props) {
-  return props.fileAttachment || props.isRepliedMessage ? '40px' : props.width ? props.width + "px" : '100%';
-}, function (props) {
-  return props.fileAttachment || props.isRepliedMessage ? '40px' : props.height ? props.height + "px" : '100%';
-}, function (props) {
-  return !props.fileAttachment && !props.isRepliedMessage ? props.imageMinWidth || '130px' : null;
-}, function (props) {
-  return !props.fileAttachment && !props.isRepliedMessage && !props.isFailedAttachment && '90px';
-}, function (props) {
-  return props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
-}, function (props) {
-  return 'data:image/jpeg;base64,' + props.backgroundImage;
-}, function (props) {
-  return props.fileAttachment ? '8px' : props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
-}, function (props) {
-  return props.isRepliedMessage ? '0.5px solid rgba(0, 0, 0, 0.1)' : props.withBorder && "2px solid " + props.backgroundColor;
-}, function (props) {
-  return props.isFailedAttachment && 'background-color: rgba(237, 77, 96, 0.1);';
-}, function (props) {
-  return props.whiteBackground && "\n    background-color: rgba(255,255,255,0.3);\n    border: 1px solid  " + colors.gray1 + ";\n\n    " + UploadingIcon + " {\n        border: 4px solid rgba(238,238,238,0.8);\n        border-top: 4px solid " + colors.cobalt1 + ";\n    }\n  ";
-}, function (props) {
-  return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
-});
-var AttachmentPreviewTitle = styled.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.blue10;
-});
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -7774,6 +7218,68 @@ var moment = createCommonjsModule(function (module, exports) {
 })));
 });
 
+var colors = {
+  white: '#ffffff',
+  black1: '#383B51',
+  blue1: '#172268',
+  blue2: '#438CED',
+  blue3: '#63afff',
+  blue4: '#1F223C',
+  blue5: '#172268',
+  blue6: '#18273A',
+  blue7: '#383B51',
+  blue8: '#9AABFB',
+  blue9: '#2d44bf',
+  blue10: '#060A26',
+  gray0: '#F3F5F8',
+  gray1: '#EDEDED',
+  gray2: '#ecedf0',
+  gray3: '#B2B6BE',
+  gray4: '#818C99',
+  gray5: '#F0F2F5',
+  gray6: '#17191C',
+  gray7: '#898B99',
+  gray8: '#3A3C3E',
+  gray9: '#757D8B',
+  gray10: '#F3F5F7',
+  pink1: '#ff3e74',
+  purple1: '#9f35e7',
+  cobalt1: '#2F81FF',
+  primary: '#2F81FF',
+  red1: '#FA4C56',
+  red2: '#d7596c',
+  red3: '#F94C56',
+  yellow1: '#FCD36E',
+  purple: '#7A6EF6',
+  defaultAvatarBackground: '#D0D8E3',
+  deleteUserIconBackground: '#D0D8E3'
+};
+var size = {
+  mobileS: '320px',
+  mobileM: '375px',
+  mobileL: '425px',
+  tablet: '768px',
+  laptop: '1024px',
+  laptopL: '1440px',
+  max: '2560px'
+};
+var device = {
+  mobileS: "(min-width: " + size.mobileS + ")",
+  mobileM: "(min-width: " + size.mobileM + ")",
+  mobileL: "(min-width: " + size.mobileL + ")",
+  tablet: "screen and (max-width: " + size.tablet + ")",
+  laptop: "screen and (max-width: " + size.laptop + ")",
+  laptopL: "screen and (min-width: " + size.laptopL + ")",
+  max: "screen and (max-width: " + size.max + ")"
+};
+var customColors = {};
+var setCustomColors = function setCustomColors(colorsKeyValues) {
+  var colorsKeys = Object.keys(colorsKeyValues);
+  colorsKeys.forEach(function (key) {
+    customColors[key] = colorsKeyValues[key];
+  });
+};
+
 var CustomUploader;
 var sendAttachmentsAsSeparateMessages = false;
 var pendingUploaders = {};
@@ -7837,25 +7343,17 @@ var cancelUpload = function cancelUpload(attachmentId) {
   }
 };
 
-var SceytChatClient = {};
-var setClient = function setClient(client) {
-  SceytChatClient = client;
-};
-var getClient = function getClient() {
-  return SceytChatClient;
-};
-
-var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1;
-var ReadIconWrapper = styled(SvgTicksRead)(_templateObject$1 || (_templateObject$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
+var _templateObject, _templateObject2, _templateObject3, _templateObject4;
+var ReadIconWrapper = styled(SvgTicksRead)(_templateObject || (_templateObject = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
-var DeliveredIconWrapper = styled(SvgTicksDelivered)(_templateObject2$1 || (_templateObject2$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
+var DeliveredIconWrapper = styled(SvgTicksDelivered)(_templateObject2 || (_templateObject2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray4;
 });
-var SentIconWrapper = styled(SvgTicksSent)(_templateObject3$1 || (_templateObject3$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
+var SentIconWrapper = styled(SvgTicksSent)(_templateObject3 || (_templateObject3 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray4;
 });
-var PendingIconWrapper = styled(SvgPendingIcon)(_templateObject4$1 || (_templateObject4$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
+var PendingIconWrapper = styled(SvgPendingIcon)(_templateObject4 || (_templateObject4 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray4;
 });
 var messageStatusIcon = function messageStatusIcon(messageStatus, iconColor, readIconColor) {
@@ -7884,145 +7382,6 @@ var messageStatusIcon = function messageStatusIcon(messageStatus, iconColor, rea
 var isAlphanumeric = function isAlphanumeric(str) {
   return /[a-z]/i.test(str);
 };
-var getFileExtension = function getFileExtension(filename) {
-  var ext = filename.split('.').pop();
-  if (ext === filename) return '';
-  return ext;
-};
-var typingTextFormat = function typingTextFormat(_ref5) {
-  var text = _ref5.text,
-      mentionedMembers = _ref5.mentionedMembers,
-      currentMentionEnd = _ref5.currentMentionEnd;
-  var messageText = '';
-
-  if (mentionedMembers.length > 0) {
-    var mentionsPositions = Array.isArray(mentionedMembers) ? [].concat(mentionedMembers).sort(function (a, b) {
-      return a.start - b.start;
-    }) : [];
-    var prevEnd = 0;
-    var separateLines = text.split(/\r?\n|\r|\n/g);
-    var addedMembers = 0;
-    var textLengthInCurrentIteration = 0;
-
-    for (var i = 0; i < separateLines.length; i++) {
-      var nextTextPart = '';
-      var currentLine = separateLines[i];
-      var lastFoundIndexOnTheLine = 0;
-      textLengthInCurrentIteration += currentLine.length + 1;
-
-      if (mentionsPositions.length > addedMembers) {
-        for (var j = addedMembers; j < mentionsPositions.length; j++) {
-          var mention = mentionsPositions[j];
-
-          if (mention.start >= textLengthInCurrentIteration) {
-            var addPart = (nextTextPart || currentLine.substring(prevEnd)).trimStart();
-            messageText = messageText + " " + addPart;
-            prevEnd = 0;
-            break;
-          }
-
-          if (!nextTextPart || nextTextPart === '') {
-            var mentionStartInCurrentLine = currentLine.indexOf(mention.displayName, lastFoundIndexOnTheLine);
-            lastFoundIndexOnTheLine = mentionStartInCurrentLine + mention.displayName.length;
-            nextTextPart = currentLine.substring(mentionStartInCurrentLine + mention.displayName.length);
-            var setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextTextPart.trim() && !separateLines[i + 1];
-            messageText += currentLine.substring(0, mentionStartInCurrentLine) + "<span class='mention_user'>" + mention.displayName + "</span>" + (setSpaceToEnd ? '&nbsp;' : '');
-            prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
-          } else {
-            var _mentionStartInCurrentLine = nextTextPart.indexOf(mention.displayName);
-
-            lastFoundIndexOnTheLine = _mentionStartInCurrentLine + mention.displayName.length;
-            var nextPart = nextTextPart.substring(_mentionStartInCurrentLine + mention.displayName.length);
-
-            var _setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextPart.trim() && !separateLines[i + 1];
-
-            messageText += nextTextPart.substring(0, _mentionStartInCurrentLine) + "<span class=\"mention_user\">" + mention.displayName + "</span>" + (_setSpaceToEnd ? '&nbsp;' : '');
-            nextTextPart = nextPart;
-            prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
-          }
-
-          addedMembers++;
-
-          if (addedMembers === mentionsPositions.length && nextTextPart.trim()) {
-            messageText += nextTextPart;
-          }
-        }
-      } else {
-        messageText += "" + currentLine;
-      }
-
-      if (separateLines.length > i + 1) {
-        messageText += '<br/>';
-      }
-    }
-  }
-
-  return messageText.length > 1 ? messageText : text;
-};
-var MessageTextFormat = function MessageTextFormat(_ref6) {
-  var text = _ref6.text,
-      message = _ref6.message,
-      contactsMap = _ref6.contactsMap,
-      getFromContacts = _ref6.getFromContacts,
-      isLastMessage = _ref6.isLastMessage,
-      isNotification = _ref6.isNotification;
-  var messageText = [text];
-
-  if (message.mentionedUsers && message.mentionedUsers.length > 0) {
-    var messageMetadata = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
-    var mentionsPositions = Array.isArray(messageMetadata) ? [].concat(messageMetadata).sort(function (a, b) {
-      return b.loc - a.loc;
-    }) : [];
-    mentionsPositions.forEach(function (mention) {
-      var textPart = messageText.shift();
-      var mentionDisplay = message.mentionedUsers.find(function (men) {
-        return men.id === mention.id;
-      });
-
-      if (mentionDisplay) {
-        var user = getClient().user;
-        messageText.unshift("" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mention.loc)), isNotification ? "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
-          isLastMessage: isLastMessage,
-          color: colors.primary,
-          key: "" + mention.loc
-        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len)));
-      }
-    });
-  }
-
-  var linkify = new LinkifyIt();
-  var match = linkify.match(text);
-
-  if (!isLastMessage && !isNotification && match) {
-    var newMessageText;
-    match.forEach(function (matchItem, index) {
-      if (index === 0) {
-        newMessageText = [text.split(matchItem.text)[0], React__default.createElement("a", {
-          draggable: false,
-          key: index,
-          href: matchItem.url,
-          target: '_blank',
-          rel: 'noreferrer'
-        }, matchItem.text + " "), text.split(matchItem.text)[1]];
-      } else {
-        var _newMessageText;
-
-        var msgArr = [newMessageText[index * 2].split(matchItem.text)[0], React__default.createElement("a", {
-          draggable: false,
-          key: index,
-          href: matchItem.url,
-          target: '_blank',
-          rel: 'noreferrer'
-        }, matchItem.text + " "), newMessageText[index * 2].split(matchItem.text)[1]];
-
-        (_newMessageText = newMessageText).splice.apply(_newMessageText, [index * 2, 1].concat(msgArr));
-      }
-    });
-    messageText = newMessageText;
-  }
-
-  return messageText.length > 1 ? isNotification ? messageText.join('') : messageText : text;
-};
 var bytesToSize = function bytesToSize(bytes, decimals) {
   if (decimals === void 0) {
     decimals = 2;
@@ -8034,15 +7393,6 @@ var bytesToSize = function bytesToSize(bytes, decimals) {
   var sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   var i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-};
-var makeUserName = function makeUserName(contact, user, fromContact) {
-  var _contact$lastName;
-
-  if (user && isAlphanumeric(user.id)) {
-    return user.id.charAt(0).toUpperCase() + user.id.slice(1);
-  }
-
-  return fromContact ? contact ? contact.firstName ? contact.firstName.trim() + " " + ((_contact$lastName = contact.lastName) === null || _contact$lastName === void 0 ? void 0 : _contact$lastName.trim()) : contact.id : user ? user.id || 'Deleted user' : '' : user ? user.firstName ? user.firstName + " " + user.lastName : user.id || 'Deleted user' : '';
 };
 var systemMessageUserName = function systemMessageUserName(contact, userId) {
   return contact ? contact.firstName ? contact.firstName.split(' ')[0] : contact.id : userId || 'Deleted user';
@@ -8096,23 +7446,6 @@ var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, he
       return [Math.min(maxWidth, height * aspectRatio), Math.min(maxHeight, height)];
     }
   }
-};
-var lastMessageDateFormat = function lastMessageDateFormat(date) {
-  var currentTime = moment();
-  var startOfDay = currentTime.startOf('day');
-  var isToday = moment(date).diff(startOfDay) >= 0;
-
-  if (isToday) {
-    return moment(date).format('HH:mm');
-  }
-
-  var isInLastWeek = moment().diff(moment(date), 'weeks') < 1;
-
-  if (isInLastWeek) {
-    return moment(date).format('dddd');
-  }
-
-  return moment(date).format('DD.MM.YY');
 };
 var userLastActiveDateFormat = function userLastActiveDateFormat(date) {
   var formattingDate = moment(date).format();
@@ -8368,13 +7701,6 @@ var getEmojisCategoryTitle = function getEmojisCategoryTitle(categoryKey) {
   }
 
   return category;
-};
-var isJSON = function isJSON(str) {
-  try {
-    return JSON.parse(str) && !!str;
-  } catch (e) {
-    return false;
-  }
 };
 
 var MESSAGES_MAX_LENGTH = 60;
@@ -9798,6 +9124,712 @@ function destroySession() {
     type: DESTROY_SESSION
   };
 }
+
+var _avatarColors = ['#FF3E74', '#4F6AFF', '#FBB019', '#00CC99', '#9F35E7', '#63AFFF'];
+var setAvatarColor = function setAvatarColor(colors) {
+  _avatarColors = colors;
+};
+var getAvatarColors = function getAvatarColors() {
+  return _avatarColors;
+};
+
+var _path$4;
+
+function _extends$5() {
+  _extends$5 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$5.apply(this, arguments);
+}
+
+function SvgClose(props) {
+  return /*#__PURE__*/createElement("svg", _extends$5({
+    width: 12,
+    height: 12,
+    viewBox: "0 0 12.01 12.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$4 || (_path$4 = /*#__PURE__*/createElement("path", {
+    d: "M11 1L1 11M1 1l10 10",
+    stroke: "CurrentColor",
+    strokeWidth: 1.6,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })));
+}
+
+var _path$5;
+
+function _extends$6() {
+  _extends$6 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$6.apply(this, arguments);
+}
+
+function SvgSearch(props) {
+  return /*#__PURE__*/createElement("svg", _extends$6({
+    width: 14,
+    height: 14,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$5 || (_path$5 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13.743 12.574L9.91 8.74a5.425 5.425 0 001.05-3.232A5.531 5.531 0 005.46 0 5.436 5.436 0 000 5.468a5.532 5.532 0 005.5 5.508 5.409 5.409 0 003.242-1.061l.004-.003 3.83 3.831a.827.827 0 101.167-1.169zM5.496 9.878a4.426 4.426 0 01-4.4-4.406 4.35 4.35 0 014.368-4.374 4.425 4.425 0 014.4 4.406 4.35 4.35 0 01-4.368 4.374z",
+    fill: "#9294A1"
+  })));
+}
+
+var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44;
+function md5(inputString) {
+  var hc = '0123456789abcdef';
+
+  function rh(n) {
+    var j;
+    var s = '';
+
+    for (j = 0; j <= 3; j++) {
+      s += hc.charAt(n >> j * 8 + 4 & 0x0f) + hc.charAt(n >> j * 8 & 0x0f);
+    }
+
+    return s;
+  }
+
+  function ad(x, y) {
+    var l = (x & 0xffff) + (y & 0xffff);
+    var m = (x >> 16) + (y >> 16) + (l >> 16);
+    return m << 16 | l & 0xffff;
+  }
+
+  function rl(n, c) {
+    return n << c | n >>> 32 - c;
+  }
+
+  function cm(q, a, b, x, s, t) {
+    return ad(rl(ad(ad(a, q), ad(x, t)), s), b);
+  }
+
+  function ff(a, b, c, d, x, s, t) {
+    return cm(b & c | ~b & d, a, b, x, s, t);
+  }
+
+  function gg(a, b, c, d, x, s, t) {
+    return cm(b & d | c & ~d, a, b, x, s, t);
+  }
+
+  function hh(a, b, c, d, x, s, t) {
+    return cm(b ^ c ^ d, a, b, x, s, t);
+  }
+
+  function ii(a, b, c, d, x, s, t) {
+    return cm(c ^ (b | ~d), a, b, x, s, t);
+  }
+
+  function sb(x) {
+    var i;
+    var nblk = (x.length + 8 >> 6) + 1;
+    var blks = new Array(nblk * 16);
+
+    for (i = 0; i < nblk * 16; i++) {
+      blks[i] = 0;
+    }
+
+    for (i = 0; i < x.length; i++) {
+      blks[i >> 2] |= x.charCodeAt(i) << i % 4 * 8;
+    }
+
+    blks[i >> 2] |= 0x80 << i % 4 * 8;
+    blks[nblk * 16 - 2] = x.length * 8;
+    return blks;
+  }
+
+  var i;
+  var x = sb(inputString);
+  var a = 1732584193;
+  var b = -271733879;
+  var c = -1732584194;
+  var d = 271733878;
+  var olda;
+  var oldb;
+  var oldc;
+  var oldd;
+
+  for (i = 0; i < x.length; i += 16) {
+    olda = a;
+    oldb = b;
+    oldc = c;
+    oldd = d;
+    a = ff(a, b, c, d, x[i + 0], 7, -680876936);
+    d = ff(d, a, b, c, x[i + 1], 12, -389564586);
+    c = ff(c, d, a, b, x[i + 2], 17, 606105819);
+    b = ff(b, c, d, a, x[i + 3], 22, -1044525330);
+    a = ff(a, b, c, d, x[i + 4], 7, -176418897);
+    d = ff(d, a, b, c, x[i + 5], 12, 1200080426);
+    c = ff(c, d, a, b, x[i + 6], 17, -1473231341);
+    b = ff(b, c, d, a, x[i + 7], 22, -45705983);
+    a = ff(a, b, c, d, x[i + 8], 7, 1770035416);
+    d = ff(d, a, b, c, x[i + 9], 12, -1958414417);
+    c = ff(c, d, a, b, x[i + 10], 17, -42063);
+    b = ff(b, c, d, a, x[i + 11], 22, -1990404162);
+    a = ff(a, b, c, d, x[i + 12], 7, 1804603682);
+    d = ff(d, a, b, c, x[i + 13], 12, -40341101);
+    c = ff(c, d, a, b, x[i + 14], 17, -1502002290);
+    b = ff(b, c, d, a, x[i + 15], 22, 1236535329);
+    a = gg(a, b, c, d, x[i + 1], 5, -165796510);
+    d = gg(d, a, b, c, x[i + 6], 9, -1069501632);
+    c = gg(c, d, a, b, x[i + 11], 14, 643717713);
+    b = gg(b, c, d, a, x[i + 0], 20, -373897302);
+    a = gg(a, b, c, d, x[i + 5], 5, -701558691);
+    d = gg(d, a, b, c, x[i + 10], 9, 38016083);
+    c = gg(c, d, a, b, x[i + 15], 14, -660478335);
+    b = gg(b, c, d, a, x[i + 4], 20, -405537848);
+    a = gg(a, b, c, d, x[i + 9], 5, 568446438);
+    d = gg(d, a, b, c, x[i + 14], 9, -1019803690);
+    c = gg(c, d, a, b, x[i + 3], 14, -187363961);
+    b = gg(b, c, d, a, x[i + 8], 20, 1163531501);
+    a = gg(a, b, c, d, x[i + 13], 5, -1444681467);
+    d = gg(d, a, b, c, x[i + 2], 9, -51403784);
+    c = gg(c, d, a, b, x[i + 7], 14, 1735328473);
+    b = gg(b, c, d, a, x[i + 12], 20, -1926607734);
+    a = hh(a, b, c, d, x[i + 5], 4, -378558);
+    d = hh(d, a, b, c, x[i + 8], 11, -2022574463);
+    c = hh(c, d, a, b, x[i + 11], 16, 1839030562);
+    b = hh(b, c, d, a, x[i + 14], 23, -35309556);
+    a = hh(a, b, c, d, x[i + 1], 4, -1530992060);
+    d = hh(d, a, b, c, x[i + 4], 11, 1272893353);
+    c = hh(c, d, a, b, x[i + 7], 16, -155497632);
+    b = hh(b, c, d, a, x[i + 10], 23, -1094730640);
+    a = hh(a, b, c, d, x[i + 13], 4, 681279174);
+    d = hh(d, a, b, c, x[i + 0], 11, -358537222);
+    c = hh(c, d, a, b, x[i + 3], 16, -722521979);
+    b = hh(b, c, d, a, x[i + 6], 23, 76029189);
+    a = hh(a, b, c, d, x[i + 9], 4, -640364487);
+    d = hh(d, a, b, c, x[i + 12], 11, -421815835);
+    c = hh(c, d, a, b, x[i + 15], 16, 530742520);
+    b = hh(b, c, d, a, x[i + 2], 23, -995338651);
+    a = ii(a, b, c, d, x[i + 0], 6, -198630844);
+    d = ii(d, a, b, c, x[i + 7], 10, 1126891415);
+    c = ii(c, d, a, b, x[i + 14], 15, -1416354905);
+    b = ii(b, c, d, a, x[i + 5], 21, -57434055);
+    a = ii(a, b, c, d, x[i + 12], 6, 1700485571);
+    d = ii(d, a, b, c, x[i + 3], 10, -1894986606);
+    c = ii(c, d, a, b, x[i + 10], 15, -1051523);
+    b = ii(b, c, d, a, x[i + 1], 21, -2054922799);
+    a = ii(a, b, c, d, x[i + 8], 6, 1873313359);
+    d = ii(d, a, b, c, x[i + 15], 10, -30611744);
+    c = ii(c, d, a, b, x[i + 6], 15, -1560198380);
+    b = ii(b, c, d, a, x[i + 13], 21, 1309151649);
+    a = ii(a, b, c, d, x[i + 4], 6, -145523070);
+    d = ii(d, a, b, c, x[i + 11], 10, -1120210379);
+    c = ii(c, d, a, b, x[i + 2], 15, 718787259);
+    b = ii(b, c, d, a, x[i + 9], 21, -343485551);
+    a = ad(a, olda);
+    b = ad(b, oldb);
+    c = ad(c, oldc);
+    d = ad(d, oldd);
+  }
+
+  return rh(a) + rh(b) + rh(c) + rh(d);
+}
+var GlobalStyles = createGlobalStyle(_templateObject$1 || (_templateObject$1 = _taggedTemplateLiteralLoose(["\n\n  .rc-mentions {\n    position: relative;\n\n    // ================= Input Area =================\n    > textarea {\n\n      resize: none;\n      //padding: 16px 45px 16px 108px;\n      padding: 16px 45px 16px 80px;\n      width: 100%;\n      display: block;\n      border: none;\n      font: inherit;\n      box-sizing: border-box;\n      border-radius: 6px;\n      font-size: 15px;\n      line-height: 17px;\n\n      &::placeholder {\n        font-size: 15px;\n        color: ", ";\n        opacity: 1;\n      }\n\n      & {\n        border: none;\n        outline: none !important;\n      }\n    }\n\n    & .rc-mentions-measure {\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      pointer-events: none;\n      // color: rgba(255, 0, 0, 0.3);\n      color: transparent;\n      z-index: -1;\n\n      font-size: inherit;\n      font-size-adjust: inherit;\n      font-style: inherit;\n      font-variant: inherit;\n      font-stretch: inherit;\n      font-weight: inherit;\n      font-family: inherit;\n\n      padding: 0;\n      margin: 0;\n      line-height: inherit;\n      vertical-align: top;\n      overflow: inherit;\n      word-break: inherit;\n      white-space: inherit;\n      word-wrap: break-word;\n      overflow-x: initial;\n      overflow-y: auto;\n      text-align: inherit;\n      letter-spacing: inherit;\n      white-space: inherit;\n      tab-size: inherit;\n      direction: inherit;\n    }\n\n    // ================== Dropdown ==================\n    & .rc-mentions-dropdown {\n      position: absolute;\n\n      & .rc-mentions-menu {\n        list-style: none;\n        margin: 0;\n        padding: 0;\n\n        & .rc-mentions-item {\n          cursor: pointer;\n        }\n      }\n    }\n  }\n\n  // Customize style\n  .rc-mentions-dropdown {\n    width: 300px;\n    height: 237px;\n    overflow-y: auto;\n    background: #FFFFFF;\n    border: 1px solid ", ";\n    box-sizing: border-box;\n    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n    border-radius: 6px;\n    & ul {\n      padding: 16px 0;\n      margin: 0;\n      list-style: none;\n    }\n  }\n\n  .mention_menu_item-active {\n    background: #e6f7ff;\n  }\n  /*.mention_menu_item {\n    display: flex;\n    align-items: center;\n    font-size: 15px;\n    padding: 6px 16px;\n    transition: all 0.2s;\n    cursor: pointer;\n\n    &:hover {\n      background-color: ", ";\n    }\n\n    & .dropdown-wrapper {\n      margin-left: auto;\n    }\n\n    & .dropdown-body {\n      bottom: -100px;\n      right: 0;\n    }\n  }*/\n  .rc-mentions-dropdown-menu-item-active {\n    background-color: ", ";\n  }\n\n  .rc-mentions-disabled {\n    opacity: 0.5;\n  }\n\n  .button {\n    display: inline-block;\n    box-sizing: border-box;\n    text-decoration: none;\n    outline: none;\n    cursor: pointer;\n    text-align: center;\n    font-style: normal;\n    border-radius: 4px;\n    font-weight: 500;\n    font-size: 0.875rem;\n    line-height: 1.25rem;\n    padding: 0.375rem 0.75rem;\n    background-color: white;\n    border: 1px solid ", ";\n    margin: 0;\n    user-select: none;\n    //border: none;\n    //transition: all 0.2s;\n    //box-shadow: 0 0 4px rgba(0,0,0,0.1);\n\n    //&:hover, &:focus {\n    //    box-shadow: 0 0 10px -2px rgba(0,0,0,0.25);\n    //}\n\n\n    &.blue {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n\n      &:disabled {\n        background-color: #D7D8E3;\n        border: 1px solid #D7D8E3;\n        pointer-events: none;\n      }\n    }\n\n    &.blue-dark {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.green {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.red {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.gray {\n      color: black;\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    @media ", " {\n      font-size: 0.812rem;\n      line-height: 1.25rem;\n      padding: 0.375rem 0.625rem;\n    }\n  }\n\n  @keyframes makeVisible {\n    0% {\n      opacity: 0;\n      visibility: visible;\n    }\n    100% {\n      opacity: 1;\n      visibility: visible;\n    }\n  }\n"])), colors.gray7, colors.gray1, colors.gray0, colors.gray0, colors.gray2, colors.blue1, colors.cobalt1, colors.cobalt1, colors.blue2, colors.blue5, colors.blue5, colors.blue5, colors.blue4, colors.primary, colors.primary, colors.primary, colors.primary, colors.red1, colors.red1, colors.red1, colors.red2, colors.gray2, colors.gray2, colors.gray2, device.tablet);
+function generateAvatarColor(itemName) {
+  var avatarColors = getAvatarColors();
+
+  if (itemName && itemName !== '') {
+    var hash = md5(itemName).toString().padStart(32, '0').slice(-6);
+    var hashInt = parseInt(hash, 16);
+    var colorIndex = hashInt % avatarColors.length;
+    return avatarColors[colorIndex];
+  }
+
+  return null;
+}
+var DropdownOptionsUl = styled.ul(_templateObject2$1 || (_templateObject2$1 = _taggedTemplateLiteralLoose(["\n  list-style: none;\n  margin: 0;\n  padding: 0;\n"])));
+var DropdownOptionLi = styled.li(_templateObject3$1 || (_templateObject3$1 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n  padding: 6px 6px 6px 16px;\n\n  &:hover {\n    background: ", ";\n  }\n\n  & > svg {\n    width: ", ";\n    min-width: ", ";\n    height: ", ";\n    color: ", ";\n    margin-right: 10px;\n  }\n"])), function (props) {
+  return props.textColor || colors.blue6;
+}, function (props) {
+  return props.margin;
+}, function (props) {
+  return props.hoverBackground || colors.gray0;
+}, function (props) {
+  return props.iconWidth;
+}, function (props) {
+  return props.iconWidth;
+}, function (props) {
+  return props.iconWidth;
+}, function (props) {
+  return props.iconColor;
+});
+var CustomSelect = styled.div(_templateObject4$1 || (_templateObject4$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 40px;\n  min-height: 40px;\n  width: 100%;\n  min-width: ", ";\n  max-width: ", ";\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: ", ";\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  &:disabled {\n    background-color: ", ";\n  }\n\n  .dropdown-wrapper {\n    width: 100%;\n  }\n\n  .dropdown-body {\n    width: 100%;\n  }\n\n  .dropdown-trigger {\n    & .default-selection {\n      color: ", ";\n    }\n\n    //width: calc(100% - 20px);\n\n    &::after {\n      border-color: black;\n    }\n  }\n"])), function (props) {
+  return props.minWidth;
+}, function (props) {
+  return props.maxWidth;
+}, function (props) {
+  return props.isError ? "1px solid " + colors.red1 : "1px solid " + colors.gray2;
+}, colors.blue7, function (props) {
+  return props.marginTop;
+}, colors.gray7, colors.gray2, colors.gray7);
+var CustomSelectTrigger = styled.span(_templateObject5 || (_templateObject5 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: calc(100% - 22px);\n  padding: 8px 10px 8px 15px;\n  text-align: left;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  text-transform: capitalize;\n"])), colors.blue7);
+var Label = styled.label(_templateObject6 || (_templateObject6 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  margin-top: 20px;\n  margin-bottom: 4px;\n  color: ", ";\n"])), colors.gray6);
+var UploadFile = styled.input(_templateObject7 || (_templateObject7 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var UploadFileLabel = styled.label(_templateObject8 || (_templateObject8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 100%;\n  display: block;\n"])));
+var InputErrorMessage = styled.p(_templateObject9 || (_templateObject9 = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  color: ", ";\n  margin: 4px 0 0;\n"])), colors.red1);
+var CustomInput = styled.input(_templateObject10 || (_templateObject10 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding: 11px 14px;\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  opacity: 1;\n  outline: none;\n\n  &:focus {\n    border: 1px solid ", ";\n    outline: 2px solid ", ";\n  }\n  &:disabled {\n    background-color: ", ";\n    opacity: 1;\n    color: #383b51;\n  }\n  &::placeholder {\n    opacity: 1;\n    color: ", ";\n  }\n"])), function (props) {
+  return props.error ? "1px solid " + colors.red1 : '1px solid #ededed';
+}, function (props) {
+  return props.error ? "1px solid " + colors.red1 : colors.primary;
+}, function (props) {
+  return props.error ? "1px solid " + colors.red2 : '#ebf7f1';
+}, colors.gray0, colors.gray7);
+var FilterField = styled.div(_templateObject11 || (_templateObject11 = _taggedTemplateLiteralLoose(["\n  border: 1px solid #d7d8e3;\n  border-radius: 4px;\n  background-color: transparent;\n  margin-left: 12px;\n\n  .dropdown-trigger::after {\n    border-color: black;\n  }\n"])));
+var FilterFieldSpan = styled.span(_templateObject12 || (_templateObject12 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: 100px;\n  padding: 8px 0 8px 8px;\n  text-align: left;\n  font-size: 0.875rem;\n  line-height: 1rem;\n"])));
+var CustomRadioWrapper = styled.div(_templateObject13 || (_templateObject13 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: 16px;\n  label {\n    font-size: 14px;\n    line-height: 16px;\n    color: ", ";\n  }\n"])), colors.blue7);
+var CustomRadio = styled.input(_templateObject14 || (_templateObject14 = _taggedTemplateLiteralLoose(["\n  height: 16px;\n  width: 16px;\n  margin: 0 10px 0 0;\n  cursor: pointer;\n"])));
+var Row = styled.div(_templateObject15 || (_templateObject15 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: row;\n  margin: ", ";\n  margin-top: ", ";\n  margin-bottom: ", ";\n  margin-right: ", ";\n  margin-left: ", ";\n  align-items: ", ";\n  justify-content: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  padding: ", ";\n  padding-left: ", ";\n  padding-right: ", ";\n  flex-wrap: ", ";\n"])), function (props) {
+  return props.margin;
+}, function (props) {
+  return props.marginTop;
+}, function (props) {
+  return props.marginBottom;
+}, function (props) {
+  return props.marginRight;
+}, function (props) {
+  return props.marginLeft;
+}, function (props) {
+  return props.align;
+}, function (props) {
+  return props.justify;
+}, function (props) {
+  return props.width;
+}, function (props) {
+  return props.height;
+}, function (props) {
+  return props.minHeight;
+}, function (props) {
+  return props.padding;
+}, function (props) {
+  return props.paddingLeft;
+}, function (props) {
+  return props.paddingRight;
+}, function (props) {
+  return props.flexWrap;
+});
+var Button = styled.button(_templateObject16 || (_templateObject16 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  box-sizing: border-box;\n  text-decoration: none;\n  outline: none;\n  cursor: ", ";\n  text-align: center;\n  font-style: normal;\n  border-radius: ", ";\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  padding: 8px 16px;\n  background-color: ", ";\n  color: ", ";\n  border: 1px solid ", ";\n  margin: ", ";\n  user-select: none;\n  transition: opacity 0.1s;\n  opacity: ", ";\n  &:hover,\n  &:focus {\n    opacity: ", ";\n  }\n"])), function (props) {
+  return !props.disabled && 'pointer';
+}, function (props) {
+  return props.borderRadius || '4px';
+}, function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
+  return props.color || (props.backgroundColor ? colors.white : colors.gray6);
+}, function (props) {
+  return props.backgroundColor || colors.gray2;
+}, function (props) {
+  return props.margin || '0';
+}, function (props) {
+  return props.disabled ? 0.5 : 1;
+}, function (props) {
+  return props.disabled ? 0.5 : 0.8;
+});
+var PopupName = styled.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.gray6, function (props) {
+  return props.marginTop;
+}, function (props) {
+  return props.marginBottom;
+}, function (props) {
+  if (props.isDelete) {
+    return "\n            max-width: calc(100% - 20px);\n            white-space: nowrap;\n            text-overflow: ellipsis;\n            overflow: hidden;\n        ";
+  }
+
+  return '';
+});
+var PopupContainer = styled.div(_templateObject18 || (_templateObject18 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 200;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(0, 0, 0, 0.4);\n"])));
+var ButtonBlock = styled.div(_templateObject19 || (_templateObject19 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: ", ";\n  padding-right: ", ";\n  justify-content: ", ";\n  height: ", ";\n  min-height: ", ";\n  background-color: ", ";\n\n  a {\n    width: 88px;\n    height: 40px;\n    margin: 0 4px;\n    font-size: 15px;\n    font-weight: 500;\n  }\n"])), function (props) {
+  return props.marginTop || '10px';
+}, function (props) {
+  return props.paddingRight || '0px';
+}, function (props) {
+  return props.justify || 'flex-end';
+}, function (props) {
+  return props.height;
+}, function (props) {
+  return props.height;
+}, function (props) {
+  return props.backgroundColor;
+});
+var Popup = styled.div(_templateObject20 || (_templateObject20 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  min-height: 150px;\n  min-width: ", ";\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  display: ", ";\n  flex-direction: column;\n  padding: ", ";\n  background: #ffffff;\n  box-shadow: 4px 4px 30px rgba(0, 0, 0, 0.06);\n  border-radius: 8px;\n  box-sizing: border-box;\n\n  ", ";\n"])), function (props) {
+  return props.minWidth || '400px';
+}, function (props) {
+  return props.maxWidth || '600px';
+}, function (props) {
+  return props.maxHeight || '650px';
+}, function (props) {
+  return props.width || 'unset';
+}, function (props) {
+  return props.height || 'unset';
+}, function (props) {
+  return props.display || 'flex';
+}, function (props) {
+  return props.padding ? props.padding : '22px 24px';
+}, function (props) {
+  return props.isLoading && "\n        user-select: none;\n\n        & > * {\n           pointer-events: none;\n           user-select: none;\n        }\n\n         " + ButtonBlock + " {\n          a, button {\n            pointer-events: none;\n            user-select: none;\n            opacity: 0.7;\n          }\n        }\n    ";
+});
+var PopupBody = styled.div(_templateObject21 || (_templateObject21 = _taggedTemplateLiteralLoose(["\n  padding: ", ";\n  margin-bottom: 8px;\n\n  height: ", ";\n"])), function (props) {
+  return props.padding + "px";
+}, function (props) {
+  return props.withFooter ? "calc(100% - (54px + " + props.padding + "px))" : 'calc(100% - 54px)';
+});
+var PopupDescription = styled.span(_templateObject22 || (_templateObject22 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 22px;\n  color: ", ";\n  cursor: default;\n  white-space: pre-line;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  .highlight {\n    text-decoration: underline;\n    font-weight: 500;\n    color: ", ";\n  }\n"])), colors.gray8, function (props) {
+  return props.marginTop || '10px';
+}, function (props) {
+  return props.marginBottom || '10px';
+}, colors.blue1);
+var BoltText = styled.span(_templateObject23 || (_templateObject23 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n"])));
+var PopupFooter = styled(ButtonBlock)(_templateObject24 || (_templateObject24 = _taggedTemplateLiteralLoose(["\n  margin-top: ", ";\n  padding: 8px 16px;\n  border-radius: 0 0 8px 8px;\n"])), function (props) {
+  return props.marginTop || '0';
+});
+var SectionHeader = styled.h4(_templateObject25 || (_templateObject25 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n"])), colors.gray6, function (props) {
+  return props.margin || 0;
+});
+var ItemNote = styled.div(_templateObject26 || (_templateObject26 = _taggedTemplateLiteralLoose(["\n  display: none;\n  position: absolute;\n  z-index: 301;\n  padding: 10px 12px;\n  background-color: ", ";\n  border-radius: 4px;\n  font-size: 0.75rem;\n  white-space: nowrap;\n  font-weight: 600;\n  color: white;\n  pointer-events: none;\n  user-select: none;\n\n  &::before {\n    content: '';\n    position: absolute;\n    z-index: -1;\n    background-color: ", ";\n    border-radius: 1px;\n    width: 14px;\n    height: 14px;\n\n    ", " ", "\n  }\n\n  ", " ", " ", " ", "\n"])), colors.blue6, colors.blue6, function (props) {
+  return props.direction === 'right' && "\n            left: -5px;\n            top: 50%;\n            transform: translateY(-50%) rotate(45deg);\n        ";
+}, function (props) {
+  return props.direction === 'top' && "\n            bottom: -5px;\n            left: 50%;\n            transform: translateX(-50%) rotate(45deg);\n        ";
+}, function (props) {
+  return props.visible && "\n       display: block;\n    ";
+}, function (props) {
+  return props.direction === 'right' && "\n        top: 50%;\n        left: calc(100% + 15px);\n        transform: translateY(-50%);\n    ";
+}, function (props) {
+  return props.direction === 'top' && "\n        bottom: calc(100% + 15px);\n        left: 50%;\n        transform: translateX(-50%);\n    ";
+}, function (props) {
+  return props.disabled && "\n        color: " + colors.gray4 + ";\n    ";
+});
+var CustomSwitcher = styled.div(_templateObject27 || (_templateObject27 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  position: relative;\n"])));
+var SwitcherLabel = styled.label(_templateObject28 || (_templateObject28 = _taggedTemplateLiteralLoose(["\n  width: 48px;\n  height: 28px;\n  background: rgb(226, 226, 226);\n  display: inline-block;\n  border-radius: 50px;\n  position: relative;\n  transition: all 0.3s ease;\n  transform-origin: 20% center;\n  border: 3px solid #fff;\n  cursor: pointer;\n\n  &:before {\n    content: '';\n    position: absolute;\n    display: block;\n    transition: all 0.2s ease;\n    width: 24px;\n    height: 24px;\n    top: 2px;\n    left: 2px;\n    border-radius: 20px;\n    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.251475), 0 2px 6px rgba(0, 0, 0, 0.404256);\n    background: #fff;\n  }\n"])));
+var UploadAvatarButton = styled.button(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.blue5);
+var UploadAvatarHandler = styled.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.blue7);
+var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: ", ";\n"])), function (props) {
+  return props.isLastMessage ? colors.gray9 : props.color || colors.primary;
+}, function (props) {
+  return props.isLastMessage && '500';
+});
+var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
+  return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReply && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
+}, function (props) {
+  return props.color || colors.primary;
+}, function (props) {
+  return props.rtlDirection && 'auto';
+}, function (props) {
+  return props.fontSize || '15px';
+});
+var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.fontFamily || 'Inter, sans-serif';
+}, function (props) {
+  return props.withAttachment && (props.showMessageSenderName ? '0 12px 10px' : props.isForwarded ? '4px 12px 10px' : '8px 12px 10px');
+}, function (props) {
+  return props.withAttachment && !props.withMediaAttachment && '2px';
+}, function (props) {
+  return props.fontSize || '15px';
+}, function (props) {
+  return props.lineHeight || '20px';
+}, colors.gray6, function (props) {
+  return props.isRepliedMessage && "\n      display: -webkit-box;\n      -webkit-line-clamp: 1;\n      -webkit-box-orient: vertical;\n      overflow: hidden;\n      text-overflow: ellipsis;\n  ";
+}, colors.blue2);
+var ReplyMessageText = styled.span(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
+  return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
+}, function (props) {
+  return props.fontSize || '15px';
+}, function (props) {
+  return props.lineHeight || '20px';
+}, colors.gray6);
+var CloseIcon = styled(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n"])));
+var ClearTypedText = styled(CloseIcon)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
+var StyledSearchSvg = styled(SvgSearch)(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: 14px;\n"])));
+var SubTitle = styled.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
+var AttachmentIconCont = styled.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
+var UploadingIcon = styled.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border: ", " solid rgba(255, 255, 255, 0.8);\n  border-top: ", " solid rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
+  return props.fileAttachment ? '2px' : '3px';
+}, function (props) {
+  return props.fileAttachment ? '2px' : '3px';
+}, function (props) {
+  return props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px';
+}, function (props) {
+  return props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px';
+});
+var TextInOneLine = styled.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var UploadPercent = styled.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  background-color: rgba(0,0,0,0.4);\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
+}, function (props) {
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
+}, function (props) {
+  return props.borderRadius ? props.borderRadius : props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
+}, function (props) {
+  return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
+});
+var UploadProgress = styled.div(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
+  return !props.positionStatic && 'absolute';
+}, function (props) {
+  return props.fileAttachment ? '8px' : '0';
+}, function (props) {
+  return props.fileAttachment ? '12px' : '0';
+}, function (props) {
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : props.width ? props.width + "px" : '100%';
+}, function (props) {
+  return props.fileAttachment || props.isRepliedMessage ? '40px' : props.height ? props.height + "px" : '100%';
+}, function (props) {
+  return !props.fileAttachment && !props.isRepliedMessage ? props.imageMinWidth || '130px' : null;
+}, function (props) {
+  return !props.fileAttachment && !props.isRepliedMessage && !props.isFailedAttachment && '90px';
+}, function (props) {
+  return props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
+}, function (props) {
+  return 'data:image/jpeg;base64,' + props.backgroundImage;
+}, function (props) {
+  return props.fileAttachment ? '8px' : props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
+}, function (props) {
+  return props.isRepliedMessage ? '0.5px solid rgba(0, 0, 0, 0.1)' : props.withBorder && "2px solid " + props.backgroundColor;
+}, function (props) {
+  return props.isFailedAttachment && 'background-color: rgba(237, 77, 96, 0.1);';
+}, function (props) {
+  return props.whiteBackground && "\n    background-color: rgba(255,255,255,0.3);\n    border: 1px solid  " + colors.gray1 + ";\n\n    " + UploadingIcon + " {\n        border: 4px solid rgba(238,238,238,0.8);\n        border-top: 4px solid " + colors.cobalt1 + ";\n    }\n  ";
+}, function (props) {
+  return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
+});
+var AttachmentPreviewTitle = styled.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.blue10;
+});
+
+var SceytChatClient = {};
+var setClient = function setClient(client) {
+  SceytChatClient = client;
+};
+var getClient = function getClient() {
+  return SceytChatClient;
+};
+
+var typingTextFormat = function typingTextFormat(_ref) {
+  var text = _ref.text,
+      mentionedMembers = _ref.mentionedMembers,
+      currentMentionEnd = _ref.currentMentionEnd;
+  var messageText = '';
+
+  if (mentionedMembers.length > 0) {
+    var mentionsPositions = Array.isArray(mentionedMembers) ? [].concat(mentionedMembers).sort(function (a, b) {
+      return a.start - b.start;
+    }) : [];
+    var prevEnd = 0;
+    var separateLines = text.split(/\r?\n|\r|\n/g);
+    var addedMembers = 0;
+    var textLengthInCurrentIteration = 0;
+
+    for (var i = 0; i < separateLines.length; i++) {
+      var nextTextPart = '';
+      var currentLine = separateLines[i];
+      var lastFoundIndexOnTheLine = 0;
+      textLengthInCurrentIteration += currentLine.length + 1;
+
+      if (mentionsPositions.length > addedMembers) {
+        for (var j = addedMembers; j < mentionsPositions.length; j++) {
+          var mention = mentionsPositions[j];
+
+          if (mention.start >= textLengthInCurrentIteration) {
+            var addPart = (nextTextPart || currentLine.substring(prevEnd)).trimStart();
+            messageText = messageText + " " + addPart;
+            prevEnd = 0;
+            break;
+          }
+
+          if (!nextTextPart || nextTextPart === '') {
+            var mentionStartInCurrentLine = currentLine.indexOf(mention.displayName, lastFoundIndexOnTheLine);
+            lastFoundIndexOnTheLine = mentionStartInCurrentLine + mention.displayName.length;
+            nextTextPart = currentLine.substring(mentionStartInCurrentLine + mention.displayName.length);
+            var setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextTextPart.trim() && !separateLines[i + 1];
+            messageText += currentLine.substring(0, mentionStartInCurrentLine) + "<span class='mention_user'>" + mention.displayName + "</span>" + (setSpaceToEnd ? '&nbsp;' : '');
+            prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
+          } else {
+            var _mentionStartInCurrentLine = nextTextPart.indexOf(mention.displayName);
+
+            lastFoundIndexOnTheLine = _mentionStartInCurrentLine + mention.displayName.length;
+            var nextPart = nextTextPart.substring(_mentionStartInCurrentLine + mention.displayName.length);
+
+            var _setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextPart.trim() && !separateLines[i + 1];
+
+            messageText += nextTextPart.substring(0, _mentionStartInCurrentLine) + "<span class=\"mention_user\">" + mention.displayName + "</span>" + (_setSpaceToEnd ? '&nbsp;' : '');
+            nextTextPart = nextPart;
+            prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
+          }
+
+          addedMembers++;
+
+          if (addedMembers === mentionsPositions.length && nextTextPart.trim()) {
+            messageText += nextTextPart;
+          }
+        }
+      } else {
+        messageText += "" + currentLine;
+      }
+
+      if (separateLines.length > i + 1) {
+        messageText += '<br/>';
+      }
+    }
+  }
+
+  return messageText.length > 1 ? messageText : text;
+};
+var makeUserName = function makeUserName(contact, user, fromContact) {
+  var _contact$lastName;
+
+  if (user && isAlphanumeric(user.id)) {
+    return user.id.charAt(0).toUpperCase() + user.id.slice(1);
+  }
+
+  return fromContact ? contact ? contact.firstName ? contact.firstName.trim() + " " + ((_contact$lastName = contact.lastName) === null || _contact$lastName === void 0 ? void 0 : _contact$lastName.trim()) : contact.id : user ? user.id || 'Deleted user' : '' : user ? user.firstName ? user.firstName + " " + user.lastName : user.id || 'Deleted user' : '';
+};
+var isJSON = function isJSON(str) {
+  try {
+    return JSON.parse(str) && !!str;
+  } catch (e) {
+    return false;
+  }
+};
+
+var linkifyTextPart = function linkifyTextPart(textPart, match) {
+  var newMessageText;
+  match.forEach(function (matchItem, index) {
+    if (index === 0) {
+      newMessageText = [textPart.split(matchItem.text)[0], React__default.createElement("a", {
+        draggable: false,
+        key: index,
+        href: matchItem.url,
+        target: '_blank',
+        rel: 'noreferrer'
+      }, matchItem.text + " "), textPart.split(matchItem.text)[1]];
+    } else {
+      var _newMessageText;
+
+      var msgArr = [newMessageText[index * 2].split(matchItem.text)[0], React__default.createElement("a", {
+        draggable: false,
+        key: index,
+        href: matchItem.url,
+        target: '_blank',
+        rel: 'noreferrer'
+      }, matchItem.text + " "), newMessageText[index * 2].split(matchItem.text)[1]];
+
+      (_newMessageText = newMessageText).splice.apply(_newMessageText, [index * 2, 1].concat(msgArr));
+    }
+  });
+  return newMessageText || textPart;
+};
+
+var MessageTextFormat = function MessageTextFormat(_ref2) {
+  var text = _ref2.text,
+      message = _ref2.message,
+      contactsMap = _ref2.contactsMap,
+      getFromContacts = _ref2.getFromContacts,
+      isLastMessage = _ref2.isLastMessage,
+      asSampleText = _ref2.asSampleText;
+  var messageText = [text];
+  var linkify = new LinkifyIt();
+
+  if (message.mentionedUsers && message.mentionedUsers.length > 0) {
+    var messageMetadata = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
+    var mentionsPositions = Array.isArray(messageMetadata) ? [].concat(messageMetadata).sort(function (a, b) {
+      return b.loc - a.loc;
+    }) : [];
+    mentionsPositions.forEach(function (mention) {
+      var textPart = messageText.shift();
+      var mentionDisplay = message.mentionedUsers.find(function (men) {
+        return men.id === mention.id;
+      });
+      var firstPart = "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mention.loc));
+      var firstPartMatch = linkify.match(firstPart);
+
+      if (!isLastMessage && !asSampleText && firstPartMatch) {
+        firstPart = linkifyTextPart(firstPart, firstPartMatch);
+      }
+
+      var secondPart = "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len));
+      var secondPartMatch = linkify.match(secondPart);
+
+      if (!isLastMessage && !asSampleText && secondPartMatch) {
+        secondPart = linkifyTextPart(secondPart, secondPartMatch);
+      }
+
+      if (mentionDisplay) {
+        var user = getClient().user;
+        messageText.unshift(firstPart, asSampleText ? "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
+          isLastMessage: isLastMessage,
+          color: colors.primary,
+          key: "" + mention.loc
+        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), secondPart);
+      }
+    });
+  } else {
+    var match = linkify.match(text);
+
+    if (!isLastMessage && !asSampleText && match) {
+      messageText = linkifyTextPart(text, match);
+    }
+  }
+
+  return messageText.length > 1 ? asSampleText ? messageText.join('') : messageText : text;
+};
+var getFileExtension = function getFileExtension(filename) {
+  var ext = filename.split('.').pop();
+  if (ext === filename) return '';
+  return ext;
+};
+var lastMessageDateFormat = function lastMessageDateFormat(date) {
+  var currentTime = moment();
+  var startOfDay = currentTime.startOf('day');
+  var isToday = moment(date).diff(startOfDay) >= 0;
+
+  if (isToday) {
+    return moment(date).format('HH:mm');
+  }
+
+  var isInLastWeek = moment().diff(moment(date), 'weeks') < 1;
+
+  if (isInLastWeek) {
+    return moment(date).format('dddd');
+  }
+
+  return moment(date).format('DD.MM.YY');
+};
+var getDuplicateMentionsFromMeta = function getDuplicateMentionsFromMeta(mentionsMetas, mentionedMembers) {
+  var mentionsList = [];
+  mentionsMetas.forEach(function (mentionMeta) {
+    var editingMention = mentionedMembers.find(function (menMem) {
+      return menMem.id === mentionMeta.id;
+    });
+
+    if (editingMention) {
+      mentionsList.push(editingMention);
+    }
+  });
+  return mentionsList;
+};
 
 var channelsMap = {};
 var activeChannelId = '';
@@ -11289,7 +11321,7 @@ function watchForEvents() {
             contactsMap: contactsMap,
             getFromContacts: getFromContacts,
             isLastMessage: false,
-            isNotification: true
+            asSampleText: true
           });
           console.log('messageBody. . . . ', messageBody);
           setNotification(messageBody, message.user, _channel5);
@@ -23644,7 +23676,7 @@ var ForwardedTitle = styled.h3(_templateObject12$2 || (_templateObject12$2 = _ta
 }, function (props) {
   return props.withPadding && '8px 0 0 12px';
 }, function (props) {
-  return props.showSenderName && (props.withBody ? '2px' : '0');
+  return props.showSenderName && (props.withBody ? '4px' : '0');
 }, function (props) {
   return props.withBody ? !props.withAttachments || props.showSenderName ? '4px' : props.withAttachments && !props.withPadding ? '4px' : '0' : props.withAttachments ? props.withMediaAttachment ? '8px' : '2px' : '4px';
 }, function (props) {
@@ -25849,15 +25881,29 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   var handleAddEmoji = function handleAddEmoji(emoji) {
     var selPos = getCaretPosition(messageInputRef.current);
-    var newText = messageText.slice(0, selPos) + emoji + messageText.slice(selPos);
-    setMessageText(newText);
+    var messageTextToFormat = editMessageText || messageText;
+    var newText = messageTextToFormat.slice(0, selPos) + emoji + messageTextToFormat.slice(selPos);
 
-    if (mentionedMembers.length && mentionedMembers.length > 0) {
+    if (editMessageText) {
+      setEditMessageText(newText);
+    } else {
+      setMessageText(newText);
+    }
+
+    var editingMentions = [];
+
+    if (messageToEdit && messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length > 0) {
+      editingMentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
+    }
+
+    var mentions = editingMentions && editingMentions.length ? [].concat(editingMentions, mentionedMembers) : mentionedMembers;
+
+    if (mentions.length && mentions.length > 0) {
       var currentTextCont = typingTextFormat({
         text: newText,
-        mentionedMembers: [].concat(mentionedMembers.map(function (menMem) {
+        mentionedMembers: [].concat(mentions.map(function (menMem) {
           return _extends({}, menMem, {
-            displayName: mentionedMembersDisplayName[menMem.id].displayName
+            displayName: ("@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts)).trim()
           });
         }))
       });
@@ -25912,26 +25958,34 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     setMentionTyping(false);
-    var currentText = "" + messageText.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + messageText.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
+    var messageTextToFormat = editMessageText || messageText;
+    var currentText = "" + messageTextToFormat.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + messageTextToFormat.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
     var mentionedMembersPositions = [];
+    var editingMentions = [];
 
-    if (mentionedMembers && mentionedMembers.length > 0) {
+    if (messageToEdit && messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length > 0) {
+      editingMentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
+    }
+
+    var mentions = editingMentions && editingMentions.length ? [].concat(editingMentions, mentionedMembers) : mentionedMembers;
+
+    if (mentions && mentions.length > 0) {
       var lastFoundIndex = 0;
       var starts = {};
-      mentionedMembers.forEach(function (menMem) {
-        var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
+      mentions.forEach(function (menMem) {
+        var mentionDisplayName = "@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts).trim();
         var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
         lastFoundIndex = menIndex + mentionDisplayName.length;
 
-        if (!starts[menMem.start]) {
+        if (!starts[menIndex]) {
           mentionedMembersPositions.push({
-            displayName: mentionedMembersDisplayName[menMem.id].displayName,
+            displayName: mentionDisplayName,
             start: menIndex,
             end: menIndex + mentionDisplayName.length
           });
         }
 
-        starts[menMem.start] = true;
+        starts[menIndex] = true;
       });
     }
 
@@ -25944,7 +25998,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
       }]),
       currentMentionEnd: mentionToChange ? mentionToChange.end : currentMentions.start + 1 + mentionDisplayName.length
     });
-    setMessageText(currentText);
+
+    if (editMessageText) {
+      setEditMessageText(currentText);
+    } else {
+      setMessageText(currentText);
+    }
+
     messageInputRef.current.innerHTML = currentTextCont;
     setCursorPosition(messageInputRef.current, currentMentions.start + 2 + mentionDisplayName.length);
 
@@ -26002,9 +26062,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setOpenMention(true);
     }
 
-    var lastChar = messageInputRef.current.innerText.slice(0, selPos).slice(-1);
+    var lastTwoChar = messageInputRef.current.innerText.slice(0, selPos).slice(-2);
+    console.log('lastTwoChar - - - -', lastTwoChar.trim());
 
-    if (lastChar === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
+    if (lastTwoChar.trim() === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
@@ -26137,7 +26198,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
         handleEditMessage();
       } else if (messageText || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
-        var trimLength = messageText.length - messageText.trimStart().length;
         var mentionedMembersPositions = [];
 
         if (mentionedMembers && mentionedMembers.length > 0) {
@@ -26148,7 +26208,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
             var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
             lastFoundIndex = menIndex + mentionDisplayName.length;
 
-            if (!starts[menMem.start - trimLength]) {
+            if (!starts[menIndex]) {
               mentionedMembersPositions.push({
                 id: menMem.id,
                 loc: menIndex,
@@ -26156,7 +26216,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
               });
             }
 
-            starts[menMem.start - trimLength] = true;
+            starts[menIndex] = true;
           });
         }
 
@@ -26233,13 +26293,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
         setMessageText('');
         messageInputRef.current.innerText = '';
-        setAttachments([]);
-        handleCloseReply();
-        setMentionedMembers([]);
-        setMentionedMembersDisplayName([]);
-        setOpenMention(false);
-        setMentionTyping(false);
-        setCurrentMentions(undefined);
         fileUploader.current.value = '';
 
         if (inTypingState) {
@@ -26249,49 +26302,43 @@ var SendMessageInput = function SendMessageInput(_ref) {
         clearTimeout(typingTimout);
         setTypingTimout(undefined);
       }
+
+      setAttachments([]);
+      handleCloseReply();
+      setMentionedMembers([]);
+      setMentionedMembersDisplayName([]);
+      setOpenMention(false);
+      setMentionTyping(false);
+      setCurrentMentions(undefined);
     }
   };
 
   var handleEditMessage = function handleEditMessage() {
     var messageTexToSend = editMessageText.trim();
-    var mentionedMembersPositions = messageToEdit.metadata;
-    var mentionedUserForSend = messageToEdit.mentionedUsers;
+    var mentionedMembersPositions = [];
+    var mentionedUserForSend = [];
 
     if (messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length) {
-      mentionedMembersPositions = {};
-      var findIndexes = [];
-      mentionedUserForSend.forEach(function (menMem) {
-        var mentionedMembersDisplayName = "@" + menMem.firstName + (menMem.lastName !== '' ? " " + menMem.lastName : '');
-        var menIndex = messageTexToSend.indexOf(mentionedMembersDisplayName);
-        var existingIndex = findIndexes.includes(menIndex);
-        var i = 0;
+      var mentions = [].concat(messageToEdit.mentionedUsers, mentionedMembers);
+      var lastFoundIndex = 0;
+      var starts = {};
+      mentions.forEach(function (menMem) {
+        var mentionDisplayName = ("@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts)).trim();
+        var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
 
-        if (menIndex < 0) {
-          mentionedUserForSend = messageToEdit.mentionedUsers.filter(function (menUs) {
-            return menUs.id !== menMem.id;
-          });
-        } else {
-          while (existingIndex) {
-            menIndex = messageTexToSend.indexOf(menMem.displayName, menIndex + 1);
-            existingIndex = findIndexes.includes(menIndex);
-            i++;
+        if (menIndex >= 0) {
+          lastFoundIndex = menIndex + mentionDisplayName.length;
 
-            if (i > mentionedUserForSend.length) {
-              break;
-            }
-          }
-
-          var mentionDisplayLength = mentionedMembersDisplayName.length;
-
-          if (!mentionedMembersPositions[menMem.id] && menIndex >= 0) {
-            var _extends3;
-
-            findIndexes.push(menIndex);
-            mentionedMembersPositions = _extends({}, mentionedMembersPositions, (_extends3 = {}, _extends3[menMem.id] = {
+          if (!starts[menIndex]) {
+            mentionedMembersPositions.push({
+              id: menMem.id,
               loc: menIndex,
-              len: mentionDisplayLength
-            }, _extends3));
+              len: mentionDisplayName.length
+            });
           }
+
+          starts[menIndex] = true;
+          mentionedUserForSend.push(menMem);
         }
       });
     }
@@ -26314,6 +26361,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
       messageInputRef.current.innerText = '';
     }
 
+    setMentionedMembers([]);
+    setMentionedMembersDisplayName([]);
+    setOpenMention(false);
+    setMentionTyping(false);
+    setCurrentMentions(undefined);
     dispatch(setMessageToEditAC(null));
   };
 
@@ -26371,9 +26423,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var setVideoIsReadyToSend = function setVideoIsReadyToSend(attachmentId) {
-    var _extends4;
+    var _extends3;
 
-    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends4 = {}, _extends4[attachmentId] = true, _extends4)));
+    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends3 = {}, _extends3[attachmentId] = true, _extends3)));
   };
 
   var handleJoinToChannel = function handleJoinToChannel() {
@@ -26649,8 +26701,44 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, [messageForReply]);
   useEffect(function () {
     if (messageToEdit && messageInputRef.current) {
-      setEditMessageText(messageToEdit.body || '');
-      messageInputRef.current.innerText = messageToEdit.body;
+      if (messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length) {
+        var formattedText = MessageTextFormat({
+          text: messageToEdit.body,
+          message: messageToEdit,
+          contactsMap: contactsMap,
+          getFromContacts: getFromContacts,
+          asSampleText: true
+        });
+        setEditMessageText(formattedText);
+        var mentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
+        var mentionedMembersPositions = [];
+        var lastFoundIndex = 0;
+        var starts = {};
+        mentions.forEach(function (menMem) {
+          var mentionDisplayName = ("@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts)).trim();
+          var menIndex = formattedText.indexOf(mentionDisplayName, lastFoundIndex);
+          lastFoundIndex = menIndex + mentionDisplayName.length;
+
+          if (!starts[menIndex]) {
+            mentionedMembersPositions.push({
+              displayName: mentionDisplayName,
+              start: menIndex,
+              end: menIndex + mentionDisplayName.length
+            });
+          }
+
+          starts[menIndex] = true;
+        });
+        var currentTextCont = typingTextFormat({
+          text: messageToEdit.body,
+          mentionedMembers: [].concat(mentionedMembersPositions)
+        });
+        messageInputRef.current.innerHTML = currentTextCont;
+      } else {
+        setEditMessageText(messageToEdit.body || '');
+        messageInputRef.current.innerText = messageToEdit.body;
+      }
+
       placeCaretAtEnd(messageInputRef.current);
       messageInputRef.current.focus();
 
