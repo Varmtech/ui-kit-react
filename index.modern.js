@@ -23253,6 +23253,7 @@ var Message = function Message(_ref) {
 
   var MessageHeader = function MessageHeader() {
     return React__default.createElement(MessageHeaderCont, null, showMessageSenderName && React__default.createElement(MessageOwner, {
+      className: 'message-owner 000',
       withPadding: withAttachments && notLinkAttachment,
       isReply: !!message.parent,
       isForwarded: message.forwardingDetails,
@@ -23431,6 +23432,7 @@ var Message = function Message(_ref) {
       selectedFileAttachmentsSizeColor: fileAttachmentsSizeColor
     });
   }), React__default.createElement(ReplyMessageBody, null, React__default.createElement(MessageOwner, {
+    className: 'reply-message-owner',
     color: colors.primary,
     fontSize: '12px',
     rtlDirection: ownMessageOnRightSide && !message.incoming
@@ -23445,6 +23447,7 @@ var Message = function Message(_ref) {
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
   }) : parentNotLinkAttachment && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && React__default.createElement(ForwardedTitle, {
+    withPadding: withAttachments && notLinkAttachment,
     withAttachments: withAttachments,
     withMediaAttachment: withMediaAttachment,
     withBody: !!message.body,
@@ -23639,11 +23642,11 @@ var ForwardedTitle = styled.h3(_templateObject12$2 || (_templateObject12$2 = _ta
 }, function (props) {
   return props.withAttachments && props.withBody ? '0' : '0 0 4px';
 }, function (props) {
-  return props.withAttachments && '8px 0 0 12px';
+  return props.withPadding && '8px 0 0 12px';
 }, function (props) {
   return props.showSenderName && (props.withBody ? '2px' : '0');
 }, function (props) {
-  return props.withBody ? (!props.withAttachments || props.showSenderName) && '4px' : props.withAttachments ? props.withMediaAttachment ? '8px' : '2px' : '4px';
+  return props.withBody ? !props.withAttachments || props.showSenderName ? '4px' : props.withAttachments && !props.withPadding ? '4px' : '0' : props.withAttachments ? props.withMediaAttachment ? '8px' : '2px' : '4px';
 }, function (props) {
   return props.color || colors.primary;
 });
