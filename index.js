@@ -9753,40 +9753,46 @@ var MessageTextFormat = function MessageTextFormat(_ref2) {
       getFromContacts = _ref2.getFromContacts,
       isLastMessage = _ref2.isLastMessage,
       asSampleText = _ref2.asSampleText;
-  var messageText = [text];
+  var messageText = [];
   var linkify = new LinkifyIt();
 
-  if (message.mentionedUsers && message.mentionedUsers.length > 0) {
+  if (message.body && message.mentionedUsers && message.mentionedUsers.length > 0) {
     var messageMetadata = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
     var mentionsPositions = Array.isArray(messageMetadata) ? [].concat(messageMetadata).sort(function (a, b) {
-      return b.loc - a.loc;
+      return a.loc - b.loc;
     }) : [];
-    mentionsPositions.forEach(function (mention) {
-      var textPart = messageText.shift();
-      var mentionDisplay = message.mentionedUsers.find(function (men) {
-        return men.id === mention.id;
-      });
-      var firstPart = "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(0, mention.loc));
-      var firstPartMatch = linkify.match(firstPart);
+    var textPart = text;
+    var nextPartIndex;
+    mentionsPositions.forEach(function (mention, index) {
+      try {
+        var mentionDisplay = message.mentionedUsers.find(function (men) {
+          return men.id === mention.id;
+        });
+        var firstPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(nextPartIndex || 0, mention.loc) : '');
+        nextPartIndex = mention.loc + mention.len;
+        var firstPartMatch = linkify.match(firstPart);
 
-      if (!isLastMessage && !asSampleText && firstPartMatch) {
-        firstPart = linkifyTextPart(firstPart, firstPartMatch);
-      }
+        if (!isLastMessage && !asSampleText && firstPartMatch) {
+          firstPart = linkifyTextPart(firstPart, firstPartMatch);
+        }
 
-      var secondPart = "" + (textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len));
-      var secondPartMatch = linkify.match(secondPart);
+        var secondPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len) : '');
+        var secondPartMatch = linkify.match(secondPart);
 
-      if (!isLastMessage && !asSampleText && secondPartMatch) {
-        secondPart = linkifyTextPart(secondPart, secondPartMatch);
-      }
+        if (!isLastMessage && !asSampleText && secondPartMatch) {
+          secondPart = linkifyTextPart(secondPart, secondPartMatch);
+        }
 
-      if (mentionDisplay) {
-        var user = getClient().user;
-        messageText.unshift(firstPart, asSampleText ? "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
-          isLastMessage: isLastMessage,
-          color: colors.primary,
-          key: "" + mention.loc
-        }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), secondPart);
+        if (mentionDisplay) {
+          var user = getClient().user;
+          messageText.push(firstPart, asSampleText ? "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
+            isLastMessage: isLastMessage,
+            color: colors.primary,
+            key: "" + mention.loc
+          }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), index === mentionsPositions.length - 1 ? secondPart : '');
+        }
+      } catch (e) {
+        console.log('Error on format message text, message: ', message, 'error: ', e);
       }
     });
   } else {
