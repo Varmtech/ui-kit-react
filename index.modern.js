@@ -9716,27 +9716,34 @@ var isJSON = function isJSON(str) {
 
 var linkifyTextPart = function linkifyTextPart(textPart, match) {
   var newMessageText;
+  var prevMatchEnd = 0;
+  var lastFoundIndex = 0;
   match.forEach(function (matchItem, index) {
+    var matchIndex = textPart.indexOf(matchItem.text, lastFoundIndex);
+    lastFoundIndex = matchIndex + matchItem.text.length;
+
     if (index === 0) {
-      newMessageText = [textPart.split(matchItem.text)[0], React__default.createElement("a", {
+      newMessageText = [textPart.substring(0, matchIndex), React__default.createElement("a", {
         draggable: false,
         key: index,
         href: matchItem.url,
         target: '_blank',
         rel: 'noreferrer'
-      }, matchItem.text + " "), textPart.split(matchItem.text)[1]];
+      }, matchItem.text + " ")];
     } else {
-      var _newMessageText;
-
-      var msgArr = [newMessageText[index * 2].split(matchItem.text)[0], React__default.createElement("a", {
+      newMessageText.push(textPart.substring(prevMatchEnd, matchIndex), React__default.createElement("a", {
         draggable: false,
         key: index,
         href: matchItem.url,
         target: '_blank',
         rel: 'noreferrer'
-      }, matchItem.text + " "), newMessageText[index * 2].split(matchItem.text)[1]];
+      }, matchItem.text + " "));
+    }
 
-      (_newMessageText = newMessageText).splice.apply(_newMessageText, [index * 2, 1].concat(msgArr));
+    prevMatchEnd = matchIndex + matchItem.text.length;
+
+    if (index === match.length - 1) {
+      newMessageText.push(textPart.substring(prevMatchEnd));
     }
   });
   return newMessageText || textPart;
@@ -23449,7 +23456,7 @@ var Message = function Message(_ref) {
   }), message.parent && message.parent.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
     withSenderName: showMessageSenderName,
     withBody: !!message.body,
-    withAttachments: withAttachments,
+    withAttachments: withAttachments && notLinkAttachment,
     leftBorderColor: colors.primary,
     onClick: function onClick() {
       return handleScrollToRepliedMessage && handleScrollToRepliedMessage(message.parent.id);
@@ -25832,7 +25839,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setMentionTyping = _useState10[1];
 
   var _useState11 = useState(undefined),
-      mentionEdit = _useState11[0],
       setMentionEdit = _useState11[1];
 
   var _useState12 = useState(),
@@ -26069,9 +26075,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     var lastTwoChar = messageInputRef.current.innerText.slice(0, selPos).slice(-2);
-    console.log('lastTwoChar - - - -', lastTwoChar.trim());
 
-    if (lastTwoChar.trim() === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
+    if (lastTwoChar.trimStart() === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
       setCurrentMentions({
         start: selPos - 1,
         typed: ''
@@ -26099,6 +26104,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         if (mentionedMembers && mentionedMembers.length > 0) {
           var lastFoundIndex = 0;
           var starts = {};
+          var updatedMentionedMembers = [];
           mentionedMembers.forEach(function (menMem) {
             var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
             var menIndex = messageText.indexOf(mentionDisplayName, lastFoundIndex);
@@ -26109,6 +26115,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
             }
 
             if (!starts[menMem.start] && menMem.start !== mentionToEdit.start) {
+              updatedMentionedMembers.push(_extends({}, menMem, {
+                start: menIndex,
+                end: menIndex + mentionDisplayName.length
+              }));
               mentionedMembersPositions.push({
                 displayName: mentionedMembersDisplayName[menMem.id].displayName,
                 start: menIndex,
@@ -26118,9 +26128,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
             starts[menMem.start] = true;
           });
+          setMentionedMembers(updatedMentionedMembers);
         }
 
-        var currentText = [messageText.slice(0, editingMentionPosition + 1), messageText.slice(editingMentionPosition + mentionedMembersDisplayName[mentionToEdit.id].displayName.length)].join('');
+        var currentText = [messageText.slice(0, editingMentionPosition), messageText.slice(editingMentionPosition + mentionedMembersDisplayName[mentionToEdit.id].displayName.length)].join('');
         var currentTextCont = typingTextFormat({
           text: currentText,
           mentionedMembers: [].concat(mentionedMembersPositions)
@@ -26133,13 +26144,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
           });
         });
         setMentionEdit(undefined);
-        setCursorPosition(messageInputRef.current, selPos - (mentionedMembersDisplayName[mentionToEdit.id].displayName.length - 2));
-        setOpenMention(true);
-        setMentionTyping(true);
-        setCurrentMentions({
-          start: editingMentionPosition,
-          typed: ''
-        });
+        setCursorPosition(messageInputRef.current, selPos);
       } else if (currentMentions) {
         if (currentMentions.start >= selPos) {
           shouldClose = true;
@@ -26166,24 +26171,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
         updateCurrentMentions.typed = typedMessage.slice(updateCurrentMentions.start + 1, selPos);
         setCurrentMentions(updateCurrentMentions);
       }
-    }
-
-    if (mentionEdit && (e.key === 'Delete' || e.key === 'Backspace')) {
-      var _currentText = [messageText.slice(0, mentionEdit.start + 1), messageText.slice(mentionEdit.end)].join('');
-
-      setMessageText(_currentText);
-      messageInputRef.current.innerText = _currentText;
-      setMentionedMembers(function (prevState) {
-        return prevState.filter(function (mem) {
-          return mem.start !== mentionEdit.start;
-        });
-      });
-      setMentionEdit(undefined);
-      setCursorPosition(messageInputRef.current, mentionEdit.start + 1);
-      setCurrentMentions({
-        start: mentionEdit.start,
-        typed: ''
-      });
     }
   };
 
@@ -26446,15 +26433,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   };
 
-  useEffect(function () {
-    if (mentionedMembers.length) {
-      if (openMention || mentionTyping) {
-        handleCloseMentionsPopup();
-        setMentionTyping(false);
-        setOpenMention(false);
-      }
-    }
-  }, [selectionPos]);
+  useEffect(function () {}, [selectionPos]);
 
   var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
     try {
@@ -26924,7 +26903,7 @@ var MessageInputWrapper = styled.div(_templateObject9$b || (_templateObject9$b =
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 3;
 });
-var MessageInput = styled.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7, function (props) {
+var MessageInput = styled.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 14px 12px 14px 12px;\n  //width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n  &:before {\n    position: absolute;\n    top: 15px;\n    left: 12px;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: read-only;\n  }\n  //caret-color: #000;\n"])), colors.gray7, colors.gray7, function (props) {
   return props.mentionColor || colors.primary;
 });
 var EmojiButton = styled.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
