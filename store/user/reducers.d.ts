@@ -1,12 +1,9 @@
-import { IAction, IContact, IRole, IUser } from '../../types';
+import { IAction, IContact, IUser } from '../../types';
 export interface IUserStore {
     connectionStatus: string;
     contactList: IContact[];
     usersList: IUser[];
     usersLoadingState: number | null;
-    rolesMap: {
-        [key: string]: IRole;
-    };
     contactsMap: {
         [key: string]: IContact;
     };

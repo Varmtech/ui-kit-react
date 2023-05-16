@@ -1,4 +1,4 @@
-import { IContact, IRole, IUser } from '../../types';
+import { IContact, IUser } from '../../types';
 export declare function setConnectionStatusAC(status: string): {
     type: string;
     payload: {
@@ -43,16 +43,6 @@ export declare function setContactsAC(contacts: IContact[]): {
     type: string;
     payload: {
         contacts: IContact[];
-    };
-};
-export declare function getRolesAC(): {
-    type: string;
-    payload: {};
-};
-export declare function setRolesAC(roles: IRole[]): {
-    type: string;
-    payload: {
-        roles: IRole[];
     };
 };
 export declare function blockUserAC(userIds: string[]): {

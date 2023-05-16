@@ -3,6 +3,9 @@ export interface IMembersStore {
     membersLoadingState: boolean;
     membersHasNext: boolean;
     roles: IRole[] | [];
+    rolesMap: {
+        [key: string]: IRole;
+    };
     activeChannelMembers: IMember[] | [];
 }
 declare const _default: (state: IMembersStore | undefined, { type, payload }: IAction) => IMembersStore;

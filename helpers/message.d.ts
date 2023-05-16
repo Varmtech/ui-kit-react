@@ -5,7 +5,7 @@ export declare const typingTextFormat: ({ text, mentionedMembers, currentMention
     currentMentionEnd?: number | undefined;
     setEmoji?: any;
 }) => any;
-export declare const makeUserName: (contact?: IContact | undefined, user?: IUser | undefined, fromContact?: boolean | undefined) => string;
+export declare const makeUsername: (contact?: IContact | undefined, user?: IUser | undefined, fromContact?: boolean | undefined) => string;
 export declare const isJSON: (str: any) => boolean;
 export declare const MessageTextFormat: ({ text, message, contactsMap, getFromContacts, isLastMessage, asSampleText }: {
     text: string;

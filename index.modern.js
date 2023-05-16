@@ -7755,6 +7755,8 @@ var getAllMessages = function getAllMessages() {
 };
 var removeAllMessages = function removeAllMessages() {
   activeChannelAllMessages = [];
+  setHasPrevCached(false);
+  setHasNextCached(false);
 };
 var setHasPrevCached = function setHasPrevCached(state) {
   prevCached = state;
@@ -8453,7 +8455,8 @@ var initialState$2 = {
   membersLoadingState: false,
   membersHasNext: true,
   activeChannelMembers: [],
-  roles: []
+  roles: [],
+  rolesMap: {}
 };
 var MembersReducer = (function (state, _ref) {
   if (state === void 0) {
@@ -8574,7 +8577,13 @@ var MembersReducer = (function (state, _ref) {
 
     case GET_ROLES_SUCCESS:
       {
-        newState.roles = payload.roles;
+        var roles = payload.roles;
+        var rolesMap = {};
+        roles.forEach(function (role) {
+          rolesMap[role.name] = role;
+        });
+        newState.rolesMap = rolesMap;
+        newState.roles = roles;
         return newState;
       }
 
@@ -8598,8 +8607,6 @@ var LOAD_MORE_USERS = 'LOAD_MORE_USERS';
 var SET_USERS_LOADING_STATE = 'SET_USERS_LOADING_STATE';
 var SET_USERS = 'SET_USERS';
 var ADD_USERS = 'ADD_USERS';
-var GET_ROLES$1 = 'GET_ROLES';
-var SET_ROLES = 'SET_ROLES';
 var BLOCK_USERS = 'BLOCK_USERS';
 var UNBLOCK_USERS = 'UNBLOCK_USERS';
 var SET_USER = 'SET_USER';
@@ -8625,7 +8632,6 @@ var initialState$3 = {
   contactList: [],
   usersList: [],
   usersLoadingState: null,
-  rolesMap: {},
   contactsMap: {},
   updatedUserMap: {},
   user: {
@@ -8692,17 +8698,6 @@ var UserReducer = (function (state, _ref) {
           contactsMap[contact.id] = contact;
         });
         newState.contactsMap = contactsMap;
-        return newState;
-      }
-
-    case SET_ROLES:
-      {
-        var roles = payload.roles;
-        var rolesMap = {};
-        roles.forEach(function (role) {
-          rolesMap[role.name] = role;
-        });
-        newState.rolesMap = rolesMap;
         return newState;
       }
 
@@ -9534,7 +9529,7 @@ var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _tagge
   return props.isLastMessage && '500';
 });
 var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
-  return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReply && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
+  return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReplied && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
 }, function (props) {
   return props.color || colors.primary;
 }, function (props) {
@@ -9697,7 +9692,7 @@ var typingTextFormat = function typingTextFormat(_ref) {
 
   return messageText.length > 1 ? messageText : text;
 };
-var makeUserName = function makeUserName(contact, user, fromContact) {
+var makeUsername = function makeUsername(contact, user, fromContact) {
   var _contact$lastName;
 
   if (user && isAlphanumeric(user.id)) {
@@ -9788,11 +9783,11 @@ var MessageTextFormat = function MessageTextFormat(_ref2) {
 
         if (mentionDisplay) {
           var user = getClient().user;
-          messageText.push(firstPart, asSampleText ? "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
+          messageText.push(firstPart, asSampleText ? "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
             isLastMessage: isLastMessage,
             color: colors.primary,
             key: "" + mention.loc
-          }, "@" + makeUserName(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), index === mentionsPositions.length - 1 ? secondPart : '');
+          }, "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), index === mentionsPositions.length - 1 ? secondPart : '');
         }
       } catch (e) {
         console.log('Error on format message text, message: ', message, 'error: ', e);
@@ -10398,20 +10393,6 @@ function setContactsAC(contacts) {
     }
   };
 }
-function getRolesAC() {
-  return {
-    type: GET_ROLES$1,
-    payload: {}
-  };
-}
-function setRolesAC(roles) {
-  return {
-    type: SET_ROLES,
-    payload: {
-      roles: roles
-    }
-  };
-}
 function blockUserAC(userIds) {
   return {
     type: BLOCK_USERS,
@@ -10506,12 +10487,12 @@ var setNotification = function setNotification(body, user, channel, reaction) {
   var notification;
 
   if (reaction) {
-    notification = new Notification("" + (channel.type === CHANNEL_TYPE.DIRECT ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : channel.subject), {
-      body: (channel.type !== CHANNEL_TYPE.DIRECT ? makeUserName(contactsMap[user.id], user, getFromContacts) + ': ' : '') + " reacted " + reaction + " to \"" + body + "\"",
+    notification = new Notification("" + (channel.type === CHANNEL_TYPE.DIRECT ? makeUsername(contactsMap[channel.peer.id], channel.peer, getFromContacts) : channel.subject), {
+      body: (channel.type !== CHANNEL_TYPE.DIRECT ? makeUsername(contactsMap[user.id], user, getFromContacts) + ': ' : '') + " reacted " + reaction + " to \"" + body + "\"",
       icon: logoSrc
     });
   } else {
-    notification = new Notification("New Message from " + makeUserName(contactsMap[user.id], user, getFromContacts), {
+    notification = new Notification("New Message from " + makeUsername(contactsMap[user.id], user, getFromContacts), {
       body: body,
       icon: logoSrc
     });
@@ -10633,7 +10614,7 @@ function removeMemberFromListAC(members) {
     }
   };
 }
-function getRolesAC$1() {
+function getRolesAC() {
   return {
     type: GET_ROLES
   };
@@ -10664,9 +10645,6 @@ var contactListSelector = function contactListSelector(store) {
 };
 var contactsMapSelector = function contactsMapSelector(store) {
   return store.UserReducer.contactsMap;
-};
-var rolesMapSelector = function rolesMapSelector(store) {
-  return store.UserReducer.rolesMap;
 };
 var userSelector = function userSelector(store) {
   return store.UserReducer.user;
@@ -14303,7 +14281,6 @@ function sendTextMessage(action) {
             attachments = [att];
           }
 
-          console.log('send measage ... ', message);
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
@@ -14326,51 +14303,49 @@ function sendTextMessage(action) {
             pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
           }
 
-          _context2.next = 20;
+          _context2.next = 19;
           return select(messagesHasNextSelector);
 
-        case 20:
+        case 19:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 29;
+            _context2.next = 28;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 27;
+            _context2.next = 26;
             break;
           }
 
-          _context2.next = 25;
+          _context2.next = 24;
           return put(getMessagesAC(channel));
 
-        case 25:
-          _context2.next = 29;
+        case 24:
+          _context2.next = 28;
           break;
 
-        case 27:
-          _context2.next = 29;
+        case 26:
+          _context2.next = 28;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 29:
+        case 28:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context2.next = 33;
+          _context2.next = 32;
           return put(scrollToNewMessageAC(true, true));
 
-        case 33:
-          console.log('messageToSend. . .', messageToSend);
-
+        case 32:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 47;
+            _context2.next = 45;
             break;
           }
 
-          _context2.next = 37;
+          _context2.next = 35;
           return call(channel.sendMessage, messageToSend);
 
-        case 37:
+        case 35:
           messageResponse = _context2.sent;
           messageUpdateData = {
             id: messageResponse.id,
@@ -14382,33 +14357,33 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 41;
+          _context2.next = 39;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 41:
+        case 39:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 45;
+          _context2.next = 43;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 45:
-          _context2.next = 48;
+        case 43:
+          _context2.next = 46;
           break;
 
-        case 47:
+        case 45:
           throw new Error('Connection required to send message');
 
-        case 48:
-          _context2.next = 57;
+        case 46:
+          _context2.next = 55;
           break;
 
-        case 50:
-          _context2.prev = 50;
+        case 48:
+          _context2.prev = 48;
           _context2.t0 = _context2["catch"](5);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
@@ -14420,17 +14395,17 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 57;
+          _context2.next = 55;
           return put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 57:
+        case 55:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[5, 50]]);
+  }, _marked2$1, null, [[5, 48]]);
 }
 
 function forwardMessage(action) {
@@ -14454,7 +14429,7 @@ function forwardMessage(action) {
           attachments = _message.attachments;
 
           if (channel.type === CHANNEL_TYPE.PUBLIC && !(channel.role === 'admin' || channel.role === 'owner')) {
-            _context3.next = 58;
+            _context3.next = 55;
             break;
           }
 
@@ -14467,7 +14442,6 @@ function forwardMessage(action) {
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(_message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(_message.type).setMetadata(_message.metadata ? JSON.stringify(_message.metadata) : '').setForwardingMessageId(_message.id);
           messageToSend = messageBuilder.create();
-          console.log('forward message ... create messageToSend ... ', messageToSend);
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageToSend, {
             createdAt: new Date(Date.now())
           })));
@@ -14478,65 +14452,63 @@ function forwardMessage(action) {
           isCachedChannel = checkChannelExistsOnMessagesMap(channelId);
 
           if (!(channelId === activeChannelId)) {
-            _context3.next = 38;
+            _context3.next = 37;
             break;
           }
 
-          _context3.next = 23;
+          _context3.next = 22;
           return select(messagesHasNextSelector);
 
-        case 23:
+        case 22:
           hasNextMessages = _context3.sent;
 
           if (getHasNextCached()) {
-            _context3.next = 32;
+            _context3.next = 31;
             break;
           }
 
           if (!hasNextMessages) {
-            _context3.next = 30;
+            _context3.next = 29;
             break;
           }
 
-          _context3.next = 28;
+          _context3.next = 27;
           return put(getMessagesAC(channel));
 
-        case 28:
-          _context3.next = 32;
+        case 27:
+          _context3.next = 31;
           break;
 
-        case 30:
-          _context3.next = 32;
+        case 29:
+          _context3.next = 31;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 32:
+        case 31:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context3.next = 36;
+          _context3.next = 35;
           return put(scrollToNewMessageAC(true, true));
 
-        case 36:
-          _context3.next = 39;
+        case 35:
+          _context3.next = 38;
           break;
 
-        case 38:
+        case 37:
           if (isCachedChannel) {
             addMessageToMap(channelId, pendingMessage);
           }
 
-        case 39:
+        case 38:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context3.next = 58;
+            _context3.next = 55;
             break;
           }
 
-          console.log('forward message ... send message ... ', messageToSend);
-          _context3.next = 43;
+          _context3.next = 41;
           return call(channel.sendMessage, messageToSend);
 
-        case 43:
+        case 41:
           messageResponse = _context3.sent;
-          console.log('forward message ... message  response ... ', messageResponse);
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -14549,23 +14521,23 @@ function forwardMessage(action) {
           };
 
           if (!(channelId === activeChannelId)) {
-            _context3.next = 53;
+            _context3.next = 50;
             break;
           }
 
-          _context3.next = 49;
+          _context3.next = 46;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 49:
+        case 46:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context3.next = 54;
+          _context3.next = 51;
           break;
 
-        case 53:
+        case 50:
           if (isCachedChannel) {
             updateMessageOnMap(channel.id, {
               messageId: messageToSend.tid,
@@ -14573,31 +14545,31 @@ function forwardMessage(action) {
             });
           }
 
-        case 54:
-          _context3.next = 56;
+        case 51:
+          _context3.next = 53;
           return put(addChannelAC(channel));
 
-        case 56:
-          _context3.next = 58;
+        case 53:
+          _context3.next = 55;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 58:
-          _context3.next = 63;
+        case 55:
+          _context3.next = 60;
           break;
 
-        case 60:
-          _context3.prev = 60;
+        case 57:
+          _context3.prev = 57;
           _context3.t0 = _context3["catch"](0);
           console.log('error on forward message ... ', _context3.t0);
 
-        case 63:
+        case 60:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3$1, null, [[0, 60]]);
+  }, _marked3$1, null, [[0, 57]]);
 }
 
 function resendMessage(action) {
@@ -15310,7 +15282,7 @@ function loadMoreMessages(action) {
 
         case 39:
           if (!(result.messages && result.messages.length && result.messages.length > 0)) {
-            _context8.next = 42;
+            _context8.next = 44;
             break;
           }
 
@@ -15318,24 +15290,32 @@ function loadMoreMessages(action) {
           return put(addMessagesAC(result.messages, direction));
 
         case 42:
-          _context8.next = 44;
-          return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
-
-        case 44:
-          _context8.next = 49;
+          _context8.next = 46;
           break;
 
+        case 44:
+          _context8.next = 46;
+          return put(addMessagesAC([], direction));
+
         case 46:
-          _context8.prev = 46;
+          _context8.next = 48;
+          return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
+
+        case 48:
+          _context8.next = 53;
+          break;
+
+        case 50:
+          _context8.prev = 50;
           _context8.t0 = _context8["catch"](0);
           console.log('error in load more messages', _context8.t0);
 
-        case 49:
+        case 53:
         case "end":
           return _context8.stop();
       }
     }
-  }, _marked8$1, null, [[0, 46]]);
+  }, _marked8$1, null, [[0, 50]]);
 }
 
 function addReaction(action) {
@@ -16360,13 +16340,12 @@ function MembersSaga() {
 }
 
 var _marked$4 = /*#__PURE__*/_regeneratorRuntime().mark(getContacts),
-    _marked2$3 = /*#__PURE__*/_regeneratorRuntime().mark(getRoles$1),
-    _marked3$3 = /*#__PURE__*/_regeneratorRuntime().mark(blockUser),
-    _marked4$3 = /*#__PURE__*/_regeneratorRuntime().mark(unblockUser),
-    _marked5$3 = /*#__PURE__*/_regeneratorRuntime().mark(updateProfile),
-    _marked6$3 = /*#__PURE__*/_regeneratorRuntime().mark(getUsers),
-    _marked7$3 = /*#__PURE__*/_regeneratorRuntime().mark(loadMoreUsers),
-    _marked8$3 = /*#__PURE__*/_regeneratorRuntime().mark(MembersSaga$1);
+    _marked2$3 = /*#__PURE__*/_regeneratorRuntime().mark(blockUser),
+    _marked3$3 = /*#__PURE__*/_regeneratorRuntime().mark(unblockUser),
+    _marked4$3 = /*#__PURE__*/_regeneratorRuntime().mark(updateProfile),
+    _marked5$3 = /*#__PURE__*/_regeneratorRuntime().mark(getUsers),
+    _marked6$3 = /*#__PURE__*/_regeneratorRuntime().mark(loadMoreUsers),
+    _marked7$3 = /*#__PURE__*/_regeneratorRuntime().mark(MembersSaga$1);
 
 function getContacts() {
   var SceytChatClient, contactsData;
@@ -16405,42 +16384,62 @@ function getContacts() {
   }, _marked$4, null, [[0, 11]]);
 }
 
-function getRoles$1() {
-  var SceytChatClient, roles;
-  return _regeneratorRuntime().wrap(function getRoles$(_context2) {
+function blockUser(action) {
+  var SceytChatClient, payload, userIds, blockedUsers, activeChannelId, activeChannel;
+  return _regeneratorRuntime().wrap(function blockUser$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
           SceytChatClient = getClient();
-          _context2.next = 4;
-          return call(SceytChatClient.getRoles);
+          payload = action.payload;
+          userIds = payload.userIds;
+          _context2.next = 6;
+          return call(SceytChatClient.blockUsers, userIds);
 
-        case 4:
-          roles = _context2.sent;
-          _context2.next = 7;
-          return put(setRolesAC(roles));
-
-        case 7:
-          _context2.next = 13;
-          break;
+        case 6:
+          blockedUsers = _context2.sent;
+          _context2.next = 9;
+          return call(getActiveChannelId);
 
         case 9:
-          _context2.prev = 9;
-          _context2.t0 = _context2["catch"](0);
-          console.log('ERROR in get roles - ', _context2.t0.message);
+          activeChannelId = _context2.sent;
+          _context2.next = 12;
+          return call(getChannelFromMap, activeChannelId);
 
-        case 13:
+        case 12:
+          activeChannel = _context2.sent;
+
+          if (!(activeChannel.peer && activeChannel.peer.id === blockedUsers[0].id)) {
+            _context2.next = 16;
+            break;
+          }
+
+          _context2.next = 16;
+          return put(updateChannelDataAC(activeChannelId, {
+            peer: blockedUsers[0]
+          }));
+
+        case 16:
+          _context2.next = 21;
+          break;
+
+        case 18:
+          _context2.prev = 18;
+          _context2.t0 = _context2["catch"](0);
+          console.log('error in block users', _context2.t0.message);
+
+        case 21:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$3, null, [[0, 9]]);
+  }, _marked2$3, null, [[0, 18]]);
 }
 
-function blockUser(action) {
-  var SceytChatClient, payload, userIds, blockedUsers, activeChannelId, activeChannel;
-  return _regeneratorRuntime().wrap(function blockUser$(_context3) {
+function unblockUser(action) {
+  var SceytChatClient, payload, userIds, unblockedUsers, activeChannelId, activeChannel;
+  return _regeneratorRuntime().wrap(function unblockUser$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
         case 0:
@@ -16449,10 +16448,10 @@ function blockUser(action) {
           payload = action.payload;
           userIds = payload.userIds;
           _context3.next = 6;
-          return call(SceytChatClient.blockUsers, userIds);
+          return call(SceytChatClient.unblockUsers, userIds);
 
         case 6:
-          blockedUsers = _context3.sent;
+          unblockedUsers = _context3.sent;
           _context3.next = 9;
           return call(getActiveChannelId);
 
@@ -16464,14 +16463,14 @@ function blockUser(action) {
         case 12:
           activeChannel = _context3.sent;
 
-          if (!(activeChannel.peer && activeChannel.peer.id === blockedUsers[0].id)) {
+          if (!(activeChannel.peer && activeChannel.peer.id === unblockedUsers[0].id)) {
             _context3.next = 16;
             break;
           }
 
           _context3.next = 16;
           return put(updateChannelDataAC(activeChannelId, {
-            peer: blockedUsers[0]
+            peer: unblockedUsers[0]
           }));
 
         case 16:
@@ -16481,7 +16480,7 @@ function blockUser(action) {
         case 18:
           _context3.prev = 18;
           _context3.t0 = _context3["catch"](0);
-          console.log('error in block users', _context3.t0.message);
+          console.log('error in unblock users', _context3.t0.message);
 
         case 21:
         case "end":
@@ -16491,73 +16490,20 @@ function blockUser(action) {
   }, _marked3$3, null, [[0, 18]]);
 }
 
-function unblockUser(action) {
-  var SceytChatClient, payload, userIds, unblockedUsers, activeChannelId, activeChannel;
-  return _regeneratorRuntime().wrap(function unblockUser$(_context4) {
+function updateProfile(action) {
+  var payload, user, firstName, lastName, avatarUrl, metadata, avatarFile, updateUserProfileData, SceytChatClient, fileToUpload, updatedUser;
+  return _regeneratorRuntime().wrap(function updateProfile$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
         case 0:
           _context4.prev = 0;
-          SceytChatClient = getClient();
           payload = action.payload;
-          userIds = payload.userIds;
-          _context4.next = 6;
-          return call(SceytChatClient.unblockUsers, userIds);
-
-        case 6:
-          unblockedUsers = _context4.sent;
-          _context4.next = 9;
-          return call(getActiveChannelId);
-
-        case 9:
-          activeChannelId = _context4.sent;
-          _context4.next = 12;
-          return call(getChannelFromMap, activeChannelId);
-
-        case 12:
-          activeChannel = _context4.sent;
-
-          if (!(activeChannel.peer && activeChannel.peer.id === unblockedUsers[0].id)) {
-            _context4.next = 16;
-            break;
-          }
-
-          _context4.next = 16;
-          return put(updateChannelDataAC(activeChannelId, {
-            peer: unblockedUsers[0]
-          }));
-
-        case 16:
-          _context4.next = 21;
-          break;
-
-        case 18:
-          _context4.prev = 18;
-          _context4.t0 = _context4["catch"](0);
-          console.log('error in unblock users', _context4.t0.message);
-
-        case 21:
-        case "end":
-          return _context4.stop();
-      }
-    }
-  }, _marked4$3, null, [[0, 18]]);
-}
-
-function updateProfile(action) {
-  var payload, user, firstName, lastName, avatarUrl, metadata, avatarFile, presence, updateUserProfileData, SceytChatClient, fileToUpload, updatedUser;
-  return _regeneratorRuntime().wrap(function updateProfile$(_context5) {
-    while (1) {
-      switch (_context5.prev = _context5.next) {
-        case 0:
-          _context5.prev = 0;
-          payload = action.payload;
-          user = payload.user, firstName = payload.firstName, lastName = payload.lastName, avatarUrl = payload.avatarUrl, metadata = payload.metadata, avatarFile = payload.avatarFile, presence = payload.presence;
+          user = payload.user, firstName = payload.firstName, lastName = payload.lastName, avatarUrl = payload.avatarUrl, metadata = payload.metadata, avatarFile = payload.avatarFile;
           updateUserProfileData = {};
           SceytChatClient = getClient();
 
           if (!avatarFile) {
-            _context5.next = 12;
+            _context4.next = 12;
             break;
           }
 
@@ -16567,12 +16513,12 @@ function updateProfile(action) {
               console.log('upload percent - ', progressPercent);
             }
           };
-          _context5.next = 9;
+          _context4.next = 9;
           return call(SceytChatClient.uploadFile, fileToUpload);
 
         case 9:
-          updateUserProfileData.avatarUrl = _context5.sent;
-          _context5.next = 13;
+          updateUserProfileData.avatarUrl = _context4.sent;
+          _context4.next = 13;
           break;
 
         case 12:
@@ -16593,39 +16539,39 @@ function updateProfile(action) {
             updateUserProfileData.metadata = metadata;
           }
 
-          _context5.next = 19;
+          _context4.next = 18;
           return call(SceytChatClient.setProfile, updateUserProfileData);
 
-        case 19:
-          updatedUser = _context5.sent;
-          _context5.next = 22;
+        case 18:
+          updatedUser = _context4.sent;
+          _context4.next = 21;
           return put(updateUserProfileAC(_extends({}, updatedUser)));
 
-        case 22:
-          _context5.next = 27;
+        case 21:
+          _context4.next = 26;
           break;
 
-        case 24:
-          _context5.prev = 24;
-          _context5.t0 = _context5["catch"](0);
-          console.log(_context5.t0, 'Error on update user');
+        case 23:
+          _context4.prev = 23;
+          _context4.t0 = _context4["catch"](0);
+          console.log(_context4.t0, 'Error on update user');
 
-        case 27:
+        case 26:
         case "end":
-          return _context5.stop();
+          return _context4.stop();
       }
     }
-  }, _marked5$3, null, [[0, 24]]);
+  }, _marked4$3, null, [[0, 23]]);
 }
 
 function getUsers(action) {
   var payload, params, SceytChatClient, usersQueryBuilder, usersQuery, _yield$call, users;
 
-  return _regeneratorRuntime().wrap(function getUsers$(_context6) {
+  return _regeneratorRuntime().wrap(function getUsers$(_context5) {
     while (1) {
-      switch (_context6.prev = _context6.next) {
+      switch (_context5.prev = _context5.next) {
         case 0:
-          _context6.prev = 0;
+          _context5.prev = 0;
           payload = action.payload;
           params = payload.params;
           SceytChatClient = getClient();
@@ -16667,54 +16613,54 @@ function getUsers(action) {
             usersQueryBuilder.filterByUsername();
           }
 
-          _context6.next = 16;
+          _context5.next = 16;
           return call(usersQueryBuilder.build);
 
         case 16:
-          usersQuery = _context6.sent;
+          usersQuery = _context5.sent;
           query.usersQuery = usersQuery;
-          _context6.next = 20;
+          _context5.next = 20;
           return put(setUsersLoadingStateAC(LOADING_STATE.LOADING));
 
         case 20:
-          _context6.next = 22;
+          _context5.next = 22;
           return call(usersQuery.loadNextPage);
 
         case 22:
-          _yield$call = _context6.sent;
+          _yield$call = _context5.sent;
           users = _yield$call.users;
-          _context6.next = 26;
+          _context5.next = 26;
           return put(setUsersAC(users));
 
         case 26:
-          _context6.next = 28;
+          _context5.next = 28;
           return put(setUsersLoadingStateAC(LOADING_STATE.LOADED));
 
         case 28:
-          _context6.next = 34;
+          _context5.next = 34;
           break;
 
         case 30:
-          _context6.prev = 30;
-          _context6.t0 = _context6["catch"](0);
-          console.log('ERROR on get users', _context6.t0.message);
+          _context5.prev = 30;
+          _context5.t0 = _context5["catch"](0);
+          console.log('ERROR on get users', _context5.t0.message);
 
         case 34:
         case "end":
-          return _context6.stop();
+          return _context5.stop();
       }
     }
-  }, _marked6$3, null, [[0, 30]]);
+  }, _marked5$3, null, [[0, 30]]);
 }
 
 function loadMoreUsers(action) {
   var payload, limit, usersQuery, _yield$call2, users;
 
-  return _regeneratorRuntime().wrap(function loadMoreUsers$(_context7) {
+  return _regeneratorRuntime().wrap(function loadMoreUsers$(_context6) {
     while (1) {
-      switch (_context7.prev = _context7.next) {
+      switch (_context6.prev = _context6.next) {
         case 0:
-          _context7.prev = 0;
+          _context6.prev = 0;
           payload = action.payload;
           limit = payload.limit;
           usersQuery = query.usersQuery;
@@ -16723,78 +16669,74 @@ function loadMoreUsers(action) {
             usersQuery.limit = limit;
           }
 
-          _context7.next = 7;
+          _context6.next = 7;
           return put(setUsersLoadingStateAC(LOADING_STATE.LOADING));
 
         case 7:
-          _context7.next = 9;
+          _context6.next = 9;
           return call(usersQuery.loadNextPage);
 
         case 9:
-          _yield$call2 = _context7.sent;
+          _yield$call2 = _context6.sent;
           users = _yield$call2.users;
-          _context7.next = 13;
+          _context6.next = 13;
           return put(addUsersAC(users));
 
         case 13:
-          _context7.next = 15;
+          _context6.next = 15;
           return put(setUsersLoadingStateAC(LOADING_STATE.LOADED));
 
         case 15:
-          _context7.next = 21;
+          _context6.next = 21;
           break;
 
         case 17:
-          _context7.prev = 17;
-          _context7.t0 = _context7["catch"](0);
-          console.log('ERROR load more users', _context7.t0.message);
+          _context6.prev = 17;
+          _context6.t0 = _context6["catch"](0);
+          console.log('ERROR load more users', _context6.t0.message);
 
         case 21:
+        case "end":
+          return _context6.stop();
+      }
+    }
+  }, _marked6$3, null, [[0, 17]]);
+}
+
+function MembersSaga$1() {
+  return _regeneratorRuntime().wrap(function MembersSaga$(_context7) {
+    while (1) {
+      switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.next = 2;
+          return takeLatest(GET_CONTACTS, getContacts);
+
+        case 2:
+          _context7.next = 4;
+          return takeLatest(GET_USERS, getUsers);
+
+        case 4:
+          _context7.next = 6;
+          return takeLatest(LOAD_MORE_USERS, loadMoreUsers);
+
+        case 6:
+          _context7.next = 8;
+          return takeLatest(BLOCK_USERS, blockUser);
+
+        case 8:
+          _context7.next = 10;
+          return takeLatest(UNBLOCK_USERS, unblockUser);
+
+        case 10:
+          _context7.next = 12;
+          return takeLatest(UPDATE_PROFILE, updateProfile);
+
+        case 12:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$3, null, [[0, 17]]);
-}
-
-function MembersSaga$1() {
-  return _regeneratorRuntime().wrap(function MembersSaga$(_context8) {
-    while (1) {
-      switch (_context8.prev = _context8.next) {
-        case 0:
-          _context8.next = 2;
-          return takeLatest(GET_CONTACTS, getContacts);
-
-        case 2:
-          _context8.next = 4;
-          return takeLatest(GET_USERS, getUsers);
-
-        case 4:
-          _context8.next = 6;
-          return takeLatest(LOAD_MORE_USERS, loadMoreUsers);
-
-        case 6:
-          _context8.next = 8;
-          return takeLatest(GET_ROLES$1, getRoles$1);
-
-        case 8:
-          _context8.next = 10;
-          return takeLatest(BLOCK_USERS, blockUser);
-
-        case 10:
-          _context8.next = 12;
-          return takeLatest(UNBLOCK_USERS, unblockUser);
-
-        case 12:
-          _context8.next = 14;
-          return takeLatest(UPDATE_PROFILE, updateProfile);
-
-        case 14:
-        case "end":
-          return _context8.stop();
-      }
-    }
-  }, _marked8$3);
+  }, _marked7$3);
 }
 
 var _marked$5 = /*#__PURE__*/_regeneratorRuntime().mark(rootSaga);
@@ -17525,7 +17467,7 @@ var Channel = function Channel(_ref) {
   var withAvatar = avatar === undefined ? true : avatar;
   var typingIndicator = useSelector(typingIndicatorSelector(channel.id));
   var lastMessage = channel.lastReactedMessage || channel.lastMessage;
-  var lastMessageMetas = lastMessage && lastMessage.type === 'system' && lastMessage.metadata && JSON.parse(lastMessage.metadata);
+  var lastMessageMetas = lastMessage && lastMessage.type === 'system' && lastMessage.metadata && (isJSON(lastMessage.metadata) ? JSON.parse(lastMessage.metadata) : lastMessage.metadata);
 
   var _useState = useState(0),
       statusWidth = _useState[0],
@@ -17566,7 +17508,7 @@ var Channel = function Channel(_ref) {
     avatar: withAvatar,
     isMuted: channel.muted,
     statusWidth: statusWidth
-  }, React__default.createElement("h3", null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), channel.muted && React__default.createElement(MutedIcon, {
+  }, React__default.createElement("h3", null, channel.subject || (isDirectChannel ? makeUsername(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), channel.muted && React__default.createElement(MutedIcon, {
     color: notificationsIsMutedIconColor
   }, notificationsIsMutedIcon || React__default.createElement(SvgNotificationsOff3, null)), (lastMessage || !!typingIndicator) && React__default.createElement(LastMessage, {
     markedAsUnread: !!(channel.markedAsUnread || channel.unreadMessageCount && channel.unreadMessageCount > 0),
@@ -18356,7 +18298,7 @@ var UsersPopup = function UsersPopup(_ref) {
     var isSelected = selectedMembers.findIndex(function (member) {
       return member.id === user.id;
     }) >= 0;
-    var memberDisplayName = makeUserName(contactsMap[user.id], user, getFromContacts);
+    var memberDisplayName = makeUsername(contactsMap[user.id], user, getFromContacts);
     return React__default.createElement(ListRow, {
       isAdd: actionType !== 'createChat',
       key: user.id,
@@ -19738,7 +19680,7 @@ function ChatHeader(_ref) {
     size: 36,
     textSize: 13,
     setDefaultAvatar: isDirectChannel
-  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, null, activeChannel.subject || (isDirectChannel ? makeUserName(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(activeChannel.peer) ? '' : activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), React__default.createElement(ChanelInfo, {
+  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, null, activeChannel.subject || (isDirectChannel ? makeUsername(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(activeChannel.peer) ? '' : activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), React__default.createElement(ChanelInfo, {
     onClick: function onClick() {
       return channelDetailsOnOpen();
     },
@@ -20165,10 +20107,23 @@ function SvgThreadReply(props) {
   })));
 }
 
+var activeChannelMembersSelector = function activeChannelMembersSelector(store) {
+  return store.MembersReducer.activeChannelMembers;
+};
+var rolesSelector = function rolesSelector(store) {
+  return store.MembersReducer.roles;
+};
+var rolesMapSelector = function rolesMapSelector(store) {
+  return store.MembersReducer.rolesMap;
+};
+var membersLoadingStateSelector = function membersLoadingStateSelector(store) {
+  return store.MembersReducer.membersLoadingState;
+};
+
 function usePermissions(myRole) {
   var dispatch = useDispatch();
   var rolesMap = useSelector(rolesMapSelector, shallowEqual);
-  var myPermissions = myRole && rolesMap[myRole] ? rolesMap[myRole].permissions : [];
+  var myPermissions = myRole && rolesMap && rolesMap[myRole] ? rolesMap[myRole].permissions : [];
 
   var checkActionPermission = function checkActionPermission(actionName) {
     return myPermissions.includes(actionName);
@@ -21228,6 +21183,7 @@ var Attachment = function Attachment(_ref) {
       closeMessageActions = _ref.closeMessageActions;
   var dispatch = useDispatch();
   var attachmentCompilationState = useSelector(attachmentCompilationStateSelector) || {};
+  var connectionStatus = useSelector(connectionStatusSelector);
   var imageContRef = useRef(null);
 
   var _useState = useState(''),
@@ -21305,7 +21261,7 @@ var Attachment = function Attachment(_ref) {
     }
   }, [attachmentUrl]);
   useEffect(function () {
-    if (!(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
+    if (connectionStatus === CONNECTION_STATUS.CONNECTED && !(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
         if (attachment.type === 'image' && !isPrevious) {
           if (cachedUrl) {
@@ -21350,7 +21306,7 @@ var Attachment = function Attachment(_ref) {
         }
       });
     }
-  }, [attachment]);
+  }, [attachment.id]);
   return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
     draggable: false,
     onClick: function onClick() {
@@ -21784,7 +21740,7 @@ function ForwardMessagePopup(_ref) {
     if (event.target.checked && selectedChannels.length < 5) {
       newSelectedChannels.push({
         id: channel.id,
-        displayName: channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')
+        displayName: channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? makeUsername(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')
       });
     } else {
       var itemToDeleteIndex = newSelectedChannels.findIndex(function (chan) {
@@ -21875,7 +21831,7 @@ function ForwardMessagePopup(_ref) {
       size: 40,
       textSize: 12,
       setDefaultAvatar: isDirectChannel
-    }), React__default.createElement(ChannelInfo$2, null, React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), React__default.createElement(ChannelMembers, null, isDirectChannel ? (hideUserPresence(channel.peer) ? '' : channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), React__default.createElement(CustomCheckbox, {
+    }), React__default.createElement(ChannelInfo$2, null, React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel ? makeUsername(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), React__default.createElement(ChannelMembers, null, isDirectChannel ? (hideUserPresence(channel.peer) ? '' : channel.peer.presence && channel.peer.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), React__default.createElement(CustomCheckbox, {
       index: channel.id,
       disabled: selectedChannels.length >= 5 && !isSelected,
       state: isSelected,
@@ -22058,7 +22014,7 @@ function ReactionsPopup(_ref) {
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUserName(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, {
+    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUsername(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, {
       onClick: function onClick() {
         return handleAddDeleteEmoji(reaction.key);
       }
@@ -23300,12 +23256,12 @@ var Message = function Message(_ref) {
     return React__default.createElement(MessageHeaderCont, null, showMessageSenderName && React__default.createElement(MessageOwner, {
       className: 'message-owner 000',
       withPadding: withAttachments && notLinkAttachment,
-      isReply: !!message.parent,
+      isReplied: !!message.parent,
       isForwarded: message.forwardingDetails,
       messageBody: !!message.body,
       color: colors.primary,
       rtlDirection: ownMessageOnRightSide && !message.incoming
-    }, message.user.id === user.id && message.user.firstName ? message.user.firstName + " " + message.user.lastName : makeUserName(contactsMap[message.user.id], message.user, getFromContacts)), messageTimePosition === 'topOfMessage' && React__default.createElement(MessageTime, null, "" + moment(message.createdAt).format('HH:mm')));
+    }, message.user.id === user.id && message.user.firstName ? message.user.firstName + " " + message.user.lastName : makeUsername(contactsMap[message.user.id], message.user, getFromContacts)), messageTimePosition === 'topOfMessage' && React__default.createElement(MessageTime, null, "" + moment(message.createdAt).format('HH:mm')));
   };
 
   var handleClick = function handleClick(e) {
@@ -23481,7 +23437,7 @@ var Message = function Message(_ref) {
     color: colors.primary,
     fontSize: '12px',
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, message.parent.user.id === user.id ? 'You' : makeUserName(contactsMap[message.parent.user.id], message.parent.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
+  }, message.parent.user.id === user.id ? 'You' : makeUsername(contactsMap[message.parent.user.id], message.parent.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
     fontSize: '14px',
     lineHeight: '16px'
   }, !!message.parent.attachments.length && message.parent.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, {
@@ -24309,7 +24265,7 @@ var SliderPopup = function SliderPopup(_ref) {
   var contactsMap = useSelector(contactsMapSelector);
   var attachments = useSelector(attachmentsForPopupSelector, shallowEqual) || [];
   var visibilityTimeout = useRef();
-  var attachmentUserName = currentFile ? currentFile.user && makeUserName(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
+  var attachmentUserName = currentFile ? currentFile.user && makeUsername(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
 
   var handleClosePopup = function handleClosePopup() {
     setAttachmentsList([]);
@@ -24782,6 +24738,7 @@ var MessageList = function MessageList(_ref2) {
   var ChatClient = getClient();
   var user = ChatClient.user;
   var contactsMap = useSelector(contactsMapSelector);
+  var connectionStatus = useSelector(connectionStatusSelector);
   var scrollToNewMessage = useSelector(scrollToNewMessageSelector, shallowEqual);
   var scrollToRepliedMessage = useSelector(scrollToMessageSelector, shallowEqual);
   var browserTabIsActive = useSelector(browserTabIsActiveSelector, shallowEqual);
@@ -24878,7 +24835,7 @@ var MessageList = function MessageList(_ref2) {
 
         var scrollHeightQuarter = target.scrollHeight * 20 / 100;
 
-        if (!prevDisable && messagesLoading !== LOADING_STATE.LOADING && !scrollToRepliedMessage && -target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightQuarter && !loading && !scrollToNewMessage.scrollToBottom && messages.length) {
+        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && !scrollToRepliedMessage && -target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightQuarter && !loading && !scrollToNewMessage.scrollToBottom && messages.length) {
           loadDirection = 'prev';
           prevMessageId = messages[0].id;
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.PREV, LOAD_MAX_MESSAGE_COUNT);
@@ -24896,7 +24853,7 @@ var MessageList = function MessageList(_ref2) {
           prevDisable = false;
         }
 
-        if (!nextDisable && messagesLoading !== LOADING_STATE.LOADING && (hasNextMessages || getHasNextCached()) && -target.scrollTop <= 400 && !loading && !scrollToNewMessage.scrollToBottom) {
+        if (!nextDisable && connectionStatus === CONNECTION_STATUS.CONNECTED && messagesLoading !== LOADING_STATE.LOADING && (hasNextMessages || getHasNextCached()) && -target.scrollTop <= 400 && !loading && !scrollToNewMessage.scrollToBottom) {
           loadDirection = 'next';
           prevDisable = true;
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.NEXT, LOAD_MAX_MESSAGE_COUNT);
@@ -24944,7 +24901,7 @@ var MessageList = function MessageList(_ref2) {
     var hasPrevCached = getHasPrevCached();
     var hasNextCached = getHasNextCached();
 
-    if (!loading) {
+    if (!loading && connectionStatus === CONNECTION_STATUS.CONNECTED) {
       if (direction === MESSAGE_LOAD_DIRECTION.PREV && firstMessageId && (hasPrevMessages || hasPrevCached)) {
         loading = true;
         dispatch(loadMoreMessagesAC(channel.id, limit, direction, firstMessageId, hasPrevMessages));
@@ -25088,7 +25045,7 @@ var MessageList = function MessageList(_ref2) {
   useEffect(function () {
     if (scrollToNewMessage.scrollToBottom) {
       dispatch(showScrollToNewMessageButtonAC(false));
-      loading = false;
+      loading = true;
 
       if (scrollToNewMessage.updateMessageList && messagesLoading !== LOADING_STATE.LOADING) {
         dispatch(getMessagesAC(channel, !hasNextMessages));
@@ -25105,6 +25062,13 @@ var MessageList = function MessageList(_ref2) {
       setIsDragging(false);
     }
   }, [draggingSelector]);
+  useDidUpdate(function () {
+    if (connectionStatus !== CONNECTION_STATUS.CONNECTED) {
+      loading = false;
+      prevDisable = false;
+      nextDisable = false;
+    }
+  }, [connectionStatus]);
   useEffect(function () {
     setHasNextCached(false);
     setHasPrevCached(false);
@@ -25144,6 +25108,8 @@ var MessageList = function MessageList(_ref2) {
                 currentMessage ? messagesHeight += currentMessage.getBoundingClientRect().height : messagesHeight;
                 i++;
               }
+            } else {
+              break;
             }
           }
 
@@ -25254,7 +25220,7 @@ var MessageList = function MessageList(_ref2) {
     return React__default.createElement(React__default.Fragment, {
       key: message.id || message.tid
     }, React__default.createElement(CreateMessageDateDivider, {
-      noMargin: !isUnreadMessage && prevMessage && prevMessage.type === 'system',
+      noMargin: !isUnreadMessage && prevMessage && prevMessage.type === 'system' && message.type !== 'system',
       lastIndex: false,
       currentMessageDate: message.createdAt,
       nextMessageDate: prevMessage && prevMessage.createdAt,
@@ -25276,7 +25242,7 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorder: dateDividerBorder,
       dateDividerBackgroundColor: dateDividerBackgroundColor,
       dateDividerBorderRadius: dateDividerBorderRadius
-    }, React__default.createElement("span", null, message.incoming ? makeUserName(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(messageMetas && messageMetas.m) && messageMetas.m.slice(0, 5).map(function (mem) {
+    }, React__default.createElement("span", null, message.incoming ? makeUsername(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(messageMetas && messageMetas.m) && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
     })) + " " + (messageMetas && messageMetas.m && messageMetas.m.length > 5 ? "and " + (messageMetas.m.length - 5) + " more" : '') : message.body === 'RM' ? " removed " + (messageMetas && messageMetas.m && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
@@ -25594,16 +25560,6 @@ function SvgErrorCircle(props) {
   })));
 }
 
-var activeChannelMembersSelector = function activeChannelMembersSelector(store) {
-  return store.MembersReducer.activeChannelMembers;
-};
-var rolesSelector = function rolesSelector(store) {
-  return store.MembersReducer.roles;
-};
-var membersLoadingStateSelector = function membersLoadingStateSelector(store) {
-  return store.MembersReducer.membersLoadingState;
-};
-
 var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$j, _templateObject5$g, _templateObject6$g;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
@@ -25624,6 +25580,10 @@ function MentionMembersPopup(_ref) {
       activeIndex = _useState2[0],
       setActiveIndex = _useState2[1];
 
+  var _useState3 = useState(false),
+      hideMenu = _useState3[0],
+      setHideMenu = _useState3[1];
+
   var user = getClient().user;
   var membersLoading = useSelector(membersLoadingStateSelector, shallowEqual) || {};
   var dispatch = useDispatch();
@@ -25643,8 +25603,8 @@ function MentionMembersPopup(_ref) {
 
   var sortMembers = function sortMembers(membersList) {
     return [].concat(membersList).sort(function (a, b) {
-      var aDisplayName = makeUserName(a.id === user.id ? a : contactsMap[a.id], a, getFromContacts);
-      var bDisplayName = makeUserName(b.id === user.id ? b : contactsMap[b.id], b, getFromContacts);
+      var aDisplayName = makeUsername(a.id === user.id ? a : contactsMap[a.id], a, getFromContacts);
+      var bDisplayName = makeUsername(b.id === user.id ? b : contactsMap[b.id], b, getFromContacts);
 
       if (aDisplayName < bDisplayName) {
         return -1;
@@ -25680,11 +25640,7 @@ function MentionMembersPopup(_ref) {
   };
 
   var handleClicks = function handleClicks(e) {
-    if (e.target.closest('.mention_member_popup')) {
-      return;
-    }
-
-    handleMentionsPopupClose();
+    if (e.target.closest('.mention_member_popup')) ;
   };
 
   useEventListener('click', handleClicks);
@@ -25709,7 +25665,7 @@ function MentionMembersPopup(_ref) {
   useDidUpdate(function () {
     if (searchMention) {
       var searchedMembers = [].concat(members).filter(function (member) {
-        var displayName = makeUserName(contactsMap[member.id], member, getFromContacts);
+        var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
         return displayName && member.id !== user.id && displayName.toLowerCase().includes(searchMention.toLowerCase());
       });
       filteredMembersLength.current = searchedMembers.length;
@@ -25723,8 +25679,16 @@ function MentionMembersPopup(_ref) {
       setFilteredMembers(sortMembers(_searchedMembers || []));
     }
   }, [searchMention]);
+  useDidUpdate(function () {
+    if (filteredMembersLength.current === 0) {
+      setHideMenu(true);
+    } else {
+      setHideMenu(false);
+    }
+  }, [filteredMembersLength.current]);
   return React__default.createElement(Container$g, {
     className: 'mention_member_popup',
+    hidden: hideMenu,
     height: filteredMembers && filteredMembers.length * 44
   }, React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
@@ -25744,11 +25708,13 @@ function MentionMembersPopup(_ref) {
       size: 32,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, null, makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
+    })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, null, makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
   })));
 }
-var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n"])), function (props) {
+var Container$g = styled.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
   return props.height && props.height + 22;
+}, function (props) {
+  return props.hidden ? 'hidden' : 'visible';
 });
 var UserNamePresence$2 = styled.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
 var MemberName$2 = styled.h3(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
@@ -25838,36 +25804,33 @@ var SendMessageInput = function SendMessageInput(_ref) {
       mentionTyping = _useState10[0],
       setMentionTyping = _useState10[1];
 
-  var _useState11 = useState(undefined),
-      setMentionEdit = _useState11[1];
+  var _useState11 = useState(),
+      selectionPos = _useState11[0],
+      setSelectionPos = _useState11[1];
 
   var _useState12 = useState(),
-      selectionPos = _useState12[0],
-      setSelectionPos = _useState12[1];
+      typingTimout = _useState12[0],
+      setTypingTimout = _useState12[1];
 
   var _useState13 = useState(),
-      typingTimout = _useState13[0],
-      setTypingTimout = _useState13[1];
+      inTypingStateTimout = _useState13[0],
+      setInTypingStateTimout = _useState13[1];
 
-  var _useState14 = useState(),
-      inTypingStateTimout = _useState14[0],
-      setInTypingStateTimout = _useState14[1];
+  var _useState14 = useState(false),
+      inTypingState = _useState14[0],
+      setInTypingState = _useState14[1];
 
   var _useState15 = useState(false),
-      inTypingState = _useState15[0],
-      setInTypingState = _useState15[1];
+      sendMessageIsActive = _useState15[0],
+      setSendMessageIsActive = _useState15[1];
 
   var _useState16 = useState(false),
-      sendMessageIsActive = _useState16[0],
-      setSendMessageIsActive = _useState16[1];
+      openMention = _useState16[0],
+      setOpenMention = _useState16[1];
 
-  var _useState17 = useState(false),
-      openMention = _useState17[0],
-      setOpenMention = _useState17[1];
-
-  var _useState18 = useState([]),
-      attachments = _useState18[0],
-      setAttachments = _useState18[1];
+  var _useState17 = useState([]),
+      attachments = _useState17[0],
+      setAttachments = _useState17[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
@@ -25915,7 +25878,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         text: newText,
         mentionedMembers: [].concat(mentions.map(function (menMem) {
           return _extends({}, menMem, {
-            displayName: ("@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts)).trim()
+            displayName: ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim()
           });
         }))
       });
@@ -25928,7 +25891,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleSetMention = function handleSetMention(member) {
-    var mentionDisplayName = makeUserName(user.id === member.id ? member : contactsMap[member.id], member, getFromContacts).trim();
+    var mentionDisplayName = makeUsername(user.id === member.id ? member : contactsMap[member.id], member, getFromContacts).trim();
     var mentionToChange = mentionedMembers.find(function (men) {
       return men.start === currentMentions.start;
     });
@@ -25985,7 +25948,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var lastFoundIndex = 0;
       var starts = {};
       mentions.forEach(function (menMem) {
-        var mentionDisplayName = "@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts).trim();
+        var mentionDisplayName = "@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts).trim();
         var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
         lastFoundIndex = menIndex + mentionDisplayName.length;
 
@@ -26026,14 +25989,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
     updateCurrentMentions.id = member.id;
     updateCurrentMentions.end = updateCurrentMentions.start + mentionDisplayName.length;
     setCurrentMentions(updateCurrentMentions);
-    setMentionEdit(undefined);
     messageInputRef.current.focus();
   };
 
   var handleCloseMentionsPopup = function handleCloseMentionsPopup() {
     setOpenMention(false);
     setMentionTyping(false);
-    setMentionEdit(undefined);
+    setCurrentMentions(undefined);
   };
 
   var handleTyping = function handleTyping(e) {
@@ -26088,64 +26050,47 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var shouldClose = false;
 
     if (e.key === 'Backspace') {
-      if (!messageInputRef.current.innerText.trim()) {
-        setMessageText('');
-        setMentionedMembers([]);
+      var mentionedMembersPositions = [];
+      var currentText = messageInputRef.current.innerText;
+
+      if (mentionedMembers && mentionedMembers.length > 0) {
+        var lastFoundIndex = 0;
+        var starts = {};
+        var updatedMentionedMembers = [];
+        mentionedMembers.forEach(function (menMem) {
+          var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
+          var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
+          lastFoundIndex = menIndex + mentionDisplayName.length;
+
+          if (menIndex >= 0 && !starts[menMem.start]) {
+            updatedMentionedMembers.push(_extends({}, menMem, {
+              start: menIndex,
+              end: menIndex + mentionDisplayName.length
+            }));
+            mentionedMembersPositions.push({
+              displayName: mentionedMembersDisplayName[menMem.id].displayName,
+              start: menIndex,
+              end: menIndex + mentionDisplayName.length
+            });
+          }
+
+          starts[menMem.start] = true;
+        });
+        setMentionedMembers(updatedMentionedMembers);
       }
 
-      var mentionToEdit = mentionedMembers.find(function (menMem) {
-        return menMem.start <= selPos && menMem.end >= selPos + 1;
+      var currentTextCont = typingTextFormat({
+        text: currentText,
+        mentionedMembers: [].concat(mentionedMembersPositions)
       });
+      setMessageText(currentText);
+      messageInputRef.current.innerHTML = currentTextCont;
 
-      if (mentionToEdit) {
-        var editingMentionPosition = 0;
-        var mentionedMembersPositions = [];
-
-        if (mentionedMembers && mentionedMembers.length > 0) {
-          var lastFoundIndex = 0;
-          var starts = {};
-          var updatedMentionedMembers = [];
-          mentionedMembers.forEach(function (menMem) {
-            var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
-            var menIndex = messageText.indexOf(mentionDisplayName, lastFoundIndex);
-            lastFoundIndex = menIndex + mentionDisplayName.length;
-
-            if (menMem.start === mentionToEdit.start) {
-              editingMentionPosition = menIndex;
-            }
-
-            if (!starts[menMem.start] && menMem.start !== mentionToEdit.start) {
-              updatedMentionedMembers.push(_extends({}, menMem, {
-                start: menIndex,
-                end: menIndex + mentionDisplayName.length
-              }));
-              mentionedMembersPositions.push({
-                displayName: mentionedMembersDisplayName[menMem.id].displayName,
-                start: menIndex,
-                end: menIndex + mentionDisplayName.length
-              });
-            }
-
-            starts[menMem.start] = true;
-          });
-          setMentionedMembers(updatedMentionedMembers);
-        }
-
-        var currentText = [messageText.slice(0, editingMentionPosition), messageText.slice(editingMentionPosition + mentionedMembersDisplayName[mentionToEdit.id].displayName.length)].join('');
-        var currentTextCont = typingTextFormat({
-          text: currentText,
-          mentionedMembers: [].concat(mentionedMembersPositions)
-        });
-        setMessageText(currentText);
-        messageInputRef.current.innerHTML = currentTextCont;
-        setMentionedMembers(function (prevState) {
-          return prevState.filter(function (mem) {
-            return mem.start !== mentionToEdit.start;
-          });
-        });
-        setMentionEdit(undefined);
+      if (selPos > 0) {
         setCursorPosition(messageInputRef.current, selPos);
-      } else if (currentMentions) {
+      }
+
+      if (currentMentions) {
         if (currentMentions.start >= selPos) {
           shouldClose = true;
           setCurrentMentions(undefined);
@@ -26316,7 +26261,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var lastFoundIndex = 0;
       var starts = {};
       mentions.forEach(function (menMem) {
-        var mentionDisplayName = ("@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts)).trim();
+        var mentionDisplayName = ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim();
         var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
 
         if (menIndex >= 0) {
@@ -26405,9 +26350,17 @@ var SendMessageInput = function SendMessageInput(_ref) {
         });
       } else {
         e.preventDefault();
-        document.execCommand('inserttext', false, e.clipboardData.getData('text/plain'));
+        document.execCommand('inserttext', false, e.clipboardData.getData('text/plain').trim());
       }
     }
+  };
+
+  var handleCut = function handleCut() {
+    setMentionTyping(false);
+    setMessageText('');
+    setCurrentMentions(undefined);
+    setOpenMention(false);
+    setMentionedMembers([]);
   };
 
   var handleEmojiPopupToggle = function handleEmojiPopupToggle(bool) {
@@ -26433,7 +26386,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   };
 
-  useEffect(function () {}, [selectionPos]);
+  useEffect(function () {
+    if (mentionTyping) {
+      if (selectionPos <= currentMentions.start) {
+        handleCloseMentionsPopup();
+      }
+    }
+  }, [selectionPos]);
 
   var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
     try {
@@ -26700,7 +26659,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         var lastFoundIndex = 0;
         var starts = {};
         mentions.forEach(function (menMem) {
-          var mentionDisplayName = ("@" + makeUserName(contactsMap[menMem.id], menMem, getFromContacts)).trim();
+          var mentionDisplayName = ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim();
           var menIndex = formattedText.indexOf(mentionDisplayName, lastFoundIndex);
           lastFoundIndex = menIndex + mentionDisplayName.length;
 
@@ -26782,7 +26741,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     backgroundColor: colors.primary
   }, React__default.createElement(SvgChoseFile, null))), React__default.createElement("div", null, React__default.createElement(EditReplyMessageHeader, {
     color: colors.primary
-  }, replyMessageIcon || React__default.createElement(SvgReplyIcon, null), " Reply to", React__default.createElement(UserName$1, null, user.id === messageForReply.user.id ? user.firstName ? user.firstName + " " + user.lastName : user.id : makeUserName(contactsMap[messageForReply.user.id], messageForReply.user, getFromContacts))), messageForReply.attachments && messageForReply.attachments.length ? messageForReply.attachments[0].type === attachmentTypes.voice ? 'Voice' : messageForReply.attachments[0].type === attachmentTypes.image ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Photo') : messageForReply.attachments[0].type === attachmentTypes.video ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Video') : React__default.createElement(TextInOneLine, null, messageForReply.body || 'File') : MessageTextFormat({
+  }, replyMessageIcon || React__default.createElement(SvgReplyIcon, null), " Reply to", React__default.createElement(UserName$1, null, user.id === messageForReply.user.id ? user.firstName ? user.firstName + " " + user.lastName : user.id : makeUsername(contactsMap[messageForReply.user.id], messageForReply.user, getFromContacts))), messageForReply.attachments && messageForReply.attachments.length ? messageForReply.attachments[0].type === attachmentTypes.voice ? 'Voice' : messageForReply.attachments[0].type === attachmentTypes.image ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Photo') : messageForReply.attachments[0].type === attachmentTypes.video ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Video') : React__default.createElement(TextInOneLine, null, messageForReply.body || 'File') : MessageTextFormat({
     text: messageForReply.body,
     message: messageForReply,
     contactsMap: contactsMap,
@@ -26861,6 +26820,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     suppressContentEditableWarning: true,
     onKeyUp: handleTyping,
     onPaste: handlePastAttachments,
+    onCut: handleCut,
     onKeyPress: handleSendEditMessage,
     "data-placeholder": 'Type message here ...',
     ref: messageInputRef,
@@ -27842,7 +27802,7 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
 
   var roles = useSelector(rolesSelector, shallowEqual) || [];
   useEffect(function () {
-    dispatch(getRolesAC$1());
+    dispatch(getRolesAC());
   }, []);
 
   var handleSave = function handleSave() {
@@ -28074,7 +28034,7 @@ var Members = function Members(_ref) {
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUserName(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
+    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
       color: colors.primary
     }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
       color: colors.purple
@@ -28122,7 +28082,7 @@ var Members = function Members(_ref) {
     togglePopup: toggleKickMemberPopup,
     buttonText: 'Remove',
     title: channel.type === CHANNEL_TYPE.PRIVATE ? 'Remove member' : 'Remove subscriber',
-    description: privateChannelDeleteMemberPopupDescription && channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelDeleteMemberPopupDescription : publicChannelDeleteMemberPopupDescription && channel.type === CHANNEL_TYPE.PUBLIC ? publicChannelDeleteMemberPopupDescription : React__default.createElement("span", null, "Are you sure to remove", !!selectedMember && React__default.createElement(BoltText, null, " ", makeUserName(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "from this ", channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : 'group', "?")
+    description: privateChannelDeleteMemberPopupDescription && channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelDeleteMemberPopupDescription : publicChannelDeleteMemberPopupDescription && channel.type === CHANNEL_TYPE.PUBLIC ? publicChannelDeleteMemberPopupDescription : React__default.createElement("span", null, "Are you sure to remove", !!selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "from this ", channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : 'group', "?")
   }), blockMemberPopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleBlockMember,
     togglePopup: toggleBlockMemberPopup,
@@ -28137,7 +28097,7 @@ var Members = function Members(_ref) {
     buttonText: 'Promote',
     buttonBackground: colors.primary,
     title: 'Promote admin',
-    description: privateChannelMakeAdminPopupDescription && channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelMakeAdminPopupDescription : publicChannelMakeAdminPopupDescription && channel.type === CHANNEL_TYPE.PUBLIC ? publicChannelMakeAdminPopupDescription : React__default.createElement("span", null, "Are you sure you want to promote", selectedMember && React__default.createElement(BoltText, null, " ", makeUserName(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "to ", React__default.createElement(BoltText, null, "Admin?"))
+    description: privateChannelMakeAdminPopupDescription && channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelMakeAdminPopupDescription : publicChannelMakeAdminPopupDescription && channel.type === CHANNEL_TYPE.PUBLIC ? publicChannelMakeAdminPopupDescription : React__default.createElement("span", null, "Are you sure you want to promote", selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "to ", React__default.createElement(BoltText, null, "Admin?"))
   }), revokeAdminPopup && React__default.createElement(ConfirmPopup, {
     handleFunction: handleRevokeAdmin,
     togglePopup: function togglePopup() {
@@ -28145,7 +28105,7 @@ var Members = function Members(_ref) {
     },
     buttonText: 'Revoke',
     title: 'Revoke admin',
-    description: privateChannelRevokeAdminPopupDescription && channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelRevokeAdminPopupDescription : publicChannelRevokeAdminPopupDescription && channel.type === CHANNEL_TYPE.PUBLIC ? publicChannelRevokeAdminPopupDescription : React__default.createElement("span", null, "Are you sure you want to revoke", React__default.createElement(BoltText, null, " \u201CAdmin\u201D "), "rights from user:", selectedMember && React__default.createElement(BoltText, null, " ", makeUserName(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "?")
+    description: privateChannelRevokeAdminPopupDescription && channel.type === CHANNEL_TYPE.PRIVATE ? privateChannelRevokeAdminPopupDescription : publicChannelRevokeAdminPopupDescription && channel.type === CHANNEL_TYPE.PUBLIC ? publicChannelRevokeAdminPopupDescription : React__default.createElement("span", null, "Are you sure you want to revoke", React__default.createElement(BoltText, null, " \u201CAdmin\u201D "), "rights from user:", selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "?")
   }), changeMemberRolePopup && React__default.createElement(ChangeMemberRole, {
     channelId: channel.id,
     member: selectedMember,
@@ -28459,6 +28419,7 @@ var Links = function Links(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
+  console.log('attachments. .. ', attachments);
   return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
@@ -28756,7 +28717,7 @@ var VoiceItem = function VoiceItem(_ref) {
     onClick: handlePlayPause
   }, voicePreviewPlayHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
     color: voicePreviewTitleColor
-  }, file.user.id === user.id ? 'You' : makeUserName(contactsMap[file.user.id], file.user, getFromContacts)), React__default.createElement(AudioDate, {
+  }, file.user.id === user.id ? 'You' : makeUsername(contactsMap[file.user.id], file.user, getFromContacts)), React__default.createElement(AudioDate, {
     color: voicePreviewDateAndTimeColor
   }, moment(file.createdAt).format('DD MMMM, YYYY')), React__default.createElement(AudioSendTime, null, currentTime || file.metadata.dur ? formatAudioVideoTime(file.metadata.dur, 0) : '')), React__default.createElement(Audio, {
     controls: true,
@@ -29375,7 +29336,7 @@ var Details = function Details(_ref) {
     setDefaultAvatar: isDirectChannel
   }), React__default.createElement(ChannelInfo$3, null, React__default.createElement(ChannelName$1, {
     isDirect: isDirectChannel
-  }, channel.subject || (isDirectChannel ? makeUserName(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(channel.peer) ? '' : channel.peer.presence && (channel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, ' ', channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member')), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
+  }, channel.subject || (isDirectChannel ? makeUsername(contactsMap[channel.peer.id], channel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(channel.peer) ? '' : channel.peer.presence && (channel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : channel.peer.presence.lastActiveAt && userLastActiveDateFormat(channel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, ' ', channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member')), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
     onClick: function onClick() {
       return setEditMode(true);
     }
@@ -29793,7 +29754,6 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var showScrollToNewMessageButton = useSelector(showScrollToNewMessageButtonSelector);
 
   var handleScrollToBottom = function handleScrollToBottom() {
-    console.log('scroll buttun cliced ... ');
     dispatch(scrollToNewMessageAC(true, true));
   };
 
