@@ -11350,15 +11350,15 @@ function watchForEvents() {
                 switch (_context.prev = _context.next) {
                   case 0:
                     channelId = args.channelId, markerList = args.markerList;
-                    console.log('channel MESSAGE_MARKERS_RECEIVED ...', channelId, markerList);
-                    _context.next = 4;
+                    _context.next = 3;
                     return effects.call(getChannelFromMap, channelId);
 
-                  case 4:
+                  case 3:
                     channel = _context.sent;
+                    console.log('channel MESSAGE_MARKERS_RECEIVED ... channel: ', channel, 'markers list: ', markerList);
 
                     if (!channel) {
-                      _context.next = 22;
+                      _context.next = 21;
                       break;
                     }
 
@@ -11371,47 +11371,45 @@ function watchForEvents() {
                       deliveryStatus: markerList.name
                     });
                     updateLastMessage = false;
+                    markersMap = {};
                     markerList.messageIds.forEach(function (messageId) {
-                      if (channel.lastMessage && messageId === channel.lastMessage.id) {
+                      markersMap[messageId] = true;
+
+                      if (channel.lastMessage && messageId === channel.lastMessage.id && channel.lastMessage.deliveryStatus !== MESSAGE_DELIVERY_STATUS.READ) {
                         updateLastMessage = true;
                       }
                     });
 
                     if (!updateLastMessage) {
-                      _context.next = 15;
+                      _context.next = 16;
                       break;
                     }
 
-                    _context.next = 15;
+                    _context.next = 16;
                     return effects.put(updateChannelLastMessageStatusAC(lastMessage, JSON.parse(JSON.stringify(channel))));
 
-                  case 15:
-                    markersMap = {};
-                    markerList.messageIds.forEach(function (messageId) {
-                      return markersMap[messageId] = true;
-                    });
-
+                  case 16:
                     if (!(_activeChannelId5 === channelId)) {
-                      _context.next = 21;
+                      _context.next = 20;
                       break;
                     }
 
-                    _context.next = 20;
+                    _context.next = 19;
                     return effects.put(updateMessagesStatusAC(markerList.name, markersMap));
 
-                  case 20:
+                  case 19:
                     updateMarkersOnAllMessages(markersMap, markerList.name);
 
-                  case 21:
+                  case 20:
                     updateMessageStatusOnMap(channel.id, {
                       name: markerList.name,
                       markersMap: markersMap
                     });
 
-                  case 22:
+                  case 21:
                     return _context.abrupt("return", "break");
 
-                  case 23:
+                  case 22:
                   case "end":
                     return _context.stop();
                 }
@@ -14837,22 +14835,20 @@ function deleteMessage(action) {
           _context5.prev = 0;
           payload = action.payload;
           messageId = payload.messageId, channelId = payload.channelId, deleteOption = payload.deleteOption;
-          console.log('saga delete message ... ', messageId);
-          _context5.next = 6;
+          _context5.next = 5;
           return effects.call(getChannelFromMap, channelId);
 
-        case 6:
+        case 5:
           channel = _context5.sent;
-          _context5.next = 9;
+          _context5.next = 8;
           return effects.call(channel.deleteMessageById, messageId, deleteOption === 'forMe');
 
-        case 9:
+        case 8:
           deletedMessage = _context5.sent;
-          console.log('deleted message ... ', deletedMessage);
-          _context5.next = 13;
+          _context5.next = 11;
           return effects.put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 13:
+        case 11:
           updateMessageOnMap(channel.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
@@ -14860,28 +14856,28 @@ function deleteMessage(action) {
           updateMessageOnAllMessages(messageId, deletedMessage);
 
           if (!(channel.lastMessage.id === messageId)) {
-            _context5.next = 18;
+            _context5.next = 16;
             break;
           }
 
-          _context5.next = 18;
+          _context5.next = 16;
           return effects.put(updateChannelLastMessageAC(deletedMessage, channel));
 
-        case 18:
-          _context5.next = 23;
+        case 16:
+          _context5.next = 21;
           break;
 
-        case 20:
-          _context5.prev = 20;
+        case 18:
+          _context5.prev = 18;
           _context5.t0 = _context5["catch"](0);
           console.log('ERROR in delete message', _context5.t0.message);
 
-        case 23:
+        case 21:
         case "end":
           return _context5.stop();
       }
     }
-  }, _marked5$1, null, [[0, 20]]);
+  }, _marked5$1, null, [[0, 18]]);
 }
 
 function editMessage(action) {
@@ -17530,7 +17526,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage && lastMessage.state !== MESSAGE_STATUS.DELETE : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
@@ -21580,7 +21576,7 @@ function ConfirmPopup(_ref) {
       initialRender = _useState[0],
       setInitialRender = _useState[1];
 
-  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : checkActionPermission('deleteOwnMessage');
+  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : isDirectChannel || checkActionPermission('deleteOwnMessage');
 
   var _useState2 = React.useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
       deleteMessageOption = _useState2[0],
@@ -22663,12 +22659,14 @@ function EmojisPopup(_ref2) {
   };
 
   React.useEffect(function () {
-    var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
-    var heights = collectionsRef.current.map(function (col) {
-      return col.elem.current.getBoundingClientRect().top - 80 - containerTop;
-    });
-    setCollectionHeights(heights);
     setRendered(true);
+    setTimeout(function () {
+      var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
+      var heights = collectionsRef.current.map(function (col) {
+        return col.elem.current.getBoundingClientRect().top - 80 - containerTop;
+      });
+      setCollectionHeights(heights);
+    }, 300);
   }, []);
   return React__default.createElement(Container$c, {
     relativePosition: relativePosition,
@@ -28423,7 +28421,6 @@ var Links = function Links(_ref) {
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
-  console.log('attachments. .. ', attachments);
   return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
