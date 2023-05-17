@@ -20576,7 +20576,7 @@ var getFrame = function getFrame(videoSrc, time) {
 };
 
 var ATTACHMENTS_CACHE = 'attachments-cache';
-var cacheAvailable = ('caches' in self);
+var cacheAvailable = caches;
 var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmentResponse) {
   if (cacheAvailable) {
     caches.open(ATTACHMENTS_CACHE).then(function (cache) {
