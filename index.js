@@ -20580,7 +20580,7 @@ var getFrame = function getFrame(videoSrc, time) {
 };
 
 var ATTACHMENTS_CACHE = 'attachments-cache';
-var cacheAvailable = ('caches' in window);
+var cacheAvailable = ('caches' in global);
 var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmentResponse) {
   if (cacheAvailable) {
     caches.open(ATTACHMENTS_CACHE).then(function (cache) {
