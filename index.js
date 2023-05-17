@@ -12,7 +12,6 @@ var FileSaver = _interopDefault(require('file-saver'));
 var effects = require('redux-saga/effects');
 var LinkifyIt = _interopDefault(require('linkify-it'));
 var Cropper = _interopDefault(require('react-easy-crop'));
-var WaveSurfer = _interopDefault(require('wavesurfer.js'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
 var uuid = require('uuid');
 
@@ -20947,19 +20946,10 @@ function SvgPause(props) {
   })));
 }
 
-var playingAudioId = '';
-var setPlayingAudioId = function setPlayingAudioId(attachmentId) {
-  playingAudioId = attachmentId;
-};
-var getPlayingAudioId = function getPlayingAudioId() {
-  return playingAudioId;
-};
-
-var _templateObject$k, _templateObject2$i, _templateObject3$e, _templateObject4$a, _templateObject5$7, _templateObject6$7;
+var _templateObject$k, _templateObject2$i, _templateObject3$e, _templateObject4$a;
 
 var AudioPlayer = function AudioPlayer(_ref) {
-  var url = _ref.url,
-      file = _ref.file;
+  var url = _ref.url;
   var recordingInitialState = {
     recordingSeconds: 0,
     recordingMilliseconds: 0,
@@ -20974,66 +20964,27 @@ var AudioPlayer = function AudioPlayer(_ref) {
       setRecording = _useState[1];
 
   var _useState2 = React.useState(false),
-      isRendered = _useState2[0],
-      setIsRendered = _useState2[1];
+      playAudio = _useState2[0],
+      setPlayAudio = _useState2[1];
 
-  var _useState3 = React.useState(false),
-      playAudio = _useState3[0],
-      setPlayAudio = _useState3[1];
+  var _useState3 = React.useState(1),
+      audioRate = _useState3[0],
+      setAudioRate = _useState3[1];
 
-  var _useState4 = React.useState(false),
-      payingAudioId = _useState4[0],
-      setPayingAudioId = _useState4[1];
-
-  var _useState5 = React.useState(''),
-      currentTime = _useState5[0],
-      setCurrentTime = _useState5[1];
-
-  var _useState6 = React.useState(1),
-      audioRate = _useState6[0],
-      setAudioRate = _useState6[1];
-
-  var wavesurfer = React.useRef(null);
-  var wavesurferContainer = React.useRef(null);
   var intervalRef = React.useRef(null);
 
   var handleSetAudioRate = function handleSetAudioRate() {
     if (audioRate === 1) {
       setAudioRate(1.5);
-      wavesurfer.current.setPlaybackRate(1.5);
     } else if (audioRate === 1.5) {
       setAudioRate(2);
-      wavesurfer.current.audioRate = 2;
-      wavesurfer.current.setPlaybackRate(2);
     } else {
       setAudioRate(1);
-      wavesurfer.current.audioRate = 1;
-      wavesurfer.current.setPlaybackRate(1);
     }
   };
 
   var handlePlayPause = function handlePlayPause() {
-    if (wavesurfer.current) {
-      if (!wavesurfer.current.isPlaying()) {
-        setPlayAudio(true);
-        setPlayingAudioId(file.id);
-        var audioDuration = wavesurfer.current.getDuration();
-        intervalRef.current = setInterval(function () {
-          setPayingAudioId(getPlayingAudioId());
-          var currentTime = wavesurfer.current.getCurrentTime();
-
-          if (currentTime >= 0) {
-            setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-          }
-        }, 10);
-      } else {
-        if (payingAudioId === file.id) {
-          setPayingAudioId('');
-        }
-      }
-
-      wavesurfer.current.playPause();
-    }
+    setPlayAudio(!playAudio);
   };
 
   useDidUpdate(function () {
@@ -21080,88 +21031,22 @@ var AudioPlayer = function AudioPlayer(_ref) {
     };
   }, [recording.initRecording]);
   React.useEffect(function () {
-    if (url && !isRendered) {
-      wavesurfer.current = WaveSurfer.create({
-        container: wavesurferContainer.current,
-        waveColor: colors.gray9,
-        skipLength: 0,
-        progressColor: colors.primary,
-        audioRate: audioRate,
-        barWidth: 1,
-        barHeight: 3,
-        hideScrollbar: true,
-        barRadius: 1.5,
-        cursorWidth: 0,
-        barGap: 2,
-        barMinHeight: 1,
-        height: 20
-      });
-      wavesurfer.current.load(url);
-      wavesurfer.current.on('ready', function () {
-        var audioDuration = wavesurfer.current.getDuration();
-        var currentTime = wavesurfer.current.getCurrentTime();
-        setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-
-        wavesurfer.current.drawBuffer = function (d) {
-          console.log('filters --- ', d);
-        };
-      });
-      wavesurfer.current.on('finish', function () {
-        setPlayAudio(false);
-        wavesurfer.current.seekTo(0);
-        var audioDuration = wavesurfer.current.getDuration();
-        var currentTime = wavesurfer.current.getCurrentTime();
-        setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-
-        if (payingAudioId === file.id) {
-          setPayingAudioId('');
-        }
-
-        clearInterval(intervalRef.current);
-      });
-      wavesurfer.current.on('pause', function () {
-        setPlayAudio(false);
-
-        if (payingAudioId === file.id) {
-          setPayingAudioId('');
-        }
-
-        clearInterval(intervalRef.current);
-      });
-      wavesurfer.current.on('interaction', function () {
-        var audioDuration = wavesurfer.current.getDuration();
-        var currentTime = wavesurfer.current.getCurrentTime();
-        setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-      });
-      setIsRendered(true);
-    }
-
     return function () {
       clearInterval(intervalRef.current);
     };
   }, [url]);
-  React.useEffect(function () {
-    if (payingAudioId && wavesurfer.current && payingAudioId !== file.id) {
-      setPlayAudio(false);
-      wavesurfer.current.pause();
-    }
-  }, [payingAudioId]);
   return React__default.createElement(Container$a, null, React__default.createElement(PlayPause, {
     onClick: handlePlayPause
-  }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioVisualization, {
-    ref: wavesurferContainer
-  }), React__default.createElement(AudioRate, {
+  }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioRate, {
     onClick: handleSetAudioRate
-  }, audioRate, React__default.createElement("span", null, "X"))), React__default.createElement(Timer, null, currentTime));
+  }, audioRate, React__default.createElement("span", null, "X"))));
 };
 var Container$a = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
 var PlayPause = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var AudioVisualization = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
-var WaveContainer = styled__default.div(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
+var AudioRate = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
+var WaveContainer = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
 
-var _templateObject$l, _templateObject2$j, _templateObject3$f, _templateObject4$b, _templateObject5$8, _templateObject6$8, _templateObject7$6, _templateObject8$4, _templateObject9$4, _templateObject10$4, _templateObject11$3;
+var _templateObject$l, _templateObject2$j, _templateObject3$f, _templateObject4$b, _templateObject5$7, _templateObject6$7, _templateObject7$6, _templateObject8$4, _templateObject9$4, _templateObject10$4, _templateObject11$3;
 
 var Attachment = function Attachment(_ref) {
   var attachment = _ref.attachment,
@@ -21466,7 +21351,7 @@ var FileThumbnail = styled__default.img(_templateObject3$f || (_templateObject3$
 var DownloadFile$1 = styled__default.span(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 });
-var AttachmentFile$1 = styled__default.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var AttachmentFile$1 = styled__default.div(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
   return !props.isRepliedMessage && '350px';
@@ -21481,7 +21366,7 @@ var AttachmentFile$1 = styled__default.div(_templateObject5$8 || (_templateObjec
 }, function (props) {
   return !props.isRepliedMessage && !props.isPrevious && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
-var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
+var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
 var AttachmentName = styled__default.h3(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
   return props.color || colors.blue6;
 });
@@ -21671,7 +21556,7 @@ function useOnScreen(ref) {
   return isIntersecting;
 }
 
-var _templateObject$o, _templateObject2$m, _templateObject3$g, _templateObject4$c, _templateObject5$9, _templateObject6$9, _templateObject7$7, _templateObject8$5, _templateObject9$5;
+var _templateObject$o, _templateObject2$m, _templateObject3$g, _templateObject4$c, _templateObject5$8, _templateObject6$8, _templateObject7$7, _templateObject8$5, _templateObject9$5;
 
 function ForwardMessagePopup(_ref) {
   var title = _ref.title,
@@ -21862,8 +21747,8 @@ var ForwardChannelsCont = styled__default.div(_templateObject$o || (_templateObj
 var ChannelItem = styled__default.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
 var ChannelInfo$2 = styled__default.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
 var ChannelTitle = styled__default.h3(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray6);
-var ChannelMembers = styled__default.h4(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray9);
-var SelectedChannelsContainer = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
+var ChannelMembers = styled__default.h4(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray9);
+var SelectedChannelsContainer = styled__default.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
 var SelectedChannelBuble = styled__default.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.gray5);
 var SelectedChannelName = styled__default.span(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
 var StyledSubtractSvg$1 = styled__default(SvgCross)(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
@@ -21877,7 +21762,7 @@ var PRESENCE_STATUS$1 = {
   ONLINE: 'Online'
 };
 
-var _templateObject$p, _templateObject2$n, _templateObject3$h, _templateObject4$d, _templateObject5$a, _templateObject6$a, _templateObject7$8, _templateObject8$6, _templateObject9$6, _templateObject10$5;
+var _templateObject$p, _templateObject2$n, _templateObject3$h, _templateObject4$d, _templateObject5$9, _templateObject6$9, _templateObject7$8, _templateObject8$6, _templateObject9$6, _templateObject10$5;
 var reactionsPrevLength = 0;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
@@ -22057,8 +21942,8 @@ var MemberName$1 = styled__default.h3(_templateObject3$h || (_templateObject3$h 
 var ReactionsList = styled__default.ul(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])), function (props) {
   return !props.popupHeight && 'hidden';
 });
-var ReactionScoresCont = styled__default.div(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
-var ReactionScoresList = styled__default.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
+var ReactionScoresCont = styled__default.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
+var ReactionScoresList = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
 var ReactionScoreItem = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
   return props.active ? colors.gray6 : colors.gray9;
 }, function (props) {
@@ -22558,7 +22443,7 @@ var EMOJIS = [{
   }]
 }];
 
-var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$e, _templateObject5$b, _templateObject6$b, _templateObject7$9, _templateObject8$7;
+var _templateObject$q, _templateObject2$o, _templateObject3$i, _templateObject4$e, _templateObject5$a, _templateObject6$a, _templateObject7$9, _templateObject8$7;
 
 var EmojiIcon = function EmojiIcon(_ref) {
   var collectionName = _ref.collectionName;
@@ -22755,8 +22640,8 @@ var EmojiSection = styled__default.div(_templateObject3$i || (_templateObject3$i
 var EmojiCollection = styled__default.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
   return props.activeCollection ? colors.primary : colors.gray7;
 });
-var CollectionPointer = styled__default.span(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose([""])));
-var AllEmojis = styled__default.ul(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 8px;\n  margin: 0;\n"])));
+var CollectionPointer = styled__default.span(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose([""])));
+var AllEmojis = styled__default.ul(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 8px;\n  margin: 0;\n"])));
 var EmojiFooter = styled__default.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
   return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + colors.gray1;
 }, function (props) {
@@ -22929,7 +22814,7 @@ var EmojiItem = styled__default.span(_templateObject2$p || (_templateObject2$p =
 }, colors.gray5);
 var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  border-radius: 50%;\n"])), colors.gray5, colors.gray4);
 
-var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$f, _templateObject5$c, _templateObject6$c, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$1, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
+var _templateObject$s, _templateObject2$q, _templateObject3$k, _templateObject4$f, _templateObject5$b, _templateObject6$b, _templateObject7$a, _templateObject8$8, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$1, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -23607,8 +23492,8 @@ var FailedMessageIcon = styled__default.div(_templateObject4$f || (_templateObje
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
-var ReactionsContainer = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
+var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
+var ReactionsContainer = styled__default.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return props.rtlDirection && 'auto';
 }, function (props) {
   return !props.rtlDirection && 'auto';
@@ -23986,7 +23871,7 @@ function SvgFullscreenExit(props) {
   })));
 }
 
-var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$g, _templateObject5$d, _templateObject6$d, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$7;
+var _templateObject$t, _templateObject2$r, _templateObject3$l, _templateObject4$g, _templateObject5$c, _templateObject6$c, _templateObject7$b, _templateObject8$9, _templateObject9$8, _templateObject10$7;
 var timerInterval;
 
 var VideoPlayer = function VideoPlayer(_ref) {
@@ -24211,14 +24096,14 @@ var Component$1 = styled__default.div(_templateObject$t || (_templateObject$t = 
 var PlayPauseWrapper = styled__default.span(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 var ControlsContainer = styled__default.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
 var ControlTime = styled__default.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
-var ProgressBlock = styled__default.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
-var VolumeController = styled__default.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
+var ProgressBlock = styled__default.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
+var VolumeController = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
 var VolumeIconWrapper = styled__default.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 var VolumeSlide = styled__default.input(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
 var Progress = styled__default.input(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
 var FullScreenWrapper = styled__default.div(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$h, _templateObject5$e, _templateObject6$e, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$8, _templateObject11$5, _templateObject12$3, _templateObject13$3, _templateObject14$3;
+var _templateObject$u, _templateObject2$s, _templateObject3$m, _templateObject4$h, _templateObject5$d, _templateObject6$d, _templateObject7$c, _templateObject8$a, _templateObject9$9, _templateObject10$8, _templateObject11$5, _templateObject12$3, _templateObject13$3, _templateObject14$3;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -24530,8 +24415,8 @@ var Container$e = styled__default.div(_templateObject$u || (_templateObject$u = 
 var SliderHeader = styled__default.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
 var SliderBody = styled__default.div(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
 var FileInfo = styled__default.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
-var Info = styled__default.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
-var Actions = styled__default.div(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
+var Info = styled__default.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
+var Actions = styled__default.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
 var FileDateAndSize = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
 var FileSize = styled__default.span(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.gray9);
 var UserName = styled__default.h4(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
@@ -24587,7 +24472,7 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$i, _templateObject5$f, _templateObject6$f, _templateObject7$d, _templateObject8$b, _templateObject9$a;
+var _templateObject$v, _templateObject2$t, _templateObject3$n, _templateObject4$i, _templateObject5$e, _templateObject6$e, _templateObject7$d, _templateObject8$b, _templateObject9$a;
 var loading = false;
 var loadFromServer = false;
 var loadDirection = '';
@@ -25387,12 +25272,12 @@ var MessageTopDate = styled__default.div(_templateObject4$i || (_templateObject4
 }, function (props) {
   return props.dateDividerBorderRadius || '14px';
 });
-var DragAndDropContainer = styled__default.div(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin-bottom: -31px;\n  margin-top: -2px;\n\n  position: absolute;\n  left: 0;\n  top: ", ";\n  width: 100%;\n  height: ", ";\n  background-color: ", ";\n  z-index: 999;\n"])), function (props) {
+var DragAndDropContainer = styled__default.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  flex-grow: 1;\n  margin-bottom: -31px;\n  margin-top: -2px;\n\n  position: absolute;\n  left: 0;\n  top: ", ";\n  width: 100%;\n  height: ", ";\n  background-color: ", ";\n  z-index: 999;\n"])), function (props) {
   return props.topOffset ? props.topOffset + 2 + "px" : 0;
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper$1 = styled__default.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, function (props) {
+var IconWrapper$1 = styled__default.span(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, function (props) {
   return props.iconColor || colors.primary;
 });
 var DropAttachmentArea = styled__default.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
@@ -25562,7 +25447,7 @@ function SvgErrorCircle(props) {
   })));
 }
 
-var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$j, _templateObject5$g, _templateObject6$g;
+var _templateObject$w, _templateObject2$u, _templateObject3$o, _templateObject4$j, _templateObject5$f, _templateObject6$f;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
       addMentionMember = _ref.addMentionMember,
@@ -25721,12 +25606,12 @@ var Container$g = styled__default.div(_templateObject$w || (_templateObject$w = 
 var UserNamePresence$2 = styled__default.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
 var MemberName$2 = styled__default.h3(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
 var EditMemberIcon = styled__default.span(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled__default.ul(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
-var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+var MembersList = styled__default.ul(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
+var MemberItem = styled__default.li(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.isActiveItem && colors.gray0;
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$k, _templateObject5$h, _templateObject6$h, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$x, _templateObject2$v, _templateObject3$p, _templateObject4$k, _templateObject5$g, _templateObject6$g, _templateObject7$e, _templateObject8$c, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -26844,8 +26729,8 @@ var Container$h = styled__default.div(_templateObject$x || (_templateObject$x = 
 var EditReplyMessageCont = styled__default.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
 var EditMessageText = styled__default.p(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
 var CloseEditMode = styled__default.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
-var UserName$1 = styled__default.span(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled__default.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var UserName$1 = styled__default.span(_templateObject5$g || (_templateObject5$g = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageHeader = styled__default.h4(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
 var AddAttachmentIcon = styled__default.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 48px;\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
@@ -27238,7 +27123,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$l, _templateObject5$i, _templateObject6$i;
+var _templateObject$y, _templateObject2$w, _templateObject3$q, _templateObject4$l, _templateObject5$h, _templateObject6$h;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -27697,8 +27582,8 @@ var MenuTriggerIcon = styled__default.span(_templateObject3$q || (_templateObjec
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
 var ActionsMenu = styled__default.ul(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled__default(SvgNotificationsOff2)(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled__default.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var DefaultMutedIcon = styled__default(SvgNotificationsOff2)(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose([""])));
+var ActionItem$1 = styled__default.li(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
   return props.order;
@@ -27869,7 +27754,7 @@ var RolesSelect = styled__default.div(_templateObject$z || (_templateObject$z = 
 var RoleLabel = styled__default.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
 var RoleSpan = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$A, _templateObject2$y, _templateObject3$s, _templateObject4$m, _templateObject5$j, _templateObject6$j, _templateObject7$f, _templateObject8$d;
+var _templateObject$A, _templateObject2$y, _templateObject3$s, _templateObject4$m, _templateObject5$i, _templateObject6$i, _templateObject7$f, _templateObject8$d;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -28128,8 +28013,8 @@ var Container$j = styled__default.div(_templateObject$A || (_templateObject$A = 
 var ActionsMenu$1 = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
 var MemberNamePresence = styled__default.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
 var MemberName$3 = styled__default.h4(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
-var EditMemberIcon$1 = styled__default.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList$1 = styled__default.ul(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var EditMemberIcon$1 = styled__default.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList$1 = styled__default.ul(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var MemberItem$1 = styled__default.li(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
@@ -28278,7 +28163,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$C, _templateObject2$A, _templateObject3$t, _templateObject4$n, _templateObject5$k, _templateObject6$k, _templateObject7$g;
+var _templateObject$C, _templateObject2$A, _templateObject3$t, _templateObject4$n, _templateObject5$j, _templateObject6$j, _templateObject7$g;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -28315,8 +28200,8 @@ var Container$l = styled__default.ul(_templateObject$C || (_templateObject$C = _
 var DownloadWrapper = styled__default.a(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
 var FileIconCont = styled__default.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileHoverIconCont = styled__default.span(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled__default.img(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled__default.div(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var FileThumb = styled__default.img(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var FileItem = styled__default.div(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
 var FileSizeAndDate = styled__default.span(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
@@ -28376,7 +28261,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$D, _templateObject2$B, _templateObject3$u, _templateObject4$o, _templateObject5$l;
+var _templateObject$D, _templateObject2$B, _templateObject3$u, _templateObject4$o, _templateObject5$k;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -28403,7 +28288,7 @@ var LinkInfoCont = styled__default.div(_templateObject3$u || (_templateObject3$u
 var FileItem$1 = styled__default.li(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled__default.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled__default.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
 
@@ -28599,7 +28484,7 @@ function SvgVoicePreviewPauseHover(props) {
   })));
 }
 
-var _templateObject$F, _templateObject2$C, _templateObject3$v, _templateObject4$p, _templateObject5$m, _templateObject6$l, _templateObject7$h, _templateObject8$e;
+var _templateObject$F, _templateObject2$C, _templateObject3$v, _templateObject4$p, _templateObject5$l, _templateObject6$k, _templateObject7$h, _templateObject8$e;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -28738,10 +28623,10 @@ var FileItem$2 = styled__default.li(_templateObject3$v || (_templateObject3$v = 
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
 var AudioInfo = styled__default.div(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled__default.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioTitle = styled__default.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray6;
 });
-var AudioDate = styled__default.span(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+var AudioDate = styled__default.span(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray9;
 });
 var AudioSendTime = styled__default.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
@@ -29154,7 +29039,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$J, _templateObject2$F, _templateObject3$x, _templateObject4$r, _templateObject5$n, _templateObject6$m, _templateObject7$i;
+var _templateObject$J, _templateObject2$F, _templateObject3$x, _templateObject4$r, _templateObject5$m, _templateObject6$l, _templateObject7$i;
 
 var Details = function Details(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
@@ -29457,8 +29342,8 @@ var ChatDetails = styled__default.div(_templateObject3$x || (_templateObject3$x 
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
 var ChannelInfo$3 = styled__default.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
-var DetailsHeader = styled__default.div(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
-var ChannelName$1 = styled__default(SectionHeader)(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
+var DetailsHeader = styled__default.div(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
+var ChannelName$1 = styled__default(SectionHeader)(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
 var EditButton = styled__default.span(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
