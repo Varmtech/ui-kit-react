@@ -23651,14 +23651,14 @@ var MessageContent = styled.div(_templateObject19$1 || (_templateObject19$1 = _t
 var VoiceIconWrapper = styled(SvgVoiceIcon)(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
-var MessageItem = styled.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 40px;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
+var MessageItem = styled.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 4%;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
   return props.topMargin || '12px';
 }, function (props) {
   return props.bottomMargin;
 }, function (props) {
-  return !props.withAvatar && !props.rtl && '72px';
+  return !props.withAvatar && !props.rtl && '7%';
 }, function (props) {
-  return !props.withAvatar && props.rtl && '72px';
+  return !props.withAvatar && props.rtl && '7%';
 }, function (props) {
   return props.rtl && 'direction: rtl;';
 }, function (props) {
