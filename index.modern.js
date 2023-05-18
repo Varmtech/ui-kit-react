@@ -9543,12 +9543,14 @@ var MentionedUser = styled.span(_templateObject31 || (_templateObject31 = _tagge
 }, function (props) {
   return props.isLastMessage && '500';
 });
-var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n"])), function (props) {
+var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  padding: ", ";\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n"])), function (props) {
   return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReplied && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
 }, function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.rtlDirection && 'auto';
+}, function (props) {
+  return props.fontSize || '15px';
 }, function (props) {
   return props.fontSize || '15px';
 });
@@ -21219,6 +21221,23 @@ var Attachment = function Attachment(_ref) {
               setAttachmentUrl(attachment.url);
             }
           }
+        }
+      })["catch"](function (e) {
+        console.log('error on get attachment url from cache. .. ', e);
+
+        if (customDownloader) {
+          customDownloader(attachment.url).then(function (url) {
+            try {
+              return Promise.resolve(fetch(url)).then(function (response) {
+                setAttachmentToCache(attachment.id, response);
+                setAttachmentUrl(url);
+              });
+            } catch (e) {
+              return Promise.reject(e);
+            }
+          });
+        } else {
+          setAttachmentUrl(attachment.url);
         }
       });
     }
