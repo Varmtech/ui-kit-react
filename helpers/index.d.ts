@@ -6,7 +6,7 @@ export declare const urlRegex: RegExp;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const systemMessageUserName: (contact: IContact, userId: string) => string;
 export declare const downloadFile: (attachment: IAttachment) => Promise<void>;
-export declare const calculateRenderedImageWidth: (width: number, height: number) => number[];
+export declare const calculateRenderedImageWidth: (width: number, height: number, maxWidth?: number | undefined, maxHeight?: number | undefined) => number[];
 export declare const userLastActiveDateFormat: (date: Date) => string;
 export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;
 export declare const getMetadataFromUrl: (url: string) => Promise<any>;

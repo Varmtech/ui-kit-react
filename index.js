@@ -901,6 +901,7 @@ var CLEAR_HISTORY = 'CLEAR_HISTORY';
 var DELETE_ALL_MESSAGES = 'DELETE_ALL_MESSAGES';
 var DESTROY_SESSION = 'DESTROY_SESSION';
 var SET_TAB_IS_ACTIVE = 'SET_TAB_IS_ACTIVE';
+var SET_HIDE_CHANNEL_LIST = 'SET_HIDE_CHANNEL_LIST';
 var CHANNEL_EVENT_TYPES = {
   CREATE: 'CREATE',
   JOIN: 'JOIN',
@@ -1006,6 +1007,7 @@ var initialState = {
   channelListWidth: 0,
   isDragging: false,
   tabIsActive: true,
+  hideChannelList: false,
   draggedAttachments: []
 };
 var ChannelReducer = (function (state, _temp) {
@@ -1332,6 +1334,13 @@ var ChannelReducer = (function (state, _temp) {
       {
         var isActive = payload.isActive;
         newState.tabIsActive = isActive;
+        return newState;
+      }
+
+    case SET_HIDE_CHANNEL_LIST:
+      {
+        var hide = payload.hide;
+        newState.hideChannelList = hide;
         return newState;
       }
 
@@ -7434,19 +7443,19 @@ var downloadFile = function downloadFile(attachment) {
     return Promise.reject(e);
   }
 };
-var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, height) {
-  var maxWidth = 420;
-  var maxHeight = 400;
+var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, height, maxWidth, maxHeight) {
+  var maxWdt = maxWidth || 420;
+  var maxHg = maxHeight || 400;
   var minWidth = 130;
   var aspectRatio = width / height;
 
-  if (aspectRatio >= maxWidth / maxHeight) {
-    return [Math.max(minWidth, Math.min(maxWidth, width)), Math.min(maxHeight, maxWidth / aspectRatio) + 2];
+  if (aspectRatio >= maxWdt / maxHg) {
+    return [Math.max(minWidth, Math.min(maxWdt, width)), Math.min(maxHg, maxWdt / aspectRatio) + 2];
   } else {
-    if (maxHeight <= height) {
-      return [Math.min(maxWidth, maxHeight * aspectRatio), Math.min(maxHeight, height)];
+    if (maxHg <= height) {
+      return [Math.min(maxWdt, maxHg * aspectRatio), Math.min(maxHg, height)];
     } else {
-      return [Math.min(maxWidth, height * aspectRatio), Math.min(maxHeight, height)];
+      return [Math.min(maxWdt, height * aspectRatio), Math.min(maxHg, height)];
     }
   }
 };
@@ -8706,7 +8715,6 @@ var UserReducer = (function (state, _ref) {
 
     case UPDATE_USER_PROFILE:
       {
-        console.log('update user.... ');
         newState.user = _extends({}, newState.user, payload.profile);
         return newState;
       }
@@ -9109,6 +9117,14 @@ function setTabIsActiveAC(isActive) {
     type: SET_TAB_IS_ACTIVE,
     payload: {
       isActive: isActive
+    }
+  };
+}
+function setHideChannelListAC(hide) {
+  return {
+    type: SET_HIDE_CHANNEL_LIST,
+    payload: {
+      hide: hide
     }
   };
 }
@@ -13776,7 +13792,7 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 139;
+            _context.next = 137;
             break;
           }
 
@@ -14036,7 +14052,7 @@ function sendMessage(action) {
           }));
 
         case 103:
-          _context.next = 139;
+          _context.next = 137;
           break;
 
         case 105:
@@ -14202,17 +14218,15 @@ function sendMessage(action) {
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 139;
+            _context.next = 137;
             break;
           }
 
-          console.log('message to send .... ', _messageToSend);
-          _context.next = 131;
+          _context.next = 130;
           return effects.call(channel.sendMessage, _messageToSend);
 
-        case 131:
+        case 130:
           _messageResponse = _context.sent;
-          console.log('message response ... ', _messageResponse);
           _messageUpdateData = {
             id: _messageResponse.id,
             deliveryStatus: _messageResponse.deliveryStatus,
@@ -14223,38 +14237,38 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 136;
+          _context.next = 134;
           return effects.put(updateMessageAC(_messageToSend.tid, _messageUpdateData));
 
-        case 136:
+        case 134:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData
           });
-          _context.next = 139;
+          _context.next = 137;
           return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
             id: channel.id
           }));
 
-        case 139:
-          _context.next = 141;
+        case 137:
+          _context.next = 139;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 141:
-          _context.next = 146;
+        case 139:
+          _context.next = 144;
           break;
 
-        case 143:
-          _context.prev = 143;
+        case 141:
+          _context.prev = 141;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 146:
+        case 144:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 143], [55, 94]]);
+  }, _marked$2, null, [[0, 141], [55, 94]]);
 }
 
 function sendTextMessage(action) {
@@ -16770,8 +16784,10 @@ sagaMiddleware.run(rootSaga);
 
 var _templateObject$2, _templateObject2$2, _templateObject3$2;
 var Container = styled__default.div(_templateObject$2 || (_templateObject$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 100vh;\n"])));
-var ChatContainer = styled__default.div(_templateObject2$2 || (_templateObject2$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  //height: ", ";\n  height: 100%;\n  min-width: 1200px;\n"])), function (props) {
+var ChatContainer = styled__default.div(_templateObject2$2 || (_templateObject2$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  //height: ", ";\n  height: 100%;\n  min-width: ", ";\n"])), function (props) {
   return props.withHeader ? 'calc(100vh - 60px)' : '100vh';
+}, function (props) {
+  return props.withChannelsList && '1200px';
 });
 var Chat = styled__default.div(_templateObject3$2 || (_templateObject3$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
 
@@ -16822,6 +16838,9 @@ var typingIndicatorSelector = function typingIndicatorSelector(channelId) {
 var channelListWidthSelector = function channelListWidthSelector(store) {
   return store.ChannelReducer.channelListWidth;
 };
+var channelListHiddenSelector = function channelListHiddenSelector(store) {
+  return store.ChannelReducer.hideChannelList;
+};
 var isDraggingSelector = function isDraggingSelector(store) {
   return store.ChannelReducer.isDragging;
 };
@@ -16851,6 +16870,7 @@ var SceytChat = function SceytChat(_ref) {
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var childrenArr = React.Children.toArray(children);
   var draggingSelector = reactRedux.useSelector(isDraggingSelector, reactRedux.shallowEqual);
+  var channelsListWidth = reactRedux.useSelector(channelListWidthSelector, reactRedux.shallowEqual);
   var OtherChildren = childrenArr.filter(function (_ref2) {
     var type = _ref2.type;
     return type.name !== 'SceytChatHeader';
@@ -17015,7 +17035,8 @@ var SceytChat = function SceytChat(_ref) {
     onDrop: handleDropFile,
     onDragOver: handleDragOver,
     className: 'sceyt-chat-container',
-    withHeader: SceytChatHeader
+    withHeader: SceytChatHeader,
+    withChannelsList: channelsListWidth && channelsListWidth > 0
   }, OtherChildren)) : '');
 };
 
@@ -19351,8 +19372,6 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, [deletedChannel]);
   useDidUpdate(function () {
-    console.log('connectionStatus.. .. ', connectionStatus);
-
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       dispatch(getChannelsAC({
         filter: filter,
@@ -19376,7 +19395,6 @@ var ChannelList = function ChannelList(_ref) {
           return handleSetChannelList(updatedChannels, false);
         }, addedChannel);
       } else {
-        console.log('addedChannel add channel from comp ... ', addedToChannel);
         dispatch(addChannelAC(addedChannel));
       }
 
@@ -19593,10 +19611,22 @@ var ChannelListHeader = styled__default.div(_templateObject7$4 || (_templateObje
 
 var _templateObject$f;
 function Chat$1(_ref) {
-  var children = _ref.children;
+  var children = _ref.children,
+      hideChannelList = _ref.hideChannelList;
+  var dispatch = reactRedux.useDispatch();
   var channelListWidth = reactRedux.useSelector(channelListWidthSelector, reactRedux.shallowEqual);
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
-  React.useEffect(function () {});
+  React.useEffect(function () {
+    if (hideChannelList && !channelListWidth) {
+      dispatch(setHideChannelListAC(true));
+      dispatch(getChannelsAC({
+        filter: {},
+        limit: 1,
+        sort: 'byLastMessage',
+        search: ''
+      }, false));
+    }
+  }, [channelListWidth]);
   return React__default.createElement(Container$7, {
     widthOffset: channelListWidth,
     channelDetailsIsOpen: channelDetailsIsOpen
@@ -19657,6 +19687,7 @@ function ChatHeader(_ref) {
       setInfoButtonVisible = _useState[1];
 
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
+  var channelListHidden = reactRedux.useSelector(channelListHiddenSelector);
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
   var isDirectChannel = activeChannel.type === CHANNEL_TYPE.DIRECT;
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
@@ -19679,7 +19710,7 @@ function ChatHeader(_ref) {
     size: 36,
     textSize: 13,
     setDefaultAvatar: isDirectChannel
-  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, null, activeChannel.subject || (isDirectChannel ? makeUsername(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(activeChannel.peer) ? '' : activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), React__default.createElement(ChanelInfo, {
+  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, null, activeChannel.subject || (isDirectChannel ? makeUsername(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence(activeChannel.peer) ? '' : activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), !channelListHidden && React__default.createElement(ChanelInfo, {
     onClick: function onClick() {
       return channelDetailsOnOpen();
     },
@@ -21063,9 +21094,13 @@ var Attachment = function Attachment(_ref) {
       selectedFileAttachmentsTitleColor = _ref.selectedFileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor = _ref.selectedFileAttachmentsSizeColor,
       isDetailsView = _ref.isDetailsView,
-      fileNameMaxLength = _ref.fileNameMaxLength,
       imageMinWidth = _ref.imageMinWidth,
-      closeMessageActions = _ref.closeMessageActions;
+      closeMessageActions = _ref.closeMessageActions,
+      fileAttachmentWidth = _ref.fileAttachmentWidth,
+      imageAttachmentMaxWidth = _ref.imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight = _ref.imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth = _ref.videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight = _ref.videoAttachmentMaxHeight;
   var dispatch = reactRedux.useDispatch();
   var attachmentCompilationState = reactRedux.useSelector(attachmentCompilationStateSelector) || {};
   var connectionStatus = reactRedux.useSelector(connectionStatusSelector);
@@ -21086,7 +21121,7 @@ var Attachment = function Attachment(_ref) {
   var fileNameRef = React.useRef(null);
   var customDownloader = getCustomDownloader();
 
-  var _ref2 = attachment.metadata && attachment.metadata.szw && attachment.metadata.szh ? calculateRenderedImageWidth(attachment.metadata.szw, attachment.metadata.szh) : [],
+  var _ref2 = attachment.metadata && attachment.metadata.szw && attachment.metadata.szh ? calculateRenderedImageWidth(attachment.metadata.szw, attachment.metadata.szh, imageAttachmentMaxWidth, imageAttachmentMaxHeight) : [],
       renderWidth = _ref2[0],
       renderHeight = _ref2[1];
 
@@ -21254,8 +21289,8 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     className: 'rotate_cont'
   }))) : null, React__default.createElement(VideoPreview, {
-    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : '320px',
-    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : '240px',
+    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : videoAttachmentMaxWidth ? videoAttachmentMaxWidth + "px" : '320px',
+    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : videoAttachmentMaxHeight ? videoAttachmentMaxHeight + "px" : '240px',
     file: attachment,
     src: attachmentUrl,
     uploading: attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED),
@@ -21289,7 +21324,8 @@ var Attachment = function Attachment(_ref) {
     borderRadius: borderRadius,
     background: backgroundColor,
     isRepliedMessage: isRepliedMessage,
-    border: selectedFileAttachmentsBoxBorder
+    border: selectedFileAttachmentsBoxBorder,
+    width: fileAttachmentWidth
   }, attachment.metadata && attachment.metadata.tmb ? React__default.createElement(FileThumbnail, {
     src: "data:image/jpeg;base64," + attachment.metadata.tmb
   }) : React__default.createElement(AttachmentIconCont, {
@@ -21319,7 +21355,7 @@ var Attachment = function Attachment(_ref) {
   }, React__default.createElement(AttachmentName, {
     color: selectedFileAttachmentsTitleColor,
     ref: fileNameRef
-  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, fileNameMaxLength || isPrevious ? 18 : 30)), React__default.createElement(AttachmentSize, {
+  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, fileAttachmentWidth ? fileAttachmentWidth / 12.5 : isPrevious ? 18 : 30)), React__default.createElement(AttachmentSize, {
     color: selectedFileAttachmentsSizeColor
   }, (attachment.data && attachment.data.size || attachment.fileSize) && bytesToSize(isPrevious ? attachment.data.size : +attachment.fileSize))), isPrevious && React__default.createElement(RemoveChosenFile, {
     onClick: function onClick() {
@@ -21354,7 +21390,7 @@ var DownloadFile$1 = styled__default.span(_templateObject4$b || (_templateObject
 var AttachmentFile$1 = styled__default.div(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
-  return !props.isRepliedMessage && '350px';
+  return !props.isRepliedMessage && (props.width ? props.width + "px" : '350px');
 }, function (props) {
   return props.background || '#ffffff';
 }, function (props) {
@@ -22621,7 +22657,7 @@ function EmojisPopup(_ref2) {
 var Container$c = styled__default.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  transform: scaleY(0);\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
   return props.relativePosition ? 'relative' : 'absolute';
 }, function (props) {
-  return props.rtlDirection ? '' : props.rightSide ? '-276px' : '0';
+  return props.rtlDirection ? '' : props.rightSide ? '-276px' : '5px';
 }, function (props) {
   return props.rtlDirection && '0';
 }, function (props) {
@@ -22911,9 +22947,14 @@ var Message = function Message(_ref) {
       reactionsContainerBackground = _ref.reactionsContainerBackground,
       reactionsContainerPadding = _ref.reactionsContainerPadding,
       reactionsContainerTopPosition = _ref.reactionsContainerTopPosition,
+      fileAttachmentsBoxWidth = _ref.fileAttachmentsBoxWidth,
       fileAttachmentsBoxBorder = _ref.fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor = _ref.fileAttachmentsTitleColor,
       fileAttachmentsSizeColor = _ref.fileAttachmentsSizeColor,
+      imageAttachmentMaxWidth = _ref.imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight = _ref.imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth = _ref.videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight = _ref.videoAttachmentMaxHeight,
       emojisCategoryIconsPosition = _ref.emojisCategoryIconsPosition,
       emojisContainerBorderRadius = _ref.emojisContainerBorderRadius,
       separateEmojiCategoriesWithTitle = _ref.separateEmojiCategoriesWithTitle;
@@ -23235,7 +23276,7 @@ var Message = function Message(_ref) {
     incomingMessageBackground: incomingMessageBackground,
     borderRadius: borderRadius,
     withAttachments: notLinkAttachment,
-    attachmentWidth: withAttachments ? mediaAttachment ? mediaAttachment.type === attachmentTypes.image ? attachmentMetas && attachmentMetas.szw && calculateRenderedImageWidth(attachmentMetas.szw, attachmentMetas.szh)[0] : mediaAttachment.type === attachmentTypes.video ? 320 : undefined : message.attachments[0].type === attachmentTypes.voice ? 254 : undefined : undefined,
+    attachmentWidth: withAttachments ? mediaAttachment ? mediaAttachment.type === attachmentTypes.image ? attachmentMetas && attachmentMetas.szw && calculateRenderedImageWidth(attachmentMetas.szw, attachmentMetas.szh, imageAttachmentMaxWidth, imageAttachmentMaxHeight)[0] : mediaAttachment.type === attachmentTypes.video ? videoAttachmentMaxWidth || 320 : undefined : message.attachments[0].type === attachmentTypes.voice ? 254 : message.attachments[0].type === attachmentTypes.file ? fileAttachmentsBoxWidth : undefined : undefined,
     noBody: !message.body && !withAttachments,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave
@@ -23317,7 +23358,12 @@ var Message = function Message(_ref) {
       borderRadius: index === message.parent.attachments.length - 1 ? borderRadius : '16px',
       selectedFileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
       selectedFileAttachmentsTitleColor: fileAttachmentsTitleColor,
-      selectedFileAttachmentsSizeColor: fileAttachmentsSizeColor
+      selectedFileAttachmentsSizeColor: fileAttachmentsSizeColor,
+      fileAttachmentWidth: fileAttachmentsBoxWidth,
+      imageAttachmentMaxWidth: imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight: imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth: videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight: videoAttachmentMaxHeight
     });
   }), React__default.createElement(ReplyMessageBody, null, React__default.createElement(MessageOwner, {
     className: 'reply-message-owner',
@@ -23378,7 +23424,12 @@ var Message = function Message(_ref) {
       selectedFileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
       selectedFileAttachmentsTitleColor: fileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor: fileAttachmentsSizeColor,
-      closeMessageActions: closeMessageActions
+      closeMessageActions: closeMessageActions,
+      fileAttachmentWidth: fileAttachmentsBoxWidth,
+      imageAttachmentMaxWidth: imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight: imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth: videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight: videoAttachmentMaxHeight
     });
   }), emojisPopupOpen && emojisPopupPosition && React__default.createElement(EmojiContainer, {
     id: message.id + "_emoji_popup_container",
@@ -24618,7 +24669,11 @@ var MessageList = function MessageList(_ref2) {
       fileAttachmentsBoxBackground = _ref2.fileAttachmentsBoxBackground,
       fileAttachmentsBoxBorder = _ref2.fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor = _ref2.fileAttachmentsTitleColor,
-      fileAttachmentsSizeColor = _ref2.fileAttachmentsSizeColor;
+      fileAttachmentsSizeColor = _ref2.fileAttachmentsSizeColor,
+      imageAttachmentMaxWidth = _ref2.imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight = _ref2.imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth = _ref2.videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight = _ref2.videoAttachmentMaxHeight;
   var dispatch = reactRedux.useDispatch();
   var getFromContacts = getShowOnlyContactUsers();
   var channel = reactRedux.useSelector(activeChannelSelector);
@@ -24834,7 +24889,6 @@ var MessageList = function MessageList(_ref2) {
   var handleDropFile = function handleDropFile(e) {
     e.preventDefault();
     e.stopPropagation();
-    console.log('e.dataTransfer.files ********************* .. . .', e.dataTransfer.files);
     setIsDragging(false);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -24870,7 +24924,6 @@ var MessageList = function MessageList(_ref2) {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    console.log('e.dataTransfer.files ********************* .. . .', e.dataTransfer.files);
     var fileList = Array.from(e.dataTransfer.items);
     fileList.forEach(function (file) {
       var fileType = file.type.split('/')[0];
@@ -25213,6 +25266,10 @@ var MessageList = function MessageList(_ref2) {
       fileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor: fileAttachmentsTitleColor,
       fileAttachmentsSizeColor: fileAttachmentsSizeColor,
+      imageAttachmentMaxWidth: imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight: imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth: videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight: videoAttachmentMaxHeight,
       reactionsDisplayCount: reactionsDisplayCount,
       showEachReactionCount: showEachReactionCount,
       reactionItemBorder: reactionItemBorder,
@@ -27808,7 +27865,6 @@ var Members = function Members(_ref) {
       setCloseMenu = _useState8[1];
 
   var members = reactRedux.useSelector(activeChannelMembersSelector) || [];
-  console.log('members', members);
   var contactsMap = reactRedux.useSelector(contactsMapSelector) || {};
   var membersLoading = reactRedux.useSelector(membersLoadingStateSelector) || {};
   var user = getClient().user;

@@ -82,12 +82,16 @@ interface MessagesProps {
     newMessagesSeparatorBorderRadius?: string;
     newMessagesSeparatorBackground?: string;
     newMessagesSeparatorTextLeftRightSpacesWidth?: string;
-    fileAttachmentsBoxWidth?: string;
+    fileAttachmentsBoxWidth?: number;
     fileAttachmentsBoxBackground?: string;
     fileAttachmentsBoxBorder?: string;
     fileAttachmentsTitleColor?: string;
     fileAttachmentsSizeColor?: string;
     fileAttachmentsIcon?: JSX.Element;
+    imageAttachmentMaxWidth?: number;
+    imageAttachmentMaxHeight?: number;
+    videoAttachmentMaxWidth?: number;
+    videoAttachmentMaxHeight?: number;
 }
 declare const MessageList: React.FC<MessagesProps>;
 export default MessageList;

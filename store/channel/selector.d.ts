@@ -14,6 +14,7 @@ export declare const channelInfoIsOpenSelector: (store: any) => any;
 export declare const channelEditModeSelector: (store: any) => any;
 export declare const typingIndicatorSelector: (channelId: string) => (store: any) => any;
 export declare const channelListWidthSelector: (store: any) => any;
+export declare const channelListHiddenSelector: (store: any) => any;
 export declare const isDraggingSelector: (store: any) => any;
 export declare const draggedAttachmentsSelector: (store: any) => any;
 export declare const tabIsActiveSelector: (store: any) => any;

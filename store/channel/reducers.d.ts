@@ -33,6 +33,7 @@ declare const _default: (state?: {
         type: "file" | "media";
     }[];
     tabIsActive: boolean;
+    hideChannelList: boolean;
 }, { type, payload }?: IAction) => {
     channelsLoadingState: string | null;
     channelsForForwardLoadingState: string | null;
@@ -67,5 +68,6 @@ declare const _default: (state?: {
         type: "file" | "media";
     }[];
     tabIsActive: boolean;
+    hideChannelList: boolean;
 };
 export default _default;

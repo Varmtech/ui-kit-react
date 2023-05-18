@@ -16,7 +16,7 @@ interface IChannelListProps {
     getActiveChannel?: (channel: IChannel) => void;
     Profile?: JSX.Element;
     filter?: {
-        channelType: 'Public' | 'Private' | 'Direct';
+        channelType?: 'Public' | 'Private' | 'Direct';
     };
     limit?: number;
     sort?: 'byLastMessage' | 'byCreationDate';

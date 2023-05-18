@@ -33,6 +33,7 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
             type: "file" | "media";
         }[];
         tabIsActive: boolean;
+        hideChannelList: boolean;
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;

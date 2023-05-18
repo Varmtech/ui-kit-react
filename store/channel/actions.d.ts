@@ -289,6 +289,12 @@ export declare function setTabIsActiveAC(isActive: boolean): {
         isActive: boolean;
     };
 };
+export declare function setHideChannelListAC(hide: boolean): {
+    type: string;
+    payload: {
+        hide: boolean;
+    };
+};
 export declare function watchForEventsAC(): {
     type: string;
 };

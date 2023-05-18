@@ -17,8 +17,13 @@ interface AttachmentPops {
     fileNameMaxLength?: number;
     imageMinWidth?: string;
     closeMessageActions?: (state: boolean) => void;
+    fileAttachmentWidth?: number;
+    imageAttachmentMaxWidth?: number;
+    imageAttachmentMaxHeight?: number;
+    videoAttachmentMaxWidth?: number;
+    videoAttachmentMaxHeight?: number;
 }
-declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, fileNameMaxLength, imageMinWidth, closeMessageActions }: AttachmentPops) => JSX.Element;
+declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, imageMinWidth, closeMessageActions, fileAttachmentWidth, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight }: AttachmentPops) => JSX.Element;
 export default Attachment;
 export declare const AttachmentFile: import("styled-components").StyledComponent<"div", any, {
     isPrevious?: boolean | undefined;
@@ -27,6 +32,7 @@ export declare const AttachmentFile: import("styled-components").StyledComponent
     borderRadius?: string | undefined;
     background?: string | undefined;
     border?: string | undefined;
+    width?: number | undefined;
 }, never>;
 export declare const AttachmentImg: import("styled-components").StyledComponent<"img", any, {
     absolute?: boolean | undefined;

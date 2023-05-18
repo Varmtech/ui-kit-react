@@ -33,6 +33,7 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
             type: "file" | "media";
         }[];
         tabIsActive: boolean;
+        hideChannelList: boolean;
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;
