@@ -20642,6 +20642,7 @@ var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentId)
       }
     });
   } else {
+    console.error('Cache is not available');
     return new Promise(function (_resolve, reject) {
       return reject(new Error('Cache not available'));
     });
@@ -21132,7 +21133,7 @@ var Attachment = function Attachment(_ref) {
     };
 
     image.onerror = function () {
-      console.error('Error on download image');
+      console.error('Error on download image', url);
     };
   };
 
@@ -21187,17 +21188,20 @@ var Attachment = function Attachment(_ref) {
             setIsCached(true);
           } else {
             if (customDownloader) {
+              console.log('is not cached, download with custom downloader');
               customDownloader(attachment.url).then(function (url) {
                 try {
+                  console.log('image is downloaded. . . should load image', url);
+                  downloadImage(url);
                   return Promise.resolve(fetch(url)).then(function (response) {
                     setAttachmentToCache(attachment.id, response);
-                    downloadImage(url);
                   });
                 } catch (e) {
                   return Promise.reject(e);
                 }
               });
             } else {
+              console.log('is not cached, load attachment', attachment.url);
               downloadImage(attachment.url);
             }
           }
