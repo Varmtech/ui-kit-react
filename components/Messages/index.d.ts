@@ -3,10 +3,14 @@ interface MessagesProps {
     fontFamily?: string;
     ownMessageOnRightSide?: boolean;
     messageWidthPercent?: string | number;
-    messageTimePosition?: 'topOfMessage' | 'onMessage';
+    messageStatusAndTimePosition?: 'onMessage' | 'bottomOfMessage';
+    messageStatusDisplayingType?: 'ticks' | 'text';
     ownMessageBackground?: string;
     incomingMessageBackground?: string;
     showMessageStatus?: boolean;
+    showMessageTime?: boolean;
+    showMessageStatusForEachMessage?: boolean;
+    showMessageTimeForEachMessage?: boolean;
     hoverBackground?: boolean;
     showSenderNameOnDirectChannel?: boolean;
     showSenderNameOnOwnMessages?: boolean;

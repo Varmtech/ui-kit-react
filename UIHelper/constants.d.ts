@@ -23,10 +23,12 @@ export declare const colors: {
     gray8: string;
     gray9: string;
     gray10: string;
+    gray11: string;
     pink1: string;
     purple1: string;
     cobalt1: string;
     primary: string;
+    primaryLight: string;
     red1: string;
     red2: string;
     red3: string;

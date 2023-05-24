@@ -16,6 +16,9 @@ interface SendMessageProps {
     margin?: string;
     border?: string;
     borderRadius?: string;
+    inputBorderRadius?: string;
+    inputBackground?: string;
+    inputPaddings?: string;
     selectedFileAttachmentsBoxWidth?: string;
     selectedFileAttachmentsBoxBackground?: string;
     selectedFileAttachmentsBoxBorder?: string;
@@ -24,6 +27,8 @@ interface SendMessageProps {
     selectedFileAttachmentsIcon?: JSX.Element;
     selectedAttachmentsBorderRadius?: string;
     replyMessageIcon?: JSX.Element;
+    voiceMessage?: boolean;
+    sendAttachmentSeparately?: boolean;
 }
 declare const SendMessageInput: React.FC<SendMessageProps>;
 export declare const MentionsContainer: import("styled-components").StyledComponent<"div", any, {

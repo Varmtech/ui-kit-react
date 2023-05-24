@@ -45,4 +45,5 @@ export declare const AttachmentImg: import("styled-components").StyledComponent<
     fitTheContainer?: boolean | undefined;
     backgroundColor: string;
     imageMinWidth?: string | undefined;
+    imageMaxHeight?: string | undefined;
 }, never>;

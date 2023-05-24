@@ -48,6 +48,7 @@ export declare const PopupDescription: import("styled-components").StyledCompone
 export declare const BoltText: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const PopupFooter: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const SectionHeader: import("styled-components").StyledComponent<"h4", any, {
+    color?: string | undefined;
     margin?: string | undefined;
 }, never>;
 export declare const ItemNote: import("styled-components").StyledComponent<"div", any, {
@@ -81,7 +82,9 @@ export declare const ReplyMessageText: import("styled-components").StyledCompone
 export declare const CloseIcon: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
 export declare const ClearTypedText: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
 export declare const StyledSearchSvg: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
-export declare const SubTitle: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const SubTitle: import("styled-components").StyledComponent<"span", any, {
+    color?: string | undefined;
+}, never>;
 export declare const AttachmentIconCont: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UploadingIcon: import("styled-components").StyledComponent<"span", any, {
     fileAttachment?: boolean | undefined;
