@@ -64,7 +64,6 @@
   ],
   "dependencies": {
     "linkify-it": "^4.0.1",
-    "wavesurfer.js": "^5.0.1",
     "react-easy-crop": "^4.6.2",
     "mic-recorder-to-mp3": "^2.2.2",
     "react-elastic-carousel": "^0.11.5",

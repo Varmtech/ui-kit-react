@@ -12,7 +12,6 @@ var FileSaver = _interopDefault(require('file-saver'));
 var effects = require('redux-saga/effects');
 var LinkifyIt = _interopDefault(require('linkify-it'));
 var Cropper = _interopDefault(require('react-easy-crop'));
-var WaveSurfer = _interopDefault(require('wavesurfer.js'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
 var uuid = require('uuid');
 
@@ -21034,8 +21033,7 @@ var getPlayingAudioId = function getPlayingAudioId() {
 var _templateObject$k, _templateObject2$i, _templateObject3$e, _templateObject4$a, _templateObject5$8, _templateObject6$7;
 
 var AudioPlayer = function AudioPlayer(_ref) {
-  var url = _ref.url,
-      file = _ref.file;
+  var file = _ref.file;
   var recordingInitialState = {
     recordingSeconds: 0,
     recordingMilliseconds: 0,
@@ -21050,41 +21048,39 @@ var AudioPlayer = function AudioPlayer(_ref) {
       setRecording = _useState[1];
 
   var _useState2 = React.useState(false),
-      isRendered = _useState2[0],
-      setIsRendered = _useState2[1];
+      playAudio = _useState2[0],
+      setPlayAudio = _useState2[1];
 
   var _useState3 = React.useState(false),
-      playAudio = _useState3[0],
-      setPlayAudio = _useState3[1];
+      payingAudioId = _useState3[0],
+      setPayingAudioId = _useState3[1];
 
-  var _useState4 = React.useState(false),
-      payingAudioId = _useState4[0],
-      setPayingAudioId = _useState4[1];
+  var _useState4 = React.useState(''),
+      currentTime = _useState4[0],
+      setCurrentTime = _useState4[1];
 
-  var _useState5 = React.useState(''),
-      currentTime = _useState5[0],
-      setCurrentTime = _useState5[1];
-
-  var _useState6 = React.useState(1),
-      audioRate = _useState6[0],
-      setAudioRate = _useState6[1];
+  var _useState5 = React.useState(1),
+      audioRate = _useState5[0],
+      setAudioRate = _useState5[1];
 
   var wavesurfer = React.useRef(null);
   var wavesurferContainer = React.useRef(null);
   var intervalRef = React.useRef(null);
 
   var handleSetAudioRate = function handleSetAudioRate() {
-    if (audioRate === 1) {
-      setAudioRate(1.5);
-      wavesurfer.current.setPlaybackRate(1.5);
-    } else if (audioRate === 1.5) {
-      setAudioRate(2);
-      wavesurfer.current.audioRate = 2;
-      wavesurfer.current.setPlaybackRate(2);
-    } else {
-      setAudioRate(1);
-      wavesurfer.current.audioRate = 1;
-      wavesurfer.current.setPlaybackRate(1);
+    if (wavesurfer.current) {
+      if (audioRate === 1) {
+        setAudioRate(1.5);
+        wavesurfer.current.setPlaybackRate(1.5);
+      } else if (audioRate === 1.5) {
+        setAudioRate(2);
+        wavesurfer.current.audioRate = 2;
+        wavesurfer.current.setPlaybackRate(2);
+      } else {
+        setAudioRate(1);
+        wavesurfer.current.audioRate = 1;
+        wavesurfer.current.setPlaybackRate(1);
+      }
     }
   };
 
@@ -21155,73 +21151,6 @@ var AudioPlayer = function AudioPlayer(_ref) {
       return clearInterval(recordingInterval);
     };
   }, [recording.initRecording]);
-  React.useEffect(function () {
-    if (url && !isRendered) {
-      wavesurfer.current = WaveSurfer.create({
-        container: wavesurferContainer.current,
-        waveColor: colors.gray9,
-        skipLength: 0,
-        progressColor: colors.primary,
-        audioRate: audioRate,
-        barWidth: 1,
-        barHeight: 3,
-        hideScrollbar: true,
-        barRadius: 1.5,
-        cursorWidth: 0,
-        barGap: 2,
-        barMinHeight: 1,
-        height: 20
-      });
-      wavesurfer.current.load(url);
-      wavesurfer.current.on('ready', function () {
-        var audioDuration = wavesurfer.current.getDuration();
-        var currentTime = wavesurfer.current.getCurrentTime();
-        setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-
-        wavesurfer.current.drawBuffer = function (d) {
-          console.log('filters --- ', d);
-        };
-      });
-      wavesurfer.current.on('finish', function () {
-        setPlayAudio(false);
-        wavesurfer.current.seekTo(0);
-        var audioDuration = wavesurfer.current.getDuration();
-        var currentTime = wavesurfer.current.getCurrentTime();
-        setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-
-        if (payingAudioId === file.id) {
-          setPayingAudioId('');
-        }
-
-        clearInterval(intervalRef.current);
-      });
-      wavesurfer.current.on('pause', function () {
-        setPlayAudio(false);
-
-        if (payingAudioId === file.id) {
-          setPayingAudioId('');
-        }
-
-        clearInterval(intervalRef.current);
-      });
-      wavesurfer.current.on('interaction', function () {
-        var audioDuration = wavesurfer.current.getDuration();
-        var currentTime = wavesurfer.current.getCurrentTime();
-        setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
-      });
-      setIsRendered(true);
-    }
-
-    return function () {
-      clearInterval(intervalRef.current);
-    };
-  }, [url]);
-  React.useEffect(function () {
-    if (payingAudioId && wavesurfer.current && payingAudioId !== file.id) {
-      setPlayAudio(false);
-      wavesurfer.current.pause();
-    }
-  }, [payingAudioId]);
   return React__default.createElement(Container$a, null, React__default.createElement(PlayPause, {
     onClick: handlePlayPause
   }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioVisualization, {
