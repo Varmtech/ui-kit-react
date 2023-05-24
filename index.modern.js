@@ -19680,7 +19680,9 @@ function ChatHeader(_ref) {
   var infoIcon = _ref.infoIcon,
       backgroundColor = _ref.backgroundColor,
       titleColor = _ref.titleColor,
-      infoTextColor = _ref.infoTextColor;
+      memberInfoTextColor = _ref.memberInfoTextColor,
+      _ref$showMemberInfo = _ref.showMemberInfo,
+      showMemberInfo = _ref$showMemberInfo === void 0 ? true : _ref$showMemberInfo;
   var dispatch = useDispatch();
   var getFromContacts = getShowOnlyContactUsers();
 
@@ -19716,11 +19718,11 @@ function ChatHeader(_ref) {
     setDefaultAvatar: isDirectChannel
   })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, {
     color: titleColor
-  }, activeChannel.subject || (isDirectChannel ? makeUsername(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, {
-    color: infoTextColor
+  }, activeChannel.subject || (isDirectChannel ? makeUsername(contactsMap[activeChannel.peer.id], activeChannel.peer, getFromContacts) : '')), showMemberInfo && (isDirectChannel ? React__default.createElement(SubTitle, {
+    color: memberInfoTextColor
   }, hideUserPresence(activeChannel.peer) ? '' : activeChannel.peer.presence && (activeChannel.peer.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : activeChannel.peer.presence.lastActiveAt && userLastActiveDateFormat(activeChannel.peer.presence.lastActiveAt))) : React__default.createElement(SubTitle, {
-    color: infoTextColor
-  }, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " "))), !channelListHidden && React__default.createElement(ChanelInfo, {
+    color: memberInfoTextColor
+  }, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.PUBLIC ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " ")))), !channelListHidden && React__default.createElement(ChanelInfo, {
     onClick: function onClick() {
       return channelDetailsOnOpen();
     },
@@ -24806,7 +24808,9 @@ var MessageList = function MessageList(_ref2) {
       imageAttachmentMaxWidth = _ref2.imageAttachmentMaxWidth,
       imageAttachmentMaxHeight = _ref2.imageAttachmentMaxHeight,
       videoAttachmentMaxWidth = _ref2.videoAttachmentMaxWidth,
-      videoAttachmentMaxHeight = _ref2.videoAttachmentMaxHeight;
+      videoAttachmentMaxHeight = _ref2.videoAttachmentMaxHeight,
+      _ref2$attachmentsPrev = _ref2.attachmentsPreview,
+      attachmentsPreview = _ref2$attachmentsPrev === void 0 ? true : _ref2$attachmentsPrev;
   var dispatch = useDispatch();
   var getFromContacts = getShowOnlyContactUsers();
   var channel = useSelector(activeChannelSelector);
@@ -25433,7 +25437,7 @@ var MessageList = function MessageList(_ref2) {
       dividerText: newMessagesSeparatorText || 'Unread Messages',
       unread: true
     }) : null);
-  })) : messagesLoading === LOADING_STATE.LOADED && React__default.createElement(NoMessagesContainer, null, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.PRIVATE ? ' group chat' : ' channel'), mediaFile && React__default.createElement(SliderPopup, {
+  })) : messagesLoading === LOADING_STATE.LOADED && React__default.createElement(NoMessagesContainer, null, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.PRIVATE ? ' group chat' : ' channel'), attachmentsPreview && mediaFile && React__default.createElement(SliderPopup, {
     channelId: channel.id,
     setIsSliderOpen: setMediaFile,
     currentMediaFile: mediaFile

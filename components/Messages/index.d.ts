@@ -97,6 +97,7 @@ interface MessagesProps {
     imageAttachmentMaxHeight?: number;
     videoAttachmentMaxWidth?: number;
     videoAttachmentMaxHeight?: number;
+    attachmentsPreview?: boolean;
 }
 declare const MessageList: React.FC<MessagesProps>;
 export default MessageList;

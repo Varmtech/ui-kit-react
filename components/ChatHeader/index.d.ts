@@ -2,8 +2,9 @@
 interface IProps {
     backgroundColor?: string;
     titleColor?: string;
-    infoTextColor?: string;
+    memberInfoTextColor?: string;
+    showMemberInfo?: boolean;
     infoIcon?: JSX.Element;
 }
-export default function ChatHeader({ infoIcon, backgroundColor, titleColor, infoTextColor }: IProps): JSX.Element;
+export default function ChatHeader({ infoIcon, backgroundColor, titleColor, memberInfoTextColor, showMemberInfo }: IProps): JSX.Element;
 export {};
