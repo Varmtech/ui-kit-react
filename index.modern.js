@@ -13604,34 +13604,6 @@ function resizeImage(file, maxWidth, maxHeight, quality) {
     };
   });
 }
-function createFileImageThumbnail(file) {
-  return new Promise(function (resolve) {
-    var blobURL = URL.createObjectURL(file);
-    var img = new Image();
-    img.src = blobURL;
-
-    img.onerror = function () {
-      URL.revokeObjectURL(this.src);
-      console.log('Cannot load image');
-    };
-
-    img.onload = function () {
-      URL.revokeObjectURL(this.src);
-
-      var _calculateSize2 = calculateSize(img.width, img.height, 50, 50),
-          newWidth = _calculateSize2[0],
-          newHeight = _calculateSize2[1];
-
-      var canvas = document.createElement('canvas');
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, newWidth, newHeight);
-      var base64String = canvas.toDataURL(THUMBNAIL_MIME_TYPE, THUMBNAIL_QUALITY);
-      resolve(base64String);
-    };
-  });
-}
 function createImageThumbnail(file, path, maxWidth, maxHeight) {
   return new Promise(function (resolve) {
     var blobURL;
@@ -21332,6 +21304,7 @@ var Attachment = function Attachment(_ref) {
       });
     }
   }, [attachment.id]);
+  console.log('attachment ... ', attachment);
   return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
     draggable: false,
     onClick: function onClick() {
@@ -22976,8 +22949,10 @@ var Message = function Message(_ref) {
       messageWidthPercent = _ref.messageWidthPercent,
       _ref$showSenderNameOn = _ref.showSenderNameOnDirectChannel,
       showSenderNameOnDirectChannel = _ref$showSenderNameOn === void 0 ? false : _ref$showSenderNameOn,
-      _ref$showSenderNameOn2 = _ref.showSenderNameOnOwnMessages,
-      showSenderNameOnOwnMessages = _ref$showSenderNameOn2 === void 0 ? true : _ref$showSenderNameOn2,
+      _ref$showSenderNameOn2 = _ref.showSenderNameOnGroupChannel,
+      showSenderNameOnGroupChannel = _ref$showSenderNameOn2 === void 0 ? true : _ref$showSenderNameOn2,
+      _ref$showSenderNameOn3 = _ref.showSenderNameOnOwnMessages,
+      showSenderNameOnOwnMessages = _ref$showSenderNameOn3 === void 0 ? true : _ref$showSenderNameOn3,
       _ref$messageStatusAnd = _ref.messageStatusAndTimePosition,
       messageStatusAndTimePosition = _ref$messageStatusAnd === void 0 ? 'onMessage' : _ref$messageStatusAnd,
       _ref$messageStatusDis = _ref.messageStatusDisplayingType,
@@ -23155,7 +23130,7 @@ var Message = function Message(_ref) {
   var attachmentMetas = mediaAttachment && (isJSON(mediaAttachment.metadata) ? JSON.parse(mediaAttachment.metadata) : mediaAttachment.metadata);
   var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
   var borderRadius = !message.incoming && ownMessageOnRightSide ? prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 4px 16px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '16px 4px 16px 16px' : '16px 4px 4px 16px' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 16px 4px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '4px 16px 16px 16px' : '4px 16px 16px 4px';
-  var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && (message.incoming || showSenderNameOnOwnMessages);
+  var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && (channel.type === CHANNEL_TYPE.DIRECT ? showSenderNameOnDirectChannel : showSenderNameOnGroupChannel) && (message.incoming || showSenderNameOnOwnMessages);
 
   var toggleEditMode = function toggleEditMode() {
     dispatch(setMessageToEditAC(message));
@@ -24737,6 +24712,8 @@ var MessageList = function MessageList(_ref2) {
       showSenderNameOnDirectChannel = _ref2$showSenderNameO === void 0 ? false : _ref2$showSenderNameO,
       _ref2$showSenderNameO2 = _ref2.showSenderNameOnOwnMessages,
       showSenderNameOnOwnMessages = _ref2$showSenderNameO2 === void 0 ? false : _ref2$showSenderNameO2,
+      _ref2$showSenderNameO3 = _ref2.showSenderNameOnGroupChannel,
+      showSenderNameOnGroupChannel = _ref2$showSenderNameO3 === void 0 ? true : _ref2$showSenderNameO3,
       _ref2$showOwnAvatar = _ref2.showOwnAvatar,
       showOwnAvatar = _ref2$showOwnAvatar === void 0 ? false : _ref2$showOwnAvatar,
       _ref2$messageReaction = _ref2.messageReaction,
@@ -25245,6 +25222,7 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
+    console.log('messages... ', messages);
   }, [messages]);
   useEffect(function () {
     if (channel.unreadMessageCount && channel.unreadMessageCount > 0 && getUnreadScrollTo()) {
@@ -25376,6 +25354,7 @@ var MessageList = function MessageList(_ref2) {
       showOwnAvatar: showOwnAvatar,
       showSenderNameOnDirectChannel: showSenderNameOnDirectChannel,
       showSenderNameOnOwnMessages: showSenderNameOnOwnMessages,
+      showSenderNameOnGroupChannel: showSenderNameOnGroupChannel,
       messageReaction: messageReaction,
       editMessage: editMessage,
       copyMessage: copyMessage,
@@ -26513,7 +26492,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var customUploader = getCustomUploader();
       var fileType = file.type.split('/')[0];
 
-      var _temp4 = function () {
+      var _temp5 = function () {
         if (customUploader) {
           if (fileType === 'image') {
             resizeImage(file).then(function (resizedFile) {
@@ -26560,55 +26539,60 @@ var SendMessageInput = function SendMessageInput(_ref) {
             });
           }
         } else {
-          var _temp5 = function () {
+          var _temp6 = function () {
             if (fileType === 'image') {
-              if (isMediaAttachment) {
-                resizeImage(file).then(function (resizedFile) {
-                  try {
-                    return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
-                      var thumbnail = _ref2.thumbnail;
-                      console.log('set attachments . ... .... 7');
-                      setAttachments(function (prevState) {
-                        return [].concat(prevState, [{
-                          data: new File([resizedFile.blob], resizedFile.file.name),
-                          attachmentUrl: URL.createObjectURL(file),
-                          attachmentId: v4(),
-                          type: fileType,
-                          metadata: JSON.stringify({
-                            tmb: thumbnail,
-                            szw: resizedFile.newWidth,
-                            szh: resizedFile.newHeight
-                          })
-                        }]);
+              var _temp7 = function () {
+                if (isMediaAttachment) {
+                  resizeImage(file).then(function (resizedFile) {
+                    try {
+                      return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
+                        var thumbnail = _ref2.thumbnail;
+                        console.log('set attachments . ... .... 7');
+                        setAttachments(function (prevState) {
+                          return [].concat(prevState, [{
+                            data: new File([resizedFile.blob], resizedFile.file.name),
+                            attachmentUrl: URL.createObjectURL(file),
+                            attachmentId: v4(),
+                            type: fileType,
+                            metadata: JSON.stringify({
+                              tmb: thumbnail,
+                              szw: resizedFile.newWidth,
+                              szh: resizedFile.newHeight
+                            })
+                          }]);
+                        });
                       });
-                    });
-                  } catch (e) {
-                    return Promise.reject(e);
-                  }
-                });
-              } else {
-                createFileImageThumbnail(file).then(function (thumbnail) {
-                  console.log('set attachments . ... .... 8');
-                  setAttachments(function (prevState) {
-                    return [].concat(prevState, [{
-                      data: file,
-                      type: 'file',
-                      attachmentUrl: URL.createObjectURL(file),
-                      attachmentId: v4(),
-                      metadata: JSON.stringify({
-                        tmb: thumbnail
-                      })
-                    }]);
+                    } catch (e) {
+                      return Promise.reject(e);
+                    }
                   });
-                });
-              }
+                } else {
+                  return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
+                    var thumbnail = _ref3.thumbnail;
+                    console.log('set attachments . ... .... 8');
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        type: 'file',
+                        attachmentUrl: URL.createObjectURL(file),
+                        attachmentId: v4(),
+                        metadata: JSON.stringify({
+                          tmb: thumbnail
+                        })
+                      }]);
+                    });
+                  });
+                }
+              }();
+
+              if (_temp7 && _temp7.then) return _temp7.then(function () {});
             } else {
-              var _temp6 = function () {
+              var _temp8 = function () {
                 if (fileType === 'video') {
-                  return Promise.resolve(getFrame(URL.createObjectURL(file), 1)).then(function (_ref3) {
-                    var thumb = _ref3.thumb,
-                        width = _ref3.width,
-                        height = _ref3.height;
+                  return Promise.resolve(getFrame(URL.createObjectURL(file), 1)).then(function (_ref4) {
+                    var thumb = _ref4.thumb,
+                        width = _ref4.width,
+                        height = _ref4.height;
                     console.log('set attachments . ... .... 9');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
@@ -26637,15 +26621,15 @@ var SendMessageInput = function SendMessageInput(_ref) {
                 }
               }();
 
-              if (_temp6 && _temp6.then) return _temp6.then(function () {});
+              if (_temp8 && _temp8.then) return _temp8.then(function () {});
             }
           }();
 
-          if (_temp5 && _temp5.then) return _temp5.then(function () {});
+          if (_temp6 && _temp6.then) return _temp6.then(function () {});
         }
       }();
 
-      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
@@ -26999,7 +26983,7 @@ var SendMessageInputContainer = styled.div(_templateObject8$c || (_templateObjec
 }, AddAttachmentIcon, function (props) {
   return props.iconColor || colors.primary;
 });
-var MessageInputWrapper = styled.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  //max-width: ", ";\n  max-width: calc(100% - 110px);\n  position: relative;\n  order: ", ";\n"])), function (props) {
+var MessageInputWrapper = styled.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  //max-width: ", ";\n  //max-width: calc(100% - 110px);\n  position: relative;\n  order: ", ";\n"])), function (props) {
   return props.channelDetailsIsOpen ? "calc(100% - " + (props.channelDetailsIsOpen ? 362 : 0) + "px)" : '';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 3;

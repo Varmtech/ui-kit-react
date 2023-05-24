@@ -14,6 +14,7 @@ interface MessagesProps {
     hoverBackground?: boolean;
     showSenderNameOnDirectChannel?: boolean;
     showSenderNameOnOwnMessages?: boolean;
+    showSenderNameOnGroupChannel?: boolean;
     showOwnAvatar?: boolean;
     messageReaction?: boolean;
     editMessage?: boolean;
