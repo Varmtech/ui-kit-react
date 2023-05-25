@@ -19736,7 +19736,7 @@ function ChatHeader(_ref) {
 
 var _templateObject$h;
 var Container$9 = styled__default.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  margin-bottom: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n    }\n  }\n"])), function (props) {
-  return props.noMargin ? '0 auto' : '16px auto 0';
+  return props.noMargin ? '0 auto' : (props.marginTop || '16px') + " auto 0";
 }, function (props) {
   return props.marginBottom ? '8px' : '0';
 }, function (props) {
@@ -19782,10 +19782,12 @@ function MessageDivider(_ref) {
       newMessagesSeparatorBackground = _ref.newMessagesSeparatorBackground,
       newMessagesSeparatorLeftRightSpaceWidth = _ref.newMessagesSeparatorLeftRightSpaceWidth,
       noMargin = _ref.noMargin,
+      marginTop = _ref.marginTop,
       marginBottom = _ref.marginBottom;
   return React__default.createElement(Container$9, {
     className: unread ? 'unread' : 'divider',
     systemMessage: systemMessage,
+    marginTop: marginTop,
     dividerVisibility: !visibility || unread,
     dateDividerFontSize: dateDividerFontSize || newMessagesSeparatorFontSize,
     dateDividerTextColor: dateDividerTextColor || newMessagesSeparatorTextColor,
@@ -23053,7 +23055,9 @@ var Message = function Message(_ref) {
       videoAttachmentMaxHeight = _ref.videoAttachmentMaxHeight,
       emojisCategoryIconsPosition = _ref.emojisCategoryIconsPosition,
       emojisContainerBorderRadius = _ref.emojisContainerBorderRadius,
-      separateEmojiCategoriesWithTitle = _ref.separateEmojiCategoriesWithTitle;
+      separateEmojiCategoriesWithTitle = _ref.separateEmojiCategoriesWithTitle,
+      sameUserMessageSpacing = _ref.sameUserMessageSpacing,
+      differentUserMessageSpacing = _ref.differentUserMessageSpacing;
   var dispatch = reactRedux.useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
@@ -23349,7 +23353,7 @@ var Message = function Message(_ref) {
     rtl: ownMessageOnRightSide && !message.incoming,
     withAvatar: renderAvatar,
     hoverBackground: hoverBackground ? message.incoming ? incomingMessageBackground || 'rgb(238, 245, 255)' : ownMessageBackground || 'rgb(238, 245, 255)' : '',
-    topMargin: (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system' ? '0' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px' : '8px',
+    topMargin: (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system' ? '0' : prevMessageUserID !== messageUserID || firstMessageInInterval ? differentUserMessageSpacing || '16px' : sameUserMessageSpacing || '8px',
     bottomMargin: reactionsList && reactionsList.length ? reactionsContainerTopPosition : '',
     ref: messageItemRef,
     className: 'MessageItem'
@@ -23362,7 +23366,7 @@ var Message = function Message(_ref) {
   }), React__default.createElement(MessageContent, {
     messageWidthPercent: messageWidthPercent,
     rtl: ownMessageOnRightSide && !message.incoming,
-    withAvatar: renderAvatar,
+    withAvatar: !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar),
     className: 'messageContent'
   }, message.state === MESSAGE_STATUS.FAILED && React__default.createElement(FailedMessageIcon, {
     rtl: ownMessageOnRightSide && !message.incoming
@@ -23560,7 +23564,7 @@ var Message = function Message(_ref) {
     frequentlyEmojis: message.selfReactions
   }))), messageStatusAndTimePosition === 'bottomOfMessage' && (messageStatusVisible || messageTimeVisible) && React__default.createElement(MessageStatusAndTime, {
     isSelfMessage: !message.incoming,
-    bottomMargin: true,
+    marginBottom: sameUserMessageSpacing,
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     bottomOfMessage: true
   }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimeVisible && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && React__default.createElement(MessageStatus, {
@@ -23723,7 +23727,7 @@ var MessageStatusAndTime = styled__default.div(_templateObject14$2 || (_template
 }, function (props) {
   return props.leftMargin && '12px';
 }, function (props) {
-  return props.bottomMargin && '8px';
+  return props.marginBottom || '8px';
 }, function (props) {
   return props.isSelfMessage ? 'initial' : '';
 }, function (props) {
@@ -23754,7 +23758,11 @@ var MessageBody = styled__default.div(_templateObject17$1 || (_templateObject17$
 }, function (props) {
   return props.noBody && 'hidden';
 });
-var MessageContent = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 13px;\n  margin-right: 13px;\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+var MessageContent = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+  return props.withAvatar && '13px';
+}, function (props) {
+  return props.withAvatar && '13px';
+}, function (props) {
   return !props.withAvatar && (props.rtl ? 'translate(-32px,0)  ' : 'translate(32px,0)');
 }, function (props) {
   return props.messageWidthPercent ? props.messageWidthPercent + "%" : '100%';
@@ -24672,7 +24680,8 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
       dateDividerBackgroundColor = _ref.dateDividerBackgroundColor,
       dateDividerBorderRadius = _ref.dateDividerBorderRadius,
       noMargin = _ref.noMargin,
-      marginBottom = _ref.marginBottom;
+      marginBottom = _ref.marginBottom,
+      marginTop = _ref.marginTop;
   var today = moment().endOf('day');
   var current = moment(currentMessageDate).endOf('day');
   var differentDays = !(nextMessageDate && current.diff(moment(nextMessageDate).endOf('day'), 'days') === 0);
@@ -24693,7 +24702,8 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
     dateDividerBackgroundColor: dateDividerBackgroundColor,
     dateDividerBorderRadius: dateDividerBorderRadius,
     noMargin: noMargin,
-    marginBottom: marginBottom
+    marginBottom: marginBottom,
+    marginTop: marginTop
   });
 };
 
@@ -24814,7 +24824,9 @@ var MessageList = function MessageList(_ref2) {
       videoAttachmentMaxWidth = _ref2.videoAttachmentMaxWidth,
       videoAttachmentMaxHeight = _ref2.videoAttachmentMaxHeight,
       _ref2$attachmentsPrev = _ref2.attachmentsPreview,
-      attachmentsPreview = _ref2$attachmentsPrev === void 0 ? true : _ref2$attachmentsPrev;
+      attachmentsPreview = _ref2$attachmentsPrev === void 0 ? true : _ref2$attachmentsPrev,
+      sameUserMessageSpacing = _ref2.sameUserMessageSpacing,
+      differentUserMessageSpacing = _ref2.differentUserMessageSpacing;
   var dispatch = reactRedux.useDispatch();
   var getFromContacts = getShowOnlyContactUsers();
   var channel = reactRedux.useSelector(activeChannelSelector);
@@ -25312,11 +25324,12 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorder: dateDividerBorder,
       dateDividerBackgroundColor: dateDividerBackgroundColor,
       dateDividerBorderRadius: dateDividerBorderRadius,
-      marginBottom: prevMessage && prevMessage.type === 'system' && message.type !== 'system'
+      marginBottom: prevMessage && prevMessage.type === 'system' && message.type !== 'system',
+      marginTop: differentUserMessageSpacing
     }), message.type === 'system' ? React__default.createElement(MessageTopDate, {
       systemMessage: true,
-      marginTop: message.type === 'system',
-      marginBottom: message.type === 'system' && nextMessage && nextMessage.type !== 'system',
+      marginTop: message.type === 'system' && (differentUserMessageSpacing || '16px'),
+      marginBottom: message.type === 'system' && nextMessage && nextMessage.type !== 'system' && (differentUserMessageSpacing || '16px'),
       visible: showTopFixedDate,
       dividerText: message.body,
       dateDividerFontSize: dateDividerFontSize,
@@ -25429,7 +25442,9 @@ var MessageList = function MessageList(_ref2) {
       reactionsContainerBorderRadius: reactionsContainerBorderRadius,
       reactionsContainerPadding: reactionsContainerPadding,
       reactionsContainerBackground: reactionsContainerBackground,
-      reactionsContainerTopPosition: reactionsContainerTopPosition
+      reactionsContainerTopPosition: reactionsContainerTopPosition,
+      sameUserMessageSpacing: sameUserMessageSpacing,
+      differentUserMessageSpacing: differentUserMessageSpacing
     })), isUnreadMessage ? React__default.createElement(MessageDivider, {
       newMessagesSeparatorTextColor: newMessagesSeparatorTextColor,
       newMessagesSeparatorFontSize: newMessagesSeparatorFontSize,
@@ -25457,9 +25472,9 @@ var MessageTopDate = styled__default.div(_templateObject4$i || (_templateObject4
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
 }, function (props) {
-  return props.marginTop && '16px';
+  return props.marginTop;
 }, function (props) {
-  return props.marginBottom && '16px';
+  return props.marginBottom;
 }, function (props) {
   return props.visible ? '1' : '0';
 }, function (props) {
