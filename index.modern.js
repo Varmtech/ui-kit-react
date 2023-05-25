@@ -19609,10 +19609,12 @@ var ChannelListHeader = styled.div(_templateObject7$4 || (_templateObject7$4 = _
 var _templateObject$f;
 function Chat$1(_ref) {
   var children = _ref.children,
-      hideChannelList = _ref.hideChannelList;
+      hideChannelList = _ref.hideChannelList,
+      onActiveChannelUpdated = _ref.onActiveChannelUpdated;
   var dispatch = useDispatch();
   var channelListWidth = useSelector(channelListWidthSelector, shallowEqual);
   var channelDetailsIsOpen = useSelector(channelInfoIsOpenSelector, shallowEqual);
+  var activeChannel = useSelector(activeChannelSelector);
   useEffect(function () {
     if (hideChannelList && !channelListWidth) {
       dispatch(setHideChannelListAC(true));
@@ -19624,6 +19626,11 @@ function Chat$1(_ref) {
       }, false));
     }
   }, [channelListWidth]);
+  useEffect(function () {
+    if (onActiveChannelUpdated) {
+      onActiveChannelUpdated(activeChannel);
+    }
+  }, [activeChannel]);
   return React__default.createElement(Container$7, {
     widthOffset: channelListWidth,
     channelDetailsIsOpen: channelDetailsIsOpen
@@ -21308,7 +21315,6 @@ var Attachment = function Attachment(_ref) {
       });
     }
   }, [attachment.id]);
-  console.log('attachment ... ', attachment);
   return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
     draggable: false,
     onClick: function onClick() {
