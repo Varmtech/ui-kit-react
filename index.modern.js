@@ -26856,9 +26856,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, "Join") : (activeChannel.type === CHANNEL_TYPE.PUBLIC ? !(activeChannel.role === 'admin' || activeChannel.role === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
     iconColor: colors.primary
   }, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
-    from: typingIndicator.from,
-    typingState: typingIndicator.typingState
-  }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName || typingIndicator.from.id, ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
+    from: typingIndicator && typingIndicator.from,
+    typingState: typingIndicator && typingIndicator.typingState
+  }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, makeUsername(typingIndicator && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator && typingIndicator.from, getFromContacts), ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
     handleAddEmoji: handleAddEmoji,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
     rightSide: emojisInRightSide,
