@@ -17539,7 +17539,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : '')) : null : channel.lastReactedMessage && channel.userMessageReactions && channel.userMessageReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.userMessageReactions[0].user && channel.userMessageReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : channel.lastReactedMessage && channel.userMessageReactions && channel.userMessageReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.userMessageReactions[0].user && channel.userMessageReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
@@ -26354,7 +26354,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
         setTypingTimout(undefined);
       }
 
-      console.log('set attachments . ... .... 1. 1 . 1');
       setAttachments([]);
       handleCloseReply();
       setMentionedMembers([]);
@@ -26424,12 +26423,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var removeUpload = function removeUpload(attachmentId) {
     if (attachmentId) {
       deleteVideoThumb(attachmentId);
-      console.log('set attachments . ... ....2');
       setAttachments(attachments.filter(function (item) {
         return item.attachmentId !== attachmentId;
       }));
     } else {
-      console.log('set attachments . ... ....3');
       setAttachments([]);
     }
   };
@@ -26520,7 +26517,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
           if (fileType === 'image') {
             resizeImage(file).then(function (resizedFile) {
               try {
-                console.log('set attachments . ... ....4');
                 setAttachments(function (prevState) {
                   return [].concat(prevState, [{
                     data: file,
@@ -26537,7 +26533,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
               }
             });
           } else if (fileType === 'video') {
-            console.log('set attachments . ... ....5');
             setAttachments(function (prevState) {
               return [].concat(prevState, [{
                 data: file,
@@ -26549,7 +26544,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
               }]);
             });
           } else {
-            console.log('set attachments . ... ....6');
             setAttachments(function (prevState) {
               return [].concat(prevState, [{
                 data: file,
@@ -26570,7 +26564,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                     try {
                       return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
                         var thumbnail = _ref2.thumbnail;
-                        console.log('set attachments . ... .... 7');
                         setAttachments(function (prevState) {
                           return [].concat(prevState, [{
                             data: new File([resizedFile.blob], resizedFile.file.name),
@@ -26592,7 +26585,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                 } else {
                   return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
                     var thumbnail = _ref3.thumbnail;
-                    console.log('set attachments . ... .... 8');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -26616,7 +26608,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                     var thumb = _ref4.thumb,
                         width = _ref4.width,
                         height = _ref4.height;
-                    console.log('set attachments . ... .... 9');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -26632,7 +26623,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                     });
                   });
                 } else {
-                  console.log('set attachments . ... .... 10');
                   setAttachments(function (prevState) {
                     return [].concat(prevState, [{
                       data: file,
@@ -26695,7 +26685,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setMessageText('');
       handleCloseReply();
       setMentionedMembersDisplayName([]);
-      console.log('set attachments . ... .... 11');
       setAttachments([]);
       handleCloseEditMode();
       clearTimeout(typingTimout);
@@ -26859,10 +26848,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
     color: colors.primary
   }, "Join") : (activeChannel.type === CHANNEL_TYPE.PUBLIC ? !(activeChannel.role === 'admin' || activeChannel.role === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
     iconColor: colors.primary
-  }, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
-    from: typingIndicator && typingIndicator.from,
-    typingState: typingIndicator && typingIndicator.typingState
-  }) : typingIndicator && typingIndicator.typingState && React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, makeUsername(typingIndicator && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator && typingIndicator.from, getFromContacts), ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null)))), isEmojisOpened && React__default.createElement(EmojisPopup, {
+  }, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, typingIndicator && typingIndicator.typingState && (CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
+    from: typingIndicator.from,
+    typingState: typingIndicator.typingState
+  }) : React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, makeUsername(getFromContacts && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts), ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null))))), isEmojisOpened && React__default.createElement(EmojisPopup, {
     handleAddEmoji: handleAddEmoji,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
     rightSide: emojisInRightSide,
