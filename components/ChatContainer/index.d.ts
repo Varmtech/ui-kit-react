@@ -25,6 +25,7 @@ export interface IChatClientProps {
     hideUserPresence?: (user: IUser) => boolean;
     showOnlyContactUsers?: boolean;
     sendAttachmentsAsSeparateMessages?: boolean;
+    showNotifications?: boolean;
     children?: JSX.Element | JSX.Element[];
     logoSrc?: string;
     CustomUploader?: ICustomUploader;
@@ -37,5 +38,5 @@ export interface IChatClientProps {
         defaultAvatarBackground?: string;
     };
 }
-declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors, hideUserPresence }: IChatClientProps) => JSX.Element;
+declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, sendAttachmentsAsSeparateMessages, logoSrc, CustomUploader, customColors, showNotifications, hideUserPresence }: IChatClientProps) => JSX.Element;
 export default SceytChatContainer;
