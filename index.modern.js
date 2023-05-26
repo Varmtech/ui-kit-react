@@ -7390,9 +7390,6 @@ var messageStatusIcon = function messageStatusIcon(messageStatus, messageStatusD
       });
   }
 };
-var isAlphanumeric = function isAlphanumeric(str) {
-  return /[a-z]/i.test(str);
-};
 var bytesToSize = function bytesToSize(bytes, decimals) {
   if (decimals === void 0) {
     decimals = 2;
@@ -9644,6 +9641,11 @@ var getClient = function getClient() {
   return SceytChatClient;
 };
 
+var hideUserPresence;
+var setHideUserPresence = function setHideUserPresence(callback) {
+  hideUserPresence = callback;
+};
+
 var typingTextFormat = function typingTextFormat(_ref) {
   var text = _ref.text,
       mentionedMembers = _ref.mentionedMembers,
@@ -9717,7 +9719,7 @@ var typingTextFormat = function typingTextFormat(_ref) {
 var makeUsername = function makeUsername(contact, user, fromContact) {
   var _contact$lastName;
 
-  if (user && isAlphanumeric(user.id)) {
+  if (hideUserPresence && user && hideUserPresence(user)) {
     return user.id.charAt(0).toUpperCase() + user.id.slice(1);
   }
 
@@ -16846,11 +16848,6 @@ var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
 };
 var tabIsActiveSelector = function tabIsActiveSelector(store) {
   return store.ChannelReducer.tabIsActive;
-};
-
-var hideUserPresence;
-var setHideUserPresence = function setHideUserPresence(callback) {
-  hideUserPresence = callback;
 };
 
 var SceytChat = function SceytChat(_ref) {
@@ -24940,10 +24937,11 @@ var MessageList = function MessageList(_ref2) {
             loadFromServer = true;
           }
 
+          nextDisable = false;
           nextDisable = true;
         }
 
-        if (lastVisibleMessagePos - 420 > target.scrollTop) {
+        if (lastVisibleMessagePos > 0) {
           nextDisable = false;
         } else {
           prevDisable = false;
@@ -25244,7 +25242,6 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages... ', messages);
   }, [messages]);
   useEffect(function () {
     if (channel.unreadMessageCount && channel.unreadMessageCount > 0 && getUnreadScrollTo()) {
@@ -27034,7 +27031,7 @@ var ChosenAttachments = styled.div(_templateObject14$4 || (_templateObject14$4 =
 var TypingIndicator$1 = styled.div(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
 var TypingIndicatorCont = styled.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
 var TypingFrom = styled.h5(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
-var sizeAnimation = keyframes(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var sizeAnimation = keyframes(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
 var DotOne = styled.span(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose([""])));
 var DotTwo = styled.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));

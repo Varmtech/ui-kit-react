@@ -1,7 +1,6 @@
 /// <reference types="react" />
 import { IAttachment, IContact } from '../types';
 export declare const messageStatusIcon: (messageStatus: string, messageStatusDisplayingType: string, iconColor?: string | undefined, readIconColor?: string | undefined) => JSX.Element;
-export declare const isAlphanumeric: (str: string) => boolean;
 export declare const urlRegex: RegExp;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const systemMessageUserName: (contact: IContact, userId: string) => string;
