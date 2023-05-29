@@ -29,6 +29,7 @@ interface SendMessageProps {
     replyMessageIcon?: JSX.Element;
     voiceMessage?: boolean;
     sendAttachmentSeparately?: boolean;
+    allowMentionUser?: boolean;
 }
 declare const SendMessageInput: React.FC<SendMessageProps>;
 export declare const MentionsContainer: import("styled-components").StyledComponent<"div", any, {
