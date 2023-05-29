@@ -22698,11 +22698,13 @@ function EmojisPopup(_ref2) {
   React.useEffect(function () {
     setRendered(true);
     setTimeout(function () {
-      var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
-      var heights = collectionsRef.current.map(function (col) {
-        return col.elem.current.getBoundingClientRect().top - 80 - containerTop;
-      });
-      setCollectionHeights(heights);
+      if (emojiContainerRef.current) {
+        var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
+        var heights = collectionsRef.current.map(function (col) {
+          return col.elem.current.getBoundingClientRect().top - 80 - containerTop;
+        });
+        setCollectionHeights(heights);
+      }
     }, 300);
   }, []);
   return React__default.createElement(Container$c, {
@@ -26178,7 +26180,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var selPos = getCaretPosition(e.currentTarget);
 
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
-      console.log('sel pos .... ', selPos);
       setSelectionPos(selPos);
     }
 
@@ -26188,7 +26189,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     var lastTwoChar = messageInputRef.current.innerText.slice(0, selPos).slice(-2);
-    console.log('lastTwoChar. . . . . . :', lastTwoChar);
 
     if (lastTwoChar.trimStart() === '@' && !mentionTyping && activeChannel.type === CHANNEL_TYPE.PRIVATE) {
       setCurrentMentions({
@@ -26990,6 +26990,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     contentEditable: true,
     suppressContentEditableWarning: true,
     onKeyUp: handleTyping,
+    onChange: handleTyping,
     onPaste: handlePastAttachments,
     onCut: handleCut,
     onKeyPress: handleSendEditMessage,
@@ -27021,7 +27022,7 @@ var UserName$1 = styled__default.span(_templateObject5$i || (_templateObject5$i 
 var EditReplyMessageHeader = styled__default.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
-var AddAttachmentIcon = styled__default.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled__default.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 32px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '48px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
@@ -27049,7 +27050,7 @@ var MessageInput = styled__default.div(_templateObject10$9 || (_templateObject10
 }, colors.gray7, colors.gray7, function (props) {
   return props.mentionColor || colors.primary;
 });
-var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", "\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 32px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '48px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 2;
@@ -27059,7 +27060,7 @@ var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11
   return props.hoverColor || colors.primary;
 });
 var MentionsContainer = styled__default.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
-var SendMessageIcon = styled__default.span(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n\n  color: ", ";\n"])), function (props) {
+var SendMessageIcon = styled__default.span(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 5px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
   return props.height ? props.height + "px" : '48px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
