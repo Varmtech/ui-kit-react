@@ -26148,6 +26148,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleTyping = function handleTyping(e) {
+    console.log(!!e.currentTarget.innerText);
+
+    if (!e.currentTarget.innerText) {
+      setSendMessageIsActive(false);
+    } else {
+      setSendMessageIsActive(true);
+    }
+
     if (!(openMention && (e.key === 'ArrowDown' || e.key === 'ArrowUp'))) {
       if (messageToEdit) {
         setEditMessageText(e.currentTarget.innerText);
@@ -26501,6 +26509,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         });
       } else {
         e.preventDefault();
+        setMessageText(e.clipboardData.getData('text/plain').trim());
         document.execCommand('inserttext', false, e.clipboardData.getData('text/plain').trim());
       }
     }
@@ -26988,6 +26997,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     contentEditable: true,
     suppressContentEditableWarning: true,
     onKeyUp: handleTyping,
+    onChange: handleTyping,
     onPaste: handlePastAttachments,
     onCut: handleCut,
     onKeyPress: handleSendEditMessage,
