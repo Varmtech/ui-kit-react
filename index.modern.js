@@ -25264,7 +25264,6 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages... ', messages);
   }, [messages]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
@@ -26239,7 +26238,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setMessageText(currentText);
 
       if (selPos > 0) {
-        console.log('set sel pos ..... ', selPos);
         setCursorPosition(messageInputRef.current, selPos);
       }
 
