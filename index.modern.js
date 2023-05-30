@@ -26148,9 +26148,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleTyping = function handleTyping(e) {
-    console.log(!!e.currentTarget.innerText);
+    console.log(!!e.currentTarget.innerText.trim());
 
-    if (!e.currentTarget.innerText) {
+    if (!e.currentTarget.innerText.trim()) {
       setSendMessageIsActive(false);
     } else {
       setSendMessageIsActive(true);
@@ -26499,6 +26499,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     if (os === 'Windows' && browser === 'Firefox') {
       e.preventDefault();
+      setMessageText(e.clipboardData.getData('text/plain').trim());
+      document.execCommand('inserttext', false, e.clipboardData.getData('text/plain').trim());
     } else {
       if (e.clipboardData.files && e.clipboardData.files.length > 0) {
         e.preventDefault();
