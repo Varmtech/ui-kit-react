@@ -17712,12 +17712,16 @@ var useDidUpdate = function useDidUpdate(callback, deps) {
 };
 
 var useEventListener = function useEventListener(eventName, handler, element, options) {
-  if (element === void 0) {
-    element = global;
-  }
-
   if (options === void 0) {
     options = {};
+  }
+
+  var isBrowser = typeof window !== 'undefined';
+
+  if (isBrowser && !element) {
+    element = window;
+  } else {
+    element = global;
   }
 
   var savedHandler = React.useRef();
