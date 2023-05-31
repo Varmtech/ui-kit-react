@@ -1,5 +1,24 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+function _interopNamespace(e) {
+  if (e && e.__esModule) { return e; } else {
+    var n = {};
+    if (e) {
+      Object.keys(e).forEach(function (k) {
+        var d = Object.getOwnPropertyDescriptor(e, k);
+        Object.defineProperty(n, k, d.get ? d : {
+          enumerable: true,
+          get: function () {
+            return e[k];
+          }
+        });
+      });
+    }
+    n['default'] = e;
+    return n;
+  }
+}
+
 var React = require('react');
 var React__default = _interopDefault(React);
 var reactRedux = require('react-redux');
@@ -21033,7 +21052,8 @@ var getPlayingAudioId = function getPlayingAudioId() {
 var _templateObject$k, _templateObject2$i, _templateObject3$e, _templateObject4$a, _templateObject5$8, _templateObject6$7;
 
 var AudioPlayer = function AudioPlayer(_ref) {
-  var file = _ref.file;
+  var url = _ref.url,
+      file = _ref.file;
   var recordingInitialState = {
     recordingSeconds: 0,
     recordingMilliseconds: 0,
@@ -21048,20 +21068,24 @@ var AudioPlayer = function AudioPlayer(_ref) {
       setRecording = _useState[1];
 
   var _useState2 = React.useState(false),
-      playAudio = _useState2[0],
-      setPlayAudio = _useState2[1];
+      isRendered = _useState2[0],
+      setIsRendered = _useState2[1];
 
   var _useState3 = React.useState(false),
-      payingAudioId = _useState3[0],
-      setPayingAudioId = _useState3[1];
+      playAudio = _useState3[0],
+      setPlayAudio = _useState3[1];
 
-  var _useState4 = React.useState(''),
-      currentTime = _useState4[0],
-      setCurrentTime = _useState4[1];
+  var _useState4 = React.useState(false),
+      payingAudioId = _useState4[0],
+      setPayingAudioId = _useState4[1];
 
-  var _useState5 = React.useState(1),
-      audioRate = _useState5[0],
-      setAudioRate = _useState5[1];
+  var _useState5 = React.useState(''),
+      currentTime = _useState5[0],
+      setCurrentTime = _useState5[1];
+
+  var _useState6 = React.useState(1),
+      audioRate = _useState6[0],
+      setAudioRate = _useState6[1];
 
   var wavesurfer = React.useRef(null);
   var wavesurferContainer = React.useRef(null);
@@ -21151,6 +21175,84 @@ var AudioPlayer = function AudioPlayer(_ref) {
       return clearInterval(recordingInterval);
     };
   }, [recording.initRecording]);
+  React.useEffect(function () {
+    if (url && !isRendered) {
+      var initWaveSurfer = function initWaveSurfer() {
+        try {
+          return Promise.resolve(new Promise(function (resolve) { resolve(_interopNamespace(require('wavesurfer.js'))); })).then(function (WaveSurfer) {
+            console.log('WaveSurfer. . . .. .', WaveSurfer);
+            wavesurfer.current = WaveSurfer["default"].create({
+              container: wavesurferContainer.current,
+              waveColor: colors.gray9,
+              skipLength: 0,
+              progressColor: colors.primary,
+              audioRate: audioRate,
+              barWidth: 1,
+              barHeight: 3,
+              hideScrollbar: true,
+              barRadius: 1.5,
+              cursorWidth: 0,
+              barGap: 2,
+              barMinHeight: 1,
+              height: 20
+            });
+            wavesurfer.current.load(url);
+            wavesurfer.current.on('ready', function () {
+              var audioDuration = wavesurfer.current.getDuration();
+              var currentTime = wavesurfer.current.getCurrentTime();
+              setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+
+              wavesurfer.current.drawBuffer = function (d) {
+                console.log('filters --- ', d);
+              };
+            });
+            wavesurfer.current.on('finish', function () {
+              setPlayAudio(false);
+              wavesurfer.current.seekTo(0);
+              var audioDuration = wavesurfer.current.getDuration();
+              var currentTime = wavesurfer.current.getCurrentTime();
+              setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+
+              if (payingAudioId === file.id) {
+                setPayingAudioId('');
+              }
+
+              clearInterval(intervalRef.current);
+            });
+            wavesurfer.current.on('pause', function () {
+              setPlayAudio(false);
+
+              if (payingAudioId === file.id) {
+                setPayingAudioId('');
+              }
+
+              clearInterval(intervalRef.current);
+            });
+            wavesurfer.current.on('interaction', function () {
+              var audioDuration = wavesurfer.current.getDuration();
+              var currentTime = wavesurfer.current.getCurrentTime();
+              setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+            });
+            setIsRendered(true);
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      initWaveSurfer();
+    }
+
+    return function () {
+      clearInterval(intervalRef.current);
+    };
+  }, [url]);
+  React.useEffect(function () {
+    if (payingAudioId && wavesurfer.current && payingAudioId !== file.id) {
+      setPlayAudio(false);
+      wavesurfer.current.pause();
+    }
+  }, [payingAudioId]);
   return React__default.createElement(Container$a, null, React__default.createElement(PlayPause, {
     onClick: handlePlayPause
   }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioVisualization, {
@@ -23752,7 +23854,7 @@ var MessageStatusAndTime = styled__default.div(_templateObject14$2 || (_template
 }, function (props) {
   return props.leftMargin && '12px';
 }, function (props) {
-  return props.marginBottom || '8px';
+  return props.marginBottom && '8px';
 }, function (props) {
   return props.isSelfMessage ? 'initial' : '';
 }, function (props) {
