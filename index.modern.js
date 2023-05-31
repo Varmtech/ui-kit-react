@@ -20651,7 +20651,15 @@ var getFrame = function getFrame(videoSrc, time) {
 };
 
 var ATTACHMENTS_CACHE = 'attachments-cache';
-var cacheAvailable = ('caches' in global);
+var isBrowser = typeof window !== 'undefined';
+var cacheAvailable;
+
+if (isBrowser) {
+  cacheAvailable = 'caches' in window;
+} else {
+  cacheAvailable = 'caches' in global;
+}
+
 var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmentResponse) {
   if (cacheAvailable) {
     caches.open(ATTACHMENTS_CACHE).then(function (cache) {
@@ -21157,7 +21165,6 @@ var AudioPlayer = function AudioPlayer(_ref) {
       var initWaveSurfer = function initWaveSurfer() {
         try {
           return Promise.resolve(import('wavesurfer.js')).then(function (WaveSurfer) {
-            console.log('WaveSurfer. . . .. .', WaveSurfer);
             wavesurfer.current = WaveSurfer["default"].create({
               container: wavesurferContainer.current,
               waveColor: colors.gray9,
