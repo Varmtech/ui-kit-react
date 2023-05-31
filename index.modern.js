@@ -19631,6 +19631,7 @@ function Chat$1(_ref) {
   var dispatch = useDispatch();
   var channelListWidth = useSelector(channelListWidthSelector, shallowEqual);
   var channelDetailsIsOpen = useSelector(channelInfoIsOpenSelector, shallowEqual);
+  var addedChannel = useSelector(addedToChannelSelector);
   var activeChannel = useSelector(activeChannelSelector);
   useEffect(function () {
     if (hideChannelList && !channelListWidth) {
@@ -19648,6 +19649,11 @@ function Chat$1(_ref) {
       onActiveChannelUpdated(activeChannel);
     }
   }, [activeChannel]);
+  useDidUpdate(function () {
+    if (hideChannelList && (!activeChannel || !activeChannel.id) && addedChannel && addedChannel.id) {
+      dispatch(setActiveChannelAC(addedChannel));
+    }
+  }, [addedChannel]);
   return React__default.createElement(Container$7, {
     widthOffset: channelListWidth,
     channelDetailsIsOpen: channelDetailsIsOpen
