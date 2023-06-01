@@ -20689,10 +20689,8 @@ var cacheAvailable;
 
 if (isBrowser) {
   cacheAvailable = 'caches' in window;
-} else if (typeof global !== 'undefined') {
+} else {
   cacheAvailable = 'caches' in global;
-} else if (typeof caches !== undefined) {
-  cacheAvailable = true;
 }
 
 var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmentResponse) {
