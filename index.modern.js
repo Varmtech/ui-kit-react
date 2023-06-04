@@ -17830,7 +17830,11 @@ var DropDownTriggerContainer = styled.div(_templateObject2$6 || (_templateObject
 }, function (props) {
   return props.isOpen && "\n        &::after {\n            transform: translateY(-50%) rotate(-45deg);\n            top: calc(50% + 2px);\n        }\n        ";
 });
-var DropDownBody = styled.div(_templateObject3$5 || (_templateObject3$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 300;\n  min-width: 200px;\n  right: 0;\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: #ffffff;\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
+var DropDownBody = styled.div(_templateObject3$5 || (_templateObject3$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 300;\n  min-width: 200px;\n  right: ", ";\n  left: ", ";\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: #ffffff;\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
+  return props.position !== 'left' && '0';
+}, function (props) {
+  return props.position === 'left' && '0';
+}, function (props) {
   return props.position === 'top' ? "top: inherit;\n         bottom: 100%;" : props.position === 'topRight' ? "top: inherit;\n         right: inherit;\n         bottom: 100%" : props.position === 'right' || props.position === 'center' ? "right: inherit;" : props.position === 'left' ? "right: inherit;\n          left: 0;" : '';
 });
 
@@ -17904,6 +17908,7 @@ var DropDown = function DropDown(_ref) {
       setIsOpen(dropDownState);
     }
   }, [dropDownState]);
+  console.log('position.. . ..  .', position);
   return React__default.createElement(DropDownContainer, {
     order: order,
     margin: margin,
@@ -26154,15 +26159,18 @@ var SendMessageInput = function SendMessageInput(_ref) {
       _ref$disabled = _ref.disabled,
       disabled = _ref$disabled === void 0 ? false : _ref$disabled,
       sendIconOrder = _ref.sendIconOrder,
-      inputOrder = _ref.inputOrder,
+      _ref$inputOrder = _ref.inputOrder,
+      inputOrder = _ref$inputOrder === void 0 ? 1 : _ref$inputOrder,
       _ref$showAddEmojis = _ref.showAddEmojis,
       showAddEmojis = _ref$showAddEmojis === void 0 ? true : _ref$showAddEmojis,
       AddEmojisIcon = _ref.AddEmojisIcon,
-      emojiIcoOrder = _ref.emojiIcoOrder,
+      _ref$emojiIcoOrder = _ref.emojiIcoOrder,
+      emojiIcoOrder = _ref$emojiIcoOrder === void 0 ? 2 : _ref$emojiIcoOrder,
       _ref$showAddAttachmen = _ref.showAddAttachments,
       showAddAttachments = _ref$showAddAttachmen === void 0 ? true : _ref$showAddAttachmen,
       AddAttachmentsIcon = _ref.AddAttachmentsIcon,
-      attachmentIcoOrder = _ref.attachmentIcoOrder,
+      _ref$attachmentIcoOrd = _ref.attachmentIcoOrder,
+      attachmentIcoOrder = _ref$attachmentIcoOrd === void 0 ? 0 : _ref$attachmentIcoOrd,
       CustomTypingIndicator = _ref.CustomTypingIndicator,
       margin = _ref.margin,
       border = _ref.border,
@@ -26227,53 +26235,57 @@ var SendMessageInput = function SendMessageInput(_ref) {
       emojisInRightSide = _useState6[0],
       setEmojisInRightSide = _useState6[1];
 
-  var _useState7 = useState([]),
-      mentionedMembers = _useState7[0],
-      setMentionedMembers = _useState7[1];
+  var _useState7 = useState(false),
+      addAttachmentsInRightSide = _useState7[0],
+      setAddAttachmentsInRightSide = _useState7[1];
 
-  var _useState8 = useState({}),
-      mentionedMembersDisplayName = _useState8[0],
-      setMentionedMembersDisplayName = _useState8[1];
+  var _useState8 = useState([]),
+      mentionedMembers = _useState8[0],
+      setMentionedMembers = _useState8[1];
 
-  var _useState9 = useState(undefined),
-      currentMentions = _useState9[0],
-      setCurrentMentions = _useState9[1];
+  var _useState9 = useState({}),
+      mentionedMembersDisplayName = _useState9[0],
+      setMentionedMembersDisplayName = _useState9[1];
 
-  var _useState10 = useState(false),
-      mentionTyping = _useState10[0],
-      setMentionTyping = _useState10[1];
+  var _useState10 = useState(undefined),
+      currentMentions = _useState10[0],
+      setCurrentMentions = _useState10[1];
 
-  var _useState11 = useState(),
-      selectionPos = _useState11[0],
-      setSelectionPos = _useState11[1];
+  var _useState11 = useState(false),
+      mentionTyping = _useState11[0],
+      setMentionTyping = _useState11[1];
 
   var _useState12 = useState(),
-      inputContainerHeight = _useState12[0],
-      setInputContainerHeight = _useState12[1];
+      selectionPos = _useState12[0],
+      setSelectionPos = _useState12[1];
 
   var _useState13 = useState(),
-      typingTimout = _useState13[0],
-      setTypingTimout = _useState13[1];
+      inputContainerHeight = _useState13[0],
+      setInputContainerHeight = _useState13[1];
 
   var _useState14 = useState(),
-      inTypingStateTimout = _useState14[0],
-      setInTypingStateTimout = _useState14[1];
+      typingTimout = _useState14[0],
+      setTypingTimout = _useState14[1];
 
-  var _useState15 = useState(false),
-      inTypingState = _useState15[0],
-      setInTypingState = _useState15[1];
+  var _useState15 = useState(),
+      inTypingStateTimout = _useState15[0],
+      setInTypingStateTimout = _useState15[1];
 
   var _useState16 = useState(false),
-      sendMessageIsActive = _useState16[0],
-      setSendMessageIsActive = _useState16[1];
+      inTypingState = _useState16[0],
+      setInTypingState = _useState16[1];
 
   var _useState17 = useState(false),
-      openMention = _useState17[0],
-      setOpenMention = _useState17[1];
+      sendMessageIsActive = _useState17[0],
+      setSendMessageIsActive = _useState17[1];
 
-  var _useState18 = useState([]),
-      attachments = _useState18[0],
-      setAttachments = _useState18[1];
+  var _useState18 = useState(false),
+      openMention = _useState18[0],
+      setOpenMention = _useState18[1];
+
+  var _useState19 = useState([]),
+      attachments = _useState19[0],
+      setAttachments = _useState19[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
@@ -26282,6 +26294,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var inputWrapperRef = useRef(null);
   var messageInputRef = useRef(null);
   var emojiBtnRef = useRef(null);
+  var addAttachmentsBtnRef = useRef(null);
   var mediaExtensions = '.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.wmv,.flv,.webm,.jfif';
 
   var handleSendTypingState = function handleSendTypingState(typingState) {
@@ -27108,6 +27121,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setEmojisInRightSide(true);
     }
 
+    if (attachmentIcoOrder > inputOrder) {
+      setAddAttachmentsInRightSide(true);
+    }
+
     if (!inputContainerHeight && inputWrapperRef && inputWrapperRef.current) {
       setInputContainerHeight(inputWrapperRef.current.getBoundingClientRect().height);
     }
@@ -27270,10 +27287,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   }, AddEmojisIcon || React__default.createElement(SvgEmojiSmileIcon, null)), showAddAttachments && React__default.createElement(DropDown, {
     forceClose: showChooseAttachmentType,
-    position: 'top',
+    position: addAttachmentsInRightSide ? 'top' : 'topRight',
     margin: 'auto 0 0',
     order: attachmentIcoOrder,
     trigger: React__default.createElement(AddAttachmentIcon, {
+      ref: addAttachmentsBtnRef,
       color: colors.primary,
       height: inputContainerHeight || minHeight
     }, AddAttachmentsIcon || React__default.createElement(SvgAddAttachment, null))
@@ -27310,7 +27328,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     paddings: inputPaddings,
     ref: messageInputRef,
     mentionColor: colors.primary
-  })), !(sendAttachmentSeparately && !sendMessageIsActive) && React__default.createElement(SendMessageIcon, {
+  })), React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     height: inputContainerHeight || minHeight,
