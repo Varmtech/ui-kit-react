@@ -4,8 +4,11 @@ interface SendMessageProps {
     draggedAttachments?: boolean;
     handleAttachmentSelected?: (state: boolean) => void;
     disabled?: boolean;
-    hideEmojis?: boolean;
+    showAddEmojis?: boolean;
+    AddEmojisIcon?: JSX.Element;
     emojiIcoOrder?: number;
+    showAddAttachments?: boolean;
+    AddAttachmentsIcon?: JSX.Element;
     attachmentIcoOrder?: number;
     sendIconOrder?: number;
     inputOrder?: number;
@@ -13,11 +16,13 @@ interface SendMessageProps {
         from: IUser;
         typingState: boolean;
     }>;
+    backgroundColor?: string;
     margin?: string;
+    minHeight?: string;
     border?: string;
     borderRadius?: string;
     inputBorderRadius?: string;
-    inputBackground?: string;
+    inputBackgroundColor?: string;
     inputPaddings?: string;
     selectedFileAttachmentsBoxWidth?: string;
     selectedFileAttachmentsBoxBackground?: string;

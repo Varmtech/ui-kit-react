@@ -27,8 +27,8 @@ export declare const LOADING_STATE: {
     LOADED: number;
 };
 export declare const CHANNEL_TYPE: {
-    PRIVATE: string;
-    PUBLIC: string;
+    GROUP: string;
+    BROADCAST: string;
     DIRECT: string;
 };
 export declare const PRESENCE_STATUS: {

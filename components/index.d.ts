@@ -7,8 +7,10 @@ import SendMessage from './SendMessageInput';
 import ChannelDetails from './ChannelDetailsContainer';
 import SceytChatHeader from './SceytChatHeader';
 import MessagesScrollToBottomButton from './MessagesScrollToBottomButton';
+import CreateChannel from './ChannelList/CreateChannelButton';
+import ChannelSearch from './ChannelList/ChannelSearch';
 import Avatar from './Avatar';
-export { SceytChat, ChannelList, Chat, ChatHeader, MessageList, SendMessage, ChannelDetails, SceytChatHeader, MessagesScrollToBottomButton, Avatar };
+export { SceytChat, ChannelList, Chat, ChatHeader, MessageList, SendMessage, ChannelDetails, SceytChatHeader, MessagesScrollToBottomButton, CreateChannel, ChannelSearch, Avatar };
 declare global {
     interface Window {
         sceytTabNotifications: any;

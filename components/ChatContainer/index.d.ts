@@ -31,6 +31,7 @@ export interface IChatClientProps {
     CustomUploader?: ICustomUploader;
     customColors?: {
         primaryColor?: string;
+        primaryLight?: string;
         textColor1?: string;
         textColor2?: string;
         textColor3?: string;

@@ -13,6 +13,8 @@ interface IChannelListProps {
         children?: React.ReactNode;
     }>;
     ListItem?: FC<any>;
+    searchChannelsPosition?: 'inline' | 'bottom';
+    searchInputBorderRadius?: string;
     getActiveChannel?: (channel: IChannel) => void;
     Profile?: JSX.Element;
     filter?: {
@@ -29,9 +31,17 @@ interface IChannelListProps {
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;
     createChannelIcon?: JSX.Element;
+    newChannelIcon?: JSX.Element;
+    newGroupIcon?: JSX.Element;
+    newChatIcon?: JSX.Element;
+    uploadPhotoIcon?: JSX.Element;
     createChannelIconHoverBackground?: string;
     selectedChannelBackground?: string;
     selectedChannelLeftBorder?: string;
+    selectedChannelBorderRadius?: string;
+    selectedChannelPaddings?: string;
+    channelsPaddings?: string;
+    channelsMargin?: string;
     onChannelDeleted?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
     onChannelCreated?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
     onChannelHidden?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;

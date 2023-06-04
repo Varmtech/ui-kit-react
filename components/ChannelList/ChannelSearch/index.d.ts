@@ -3,6 +3,8 @@ interface IChannelSearchProps {
     searchValue: string;
     handleSearchValueChange: (e: any) => void;
     getMyChannels: () => void;
+    inline?: boolean;
+    borderRadius?: string;
 }
 declare const ChannelSearch: React.FC<IChannelSearchProps>;
 export default ChannelSearch;

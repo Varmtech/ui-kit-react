@@ -9,9 +9,10 @@ interface IProps {
     isSelect?: boolean;
     dropDownState?: boolean;
     order?: number;
+    margin?: string;
     watchToggleState?: (state: boolean) => void;
     height?: string;
     children?: JSX.Element | JSX.Element[];
 }
-declare const DropDown: ({ trigger, position, withIcon, iconColor, isStatic, forceClose, isSelect, dropDownState, watchToggleState, height, children, order }: IProps) => JSX.Element;
+declare const DropDown: ({ trigger, position, withIcon, iconColor, margin, isStatic, forceClose, isSelect, dropDownState, watchToggleState, height, children, order }: IProps) => JSX.Element;
 export default DropDown;

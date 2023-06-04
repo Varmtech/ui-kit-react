@@ -3,7 +3,10 @@ interface IChannelListProps {
     showSearch?: boolean;
     uriPrefixOnCreateChannel?: string;
     createChannelIcon?: JSX.Element;
-    createChannelIconHoverBackground?: string;
+    newChannelIcon?: JSX.Element;
+    newGroupIcon?: JSX.Element;
+    newChatIcon?: JSX.Element;
+    uploadPhotoIcon?: JSX.Element;
 }
 declare const CreateChannelButton: React.FC<IChannelListProps>;
 export default CreateChannelButton;

@@ -1,6 +1,6 @@
-import { IChannelsCustomColors } from '../components/Channel/types';
 export declare const colors: {
     white: string;
+    textColor1: string;
     black1: string;
     blue1: string;
     blue2: string;
@@ -26,7 +26,6 @@ export declare const colors: {
     gray11: string;
     pink1: string;
     purple1: string;
-    cobalt1: string;
     primary: string;
     primaryLight: string;
     red1: string;
@@ -55,5 +54,3 @@ export declare const device: {
     laptopL: string;
     max: string;
 };
-export declare const customColors: IChannelsCustomColors;
-export declare const setCustomColors: (colorsKeyValues: IChannelsCustomColors) => void;

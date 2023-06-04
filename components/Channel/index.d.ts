@@ -5,9 +5,15 @@ interface IChannelProps {
     avatar?: boolean;
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;
+    selectedChannelLeftBorder?: string;
+    selectedChannelBackground?: string;
     contactsMap: {
         [key: string]: IContact;
     };
+    selectedChannelBorderRadius?: string;
+    selectedChannelPaddings?: string;
+    channelsPaddings?: string;
+    channelsMargin?: string;
 }
 declare const Channel: React.FC<IChannelProps>;
 export default Channel;
@@ -19,7 +25,6 @@ export interface UnreadCountProps {
     textColor?: string;
     fontSize?: string;
 }
-export declare const Container: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const ChannelInfo: import("styled-components").StyledComponent<"div", any, {
     avatar?: boolean | undefined;
     isMuted?: boolean | undefined;
