@@ -15,15 +15,11 @@ export interface IDetailsProps {
     muteUnmuteNotificationSwitcherColor?: string;
     muteUnmuteNotificationTextColor?: string;
     timeOptionsToMuteNotifications?: [MuteTime, ...MuteTime[]];
-    showClearHistoryForDirectChannel?: boolean;
-    showClearHistoryForPrivateChannel?: boolean;
-    showClearHistoryForPublicChannel?: boolean;
+    showClearHistory?: boolean;
     clearHistoryOrder?: number;
     clearHistoryIcon?: JSX.Element;
     clearHistoryTextColor?: string;
-    showDeleteAllMessagesForDirectChannel?: boolean;
-    showDeleteAllMessagesForPrivateChannel?: boolean;
-    showDeleteAllMessagesForPublicChannel?: boolean;
+    showDeleteAllMessages?: boolean;
     deleteAllMessagesOrder?: number;
     deleteAllMessagesIcon?: JSX.Element;
     deleteAllMessagesTextColor?: string;
@@ -89,5 +85,5 @@ export interface IDetailsProps {
     showKickAndBlockMember?: boolean;
     showMakeMemberAdmin?: boolean;
 }
-declare const ChannelDetailsContainer: ({ channelEditIcon, editChannelSaveButtonBackgroundColor, editChannelSaveButtonTextColor, editChannelCancelButtonBackgroundColor, editChannelCancelButtonTextColor, showMuteUnmuteNotifications, muteUnmuteNotificationsOrder, muteNotificationIcon, unmuteNotificationIcon, muteNotificationIconColor, unmuteNotificationIconColor, muteUnmuteNotificationSwitcherColor, muteUnmuteNotificationTextColor, timeOptionsToMuteNotifications, showStarredMessages, starredMessagesOrder, staredMessagesIcon, staredMessagesIconColor, staredMessagesTextColor, showPinChannel, pinChannelOrder, pinChannelIcon, pinChannelIconColor, pinChannelTextColor, showMarkAsReadUnread, markAsReadUnreadOrder, markAsReadIcon, markAsUnreadIcon, markAsReadIconColor, markAsUnreadIconColor, markAsReadUnreadTextColor, showLeaveChannel, leaveChannelOrder, leaveChannelIcon, leaveChannelIconColor, leaveChannelTextColor, showReportChannel, reportChannelIcon, reportChannelOrder, reportChannelIconColor, reportChannelTextColor, showDeleteChannel, deleteChannelIcon, deleteChannelIconColor, deleteChannelTextColor, deleteChannelOrder, showBlockAndLeaveChannel, showBlockUser, blockAndLeaveChannelIcon, blockAndLeaveChannelIconColor, blockAndLeaveChannelTextColor, unblockUserIcon, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, showClearHistoryForDirectChannel, showClearHistoryForPrivateChannel, showClearHistoryForPublicChannel, clearHistoryOrder, clearHistoryIcon, clearHistoryTextColor, showDeleteAllMessagesForDirectChannel, showDeleteAllMessagesForPrivateChannel, showDeleteAllMessagesForPublicChannel, deleteAllMessagesOrder, deleteAllMessagesIcon, deleteAllMessagesTextColor, showChangeMemberRole, showKickMember, showKickAndBlockMember }: IDetailsProps) => JSX.Element;
+declare const ChannelDetailsContainer: ({ channelEditIcon, editChannelSaveButtonBackgroundColor, editChannelSaveButtonTextColor, editChannelCancelButtonBackgroundColor, editChannelCancelButtonTextColor, showMuteUnmuteNotifications, muteUnmuteNotificationsOrder, muteNotificationIcon, unmuteNotificationIcon, muteNotificationIconColor, unmuteNotificationIconColor, muteUnmuteNotificationSwitcherColor, muteUnmuteNotificationTextColor, timeOptionsToMuteNotifications, showStarredMessages, starredMessagesOrder, staredMessagesIcon, staredMessagesIconColor, staredMessagesTextColor, showPinChannel, pinChannelOrder, pinChannelIcon, pinChannelIconColor, pinChannelTextColor, showMarkAsReadUnread, markAsReadUnreadOrder, markAsReadIcon, markAsUnreadIcon, markAsReadIconColor, markAsUnreadIconColor, markAsReadUnreadTextColor, showLeaveChannel, leaveChannelOrder, leaveChannelIcon, leaveChannelIconColor, leaveChannelTextColor, showReportChannel, reportChannelIcon, reportChannelOrder, reportChannelIconColor, reportChannelTextColor, showDeleteChannel, deleteChannelIcon, deleteChannelIconColor, deleteChannelTextColor, deleteChannelOrder, showBlockAndLeaveChannel, showBlockUser, blockAndLeaveChannelIcon, blockAndLeaveChannelIconColor, blockAndLeaveChannelTextColor, unblockUserIcon, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, showClearHistory, clearHistoryOrder, clearHistoryIcon, clearHistoryTextColor, showDeleteAllMessages, deleteAllMessagesOrder, deleteAllMessagesIcon, deleteAllMessagesTextColor, showChangeMemberRole, showKickMember, showKickAndBlockMember }: IDetailsProps) => JSX.Element;
 export default ChannelDetailsContainer;

@@ -32,6 +32,7 @@ interface SendMessageProps {
     selectedFileAttachmentsIcon?: JSX.Element;
     selectedAttachmentsBorderRadius?: string;
     replyMessageIcon?: JSX.Element;
+    editMessageIcon?: JSX.Element;
     voiceMessage?: boolean;
     sendAttachmentSeparately?: boolean;
     allowMentionUser?: boolean;

@@ -19,15 +19,11 @@ interface IProps {
     staredMessagesIcon?: JSX.Element;
     staredMessagesIconColor?: string;
     staredMessagesTextColor?: string;
-    showClearHistoryForDirectChannel?: boolean;
-    showClearHistoryForPrivateChannel?: boolean;
-    showClearHistoryForPublicChannel?: boolean;
+    showClearHistory?: boolean;
     clearHistoryOrder?: number;
     clearHistoryIcon?: JSX.Element;
     clearHistoryTextColor?: string;
-    showDeleteAllMessagesForDirectChannel?: boolean;
-    showDeleteAllMessagesForPrivateChannel?: boolean;
-    showDeleteAllMessagesForPublicChannel?: boolean;
+    showDeleteAllMessages?: boolean;
     deleteAllMessagesOrder?: number;
     deleteAllMessagesIcon?: JSX.Element;
     deleteAllMessagesTextColor?: string;
@@ -67,5 +63,5 @@ interface IProps {
     blockAndLeaveChannelTextColor?: string;
     unblockUserTextColor?: string;
 }
-declare const Actions: ({ channel, actionMenuOpen, menuIsOpen, toggleable, showMuteUnmuteNotifications, muteUnmuteNotificationsOrder, muteNotificationIcon, unmuteNotificationIcon, muteNotificationIconColor, unmuteNotificationIconColor, muteUnmuteNotificationTextColor, timeOptionsToMuteNotifications, showStarredMessages, starredMessagesOrder, staredMessagesIcon, staredMessagesIconColor, staredMessagesTextColor, showPinChannel, pinChannelOrder, pinChannelIcon, pinChannelIconColor, pinChannelTextColor, showMarkAsReadUnread, markAsReadUnreadOrder, markAsReadIcon, markAsUnreadIcon, markAsReadIconColor, markAsUnreadIconColor, markAsReadUnreadTextColor, showLeaveChannel, leaveChannelOrder, leaveChannelIcon, leaveChannelIconColor, leaveChannelTextColor, showReportChannel, reportChannelIcon, reportChannelOrder, reportChannelIconColor, reportChannelTextColor, showDeleteChannel, deleteChannelIcon, deleteChannelIconColor, deleteChannelTextColor, deleteChannelOrder, showBlockAndLeaveChannel, showBlockUser, blockAndLeaveChannelIcon, unblockUserIcon, blockAndLeaveChannelIconColor, blockAndLeaveChannelTextColor, unblockUserTextColor, showClearHistoryForDirectChannel, showClearHistoryForPrivateChannel, showClearHistoryForPublicChannel, clearHistoryOrder, clearHistoryIcon, clearHistoryTextColor, showDeleteAllMessagesForDirectChannel, showDeleteAllMessagesForPrivateChannel, showDeleteAllMessagesForPublicChannel, deleteAllMessagesOrder, deleteAllMessagesIcon, deleteAllMessagesTextColor }: IProps) => JSX.Element;
+declare const Actions: ({ channel, actionMenuOpen, menuIsOpen, toggleable, showMuteUnmuteNotifications, muteUnmuteNotificationsOrder, muteNotificationIcon, unmuteNotificationIcon, muteNotificationIconColor, unmuteNotificationIconColor, muteUnmuteNotificationTextColor, timeOptionsToMuteNotifications, showStarredMessages, starredMessagesOrder, staredMessagesIcon, staredMessagesIconColor, staredMessagesTextColor, showPinChannel, pinChannelOrder, pinChannelIcon, pinChannelIconColor, pinChannelTextColor, showMarkAsReadUnread, markAsReadUnreadOrder, markAsReadIcon, markAsUnreadIcon, markAsReadIconColor, markAsUnreadIconColor, markAsReadUnreadTextColor, showLeaveChannel, leaveChannelOrder, leaveChannelIcon, leaveChannelIconColor, leaveChannelTextColor, showReportChannel, reportChannelIcon, reportChannelOrder, reportChannelIconColor, reportChannelTextColor, showDeleteChannel, deleteChannelIcon, deleteChannelIconColor, deleteChannelTextColor, deleteChannelOrder, showBlockAndLeaveChannel, showBlockUser, blockAndLeaveChannelIcon, unblockUserIcon, blockAndLeaveChannelIconColor, blockAndLeaveChannelTextColor, unblockUserTextColor, showClearHistory, clearHistoryOrder, clearHistoryIcon, clearHistoryTextColor, showDeleteAllMessages, deleteAllMessagesOrder, deleteAllMessagesIcon, deleteAllMessagesTextColor }: IProps) => JSX.Element;
 export default Actions;

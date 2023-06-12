@@ -48,7 +48,7 @@ interface IMessageProps {
     staredIcon?: JSX.Element;
     reportIcon?: JSX.Element;
     openFrequentlyUsedReactions?: boolean;
-    separateEmojiCategoriesWithTitle?: boolean;
+    fixEmojiCategoriesTitleOnTop?: boolean;
     emojisCategoryIconsPosition?: 'top' | 'bottom';
     emojisContainerBorderRadius?: string;
     reactionIconOrder?: number;
@@ -73,6 +73,7 @@ interface IMessageProps {
     inlineReactionIcon?: JSX.Element;
     reactionsDisplayCount?: number;
     showEachReactionCount?: boolean;
+    showTotalReactionCount?: boolean;
     reactionItemBorder?: string;
     reactionItemBorderRadius?: string;
     reactionItemBackground?: string;
@@ -84,6 +85,8 @@ interface IMessageProps {
     reactionsContainerBorderRadius?: string;
     reactionsContainerBackground?: string;
     reactionsContainerTopPosition?: string;
+    reactionsDetailsPopupBorderRadius?: string;
+    reactionsDetailsPopupHeaderItemsStyle?: 'bubbles' | 'inline';
     reactionsContainerPadding?: string;
     fileAttachmentsBoxWidth?: number;
     fileAttachmentsBoxBackground?: string;
@@ -98,7 +101,7 @@ interface IMessageProps {
     sameUserMessageSpacing?: string;
     differentUserMessageSpacing?: string;
 }
-declare const Message: ({ message, channel, handleScrollToRepliedMessage, handleMediaItemClick, stopScrolling, prevMessage, nextMessage, setLastVisibleMessageId, isUnreadMessage, isThreadMessage, fontFamily, ownMessageOnRightSide, messageWidthPercent, showSenderNameOnDirectChannel, showSenderNameOnGroupChannel, showSenderNameOnOwnMessages, messageStatusAndTimePosition, messageStatusDisplayingType, ownMessageBackground, incomingMessageBackground, showOwnAvatar, showMessageStatus, showMessageTime, showMessageStatusForEachMessage, showMessageTimeForEachMessage, hoverBackground, messageReaction, editMessage, copyMessage, replyMessage, replyMessageInThread, deleteMessage, allowEditDeleteIncomingMessage, forwardMessage, reportMessage, reactionIcon, editIcon, copyIcon, replyIcon, replyInThreadIcon, forwardIcon, deleteIcon, starIcon, staredIcon, reportIcon, reactionIconOrder, openFrequentlyUsedReactions, editIconOrder, copyIconOrder, replyIconOrder, replyInThreadIconOrder, forwardIconOrder, deleteIconOrder, starIconOrder, reportIconOrder, reactionIconTooltipText, editIconTooltipText, copyIconTooltipText, replyIconTooltipText, replyInThreadIconTooltipText, forwardIconTooltipText, deleteIconTooltipText, starIconTooltipText, reportIconTooltipText, messageActionIconsColor, fileAttachmentsIcon, reactionsDisplayCount, showEachReactionCount, reactionItemBorder, reactionItemBorderRadius, reactionItemBackground, reactionItemPadding, reactionItemMargin, reactionsFontSize, reactionsContainerBoxShadow, reactionsContainerBorder, reactionsContainerBorderRadius, reactionsContainerBackground, reactionsContainerPadding, reactionsContainerTopPosition, fileAttachmentsBoxWidth, fileAttachmentsBoxBorder, fileAttachmentsTitleColor, fileAttachmentsSizeColor, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight, emojisCategoryIconsPosition, emojisContainerBorderRadius, separateEmojiCategoriesWithTitle, sameUserMessageSpacing, differentUserMessageSpacing }: IMessageProps) => JSX.Element;
+declare const Message: ({ message, channel, handleScrollToRepliedMessage, handleMediaItemClick, stopScrolling, prevMessage, nextMessage, setLastVisibleMessageId, isUnreadMessage, isThreadMessage, fontFamily, ownMessageOnRightSide, messageWidthPercent, showSenderNameOnDirectChannel, showSenderNameOnGroupChannel, showSenderNameOnOwnMessages, messageStatusAndTimePosition, messageStatusDisplayingType, ownMessageBackground, incomingMessageBackground, showOwnAvatar, showMessageStatus, showMessageTime, showMessageStatusForEachMessage, showMessageTimeForEachMessage, hoverBackground, messageReaction, editMessage, copyMessage, replyMessage, replyMessageInThread, deleteMessage, allowEditDeleteIncomingMessage, forwardMessage, reportMessage, reactionIcon, editIcon, copyIcon, replyIcon, replyInThreadIcon, forwardIcon, deleteIcon, starIcon, staredIcon, reportIcon, reactionIconOrder, openFrequentlyUsedReactions, editIconOrder, copyIconOrder, replyIconOrder, replyInThreadIconOrder, forwardIconOrder, deleteIconOrder, starIconOrder, reportIconOrder, reactionIconTooltipText, editIconTooltipText, copyIconTooltipText, replyIconTooltipText, replyInThreadIconTooltipText, forwardIconTooltipText, deleteIconTooltipText, starIconTooltipText, reportIconTooltipText, messageActionIconsColor, fileAttachmentsIcon, reactionsDisplayCount, showEachReactionCount, showTotalReactionCount, reactionItemBorder, reactionItemBorderRadius, reactionItemBackground, reactionItemPadding, reactionItemMargin, reactionsFontSize, reactionsContainerBoxShadow, reactionsContainerBorder, reactionsContainerBorderRadius, reactionsContainerBackground, reactionsContainerPadding, reactionsContainerTopPosition, reactionsDetailsPopupBorderRadius, reactionsDetailsPopupHeaderItemsStyle, fileAttachmentsBoxWidth, fileAttachmentsBoxBorder, fileAttachmentsTitleColor, fileAttachmentsSizeColor, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight, emojisCategoryIconsPosition, emojisContainerBorderRadius, fixEmojiCategoriesTitleOnTop, sameUserMessageSpacing, differentUserMessageSpacing }: IMessageProps) => JSX.Element;
 export default Message;
 export declare const MessageStatusAndTime: import("styled-components").StyledComponent<"div", any, {
     withAttachment?: boolean | undefined;

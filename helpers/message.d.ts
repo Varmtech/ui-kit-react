@@ -19,5 +19,5 @@ export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const setMessageTypeByAttachment: (attachmentType: string) => "file" | "media";
 export declare const getFileExtension: (filename: string) => string | undefined;
 export declare const getAttachmentType: (dataName: string) => string;
-export declare const lastMessageDateFormat: (date: Date) => string;
+export declare const lastMessageDateFormat: (date: Date | number) => string;
 export declare const getDuplicateMentionsFromMeta: (mentionsMetas: any[], mentionedMembers: any[]) => any[];

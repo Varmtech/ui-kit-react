@@ -35,7 +35,7 @@ interface MessagesProps {
     staredIcon?: JSX.Element;
     reportIcon?: JSX.Element;
     openFrequentlyUsedReactions?: boolean;
-    separateEmojiCategoriesWithTitle?: boolean;
+    fixEmojiCategoriesTitleOnTop?: boolean;
     emojisCategoryIconsPosition?: 'top' | 'bottom';
     emojisContainerBorderRadius?: string;
     reactionIconOrder?: number;
@@ -67,6 +67,7 @@ interface MessagesProps {
     inlineReactionIcon?: JSX.Element;
     reactionsDisplayCount?: number;
     showEachReactionCount?: boolean;
+    showTotalReactionCount?: boolean;
     reactionItemBorder?: string;
     reactionItemBorderRadius?: string;
     reactionItemBackground?: string;
@@ -79,6 +80,8 @@ interface MessagesProps {
     reactionsContainerPadding?: string;
     reactionsContainerBackground?: string;
     reactionsContainerTopPosition?: string;
+    reactionsDetailsPopupBorderRadius?: string;
+    reactionsDetailsPopupHeaderItemsStyle?: 'bubbles' | 'inline';
     newMessagesSeparatorText?: string;
     newMessagesSeparatorFontSize?: string;
     newMessagesSeparatorTextColor?: string;

@@ -1082,6 +1082,10 @@ var ChannelReducer = (function (state, _temp) {
           newState.channels = [payload.channel].concat(newState.channels);
         }
 
+        if (newState.hideChannelList && (!newState.activeChannel || !newState.activeChannel.id)) {
+          newState.activeChannel = payload.channel;
+        }
+
         return newState;
       }
 
@@ -7296,7 +7300,7 @@ var colors = {
   gray7: '#898B99',
   gray8: '#3A3C3E',
   gray9: '#757D8B',
-  gray10: '#F3F5F7',
+  gray10: '#707388',
   gray11: '#F1F2F6',
   pink1: '#ff3e74',
   purple1: '#9f35e7',
@@ -8707,7 +8711,8 @@ var initialState$3 = {
   user: {
     id: '',
     firstName: '',
-    lastName: ''
+    lastName: '',
+    activityState: ''
   },
   browserTabIsActive: true
 };
@@ -9585,7 +9590,7 @@ var SectionHeader = styled__default.h4(_templateObject25 || (_templateObject25 =
 }, function (props) {
   return props.margin || 0;
 });
-var ItemNote = styled__default.div(_templateObject26 || (_templateObject26 = _taggedTemplateLiteralLoose(["\n  display: none;\n  position: absolute;\n  z-index: 301;\n  padding: 10px 12px;\n  background-color: ", ";\n  border-radius: 4px;\n  font-size: 0.75rem;\n  white-space: nowrap;\n  font-weight: 600;\n  color: white;\n  pointer-events: none;\n  user-select: none;\n\n  &::before {\n    content: '';\n    position: absolute;\n    z-index: -1;\n    background-color: ", ";\n    border-radius: 1px;\n    width: 14px;\n    height: 14px;\n\n    ", " ", "\n  }\n\n  ", " ", " ", " ", "\n"])), colors.blue6, colors.blue6, function (props) {
+var ItemNote = styled__default.div(_templateObject26 || (_templateObject26 = _taggedTemplateLiteralLoose(["\n  display: none;\n  position: absolute;\n  z-index: 301;\n  padding: 10px 12px;\n  background-color: ", ";\n  border-radius: 12px;\n  font-size: 0.75rem;\n  white-space: nowrap;\n  font-weight: 600;\n  color: white;\n  pointer-events: none;\n  user-select: none;\n\n  &::before {\n    content: '';\n    position: absolute;\n    z-index: -1;\n    background-color: ", ";\n    border-radius: 3px;\n    width: 14px;\n    height: 14px;\n\n    ", " ", "\n  }\n\n  ", " ", " ", " ", "\n"])), colors.textColor1, colors.textColor1, function (props) {
   return props.direction === 'right' && "\n            left: -5px;\n            top: 50%;\n            transform: translateY(-50%) rotate(45deg);\n        ";
 }, function (props) {
   return props.direction === 'top' && "\n            bottom: -5px;\n            left: 50%;\n            transform: translateX(-50%) rotate(45deg);\n        ";
@@ -9934,7 +9939,7 @@ function getActiveChannelId() {
 function setChannelsInMap(channels) {
   var channelsForUpdateLastReactionMessage = [];
   var formattedChannel = channels.map(function (channel) {
-    if (channel.userMessageReactions && channel.userMessageReactions.length && channel.lastMessage && channel.lastMessage.id < channel.userMessageReactions[0].id && channel.lastMessage.id !== channel.userMessageReactions[0].messageId) {
+    if (channel.newReactions && channel.newReactions.length && channel.lastMessage && channel.lastMessage.id < channel.newReactions[0].id && channel.lastMessage.id !== channel.newReactions[0].messageId) {
       channelsForUpdateLastReactionMessage.push(channel);
     }
 
@@ -11654,7 +11659,7 @@ function watchForEvents() {
 
           _context3.next = 201;
           return effects.put(updateChannelDataAC(_channel8.id, {
-            unreadMessageCount: _channel8.unreadMessageCount
+            unreadMessageCount: _channel8.newMessageCount
           }));
 
         case 201:
@@ -11740,13 +11745,13 @@ function watchForEvents() {
             }
           }
 
-          if (!(_channel10.userMessageReactions && _channel10.userMessageReactions.length)) {
+          if (!(_channel10.newReactions && _channel10.newReactions.length)) {
             _context3.next = 232;
             break;
           }
 
           channelUpdateParams = {
-            userMessageReactions: _channel10.userMessageReactions,
+            userMessageReactions: _channel10.newReactions,
             lastReactedMessage: _message2
           };
           _context3.next = 232;
@@ -11777,7 +11782,7 @@ function watchForEvents() {
           removeReactionOnAllMessages(_message3, _reaction, true);
 
         case 242:
-          if (_channel11.userMessageReactions && _channel11.userMessageReactions.length) {
+          if (_channel11.newReactions && _channel11.newReactions.length) {
             _context3.next = 246;
             break;
           }
@@ -11854,7 +11859,7 @@ function watchForEvents() {
           _context3.next = 275;
           return effects.put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
-            muteExpireDate: _channel14.muteExpireDate
+            mutedTill: _channel14.mutedTill
           }));
 
         case 275:
@@ -11866,7 +11871,7 @@ function watchForEvents() {
           _context3.next = 280;
           return effects.put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
-            muteExpireDate: _channel15.muteExpireDate
+            mutedTill: _channel15.mutedTill
           }));
 
         case 280:
@@ -11894,7 +11899,7 @@ function watchForEvents() {
           _channel18 = args.channel;
           _context3.next = 294;
           return effects.put(updateChannelDataAC(_channel18.id, {
-            markedAsUnread: _channel18.markedAsUnread
+            markedAsUnread: _channel18.unread
           }));
 
         case 294:
@@ -11904,7 +11909,7 @@ function watchForEvents() {
           _channel19 = args.channel;
           _context3.next = 298;
           return effects.put(updateChannelDataAC(_channel19.id, {
-            markedAsUnread: _channel19.markedAsUnread
+            markedAsUnread: _channel19.unread
           }));
 
         case 298:
@@ -12184,7 +12189,7 @@ function getChannels(action) {
               return Promise.resolve(Promise.all(channelsForUpdateLastReactionMessage.map(function (channel) {
                 try {
                   return Promise.resolve(new Promise(function (resolve) {
-                    channel.getMessagesById([channel.userMessageReactions[0].messageId]).then(function (messages) {
+                    channel.getMessagesById([channel.newReactions[0].messageId]).then(function (messages) {
                       channelMessageMap[channel.id] = messages[0];
                       resolve(true);
                     });
@@ -12278,7 +12283,7 @@ function getChannels(action) {
               return Promise.resolve(Promise.all(_channelsForUpdateLastReactionMessage.map(function (channel) {
                 try {
                   return Promise.resolve(new Promise(function (resolve) {
-                    channel.getMessagesById([channel.userMessageReactions[0].messageId]).then(function (messages) {
+                    channel.getMessagesById([channel.newReactions[0].messageId]).then(function (messages) {
                       _channelMessageMap[channel.id] = messages[0];
                       resolve(true);
                     })["catch"](function (e) {
@@ -12525,7 +12530,7 @@ function channelsLoadMore(action) {
               return Promise.resolve(Promise.all(channelsForUpdateLastReactionMessage.map(function (channel) {
                 try {
                   return Promise.resolve(new Promise(function (resolve) {
-                    channel.getMessagesById([channel.userMessageReactions[0].messageId]).then(function (messages) {
+                    channel.getMessagesById([channel.newReactions[0].messageId]).then(function (messages) {
                       channelMessageMap[channel.id] = messages[0];
                       resolve(true);
                     })["catch"](function (e) {
@@ -12668,9 +12673,9 @@ function markMessagesRead(action) {
           markedMessageIds = _context6.sent;
           _context6.next = 11;
           return effects.put(updateChannelDataAC(channel.id, {
-            markedAsUnread: channel.markedAsUnread,
-            lastReadMessageId: channel.lastReadMessageId,
-            unreadMessageCount: channel.unreadMessageCount
+            markedAsUnread: channel.unread,
+            lastReadMessageId: channel.lastDisplayedMsgId,
+            unreadMessageCount: channel.newMessageCount
           }));
 
         case 11:
@@ -12795,7 +12800,7 @@ function notificationsTurnOff(action) {
           _context9.next = 13;
           return effects.put(updateChannelDataAC(updatedChannel.id, {
             muted: updatedChannel.muted,
-            muteExpireDate: updatedChannel.muteExpireDate
+            mutedTill: updatedChannel.mutedTill
           }));
 
         case 13:
@@ -12840,7 +12845,7 @@ function notificationsTurnOn() {
           _context10.next = 12;
           return effects.put(updateChannelDataAC(updatedChannel.id, {
             muted: updatedChannel.muted,
-            muteExpireDate: updatedChannel.muteExpireDate
+            mutedTill: updatedChannel.mutedTill
           }));
 
         case 12:
@@ -15023,7 +15028,7 @@ function getMessagesQuery(action) {
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
 
           if (!channel.id) {
-            _context7.next = 97;
+            _context7.next = 94;
             break;
           }
 
@@ -15053,7 +15058,7 @@ function getMessagesQuery(action) {
           }
 
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          _context7.next = 88;
+          _context7.next = 85;
           break;
 
         case 19:
@@ -15113,51 +15118,48 @@ function getMessagesQuery(action) {
           return effects.put(setScrollToMessagesAC(messageId));
 
         case 46:
-          _context7.next = 88;
+          _context7.next = 85;
           break;
 
         case 48:
-          if (!(channel.unreadMessageCount && channel.lastReadMessageId)) {
-            _context7.next = 75;
+          if (!(channel.newMessageCount && channel.lastDisplayedMsgId)) {
+            _context7.next = 72;
             break;
           }
 
-          console.log('channel unread count.... ', channel.unreadMessageCount);
-          console.log('channel..lastReadMessageIdt .. ', channel.lastReadMessageId);
-          console.log('channel..... ', channel);
           setAllMessages([]);
           messageQuery.limit = MESSAGES_MAX_LENGTH;
 
-          if (!Number(channel.lastReadMessageId)) {
-            _context7.next = 60;
+          if (!Number(channel.lastDisplayedMsgId)) {
+            _context7.next = 57;
             break;
           }
 
-          _context7.next = 57;
-          return effects.call(messageQuery.loadNearMessageId, channel.lastReadMessageId);
+          _context7.next = 54;
+          return effects.call(messageQuery.loadNearMessageId, channel.lastDisplayedMsgId);
 
-        case 57:
+        case 54:
           result = _context7.sent;
-          _context7.next = 63;
+          _context7.next = 60;
           break;
 
-        case 60:
-          _context7.next = 62;
+        case 57:
+          _context7.next = 59;
           return effects.call(messageQuery.loadPrevious);
 
-        case 62:
+        case 59:
           result = _context7.sent;
 
-        case 63:
+        case 60:
           setMessagesToMap(channel.id, result.messages);
-          _context7.next = 66;
+          _context7.next = 63;
           return effects.put(setMessagesHasPrevAC(true));
 
-        case 66:
-          _context7.next = 68;
+        case 63:
+          _context7.next = 65;
           return effects.put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
 
-        case 68:
+        case 65:
           _pendingMessages = getPendingMessages(channel.id);
 
           if (_pendingMessages && _pendingMessages.length) {
@@ -15165,30 +15167,30 @@ function getMessagesQuery(action) {
           }
 
           setAllMessages([].concat(result.messages));
-          _context7.next = 73;
+          _context7.next = 70;
           return effects.put(setMessagesAC([].concat(result.messages)));
 
-        case 73:
-          _context7.next = 88;
+        case 70:
+          _context7.next = 85;
           break;
 
-        case 75:
+        case 72:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context7.next = 80;
+            _context7.next = 77;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context7.next = 80;
+          _context7.next = 77;
           return effects.put(setMessagesAC(cachedMessages));
 
-        case 80:
-          _context7.next = 82;
+        case 77:
+          _context7.next = 79;
           return effects.call(messageQuery.loadPrevious);
 
-        case 82:
+        case 79:
           result = _context7.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -15197,16 +15199,16 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context7.next = 86;
+          _context7.next = 83;
           return effects.put(setMessagesHasPrevAC(result.hasNext));
 
-        case 86:
-          _context7.next = 88;
+        case 83:
+          _context7.next = 85;
           return effects.put(setMessagesHasNextAC(false));
 
-        case 88:
+        case 85:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context7.next = 95;
+            _context7.next = 92;
             break;
           }
 
@@ -15218,10 +15220,10 @@ function getMessagesQuery(action) {
             }
           }
 
-          _context7.next = 92;
+          _context7.next = 89;
           return effects.put(setMessagesAC([].concat(result.messages)));
 
-        case 92:
+        case 89:
           setMessagesToMap(channel.id, result.messages);
 
           if (!loadWithLastMessage) {
@@ -15232,25 +15234,25 @@ function getMessagesQuery(action) {
             setHasNextCached(false);
           }
 
-        case 95:
-          _context7.next = 97;
+        case 92:
+          _context7.next = 94;
           return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 97:
-          _context7.next = 102;
+        case 94:
+          _context7.next = 99;
           break;
 
-        case 99:
-          _context7.prev = 99;
+        case 96:
+          _context7.prev = 96;
           _context7.t0 = _context7["catch"](0);
           console.log('error in message query', _context7.t0);
 
-        case 102:
+        case 99:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$1, null, [[0, 99]]);
+  }, _marked7$1, null, [[0, 96]]);
 }
 
 function loadMoreMessages(action) {
@@ -17637,18 +17639,18 @@ var Channel = function Channel(_ref) {
   }, React__default.createElement("h3", null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), channel.muted && React__default.createElement(MutedIcon, {
     color: notificationsIsMutedIconColor
   }, notificationsIsMutedIcon || React__default.createElement(SvgNotificationsOff3, null)), (lastMessage || !!typingIndicator) && React__default.createElement(LastMessage, {
-    markedAsUnread: !!(channel.markedAsUnread || channel.unreadMessageCount && channel.unreadMessageCount > 0),
-    unreadMentions: !!(channel.unreadMentionsCount && channel.unreadMentionsCount > 0)
+    markedAsUnread: !!(channel.unread || channel.newMessageCount && channel.newMessageCount > 0),
+    unreadMentions: !!(channel.newMentionCount && channel.newMentionCount > 0)
   }, typingIndicator ? !isDirectChannel ? React__default.createElement(LastMessageAuthor, {
     typing: typingIndicator,
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : channel.lastReactedMessage && channel.userMessageReactions && channel.userMessageReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.userMessageReactions[0].user && channel.userMessageReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, channel.userMessageReactions[0].user.id === user.id ? 'You' : contactsMap[channel.userMessageReactions[0].user.id] ? contactsMap[channel.userMessageReactions[0].user.id].firstName : channel.userMessageReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, channel.newReactions[0].user.id === user.id ? 'You' : contactsMap[channel.newReactions[0].user.id] ? contactsMap[channel.newReactions[0].user.id].firstName : channel.newReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
@@ -17660,7 +17662,7 @@ var Channel = function Channel(_ref) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "Reacted", React__default.createElement(ReactionItem, null, channel.userMessageReactions && channel.userMessageReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
+  })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "Reacted", React__default.createElement(ReactionItem, null, channel.newReactions && channel.newReactions[0] && channel.newReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
     text: lastMessage.body,
     message: lastMessage,
     contactsMap: contactsMap,
@@ -17668,13 +17670,13 @@ var Channel = function Channel(_ref) {
     isLastMessage: true
   }), channel.lastReactedMessage && '"')))), React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
-  }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, 'ticks', undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), React__default.createElement(UnreadInfo, null, !!(channel.unreadMentionsCount && channel.unreadMentionsCount > 0) && React__default.createElement(UnreadMentionIconWrapper, {
+  }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, 'ticks', undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), React__default.createElement(UnreadInfo, null, !!(channel.newMentionCount && channel.newMentionCount > 0) && React__default.createElement(UnreadMentionIconWrapper, {
     iconColor: colors.primary,
-    rightMargin: !!(channel.unreadMessageCount || channel.markedAsUnread)
-  }, React__default.createElement(SvgUnreadMention, null)), !!(channel.unreadMessageCount || channel.markedAsUnread) && React__default.createElement(UnreadCount, {
+    rightMargin: !!(channel.newMessageCount || channel.unread)
+  }, React__default.createElement(SvgUnreadMention, null)), !!(channel.newMessageCount || channel.unread) && React__default.createElement(UnreadCount, {
     backgroundColor: colors.primary,
     isMuted: channel.muted
-  }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : '')));
+  }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : '')));
 };
 var Container$2 = styled__default.div(_templateObject$4 || (_templateObject$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  height: 48px;\n  background-color: ", ";\n  border-left: ", ";\n  // padding: selectedChannel ? '8px 16px 8px 13px' : '8px 16px'\n  padding: ", ";\n  margin: ", ";\n  border-radius: ", ";\n"])), function (props) {
   return props.selectedChannel ? props.selectedBackgroundColor || colors.primaryLight : 'inherit';
@@ -17931,7 +17933,6 @@ var DropDown = function DropDown(_ref) {
       setIsOpen(dropDownState);
     }
   }, [dropDownState]);
-  console.log('position.. . ..  .', position);
   return React__default.createElement(DropDownContainer, {
     order: order,
     margin: margin,
@@ -19439,6 +19440,7 @@ var ChannelList = function ChannelList(_ref) {
 
   var connectionStatus = reactRedux.useSelector(connectionStatusSelector);
   var channels = reactRedux.useSelector(channelsSelector, reactRedux.shallowEqual) || [];
+  console.log('channels. .. ', channels);
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var addedChannel = reactRedux.useSelector(addedChannelSelector);
   var addedToChannel = reactRedux.useSelector(addedToChannelSelector);
@@ -19859,7 +19861,7 @@ function Chat$1(_ref) {
   }, children);
 }
 var Container$7 = styled__default.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
-  return props.widthOffset || props.channelDetailsIsOpen ? "calc(100% - " + (props.widthOffset + (props.channelDetailsIsOpen ? 400 : 0)) + "px)" : '';
+  return props.widthOffset || props.channelDetailsIsOpen ? "calc(100% - " + (props.widthOffset + (props.channelDetailsIsOpen ? 402 : 0)) + "px)" : '';
 });
 
 var _path$o;
@@ -19954,7 +19956,7 @@ function ChatHeader(_ref) {
     color: titleColor
   }, activeChannel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), showMemberInfo && (isDirectChannel && directChannelUser ? React__default.createElement(SubTitle, {
     color: memberInfoTextColor
-  }, hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, {
+  }, hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, {
     color: memberInfoTextColor
   }, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + (activeChannel.type === CHANNEL_TYPE.BROADCAST ? activeChannel.memberCount > 1 ? 'subscribers' : 'subscriber' : activeChannel.memberCount > 1 ? 'members' : 'member') + " ")))), !channelListHidden && React__default.createElement(ChanelInfo, {
     onClick: function onClick() {
@@ -20129,18 +20131,15 @@ function _extends$u() {
   return _extends$u.apply(this, arguments);
 }
 
-function SvgTrash(props) {
+function SvgDeleteIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$u({
-    width: 16,
-    height: 16,
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$r || (_path$r = /*#__PURE__*/React.createElement("path", {
-    d: "M1.5 3.89h13M5.111 3.889V2.444A1.444 1.444 0 016.556 1h2.888a1.444 1.444 0 011.445 1.444V3.89m2.167 0V14a1.444 1.444 0 01-1.445 1.444H4.39A1.444 1.444 0 012.944 14V3.889h10.112zM6.556 7.5v4.333M9.444 7.5v4.333",
-    stroke: "currentColor",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
+    fill: "#FA4C56"
   })));
 }
 
@@ -20196,17 +20195,18 @@ function _extends$w() {
   return _extends$w.apply(this, arguments);
 }
 
-function SvgEditSquare(props) {
+function SvgEditIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$w({
-    width: 15,
-    height: 14,
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$t || (_path$t = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M10.78.56a1.91 1.91 0 112.703 2.702L7.539 9.206a.67.67 0 01-.267.164l-1.3.422-.516.168a1.09 1.09 0 01-1.374-1.374l.168-.516.423-1.3a.67.67 0 01.164-.267L10.78.56zM5.51 8.532l.048-.015 1.146-.373 4.257-4.258-.805-.805L5.9 7.339l-.373 1.146-.015.047zm5.536-6.34l.805.805.683-.684a.569.569 0 000-.804.57.57 0 00-.805 0l-.683.683zm-4.03-.418H2.349A2.348 2.348 0 000 4.122v7.53A2.348 2.348 0 002.348 14H9.9a2.348 2.348 0 002.348-2.348V7.004l-1.341 1.342v3.307a1.006 1.006 0 01-1.006 1.006H2.348a1.006 1.006 0 01-1.006-1.006v-7.53a1.006 1.006 0 011.006-1.006h3.327l1.342-1.342z",
-    fill: "currentColor"
+    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -20242,7 +20242,7 @@ function SvgResend(props) {
   })));
 }
 
-var _path$v, _path2$4, _path3$2;
+var _path$v, _path2$4;
 
 function _extends$y() {
   _extends$y = Object.assign ? Object.assign.bind() : function (target) {
@@ -20261,29 +20261,23 @@ function _extends$y() {
   return _extends$y.apply(this, arguments);
 }
 
-function SvgReact(props) {
+function SvgEmojiSmileIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$y({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$v || (_path$v = /*#__PURE__*/React.createElement("path", {
-    d: "M15.913 3v4.174M13.826 5.088H18M6.174 11.348s1.043 1.739 2.782 1.739c1.74 0 2.783-1.74 2.783-1.74",
-    stroke: "currentColor",
-    strokeWidth: 1.3,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
+    fill: "CurrentColor"
   })), _path2$4 || (_path2$4 = /*#__PURE__*/React.createElement("path", {
-    d: "M6.87 7.87h.006M11.043 7.87h.007",
-    stroke: "currentColor",
-    strokeWidth: 2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })), _path3$2 || (_path3$2 = /*#__PURE__*/React.createElement("path", {
-    d: "M15.913 9.957a6.957 6.957 0 11-4.708-6.584",
-    stroke: "currentColor",
-    strokeWidth: 1.3,
-    strokeLinecap: "round"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -20308,16 +20302,16 @@ function _extends$z() {
 
 function SvgReplyIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$z({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24.01 24.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$w || (_path$w = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M19.78 12l-6.958-6.045v2.83c0 .452-.346.87-.847.899-.318.018-1.494.102-2.809.388-1.35.294-2.693.768-3.47 1.479-.94.857-1.459 2.44-1.706 4.128-.095.652-.146 1.29-.17 1.86.133-.152.272-.306.416-.46.753-.806 1.716-1.698 2.688-2.161.917-.437 2.086-.584 3.02-.63a16.68 16.68 0 012.052.027.897.897 0 01.826.896v2.834L19.78 12zm1.658-.68a.9.9 0 010 1.36l-8.726 7.58a.9.9 0 01-1.49-.68v-3.705a14.97 14.97 0 00-1.197.01c-.885.044-1.791.181-2.413.477-.686.327-1.479 1.03-2.206 1.808-.71.76-1.291 1.52-1.557 1.88-.483.655-1.577.39-1.622-.485a22.078 22.078 0 01.18-4.117c.256-1.751.835-3.823 2.21-5.079 1.11-1.014 2.814-1.557 4.21-1.86a21.08 21.08 0 012.395-.37v-3.72a.9.9 0 011.49-.68l8.726 7.582z",
-    fill: "currentColor"
+    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -20340,15 +20334,17 @@ function _extends$A() {
   return _extends$A.apply(this, arguments);
 }
 
-function SvgCopy(props) {
+function SvgCopyIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$A({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$x || (_path$x = /*#__PURE__*/React.createElement("path", {
-    d: "M3 13.5a1.508 1.508 0 01-1.5-1.508V4.138A2.638 2.638 0 014.138 1.5h7.854c.83 0 1.504.67 1.508 1.5H5.073A2.073 2.073 0 003 5.073V13.5zm3.008-9h8.985c.832 0 1.507.675 1.507 1.508v8.985c0 .832-.675 1.507-1.508 1.507H6.008A1.507 1.507 0 014.5 14.992V6.008c0-.832.675-1.507 1.508-1.507zM6.75 6a.75.75 0 00-.75.75v7.5c0 .414.336.75.75.75h7.5a.75.75 0 00.75-.75v-7.5a.75.75 0 00-.75-.75h-7.5z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
     fill: "CurrentColor"
   })));
 }
@@ -20372,16 +20368,18 @@ function _extends$B() {
   return _extends$B.apply(this, arguments);
 }
 
-function SvgThreadReply(props) {
+function SvgReplyInThreadIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$B({
     width: 20,
     height: 20,
-    fill: "currentColor",
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$y || (_path$y = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M19.072 10.206c.26.255.283.66.068.942l-.06.068-4.901 5a.714.714 0 01-.95.061l-.068-.06-2.955-2.991a.714.714 0 01.95-1.064l.066.06 2.446 2.475 4.394-4.483a.714.714 0 011.01-.008zM6.786 12.144a.714.714 0 010 1.428H3.214a.714.714 0 010-1.428h3.572zm8.571-4.286a.714.714 0 110 1.429H3.214a.714.714 0 110-1.429h12.143zm0-4.286a.714.714 0 110 1.429H3.214a.714.714 0 010-1.429h12.143z"
+    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -20496,7 +20494,7 @@ function MessageActions(_ref) {
     onClick: handleOpenReaction
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgReact, null)), showEditMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && (isIncoming ? allowEditDeleteIncomingMessage : true) && editMessagePermitted && (isDirectChannel && directChannelUser ? !isIncoming && directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
+  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgEmojiSmileIcon, null)), showEditMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && (isIncoming ? allowEditDeleteIncomingMessage : true) && editMessagePermitted && (isDirectChannel && directChannelUser ? !isIncoming && directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
     order: editIconOrder || 1,
     iconColor: messageActionIconsColor,
     hoverIconColor: colors.primary,
@@ -20505,7 +20503,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditSquare, null)), messageStatus === MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditIcon, null)), messageStatus === MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
     iconColor: messageActionIconsColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
@@ -20531,7 +20529,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, replyInThreadIconTooltipText || 'Reply in thread'), replyInThreadIcon || React__default.createElement(SvgThreadReply, null))), showCopyMessage && React__default.createElement(Action, {
+  }, replyInThreadIconTooltipText || 'Reply in thread'), replyInThreadIcon || React__default.createElement(SvgReplyInThreadIcon, null))), showCopyMessage && React__default.createElement(Action, {
     order: copyIconOrder || 4,
     iconColor: messageActionIconsColor,
     hoverIconColor: colors.primary,
@@ -20540,7 +20538,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, copyIconTooltipText || 'Copy'), copyIcon || React__default.createElement(SvgCopy, null)), showForwardMessage && forwardMessagePermitted && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+  }, copyIconTooltipText || 'Copy'), copyIcon || React__default.createElement(SvgCopyIcon, null)), showForwardMessage && forwardMessagePermitted && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
     order: forwardIconOrder || 5,
     iconColor: messageActionIconsColor,
     hoverIconColor: colors.primary,
@@ -20558,7 +20556,7 @@ function MessageActions(_ref) {
     }
   }, React__default.createElement(ItemNote, {
     direction: 'top'
-  }, deleteIconTooltipText || 'Delete Message'), deleteIcon || React__default.createElement(SvgTrash, null)), showReportMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+  }, deleteIconTooltipText || 'Delete Message'), deleteIcon || React__default.createElement(SvgDeleteIcon, null)), showReportMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
     order: reportIconOrder || 7,
     iconColor: messageActionIconsColor,
     hoverIconColor: colors.primary,
@@ -20579,16 +20577,16 @@ var MessageActionsWrapper = styled__default.div(_templateObject$i || (_templateO
 }, function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var EditMessageContainer = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  padding: 8px 2px;\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
-}, colors.gray1);
-var Action = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 9px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n\n  &:hover {\n    color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+});
+var Action = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 0 6px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.iconColor || colors.gray6;
 }, function (props) {
   return props.order || 1;
-}, function (props) {
+}, colors.gray10, function (props) {
   return props.hoverIconColor || colors.primary;
-}, ItemNote);
+}, colors.gray11, ItemNote);
 
 var _path$z;
 
@@ -20622,7 +20620,7 @@ function SvgCancel(props) {
   })));
 }
 
-var _path$A, _path2$5, _path3$3;
+var _path$A, _path2$5, _path3$2;
 
 function _extends$D() {
   _extends$D = Object.assign ? Object.assign.bind() : function (target) {
@@ -20659,7 +20657,7 @@ function SvgFileIcon(props) {
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path3$3 || (_path3$3 = /*#__PURE__*/React.createElement("path", {
+  })), _path3$2 || (_path3$2 = /*#__PURE__*/React.createElement("path", {
     d: "M12 19h12M12 23h8",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -22226,6 +22224,8 @@ function ReactionsPopup(_ref) {
       handleAddDeleteEmoji = _ref.handleAddDeleteEmoji,
       bottomPosition = _ref.bottomPosition,
       reactionScores = _ref.reactionScores,
+      reactionsDetailsPopupBorderRadius = _ref.reactionsDetailsPopupBorderRadius,
+      reactionsDetailsPopupHeaderItemsStyle = _ref.reactionsDetailsPopupHeaderItemsStyle,
       rtlDirection = _ref.rtlDirection;
   var popupRef = React.useRef(null);
   var reactions = reactRedux.useSelector(reactionsListSelector, reactRedux.shallowEqual);
@@ -22327,15 +22327,21 @@ function ReactionsPopup(_ref) {
     popupVerticalPosition: popupVerticalPosition,
     className: 'reactions_popup',
     height: popupHeight,
-    visible: !!(reactions && reactions.length && reactionsLoadingState === LOADING_STATE$1.LOADED),
-    rtlDirection: rtlDirection
-  }, React__default.createElement(ReactionScoresCont, null, React__default.createElement(ReactionScoresList, null, React__default.createElement(ReactionScoreItem, {
+    visible: !calculateSizes,
+    rtlDirection: rtlDirection,
+    borderRadius: reactionsDetailsPopupBorderRadius
+  }, React__default.createElement(ReactionScoresCont, null, React__default.createElement(ReactionScoresList, {
+    borderBottom: reactionsDetailsPopupHeaderItemsStyle !== 'bubbles'
+  }, React__default.createElement(ReactionScoreItem, {
+    bubbleStyle: reactionsDetailsPopupHeaderItemsStyle === 'bubbles',
     active: activeTabKey === 'all',
+    activeColor: colors.primary,
     onClick: function onClick() {
       return handleGetReactions();
     }
   }, React__default.createElement("span", null, "All " + totalReactions)), reactionsList.map(function (reaction) {
     return React__default.createElement(ReactionScoreItem, {
+      bubbleStyle: reactionsDetailsPopupHeaderItemsStyle === 'bubbles',
       key: reaction.key,
       onClick: function onClick() {
         return handleGetReactions(reaction.key);
@@ -22362,7 +22368,7 @@ function ReactionsPopup(_ref) {
     }, reaction.key));
   })));
 }
-var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  /*right: ", ";*/\n  right: ", ";\n  /*left: ", ";*/\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
+var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  /*right: ", ";*/\n  right: ", ";\n  /*left: ", ";*/\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
   return props.popupHorizontalPosition === 'left' && (props.rtlDirection ? 'calc(100% - 80px)' : 0);
 }, function (props) {
   return props.rtlDirection && 0;
@@ -22378,6 +22384,8 @@ var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = 
   return props.height && props.height + 22;
 }, function (props) {
   return !props.height && 'hidden';
+}, function (props) {
+  return props.borderRadius || '12px';
 }, function (props) {
   return props.visible ? 'visible' : 'hidden';
 }, function (props) {
@@ -22399,17 +22407,33 @@ var ReactionsList = styled__default.ul(_templateObject4$d || (_templateObject4$d
   return !props.popupHeight && 'hidden';
 });
 var ReactionScoresCont = styled__default.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
-var ReactionScoresList = styled__default.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: 1px solid ", ";\n"])), colors.gray1);
-var ReactionScoreItem = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  border-bottom: 1px solid ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    ", "\n  }\n"])), colors.gray1, function (props) {
+var ReactionScoresList = styled__default.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: ", ";\n  padding: 2px 8px 0;\n"])), function (props) {
+  return props.borderBottom && "1px solid " + colors.gray1;
+});
+var TabKey = styled__default.span(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose([""])));
+var ReactionScoreItem = styled__default.div(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  border-bottom: ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    border: ", ";\n    padding: ", ";\n    border-radius: 16px;\n    height: 30px;\n    box-sizing: border-box;\n    font-family: Inter, sans-serif;\n    font-style: normal;\n    font-weight: 600;\n    font-size: 14px;\n    line-height: ", ";\n    background-color: ", ";\n    color: ", ";\n    ", "\n\n    & ", " {\n      font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n        twemoji mozilla, segoe ui symbol;\n      margin-right: 4px;\n      font-size: 15px;\n    }\n  }\n"])), function (props) {
+  return props.bubbleStyle ? '12px 4px' : '12px';
+}, function (props) {
+  return !props.bubbleStyle && "1px solid " + colors.gray1;
+}, function (props) {
   return props.active ? colors.gray6 : colors.gray9;
 }, function (props) {
-  return props.active && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n  }";
-});
-var TabKey = styled__default.span(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  margin-right: 4px;\n  font-size: 15px;\n"])));
+  return props.bubbleStyle && !props.active && "1px solid " + colors.gray1;
+}, function (props) {
+  return props.bubbleStyle && '6px 12px';
+}, function (props) {
+  return props.bubbleStyle ? '18px' : '30px';
+}, function (props) {
+  return props.active && props.bubbleStyle && colors.primary;
+}, function (props) {
+  return props.active && props.bubbleStyle && colors.white;
+}, function (props) {
+  return props.active && !props.bubbleStyle && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n    }\n  ";
+}, TabKey);
 var ReactionKey = styled__default.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
 var ReactionItem$1 = styled__default.li(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
-var _path$H, _path2$6;
+var _path$H;
 
 function _extends$K() {
   _extends$K = Object.assign ? Object.assign.bind() : function (target) {
@@ -22428,22 +22452,22 @@ function _extends$K() {
   return _extends$K.apply(this, arguments);
 }
 
-function SvgEmojiSmileIcon(props) {
+function SvgEmojiAnimalIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$K({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$H || (_path$H = /*#__PURE__*/React.createElement("path", {
-    d: "M8.438 14.297a.9.9 0 011.273.149 2.77 2.77 0 00.516.415c.383.24.97.489 1.773.489.803 0 1.39-.25 1.773-.489a2.773 2.773 0 00.516-.415l.012-.013.002-.003a.9.9 0 011.4 1.132L15 15l.703.562-.001.001-.002.002-.002.003-.007.008-.018.022a3.487 3.487 0 01-.245.254c-.16.15-.394.344-.7.536A5.094 5.094 0 0112 17.15a5.094 5.094 0 01-2.727-.762 4.567 4.567 0 01-.7-.537 3.501 3.501 0 01-.246-.253l-.018-.022-.007-.008-.002-.003-.002-.002L9 15l-.703.562a.9.9 0 01.14-1.265zM10.25 10.25a1.25 1.25 0 11-2.5 0 1.25 1.25 0 012.5 0zM15 11.5A1.25 1.25 0 1015 9a1.25 1.25 0 000 2.5z"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M12 2.1c-5.468 0-9.9 4.432-9.9 9.9 0 5.467 4.432 9.9 9.9 9.9s9.9-4.433 9.9-9.9c0-5.468-4.432-9.9-9.9-9.9zM3.9 12a8.1 8.1 0 1116.2 0 8.1 8.1 0 01-16.2 0z"
+    d: "M7.188 3.875a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm7.938-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zM3.437 7.624a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.312.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm15.438-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm-6.393-.359a3.563 3.563 0 015.567 1.862c.193.672.643 1.24 1.252 1.582a3.25 3.25 0 01-1.548 6.102h-.002c-.435 0-.864-.086-1.265-.253a4.859 4.859 0 00-3.722 0h.001a3.28 3.28 0 01-1.265.253h-.003a3.25 3.25 0 01-1.548-6.101A2.657 2.657 0 006.576 9.94a3.563 3.563 0 011.28-1.862zM10 8.863a2.062 2.062 0 00-1.982 1.493 4.156 4.156 0 01-1.964 2.478l-.008.004a1.75 1.75 0 001.517 3.15l.001-.001a6.358 6.358 0 014.872 0h.001a1.75 1.75 0 001.516-3.15l-.007-.003a4.156 4.156 0 01-1.964-2.478A2.062 2.062 0 0010 8.863z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$I;
+var _path$I, _path2$6, _path3$3;
 
 function _extends$L() {
   _extends$L = Object.assign ? Object.assign.bind() : function (target) {
@@ -22462,16 +22486,28 @@ function _extends$L() {
   return _extends$L.apply(this, arguments);
 }
 
-function SvgEmojiAnimalIcon(props) {
+function SvgEmojiFoodIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$L({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$I || (_path$I = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M14.068 3.405c.559-.56 1.345-.95 2.212-.804.873.147 1.481.776 1.81 1.496.33.723.424 1.61.26 2.5-.165.89-.57 1.689-1.133 2.254-.558.56-1.344.95-2.212.804-.872-.147-1.48-.776-1.81-1.497-.33-.722-.423-1.61-.258-2.5.164-.89.569-1.688 1.131-2.253zm1.215 1.21c-.291.292-.552.765-.66 1.355-.11.59-.034 1.114.132 1.476.166.364.378.492.535.518.161.027.418-.027.713-.323.291-.292.551-.765.66-1.355.11-.59.033-1.115-.132-1.476-.166-.364-.378-.492-.535-.518-.162-.027-.418.027-.713.323zM9.264 11.68c.632-.78 1.499-1.395 2.736-1.395 1.24 0 2.106.621 2.737 1.4.523.646.937 1.468 1.304 2.198l.151.299c.3.588.588 1.046.857 1.474.1.159.197.313.291.469.322.53.66 1.148.66 1.871 0 .587-.143 1.1-.44 1.517-.295.413-.69.661-1.073.809-.66.255-1.413.251-1.82.25l-.095-.001c-.464 0-.833-.065-1.16-.122l-.11-.02A7.038 7.038 0 0012 20.315c-.576 0-.953.056-1.302.116l-.11.02a6.337 6.337 0 01-1.16.12H9.24c-.447-.003-1.216-.025-1.889-.341a2.298 2.298 0 01-.964-.82C6.127 19.01 6 18.534 6 17.996c0-.695.344-1.316.658-1.839.09-.15.182-.3.277-.454.273-.441.568-.917.871-1.519l.14-.277c.37-.742.788-1.575 1.318-2.227zm.211 3.002l-.138.275c-.341.675-.691 1.24-.97 1.692-.088.14-.168.27-.239.389-.33.55-.414.794-.414.958 0 .264.06.401.108.475.05.075.127.145.258.206.298.14.723.175 1.171.179h.178c.308 0 .537-.04.87-.097l.11-.019c.4-.068.881-.14 1.591-.14s1.19.072 1.591.14l.11.02c.334.057.562.096.87.096h.034c.47 0 .918 0 1.265-.133.153-.06.24-.13.293-.205.052-.072.123-.219.123-.522 0-.2-.09-.452-.412-.983-.072-.119-.154-.25-.245-.393-.277-.441-.627-.997-.964-1.66l-.157-.31c-.381-.754-.705-1.394-1.103-1.886C12.988 12.25 12.57 12 12 12c-.57 0-.99.25-1.406.761-.403.497-.73 1.15-1.119 1.922zM11.063 5.659c-.164-.891-.569-1.69-1.131-2.254-.559-.56-1.345-.95-2.212-.804-.873.147-1.481.776-1.81 1.496-.33.723-.424 1.61-.26 2.5.165.89.57 1.689 1.132 2.254.56.56 1.345.95 2.213.804.872-.147 1.48-.776 1.81-1.497.33-.722.423-1.61.258-2.5zM8.004 4.292c.162-.027.418.027.713.323.291.292.552.765.66 1.355.11.59.034 1.114-.132 1.476-.166.364-.378.492-.535.518-.161.027-.418-.027-.713-.323-.291-.292-.551-.765-.66-1.355-.11-.59-.033-1.115.132-1.476.166-.364.378-.492.535-.518zM4.83 8.949c.648.367 1.214.975 1.588 1.723.374.746.518 1.558.398 2.285-.12.73-.526 1.445-1.298 1.78-.757.33-1.565.162-2.205-.201-.648-.367-1.214-.976-1.588-1.723-.374-.747-.518-1.558-.398-2.286.12-.73.526-1.445 1.297-1.78.757-.33 1.566-.161 2.206.202zm-.846 1.49c-.331-.187-.56-.17-.676-.12-.102.044-.237.167-.29.485-.052.32.003.768.24 1.242.236.472.576.815.9.998.332.188.561.172.677.121.101-.044.237-.167.29-.485.052-.32-.003-.768-.24-1.241-.236-.473-.576-.815-.9-1zM21.407 8.773c-.787-.38-1.627-.18-2.271.225-.65.41-1.206 1.08-1.57 1.886-.363.808-.497 1.672-.384 2.437.11.752.49 1.529 1.269 1.905.787.38 1.626.18 2.27-.226.65-.41 1.206-1.079 1.57-1.886.363-.807.497-1.671.384-2.436-.11-.753-.49-1.53-1.268-1.905zm-2.277 2.815c.247-.55.598-.936.92-1.139.327-.206.526-.174.611-.133.094.046.258.2.319.612.059.4-.006.934-.253 1.482-.247.55-.597.937-.92 1.14-.327.206-.525.173-.61.132-.095-.045-.259-.2-.32-.612-.058-.4.006-.934.253-1.482z"
+    d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
+    fill: "CurrentColor"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10.083 2.222c-.616.616-.81 1.522-.797 2.367a6.008 6.008 0 00-1.905-.306c-3.438 0-5.952 2.45-5.952 5.858 0 1.644.588 3.698 1.574 5.35.968 1.622 2.465 3.08 4.378 3.08a5.98 5.98 0 002.62-.596 5.98 5.98 0 002.618.597c1.914 0 3.41-1.46 4.378-3.081.986-1.652 1.574-3.706 1.574-5.35 0-3.208-2.229-5.568-5.36-5.833.223-.434.307-.893.34-1.244.049-.518-.016-1.016-.09-1.528-.513-.072-1.01-.14-1.528-.09-.524.048-1.288.213-1.85.776zM7.38 5.712c-2.674 0-4.524 1.835-4.524 4.43 0 1.356.503 3.16 1.372 4.616.887 1.486 2.01 2.385 3.152 2.385.758 0 1.454-.178 2.075-.492a1.206 1.206 0 011.088 0 4.55 4.55 0 002.075.492c1.142 0 2.265-.899 3.152-2.385.869-1.456 1.372-3.26 1.372-4.617 0-2.594-1.85-4.43-4.524-4.43a4.57 4.57 0 00-2.073.493 1.206 1.206 0 01-1.09 0 4.551 4.551 0 00-2.075-.492zm3.341-1.437c.362-.026.776-.105 1.043-.37.265-.267.344-.682.37-1.043-.361.026-.776.104-1.042.37-.266.267-.345.681-.37 1.043z",
+    fill: "CurrentColor"
+  })), _path3$3 || (_path3$3 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12.857 7.14a.714.714 0 000 1.43c.458 0 .807.15 1.037.374.227.221.392.565.392 1.054a.714.714 0 101.428 0c0-.83-.289-1.557-.824-2.078-.532-.518-1.254-.78-2.033-.78z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -22494,18 +22530,22 @@ function _extends$M() {
   return _extends$M.apply(this, arguments);
 }
 
-function SvgEmojiFoodIcon(props) {
+function SvgEmojiTravelIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$M({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$J || (_path$J = /*#__PURE__*/React.createElement("path", {
-    d: "M16.375 5.336c-1.608 0-2.517.346-3.22.817.449-1.026 1.547-2.567 4.095-2.567a.875.875 0 100-1.75c-2.556 0-4.05 1.194-4.854 2.198-.056.068-.104.141-.157.213C11.764 2.588 10.949 1 9.556 1c-.55 0-1.187.248-1.931.836-1.726 1.366-1.462 2.558-.444 3.518C4.658 5.549 1.5 7.413 1.5 12.328c0 4.009 4.34 9.633 7.875 9.633 1.728 0 2.075-.426 2.625-.875.55.45.897.875 2.625.875 3.534 0 7.875-5.616 7.875-9.625 0-5.21-3.548-7-6.125-7zM8.712 3.208c.56-.445.825-.458.844-.458.373.148.853 1.23 1.188 2.673-1.337-.55-2.399-1.183-2.608-1.615.052-.098.21-.312.576-.6zm5.913 17.003c-.945 0-1.059-.096-1.364-.352l-.154-.128a1.739 1.739 0 00-1.108-.395 1.74 1.74 0 00-1.108.395l-.154.128c-.303.255-.417.352-1.362.352-2.461 0-6.125-4.716-6.125-7.883 0-5.095 3.927-5.242 4.375-5.242 1.697 0 2.174.412 2.964 1.094l.282.242a1.745 1.745 0 002.258 0l.282-.242c.79-.682 1.267-1.094 2.964-1.094.448 0 4.375.147 4.375 5.25 0 3.165-3.664 7.875-6.125 7.875z"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M13.763 2.458a2.6 2.6 0 013.748 3.604l-2.135 2.236a5.065 5.065 0 00-.188.204.076.076 0 00-.004.017l.004.03c.008.05.024.116.053.241l1.327 5.754.012.05c.044.189.096.412.079.639-.015.197-.07.39-.162.564-.106.202-.268.364-.406.5l-.036.037-.306.306c-.215.215-.409.408-.58.55-.175.147-.406.309-.705.362a1.46 1.46 0 01-1.124-.266c-.244-.18-.378-.429-.47-.638-.089-.204-.175-.464-.272-.752l-1.2-3.6-1.779 1.78a4.815 4.815 0 00-.172.178.076.076 0 00-.005.015l.001.027c.003.045.01.105.022.22l.141 1.27.005.045c.02.168.042.368.01.567a1.46 1.46 0 01-.172.49c-.1.176-.242.317-.362.437l-.032.032-.152.151-.018.019c-.166.166-.32.32-.46.438-.15.125-.338.258-.583.322a1.46 1.46 0 01-1.007-.1 1.49 1.49 0 01-.508-.43c-.114-.142-.236-.325-.366-.52l-1.22-1.83a4.929 4.929 0 00-.063-.09l-.009-.006a4.655 4.655 0 00-.077-.052l-1.829-1.22a7.783 7.783 0 01-.52-.365 1.492 1.492 0 01-.43-.509 1.46 1.46 0 01-.1-1.006c.065-.245.197-.434.323-.584.117-.14.272-.294.438-.46l.018-.018.152-.152.031-.032c.12-.12.262-.262.437-.362.152-.086.318-.145.49-.172a2.09 2.09 0 01.568.01l.044.005 1.27.141a4.747 4.747 0 00.247.023.075.075 0 00.015-.005 4.867 4.867 0 00.178-.172l1.78-1.78-3.6-1.199a9.48 9.48 0 01-.752-.272c-.209-.092-.457-.226-.638-.47a1.46 1.46 0 01-.265-1.124c.053-.298.215-.53.36-.705.143-.171.337-.365.552-.58l.02-.02.285-.285.037-.037c.136-.137.298-.3.5-.406a1.46 1.46 0 01.564-.161c.228-.018.45.034.64.078l.05.012 5.731 1.323a5.096 5.096 0 00.275.057.075.075 0 00.019-.005 5.146 5.146 0 00.199-.197l2.082-2.152zm2.728.948a1.216 1.216 0 00-1.734.014l-2.082 2.151-.036.037c-.132.137-.288.3-.483.407a1.46 1.46 0 01-.602.178c-.223.016-.442-.036-.627-.079l-.05-.011L5.146 4.78a5.06 5.06 0 00-.279-.059.077.077 0 00-.017.005 5.065 5.065 0 00-.205.197l-.285.285c-.243.243-.39.392-.487.508a.915.915 0 00-.063.083c0 .006.002.012.004.018.016.01.045.025.094.046.138.06.337.128.662.236l4.633 1.544a.692.692 0 01.27 1.146l-2.57 2.57-.032.032c-.12.12-.261.262-.436.362a1.459 1.459 0 01-.492.172 2.09 2.09 0 01-.567-.01l-.044-.005-1.27-.141a4.747 4.747 0 00-.247-.023.075.075 0 00-.015.005 4.867 4.867 0 00-.178.172l-.152.152c-.19.19-.301.302-.375.39a.735.735 0 00-.045.058c0 .008 0 .015.002.023.01.009.027.025.056.048.09.072.22.16.444.309l1.808 1.205.015.01a1.466 1.466 0 01.507.507l.01.016 1.206 1.807c.15.225.237.355.308.444.024.03.04.047.049.056a.076.076 0 00.022.002.723.723 0 00.059-.045c.087-.073.199-.184.39-.375l.151-.151a4.89 4.89 0 00.172-.178.077.077 0 00.005-.016v-.026a4.94 4.94 0 00-.023-.22l-.14-1.27-.006-.045a2.091 2.091 0 01-.01-.567 1.46 1.46 0 01.172-.491c.1-.175.242-.317.363-.437l.031-.031 2.57-2.57a.692.692 0 011.146.27L13.9 15.43c.109.325.175.523.236.662a.9.9 0 00.046.093.073.073 0 00.019.004.917.917 0 00.083-.063c.116-.096.264-.244.507-.486l.285-.285a5.078 5.078 0 00.197-.206.073.073 0 00.005-.017 5.042 5.042 0 00-.058-.279l-1.328-5.753-.011-.049c-.044-.184-.095-.401-.079-.624a1.46 1.46 0 01.152-.553c.1-.199.255-.36.386-.496l.034-.037 2.136-2.236a1.216 1.216 0 00-.02-1.7z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$K;
+var _g$2, _defs;
 
 function _extends$N() {
   _extends$N = Object.assign ? Object.assign.bind() : function (target) {
@@ -22524,20 +22564,29 @@ function _extends$N() {
   return _extends$N.apply(this, arguments);
 }
 
-function SvgEmojiTravelIcon(props) {
+function SvgEmojiObjectIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$N({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$K || (_path$K = /*#__PURE__*/React.createElement("path", {
+  }, props), _g$2 || (_g$2 = /*#__PURE__*/React.createElement("g", {
+    clipPath: "url(#emojiObjectIcon_svg__clip0_1048_8610)"
+  }, /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M9.61 3.6H14.39c1.117 0 1.89-.001 2.59.24a4.4 4.4 0 011.643 1.016c.529.518.874 1.209 1.374 2.209l.067.134.84 1.68h1.216a.88.88 0 01.88.88v.312c0 .82-.59 1.462-1.32 1.607v7.148c0 .093 0 .209-.008.312a1.28 1.28 0 01-.131.485c-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.313.009h-.531c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.275 1.275 0 01-.558-.558 1.284 1.284 0 01-.13-.485c-.01-.103-.009-.22-.009-.313v-.265H5.84v.266c0 .093 0 .209-.008.312-.01.12-.036.298-.131.485-.122.24-.318.435-.558.558-.187.095-.364.12-.485.13-.103.009-.219.009-.312.009h-.532c-.093 0-.21 0-.312-.009a1.284 1.284 0 01-.485-.13 1.276 1.276 0 01-.558-.558 1.282 1.282 0 01-.13-.485 3.969 3.969 0 01-.009-.313v-7.147A1.637 1.637 0 011 10.071V9.76a.88.88 0 01.88-.88h1.216l.84-1.68.067-.135c.5-1 .845-1.691 1.374-2.209A4.4 4.4 0 017.02 3.84c.7-.241 1.472-.24 2.59-.24zM4.095 16.363a9.285 9.285 0 01-.015-.682v-4.143c.063.011.14.025.234.04.283.044.715.102 1.336.158 1.243.113 3.25.224 6.35.224 3.1 0 5.107-.111 6.35-.224a20.77 20.77 0 001.336-.158c.094-.015.171-.029.234-.04v4.03c0 .384 0 .619-.015.795a1.126 1.126 0 01-.03.19.44.44 0 01-.199.2l-.003.002a1.126 1.126 0 01-.19.03c-.176.014-.41.015-.795.015H5.312c-.384 0-.62-.001-.795-.015a1.127 1.127 0 01-.19-.03.44.44 0 01-.202-.202 1.126 1.126 0 01-.03-.19zm15.32-6.524l-.925-1.852c-.594-1.188-.807-1.588-1.098-1.873a2.64 2.64 0 00-.987-.61c-.385-.133-.839-.144-2.166-.144H9.761c-1.328 0-1.781.011-2.166.144a2.64 2.64 0 00-.987.61c-.29.285-.504.685-1.098 1.873l-.926 1.852h.004c.24.038.633.09 1.222.144 1.177.107 3.13.217 6.19.217 3.06 0 5.013-.11 6.19-.217a19.01 19.01 0 001.226-.144zm-1.146 5.194a.88.88 0 10-.218-1.746l-1.76.22a.88.88 0 00.218 1.746l1.76-.22zM4.967 14.05a.88.88 0 00.764.982l1.76.22a.88.88 0 10.218-1.746l-1.76-.22a.88.88 0 00-.982.763z"
-  })));
+    d: "M10 .917a.75.75 0 01.75.75V2.5a.75.75 0 01-1.5 0v-.833a.75.75 0 01.75-.75zM3.553 3.553a.75.75 0 011.06 0l.5.5a.75.75 0 11-1.06 1.061l-.5-.5a.75.75 0 010-1.06zm12.894 0a.75.75 0 010 1.061l-.5.5a.75.75 0 11-1.06-1.06l.5-.5a.75.75 0 011.06 0zM10 5.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM4.25 10a5.75 5.75 0 118.167 5.22v1.447a2.417 2.417 0 01-4.834 0v-1.448A5.75 5.75 0 014.25 10zm4.833 5.678v.989a.917.917 0 101.834 0v-.99a5.795 5.795 0 01-1.834 0zM.917 10a.75.75 0 01.75-.75H2.5a.75.75 0 110 1.5h-.833a.75.75 0 01-.75-.75zm15.833 0a.75.75 0 01.75-.75h.833a.75.75 0 110 1.5H17.5a.75.75 0 01-.75-.75z",
+    fill: "CurrentColor"
+  }))), _defs || (_defs = /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("clipPath", {
+    id: "emojiObjectIcon_svg__clip0_1048_8610"
+  }, /*#__PURE__*/React.createElement("path", {
+    fill: "CurrentColor",
+    d: "M0 0h20v20H0z"
+  })))));
 }
 
-var _path$L;
+var _path$K;
 
 function _extends$O() {
   _extends$O = Object.assign ? Object.assign.bind() : function (target) {
@@ -22556,18 +22605,22 @@ function _extends$O() {
   return _extends$O.apply(this, arguments);
 }
 
-function SvgEmojiObjectIcon(props) {
+function SvgEmojiSymbolsIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$O({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$L || (_path$L = /*#__PURE__*/React.createElement("path", {
-    d: "M10 16h1.19v-2.06a1.007 1.007 0 01-.16-.12L9.32 12.1a1 1 0 111.41-1.41l1.25 1.25 1.32-1.32a.97.97 0 011.38 0c.4.4.4 1.05 0 1.46L13 13.74a.998.998 0 01-.19.15V16H14v-.15a1.002 1.002 0 01.3-.73c2.71-2.58 3.71-4.17 3.71-6.27a5.93 5.93 0 00-6-5.85C8.69 3 6 5.63 6 8.85c0 2.1.98 3.66 3.7 6.26.19.18.3.45.3.72V16zm0 2v1a1 1 0 001 1h2a1 1 0 001-1v-1h-4zm-2-1.75c-2.85-2.77-4-4.7-4-7.4C4 4.51 7.6 1 12 1c4.42 0 8.01 3.51 8.01 7.85 0 2.7-1.17 4.66-4.01 7.42V19a3 3 0 01-3 3h-2a3 3 0 01-3-3v-2.75z"
+  }, props), _path$K || (_path$K = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M8.04 1.76a.75.75 0 01.616.863l-.548 3.294h5.146l.59-3.54a.75.75 0 111.48.246l-.55 3.294h2.31a.75.75 0 010 1.5h-2.56l-.86 5.167h2.586a.75.75 0 110 1.5h-2.837l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H6.745l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H2.083a.75.75 0 010-1.5h3.393l.86-5.167h-3.42a.75.75 0 110-1.5h3.67l.59-3.54a.75.75 0 01.864-.617zm-.182 5.657l-.862 5.167h5.146l.862-5.167H7.858z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$M;
+var _path$L;
 
 function _extends$P() {
   _extends$P = Object.assign ? Object.assign.bind() : function (target) {
@@ -22586,44 +22639,18 @@ function _extends$P() {
   return _extends$P.apply(this, arguments);
 }
 
-function SvgEmojiSymbolsIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$P({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$M || (_path$M = /*#__PURE__*/React.createElement("path", {
-    d: "M19.1 4a4.6 4.6 0 011.37.28A4.01 4.01 0 0123 7.9c.03 2.73.03 5.47 0 8.2a4.15 4.15 0 01-.98 2.52A4.02 4.02 0 0119.1 20c-4.73.06-9.47.06-14.2 0a4.572 4.572 0 01-1.37-.28A4.02 4.02 0 011 16.1c-.03-2.73-.03-5.47 0-8.2A4.01 4.01 0 014.9 4c4.73-.06 9.47-.06 14.2 0zM5 6a2.02 2.02 0 00-2 1.95c-.034 2.7-.034 5.4 0 8.1A2.02 2.02 0 004.95 18c4.7.06 9.4.06 14.1 0A2.02 2.02 0 0021 16.05c.034-2.7.034-5.4 0-8.1A2.02 2.02 0 0019.05 6C14.37 5.94 9.68 6 5 6zm2 7.88a1.12 1.12 0 110 2.24 1.12 1.12 0 010-2.24zm4 .03a1.1 1.1 0 110 2.19 1.1 1.1 0 010-2.2v.01zm6.44-3.8l.23-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.42-.15.18 0 .37.07.5.2.23.22.18.53.12.83l-.19.92h.2c.32 0 .45.01.58.08.19.1.31.3.31.56 0 .27-.12.46-.3.56-.14.07-.27.08-.59.08h-.45l-.26 1.27h.33c.32 0 .44.02.58.09.18.1.3.29.3.55 0 .27-.12.47-.3.56-.14.07-.26.08-.58.08h-.58l-.27 1.33c-.06.3-.1.46-.26.62a.6.6 0 01-.42.15.74.74 0 01-.5-.2c-.23-.22-.18-.53-.12-.83l.21-1.07h-1.3l-.27 1.33c-.06.3-.1.46-.27.62-.1.1-.25.15-.42.15a.74.74 0 01-.49-.2c-.24-.22-.18-.53-.12-.83l.2-1.07h-.2c-.31 0-.44 0-.57-.08-.19-.1-.31-.29-.31-.56 0-.26.12-.46.3-.55.14-.07.27-.09.59-.09h.45l.26-1.27h-.33c-.32 0-.44-.01-.58-.08-.18-.1-.3-.3-.3-.56 0-.27.12-.46.3-.56.14-.07.26-.08.58-.08h.58l.24-1.18c.06-.3.1-.46.27-.62.1-.1.25-.15.41-.15.18 0 .37.07.5.2.24.22.18.53.12.83l-.18.92h1.31zm-8.14-.2c0-1.33-1.05-2.18-2.36-2.18-.68 0-1.35.23-1.78.6-.45.4-.64 1-.64 1.34 0 .23.1.42.22.53.12.12.3.2.5.2.21 0 .36-.07.5-.18.34-.25.42-.63.55-.77a.85.85 0 01.66-.27c.55 0 .76.27.76.75 0 .3-.24.67-.43.89l-.65.83c-.28.4-.4.7-.38 1.03.02.36.28.67.57.7.24.02.6 0 .79-.38.13-.25.53-.73.73-1.07l.47-.62c.34-.43.49-.8.49-1.4zm2.54-1.17c0-.36-.01-.49-.11-.68-.13-.22-.4-.37-.73-.37-.33 0-.6.15-.73.37-.1.19-.11.32-.11.68v3.45c0 .36 0 .5.11.68.13.22.4.37.73.37.33 0 .6-.15.73-.37.1-.19.11-.32.11-.68V8.74zm5.09 3.92l.25-1.27h-1.3l-.26 1.27h1.31z"
-  })));
-}
-
-var _path$N;
-
-function _extends$Q() {
-  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$Q.apply(this, arguments);
-}
-
 function SvgEmojiFlagicon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$Q({
-    width: 24,
-    height: 24,
-    fill: "currentColor",
+  return /*#__PURE__*/React.createElement("svg", _extends$P({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$N || (_path$N = /*#__PURE__*/React.createElement("path", {
-    d: "M6.63 3.23c2.13 1.12 3.18.99 5.4-.13l.03-.03c2.8-1.4 4.52-1.57 7.43.08a1 1 0 01.51.87v9.23a1 1 0 01-1.5.87c-2.69-1.52-4.13-1.43-6.62-.22-.33.158-.66.315-.99.47-1.4.62-2.6.81-3.89.43V20a1 1 0 11-2 0V4a1 1 0 011.63-.77zM7 12.66c1.05.5 1.87.42 3.08-.12.314-.137.624-.283.93-.44 2.56-1.24 4.46-1.53 6.99-.46V4.62c-1.9-.98-2.96-.81-5.03.24l-.04.02c-2.3 1.16-3.85 1.5-5.93.71v7.07z"
+  }, props), _path$L || (_path$L = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M4.167 3.25a.917.917 0 00-.917.917v7.764c.288-.118.6-.181.917-.181h5.416a.75.75 0 01.53.22l.614.613h5.56L14.329 8.67a.75.75 0 010-.671l1.957-3.915H10.75V7.5a.75.75 0 01-1.5 0V3.25H4.167zm6.56-.667l-.613-.613a.75.75 0 00-.53-.22H4.166A2.417 2.417 0 001.75 4.167V17.5a.75.75 0 001.5 0v-3.333a.917.917 0 01.917-.917h5.106l.613.614c.141.14.332.22.53.22H17.5a.75.75 0 00.67-1.086l-2.332-4.665 2.333-4.664a.75.75 0 00-.671-1.086h-6.773z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -22868,6 +22895,15 @@ var EMOJIS = [{
     array: ['🚬', '⚰️', '⚱️', '🗿']
   }]
 }, {
+  key: 'Flags',
+  array: [{
+    key: 'country-flag',
+    array: ['🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼']
+  }, {
+    key: 'subdivision-flag',
+    array: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
+  }]
+}, {
   key: 'Symbols',
   array: [{
     key: 'transport-sign',
@@ -22887,15 +22923,6 @@ var EMOJIS = [{
   }, {
     key: 'other-symbol',
     array: ['♻️', '⚜️', '🔱', '📛', '🔰', '⭕', '✅', '☑️', '✔️', '✖️', '✖', '❌', '❎', '➕', '➖', '➗', '➰', '➿', '〽️', '✳️', '✴️', '❇️', '‼️', '⁉️', '❓', '❗']
-  }]
-}, {
-  key: 'Flags',
-  array: [{
-    key: 'country-flag',
-    array: ['🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼']
-  }, {
-    key: 'subdivision-flag',
-    array: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
   }]
 }];
 
@@ -22920,11 +22947,11 @@ var EmojiIcon = function EmojiIcon(_ref) {
     case 'Objects':
       return React__default.createElement(SvgEmojiObjectIcon, null);
 
-    case 'Symbols':
-      return React__default.createElement(SvgEmojiSymbolsIcon, null);
-
     case 'Flags':
       return React__default.createElement(SvgEmojiFlagicon, null);
+
+    case 'Symbols':
+      return React__default.createElement(SvgEmojiSymbolsIcon, null);
 
     default:
       return null;
@@ -22938,8 +22965,9 @@ function EmojisPopup(_ref2) {
       rightSide = _ref2.rightSide,
       bottomPosition = _ref2.bottomPosition,
       emojisContainerBorderRadius = _ref2.emojisContainerBorderRadius,
-      emojisCategoryIconsPosition = _ref2.emojisCategoryIconsPosition,
-      separateEmojiCategoriesWithTitle = _ref2.separateEmojiCategoriesWithTitle,
+      _ref2$emojisCategoryI = _ref2.emojisCategoryIconsPosition,
+      emojisCategoryIconsPosition = _ref2$emojisCategoryI === void 0 ? 'top' : _ref2$emojisCategoryI,
+      fixEmojiCategoriesTitleOnTop = _ref2.fixEmojiCategoriesTitleOnTop,
       emojisPopupPosition = _ref2.emojisPopupPosition,
       relativePosition = _ref2.relativePosition;
 
@@ -22967,9 +22995,9 @@ function EmojisPopup(_ref2) {
     var scrollPos = emojiContainerRef.current.scrollTop;
 
     if (collectionHeights[6] < scrollPos) {
-      setActiveCollection('Flags');
-    } else if (collectionHeights[5] < scrollPos) {
       setActiveCollection('Symbols');
+    } else if (collectionHeights[5] < scrollPos) {
+      setActiveCollection('Flags');
     } else if (collectionHeights[4] < scrollPos) {
       setActiveCollection('Objects');
     } else if (collectionHeights[3] < scrollPos) {
@@ -23032,7 +23060,7 @@ function EmojisPopup(_ref2) {
     }, React__default.createElement(EmojiIcon, {
       collectionName: emoji.key
     }));
-  })), !separateEmojiCategoriesWithTitle && React__default.createElement(EmojiHeader, {
+  })), fixEmojiCategoriesTitleOnTop && React__default.createElement(EmojiHeader, {
     padding: emojisCategoryIconsPosition !== 'top' ? '10px 18px 6px' : ''
   }, getEmojisCategoryTitle(activeCollection)), React__default.createElement(EmojiSection, {
     ref: emojiContainerRef,
@@ -23041,8 +23069,8 @@ function EmojisPopup(_ref2) {
     var mainCollectionKey = emojiBigCollection.key;
     return React__default.createElement(React__default.Fragment, {
       key: mainCollectionKey
-    }, separateEmojiCategoriesWithTitle && React__default.createElement(EmojiHeader, {
-      padding: '6px 8px'
+    }, !fixEmojiCategoriesTitleOnTop && React__default.createElement(EmojiHeader, {
+      padding: '6px 8px 0'
     }, getEmojisCategoryTitle(mainCollectionKey)), emojiBigCollection.array.map(function (emojiSmallCollection, bigIndex) {
       var label = emojiSmallCollection.key;
       var array = emojiSmallCollection.array;
@@ -23087,7 +23115,7 @@ var Container$c = styled__default.div(_templateObject$q || (_templateObject$q = 
 }, function (props) {
   return props.bottomPosition;
 }, colors.gray1, function (props) {
-  return props.borderRadius || '6px';
+  return props.borderRadius || '12px';
 }, colors.white, function (props) {
   return props.emojisPopupPosition === 'bottom' ? '0 0' : '0 100%';
 }, function (props) {
@@ -23096,12 +23124,12 @@ var Container$c = styled__default.div(_templateObject$q || (_templateObject$q = 
 var EmojiHeader = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.gray9, function (props) {
   return props.padding || '6px 18px';
 });
-var EmojiSection = styled__default.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  height: 200px;\n  overflow-x: hidden;\n"])));
+var EmojiSection = styled__default.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  height: 180px;\n  overflow-x: hidden;\n"])));
 var EmojiCollection = styled__default.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
   return props.activeCollection ? colors.primary : colors.gray7;
 });
 var CollectionPointer = styled__default.span(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose([""])));
-var AllEmojis = styled__default.ul(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 8px;\n  margin: 0;\n"])));
+var AllEmojis = styled__default.ul(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
 var EmojiFooter = styled__default.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
   return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + colors.gray1;
 }, function (props) {
@@ -23109,10 +23137,10 @@ var EmojiFooter = styled__default.div(_templateObject7$9 || (_templateObject7$9 
 });
 var Emoji = styled__default.li(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: #f5f5f8;\n  }\n"])));
 
-var _path$O;
+var _path$M;
 
-function _extends$R() {
-  _extends$R = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$Q() {
+  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23125,17 +23153,17 @@ function _extends$R() {
 
     return target;
   };
-  return _extends$R.apply(this, arguments);
+  return _extends$Q.apply(this, arguments);
 }
 
 function SvgPlus(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$R({
+  return /*#__PURE__*/React.createElement("svg", _extends$Q({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$O || (_path$O = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$M || (_path$M = /*#__PURE__*/React.createElement("path", {
     d: "M10 3.778c.43 0 .778.348.778.778v4.666h4.666a.778.778 0 110 1.556h-4.666v4.666a.778.778 0 11-1.556 0v-4.666H4.556a.778.778 0 110-1.556h4.666V4.556c0-.43.348-.778.778-.778z",
     fill: "#818C99"
   })));
@@ -23274,7 +23302,7 @@ var EmojiItem = styled__default.span(_templateObject2$o || (_templateObject2$o =
 }, colors.gray5);
 var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  border-radius: 50%;\n"])), colors.gray5, colors.gray4);
 
-var _templateObject$s, _templateObject2$p, _templateObject3$k, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1, _templateObject22$1;
+var _templateObject$s, _templateObject2$p, _templateObject3$k, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -23344,7 +23372,8 @@ var Message = function Message(_ref) {
       staredIcon = _ref.staredIcon,
       reportIcon = _ref.reportIcon,
       reactionIconOrder = _ref.reactionIconOrder,
-      openFrequentlyUsedReactions = _ref.openFrequentlyUsedReactions,
+      _ref$openFrequentlyUs = _ref.openFrequentlyUsedReactions,
+      openFrequentlyUsedReactions = _ref$openFrequentlyUs === void 0 ? true : _ref$openFrequentlyUs,
       editIconOrder = _ref.editIconOrder,
       copyIconOrder = _ref.copyIconOrder,
       replyIconOrder = _ref.replyIconOrder,
@@ -23368,6 +23397,7 @@ var Message = function Message(_ref) {
       reactionsDisplayCount = _ref$reactionsDisplay === void 0 ? 5 : _ref$reactionsDisplay,
       _ref$showEachReaction = _ref.showEachReactionCount,
       showEachReactionCount = _ref$showEachReaction === void 0 ? true : _ref$showEachReaction,
+      showTotalReactionCount = _ref.showTotalReactionCount,
       reactionItemBorder = _ref.reactionItemBorder,
       reactionItemBorderRadius = _ref.reactionItemBorderRadius,
       reactionItemBackground = _ref.reactionItemBackground,
@@ -23380,6 +23410,8 @@ var Message = function Message(_ref) {
       reactionsContainerBackground = _ref.reactionsContainerBackground,
       reactionsContainerPadding = _ref.reactionsContainerPadding,
       reactionsContainerTopPosition = _ref.reactionsContainerTopPosition,
+      reactionsDetailsPopupBorderRadius = _ref.reactionsDetailsPopupBorderRadius,
+      reactionsDetailsPopupHeaderItemsStyle = _ref.reactionsDetailsPopupHeaderItemsStyle,
       fileAttachmentsBoxWidth = _ref.fileAttachmentsBoxWidth,
       fileAttachmentsBoxBorder = _ref.fileAttachmentsBoxBorder,
       fileAttachmentsTitleColor = _ref.fileAttachmentsTitleColor,
@@ -23390,7 +23422,7 @@ var Message = function Message(_ref) {
       videoAttachmentMaxHeight = _ref.videoAttachmentMaxHeight,
       emojisCategoryIconsPosition = _ref.emojisCategoryIconsPosition,
       emojisContainerBorderRadius = _ref.emojisContainerBorderRadius,
-      separateEmojiCategoriesWithTitle = _ref.separateEmojiCategoriesWithTitle,
+      fixEmojiCategoriesTitleOnTop = _ref.fixEmojiCategoriesTitleOnTop,
       sameUserMessageSpacing = _ref.sameUserMessageSpacing,
       differentUserMessageSpacing = _ref.differentUserMessageSpacing;
   var dispatch = reactRedux.useDispatch();
@@ -23591,7 +23623,7 @@ var Message = function Message(_ref) {
     if (message.selfReactions && message.selfReactions.some(function (item) {
       return item.key === selectedEmoji;
     })) {
-      dispatch(deleteReactionAC(channel.id, message.id, selectedEmoji, channel.userMessageReactions && channel.userMessageReactions[0] && channel.userMessageReactions[0].messageId === message.id && channel.userMessageReactions[0].key === selectedEmoji));
+      dispatch(deleteReactionAC(channel.id, message.id, selectedEmoji, channel.newReactions && channel.newReactions[0] && channel.newReactions[0].messageId === message.id && channel.newReactions[0].key === selectedEmoji));
     } else {
       var score = 1;
       var reason = 'mmm';
@@ -23624,7 +23656,7 @@ var Message = function Message(_ref) {
       messageBody: !!message.body,
       withPadding: withAttachments && notLinkAttachment
     }, showMessageSenderName && React__default.createElement(MessageOwner, {
-      className: 'message-owner 000',
+      className: 'message-owner',
       color: colors.primary,
       rtlDirection: ownMessageOnRightSide && !message.incoming
     }, message.user.id === user.id && message.user.firstName ? message.user.firstName + " " + message.user.lastName : makeUsername(contactsMap[message.user.id], message.user, getFromContacts)));
@@ -23664,6 +23696,7 @@ var Message = function Message(_ref) {
   }, [tabIsActive]);
   React.useEffect(function () {
     if (emojisPopupOpen) {
+      console.log('messageItemRef.current.getBoundingClientRect().bottom. . .. ', messageItemRef.current.getBoundingClientRect().bottom);
       var bottomPos = messageItemRef.current ? messageItemRef.current.getBoundingClientRect().bottom : 0;
       var offsetBottom = window.innerHeight - bottomPos;
       setEmojisPopupPosition(offsetBottom < 300 ? 'top' : 'bottom');
@@ -23885,7 +23918,7 @@ var Message = function Message(_ref) {
     emojisPopupPosition: emojisPopupPosition,
     emojisCategoryIconsPosition: emojisCategoryIconsPosition,
     emojisContainerBorderRadius: emojisContainerBorderRadius,
-    separateEmojiCategoriesWithTitle: separateEmojiCategoriesWithTitle,
+    fixEmojiCategoriesTitleOnTop: fixEmojiCategoriesTitleOnTop,
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     handleEmojiPopupToggle: setEmojisPopupOpen,
     handleAddEmoji: handleReactionAddDelete
@@ -23915,7 +23948,9 @@ var Message = function Message(_ref) {
     messageId: message.id,
     handleReactionsPopupClose: handleToggleReactionsPopup,
     rtlDirection: ownMessageOnRightSide && !message.incoming,
-    handleAddDeleteEmoji: handleReactionAddDelete
+    handleAddDeleteEmoji: handleReactionAddDelete,
+    reactionsDetailsPopupBorderRadius: reactionsDetailsPopupBorderRadius,
+    reactionsDetailsPopupHeaderItemsStyle: reactionsDetailsPopupHeaderItemsStyle
   }), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
     id: message.id + "_reactions_container",
     border: reactionsContainerBorder,
@@ -23941,8 +23976,8 @@ var Message = function Message(_ref) {
       margin: reactionItemMargin,
       isLastReaction: reactionsCount === 1,
       fontSize: reactionsFontSize
-    }, React__default.createElement(MessageReactionKey, null, key + " " + (showEachReactionCount ? message.reactionScores[key] : '')));
-  }), reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
+    }, React__default.createElement(MessageReactionKey, null, key, showEachReactionCount && React__default.createElement(ReactionItemCount, null, message.reactionScores[key], " ")));
+  }), showTotalReactionCount && reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
     borderRadius: reactionItemBorderRadius,
     backgroundColor: reactionItemBackground,
@@ -23967,13 +24002,14 @@ var Message = function Message(_ref) {
     title: 'Forward message'
   }));
 };
-var MessageReactionKey = styled__default.span(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
-var MessageReaction = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n"])), function (props) {
-  return props.margin || '0 6px 0 0';
+var MessageReactionKey = styled__default.span(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  align-items: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
+var ReactionItemCount = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
+var MessageReaction = styled__default.span(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n\n  &:last-child {\n    margin-right: 0;\n  }\n"])), function (props) {
+  return props.margin || '0 8px 0 0';
 }, function (props) {
   return props.isLastReaction && '0';
 }, function (props) {
-  return props.border || "1px solid " + colors.gray3;
+  return props.border;
 }, function (props) {
   return props.self && colors.primary;
 }, function (props) {
@@ -23981,45 +24017,45 @@ var MessageReaction = styled__default.span(_templateObject2$p || (_templateObjec
 }, function (props) {
   return props.borderRadius || '16px';
 }, function (props) {
-  return props.fontSize || '13px';
+  return props.fontSize || '18px';
 }, function (props) {
-  return props.fontSize || '13px';
+  return props.fontSize || '18px';
 }, function (props) {
-  return props.padding || '2px 6px';
+  return props.padding || '0';
 }, function (props) {
-  return props.backgroundColor || colors.white;
+  return props.backgroundColor;
 });
-var ThreadMessageCountContainer = styled__default.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.primary);
-var FailedMessageIcon = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: -6px;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
+var ThreadMessageCountContainer = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.primary);
+var FailedMessageIcon = styled__default.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: -6px;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
   return !props.rtl && '-24px';
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
-var ReactionsContainer = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
+var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
+var ReactionsContainer = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  filter: drop-shadow(0px 0px 2px rgba(17, 21, 57, 0.08));\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return props.rtlDirection && 'auto';
 }, function (props) {
   return !props.rtlDirection && 'auto';
 }, function (props) {
   return props.border;
 }, function (props) {
-  return props.boxShadow;
+  return props.boxShadow || '0px 4px 12px -2px rgba(17, 21, 57, 0.08)';
 }, function (props) {
-  return props.borderRadius;
+  return props.borderRadius || '16px';
 }, function (props) {
-  return props.backgroundColor;
+  return props.backgroundColor || colors.white;
 }, function (props) {
-  return props.padding;
+  return props.padding || '4px 8px';
 }, function (props) {
   return props.topPosition && "\n      position: relative;\n      top: " + props.topPosition + ";\n  ";
 });
-var MessageReactionsCont = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n  cursor: pointer;\n"])), function (props) {
+var MessageReactionsCont = styled__default.div(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.rtlDirection && 'ltr';
 });
-var MessageHeaderCont = styled__default.div(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: ", ";\n"])), function (props) {
+var MessageHeaderCont = styled__default.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: ", ";\n"])), function (props) {
   return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReplied && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
 });
-var ReplyMessageContainer = styled__default.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
+var ReplyMessageContainer = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.leftBorderColor || '#b8b9c2';
 }, function (props) {
   return props.withAttachments ? '8px 8px' : '0 0 8px';
@@ -24028,10 +24064,10 @@ var ReplyMessageContainer = styled__default.div(_templateObject9$7 || (_template
 }, function (props) {
   return !props.withSenderName && props.withAttachments && '8px';
 });
-var ReplyMessageBody = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  direction: ", ";\n  max-width: 100%;\n"])), function (props) {
+var ReplyMessageBody = styled__default.div(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  direction: ", ";\n  max-width: 100%;\n"])), function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var ForwardedTitle = styled__default.h3(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
+var ForwardedTitle = styled__default.h3(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.withAttachments && props.withBody ? '0' : '0 0 4px';
@@ -24044,14 +24080,14 @@ var ForwardedTitle = styled__default.h3(_templateObject11$4 || (_templateObject1
 }, function (props) {
   return props.color || colors.primary;
 });
-var MessageStatus = styled__default.span(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
+var MessageStatus = styled__default.span(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
   var lastMessage = _ref2.lastMessage;
   return lastMessage ? 'visible' : 'hidden';
 });
-var HiddenMessageTime = styled__default.span(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
+var HiddenMessageTime = styled__default.span(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.hide && 'none';
 }, colors.gray9);
-var MessageStatusAndTime = styled__default.div(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-right: ", ";\n  margin-left: ", ";\n  margin-bottom: ", ";\n  direction: ", ";\n  transform: translate(0px, 4px);\n  white-space: nowrap;\n  width: ", ";\n  justify-content: ", ";\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
+var MessageStatusAndTime = styled__default.div(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-right: ", ";\n  margin-left: ", ";\n  margin-bottom: ", ";\n  direction: ", ";\n  transform: translate(0px, 4px);\n  white-space: nowrap;\n  width: ", ";\n  justify-content: ", ";\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
   return props.hide ? 'none' : 'flex';
 }, function (props) {
   return props.withAttachment && '4px 6px';
@@ -24074,11 +24110,11 @@ var MessageStatusAndTime = styled__default.div(_templateObject14$2 || (_template
 }, function (props) {
   return props.withAttachment && "\n    position: absolute;\n    z-index: 3;\n    right: " + (props.fileAttachment ? '6px' : '10px') + ";\n    bottom: " + (props.fileAttachment ? '9px' : '14px') + ";\n  ";
 });
-var MessageStatusUpdated = styled__default.span(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
+var MessageStatusUpdated = styled__default.span(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.gray4;
 });
-var MessageStatusDeleted = styled__default.span(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
-var MessageBody = styled__default.div(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  direction: ", ";\n  max-width: ", ";\n  padding: ", ";\n  //direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n"])), function (props) {
+var MessageStatusDeleted = styled__default.span(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
+var MessageBody = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  direction: ", ";\n  max-width: ", ";\n  padding: ", ";\n  //direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n"])), function (props) {
   return props.isSelfMessage ? props.ownMessageBackground : props.incomingMessageBackground;
 }, function (props) {
   return props.borderRadius || '4px 16px 16px 4px';
@@ -24093,7 +24129,7 @@ var MessageBody = styled__default.div(_templateObject17$2 || (_templateObject17$
 }, function (props) {
   return props.noBody && 'hidden';
 });
-var MessageContent = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+var MessageContent = styled__default.div(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
   return props.withAvatar && '13px';
 }, function (props) {
   return props.withAvatar && '13px';
@@ -24102,10 +24138,10 @@ var MessageContent = styled__default.div(_templateObject18$1 || (_templateObject
 }, function (props) {
   return props.messageWidthPercent ? props.messageWidthPercent + "%" : '100%';
 });
-var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
+var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
-var MessageItem = styled__default.div(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 4%;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
+var MessageItem = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 4%;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
   return props.topMargin || '12px';
 }, function (props) {
   return props.bottomMargin;
@@ -24118,20 +24154,58 @@ var MessageItem = styled__default.div(_templateObject20$1 || (_templateObject20$
 }, function (props) {
   return props.hoverBackground || '';
 }, HiddenMessageTime, MessageStatusAndTime, MessageStatus);
-var EmojiContainer = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: ", ";\n  z-index: 99;\n"])), function (props) {
+var EmojiContainer = styled__default.div(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  //top: ", ";\n  top: ", ";\n  bottom: ", ";\n  z-index: 99;\n"])), function (props) {
   return props.rtlDirection ? '' : '0';
 }, function (props) {
   return props.rtlDirection && '0';
 }, function (props) {
   return props.position === 'top' ? '-250px' : 'calc(100% + 6px)';
+}, function (props) {
+  return props.position === 'bottom' && 'calc(100% + 4px)';
+}, function (props) {
+  return props.position === 'top' && 'calc(100% + 4px)';
 });
-var FrequentlyEmojisContainer = styled__default.div(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -50px;\n  z-index: 99;\n"])), function (props) {
+var FrequentlyEmojisContainer = styled__default.div(_templateObject23$1 || (_templateObject23$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  top: -50px;\n  z-index: 99;\n"])), function (props) {
   return props.rtlDirection ? '' : '0';
 }, function (props) {
   return props.rtlDirection && '0';
 });
 
-var _path$P;
+var _path$N;
+
+function _extends$R() {
+  _extends$R = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$R.apply(this, arguments);
+}
+
+function SvgSliderButtonRight(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$R({
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$N || (_path$N = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
+    fill: "#fff"
+  })));
+}
+
+var _path$O;
 
 function _extends$S() {
   _extends$S = Object.assign ? Object.assign.bind() : function (target) {
@@ -24150,22 +24224,22 @@ function _extends$S() {
   return _extends$S.apply(this, arguments);
 }
 
-function SvgSliderButtonRight(props) {
+function SvgSliderButtonLeft(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$S({
     width: 28,
     height: 28,
     viewBox: "0 0 28.01 28.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$P || (_path$P = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$O || (_path$O = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
+    d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
     fill: "#fff"
   })));
 }
 
-var _path$Q;
+var _path$P;
 
 function _extends$T() {
   _extends$T = Object.assign ? Object.assign.bind() : function (target) {
@@ -24184,22 +24258,20 @@ function _extends$T() {
   return _extends$T.apply(this, arguments);
 }
 
-function SvgSliderButtonLeft(props) {
+function SvgVideoPlayerPlay(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$T({
-    width: 28,
-    height: 28,
-    viewBox: "0 0 28.01 28.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$Q || (_path$Q = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
+  }, props), _path$P || (_path$P = /*#__PURE__*/React.createElement("path", {
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
     fill: "#fff"
   })));
 }
 
-var _path$R;
+var _path$Q;
 
 function _extends$U() {
   _extends$U = Object.assign ? Object.assign.bind() : function (target) {
@@ -24218,20 +24290,20 @@ function _extends$U() {
   return _extends$U.apply(this, arguments);
 }
 
-function SvgVideoPlayerPlay(props) {
+function SvgVideoPlayerPause(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$U({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$R || (_path$R = /*#__PURE__*/React.createElement("path", {
-    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
+  }, props), _path$Q || (_path$Q = /*#__PURE__*/React.createElement("path", {
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
     fill: "#fff"
   })));
 }
 
-var _path$S;
+var _path$R;
 
 function _extends$V() {
   _extends$V = Object.assign ? Object.assign.bind() : function (target) {
@@ -24250,20 +24322,20 @@ function _extends$V() {
   return _extends$V.apply(this, arguments);
 }
 
-function SvgVideoPlayerPause(props) {
+function SvgVolume(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$V({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$S || (_path$S = /*#__PURE__*/React.createElement("path", {
-    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+  }, props), _path$R || (_path$R = /*#__PURE__*/React.createElement("path", {
+    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
     fill: "#fff"
   })));
 }
 
-var _path$T;
+var _path$S;
 
 function _extends$W() {
   _extends$W = Object.assign ? Object.assign.bind() : function (target) {
@@ -24282,20 +24354,20 @@ function _extends$W() {
   return _extends$W.apply(this, arguments);
 }
 
-function SvgVolume(props) {
+function SvgVolumeMute(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$W({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
-    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
+  }, props), _path$S || (_path$S = /*#__PURE__*/React.createElement("path", {
+    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
     fill: "#fff"
   })));
 }
 
-var _path$U;
+var _path$T;
 
 function _extends$X() {
   _extends$X = Object.assign ? Object.assign.bind() : function (target) {
@@ -24314,20 +24386,22 @@ function _extends$X() {
   return _extends$X.apply(this, arguments);
 }
 
-function SvgVolumeMute(props) {
+function SvgFullscreen(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$X({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
-    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
+  }, props), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
     fill: "#fff"
   })));
 }
 
-var _path$V;
+var _path$U;
 
 function _extends$Y() {
   _extends$Y = Object.assign ? Object.assign.bind() : function (target) {
@@ -24346,48 +24420,14 @@ function _extends$Y() {
   return _extends$Y.apply(this, arguments);
 }
 
-function SvgFullscreen(props) {
+function SvgFullscreenExit(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$Y({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$V || (_path$V = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
-    fill: "#fff"
-  })));
-}
-
-var _path$W;
-
-function _extends$Z() {
-  _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$Z.apply(this, arguments);
-}
-
-function SvgFullscreenExit(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$Z({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$W || (_path$W = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.438 11.781c0-.466.377-.844.843-.844H8.22c.466 0 .844.378.844.844v3.938a.844.844 0 01-1.688 0v-1.9L3.94 17.252a.844.844 0 11-1.193-1.193l3.435-3.435h-1.9a.844.844 0 01-.844-.844zM17.253 2.747c.33.33.33.864 0 1.193l-3.435 3.435h1.899a.844.844 0 110 1.688h-3.936a.844.844 0 01-.844-.844V4.28a.844.844 0 011.688 0v1.9l3.435-3.434a.844.844 0 011.193 0z",
@@ -24962,10 +25002,10 @@ var ArrowButton = styled__default.button(_templateObject14$3 || (_templateObject
   return props.leftButton && '4px';
 });
 
-var _path$X;
+var _path$V;
 
-function _extends$_() {
-  _extends$_ = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$Z() {
+  _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -24978,17 +25018,17 @@ function _extends$_() {
 
     return target;
   };
-  return _extends$_.apply(this, arguments);
+  return _extends$Z.apply(this, arguments);
 }
 
 function SvgChoseMedia(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$_({
+  return /*#__PURE__*/React.createElement("svg", _extends$Z({
     width: 18,
     height: 18,
     viewBox: "0 0 19 19",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$X || (_path$X = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$V || (_path$V = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
@@ -25097,11 +25137,12 @@ var MessageList = function MessageList(_ref2) {
       reportIcon = _ref2.reportIcon,
       reactionIconOrder = _ref2.reactionIconOrder,
       openFrequentlyUsedReactions = _ref2.openFrequentlyUsedReactions,
-      separateEmojiCategoriesWithTitle = _ref2.separateEmojiCategoriesWithTitle,
+      fixEmojiCategoriesTitleOnTop = _ref2.fixEmojiCategoriesTitleOnTop,
       emojisCategoryIconsPosition = _ref2.emojisCategoryIconsPosition,
       emojisContainerBorderRadius = _ref2.emojisContainerBorderRadius,
       reactionsDisplayCount = _ref2.reactionsDisplayCount,
       showEachReactionCount = _ref2.showEachReactionCount,
+      showTotalReactionCount = _ref2.showTotalReactionCount,
       reactionItemBorder = _ref2.reactionItemBorder,
       reactionItemBorderRadius = _ref2.reactionItemBorderRadius,
       reactionItemBackground = _ref2.reactionItemBackground,
@@ -25114,6 +25155,9 @@ var MessageList = function MessageList(_ref2) {
       reactionsContainerBackground = _ref2.reactionsContainerBackground,
       reactionsContainerPadding = _ref2.reactionsContainerPadding,
       reactionsContainerTopPosition = _ref2.reactionsContainerTopPosition,
+      reactionsDetailsPopupBorderRadius = _ref2.reactionsDetailsPopupBorderRadius,
+      _ref2$reactionsDetail = _ref2.reactionsDetailsPopupHeaderItemsStyle,
+      reactionsDetailsPopupHeaderItemsStyle = _ref2$reactionsDetail === void 0 ? 'bubbles' : _ref2$reactionsDetail,
       editIconOrder = _ref2.editIconOrder,
       copyIconOrder = _ref2.copyIconOrder,
       replyIconOrder = _ref2.replyIconOrder,
@@ -25505,8 +25549,8 @@ var MessageList = function MessageList(_ref2) {
     dispatch(getMessagesAC(channel));
 
     if (channel.id) {
-      if (channel.unreadMessageCount && channel.unreadMessageCount > 0) {
-        setUnreadMessageId(channel.lastReadMessageId);
+      if (channel.newMessageCount && channel.newMessageCount > 0) {
+        setUnreadMessageId(channel.lastDisplayedMsgId);
       } else {
         setUnreadMessageId('');
       }
@@ -25590,12 +25634,12 @@ var MessageList = function MessageList(_ref2) {
     }
   }, [connectionStatus]);
   React.useEffect(function () {
-    if (channel.unreadMessageCount && channel.unreadMessageCount > 0 && getUnreadScrollTo()) {
+    if (channel.newMessageCount && channel.newMessageCount > 0 && getUnreadScrollTo()) {
       if (scrollRef.current) {
         scrollRef.current.style.scrollBehavior = 'inherit';
       }
 
-      var lastReadMessageNode = document.getElementById(channel.lastReadMessageId);
+      var lastReadMessageNode = document.getElementById(channel.lastDisplayedMsgId);
 
       if (lastReadMessageNode) {
         scrollRef.current.scrollTop = lastReadMessageNode.offsetTop;
@@ -25744,7 +25788,7 @@ var MessageList = function MessageList(_ref2) {
       openFrequentlyUsedReactions: openFrequentlyUsedReactions,
       emojisCategoryIconsPosition: emojisCategoryIconsPosition,
       emojisContainerBorderRadius: emojisContainerBorderRadius,
-      separateEmojiCategoriesWithTitle: separateEmojiCategoriesWithTitle,
+      fixEmojiCategoriesTitleOnTop: fixEmojiCategoriesTitleOnTop,
       editIconOrder: editIconOrder,
       copyIconOrder: copyIconOrder,
       replyIconOrder: replyIconOrder,
@@ -25776,6 +25820,7 @@ var MessageList = function MessageList(_ref2) {
       videoAttachmentMaxHeight: videoAttachmentMaxHeight,
       reactionsDisplayCount: reactionsDisplayCount,
       showEachReactionCount: showEachReactionCount,
+      showTotalReactionCount: showTotalReactionCount,
       reactionItemBorder: reactionItemBorder,
       reactionItemBorderRadius: reactionItemBorderRadius,
       reactionItemBackground: reactionItemBackground,
@@ -25788,6 +25833,8 @@ var MessageList = function MessageList(_ref2) {
       reactionsContainerPadding: reactionsContainerPadding,
       reactionsContainerBackground: reactionsContainerBackground,
       reactionsContainerTopPosition: reactionsContainerTopPosition,
+      reactionsDetailsPopupBorderRadius: reactionsDetailsPopupBorderRadius,
+      reactionsDetailsPopupHeaderItemsStyle: reactionsDetailsPopupHeaderItemsStyle,
       sameUserMessageSpacing: sameUserMessageSpacing,
       differentUserMessageSpacing: differentUserMessageSpacing
     })), isUnreadMessage ? React__default.createElement(MessageDivider, {
@@ -25849,7 +25896,43 @@ var DropAttachmentArea = styled__default.div(_templateObject7$d || (_templateObj
 var MessageWrapper = styled__default.div(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
 var NoMessagesContainer = styled__default.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray6);
 
-var _circle$5, _path$Y;
+var _circle$5, _path$W;
+
+function _extends$_() {
+  _extends$_ = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$_.apply(this, arguments);
+}
+
+function SvgSend(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$_({
+    width: 32,
+    height: 32,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$W || (_path$W = /*#__PURE__*/React.createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
+  })));
+}
+
+var _path$X;
 
 function _extends$$() {
   _extends$$ = Object.assign ? Object.assign.bind() : function (target) {
@@ -25868,24 +25951,19 @@ function _extends$$() {
   return _extends$$.apply(this, arguments);
 }
 
-function SvgSend(props) {
+function SvgEye(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$$({
-    width: 32,
-    height: 32,
+    width: 25,
+    height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$Y || (_path$Y = /*#__PURE__*/React.createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
+  }, props), _path$X || (_path$X = /*#__PURE__*/React.createElement("path", {
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$Z;
+var _path$Y;
 
 function _extends$10() {
   _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
@@ -25904,19 +25982,19 @@ function _extends$10() {
   return _extends$10.apply(this, arguments);
 }
 
-function SvgEye(props) {
+function SvgAddAttachment(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$10({
-    width: 25,
+    width: 24,
     height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$Z || (_path$Z = /*#__PURE__*/React.createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
+  }, props), _path$Y || (_path$Y = /*#__PURE__*/React.createElement("path", {
+    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$_;
+var _path$Z;
 
 function _extends$11() {
   _extends$11 = Object.assign ? Object.assign.bind() : function (target) {
@@ -25935,76 +26013,13 @@ function _extends$11() {
   return _extends$11.apply(this, arguments);
 }
 
-function SvgEdit(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$11({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 25 25",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$_ || (_path$_ = /*#__PURE__*/React.createElement("path", {
-    d: "M13.92 6.768l3.312 3.312-7.934 7.925a6.229 6.229 0 01-2.586 1.554l-2.71.827a.312.312 0 01-.388-.389l.827-2.71a6.231 6.231 0 011.553-2.586l7.926-7.933zm4.746-2.758l1.324 1.324a1.4 1.4 0 01.096 1.874l-.096.106-1.414 1.41-3.3-3.3 1.41-1.414a1.4 1.4 0 011.98 0z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$$;
-
-function _extends$12() {
-  _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$12.apply(this, arguments);
-}
-
-function SvgAddAttachment(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$12({
-    width: 24,
-    height: 24,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$$ || (_path$$ = /*#__PURE__*/React.createElement("path", {
-    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$10;
-
-function _extends$13() {
-  _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$13.apply(this, arguments);
-}
-
 function SvgErrorCircle(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$13({
+  return /*#__PURE__*/React.createElement("svg", _extends$11({
     width: 25,
     height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$10 || (_path$10 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$Z || (_path$Z = /*#__PURE__*/React.createElement("path", {
     d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
     fill: "#FFB73D"
   })));
@@ -26174,7 +26189,7 @@ var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = 
   return props.isActiveItem && colors.gray0;
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$x, _templateObject2$u, _templateObject3$p, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$1, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$x, _templateObject2$u, _templateObject3$p, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -26211,6 +26226,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       selectedFileAttachmentsTitleColor = _ref.selectedFileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor = _ref.selectedFileAttachmentsSizeColor,
       replyMessageIcon = _ref.replyMessageIcon,
+      editMessageIcon = _ref.editMessageIcon,
       sendAttachmentSeparately = _ref.sendAttachmentSeparately,
       _ref$allowMentionUser = _ref.allowMentionUser,
       allowMentionUser = _ref$allowMentionUser === void 0 ? true : _ref$allowMentionUser;
@@ -26415,18 +26431,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var messageTextToFormat = editMessageText || messageText;
     var currentText = "" + messageTextToFormat.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + messageTextToFormat.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
     var mentionedMembersPositions = [];
-    var editingMentions = [];
 
-    if (messageToEdit && messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length > 0) {
-      editingMentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
-    }
-
-    var mentions = editingMentions && editingMentions.length ? [].concat(editingMentions, mentionedMembers) : mentionedMembers;
-
-    if (mentions && mentions.length > 0) {
+    if (mentionedMembers && mentionedMembers.length > 0) {
       var lastFoundIndex = 0;
       var starts = {};
-      mentions.forEach(function (menMem) {
+      mentionedMembers.forEach(function (menMem) {
         var mentionDisplayName = "@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts).trim();
         var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
         lastFoundIndex = menIndex + mentionDisplayName.length;
@@ -26443,7 +26452,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       });
     }
 
-    console.log('currentText . . . . .', currentText);
     var currentTextCont = typingTextFormat({
       text: currentText,
       mentionedMembers: [].concat(mentionedMembersPositions, [{
@@ -26461,8 +26469,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     messageInputRef.current.innerHTML = currentTextCont;
-    console.log('currentTextCont. .. .. ', currentTextCont);
-    console.log('currentMentions.start. .. .. ', currentMentions.start);
     setCursorPosition(messageInputRef.current, currentMentions.start + 2 + mentionDisplayName.length);
 
     var updateCurrentMentions = _extends({}, currentMentions);
@@ -26481,8 +26487,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handleTyping = function handleTyping(e) {
-    console.log(!!e.currentTarget.innerText.trim());
-
     if (!e.currentTarget.innerText.trim()) {
       setSendMessageIsActive(false);
     } else {
@@ -26520,7 +26524,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var selPos = getCaretPosition(e.currentTarget);
 
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowTop' || e.key === 'ArrowDown') {
-      console.log('selPos . . . .', selPos);
       setSelectionPos(selPos);
     }
 
@@ -26545,15 +26548,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
     if (e.key === 'Backspace' || e.key === 'Delete') {
       var mentionedMembersPositions = [];
       var currentText = messageInputRef.current.innerText;
-      console.log('currentText. . . . .', currentText);
-      console.log('mentionedMembers. . . . .', mentionedMembers);
 
       if (mentionedMembers && mentionedMembers.length > 0) {
         var lastFoundIndex = 0;
         var starts = {};
         var updatedMentionedMembers = [];
         mentionedMembers.forEach(function (menMem) {
-          var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
+          var mentionDisplayName = menMem.displayName || mentionedMembersDisplayName[menMem.id].displayName;
           var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
           lastFoundIndex = menIndex + mentionDisplayName.length;
 
@@ -26563,7 +26564,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
               end: menIndex + mentionDisplayName.length
             }));
             mentionedMembersPositions.push({
-              displayName: mentionedMembersDisplayName[menMem.id].displayName,
+              displayName: mentionDisplayName,
               start: menIndex,
               end: menIndex + mentionDisplayName.length
             });
@@ -26572,16 +26573,20 @@ var SendMessageInput = function SendMessageInput(_ref) {
           starts[menMem.start] = true;
         });
         setMentionedMembers(updatedMentionedMembers);
-        console.log('mentionedMembersPositions. . . .', mentionedMembersPositions);
         var currentTextCont = typingTextFormat({
           text: currentText,
           mentionedMembers: [].concat(mentionedMembersPositions)
         });
-        console.log('currentTextCont. . . . ', currentTextCont);
         messageInputRef.current.innerHTML = currentTextCont;
       }
 
-      setMessageText(currentText);
+      if (messageToEdit) {
+        setEditMessageText(currentText);
+      } else {
+        setMessageText(currentText);
+      }
+
+      console.log('set pos .. . ', selPos);
 
       if (selPos > 0) {
         setCursorPosition(messageInputRef.current, selPos);
@@ -26753,11 +26758,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var mentionedMembersPositions = [];
     var mentionedUserForSend = [];
 
-    if (messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length) {
-      var mentions = [].concat(messageToEdit.mentionedUsers, mentionedMembers);
+    if (mentionedMembers && mentionedMembers.length) {
       var lastFoundIndex = 0;
       var starts = {};
-      mentions.forEach(function (menMem) {
+      mentionedMembers.forEach(function (menMem) {
         var mentionDisplayName = ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim();
         var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
 
@@ -27178,6 +27182,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         setEditMessageText(formattedText);
         var mentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
         var mentionedMembersPositions = [];
+        var editingMentionedMembers = [];
         var lastFoundIndex = 0;
         var starts = {};
         mentions.forEach(function (menMem) {
@@ -27186,15 +27191,18 @@ var SendMessageInput = function SendMessageInput(_ref) {
           lastFoundIndex = menIndex + mentionDisplayName.length;
 
           if (!starts[menIndex]) {
-            mentionedMembersPositions.push({
+            var mentionInfo = {
               displayName: mentionDisplayName,
               start: menIndex,
               end: menIndex + mentionDisplayName.length
-            });
+            };
+            editingMentionedMembers.push(_extends({}, menMem, mentionInfo));
+            mentionedMembersPositions.push(mentionInfo);
           }
 
           starts[menIndex] = true;
         });
+        setMentionedMembers(editingMentionedMembers);
         var currentTextCont = typingTextFormat({
           text: messageToEdit.body,
           mentionedMembers: [].concat(mentionedMembersPositions)
@@ -27248,7 +27256,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: handleCloseEditMode
   }, React__default.createElement(SvgClose, null)), React__default.createElement(EditReplyMessageHeader, {
     color: colors.primary
-  }, React__default.createElement(SvgEdit, null), "Edit Message"), React__default.createElement(EditMessageText, null, messageToEdit.body)), messageForReply && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
+  }, editMessageIcon || React__default.createElement(SvgEditIcon, null), "Edit Message"), React__default.createElement(EditMessageText, null, messageToEdit.body)), messageForReply && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
     onClick: handleCloseReply
   }, React__default.createElement(SvgClose, null)), React__default.createElement(ReplyMessageCont, null, !!(messageForReply.attachments && messageForReply.attachments.length) && (messageForReply.attachments[0].type === attachmentTypes.image || messageForReply.attachments[0].type === attachmentTypes.video ? React__default.createElement(Attachment, {
     attachment: messageForReply.attachments[0],
@@ -27435,7 +27443,7 @@ var DotOne = styled__default.span(_templateObject19$2 || (_templateObject19$2 = 
 var DotTwo = styled__default.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled__default.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
 var TypingAnimation = styled__default.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
-var Loading = styled__default.div(_templateObject23$1 || (_templateObject23$1 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
+var Loading = styled__default.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
 var BlockedUserInfo = styled__default.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.gray6);
 var JoinChannelCont = styled__default.div(_templateObject25$1 || (_templateObject25$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
@@ -27448,7 +27456,75 @@ var ReplyIconWrapper = styled__default.span(_templateObject28$1 || (_templateObj
   return props.backgroundColor || colors.primary;
 }, colors.white);
 
-var _path$11;
+var _path$_;
+
+function _extends$12() {
+  _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$12.apply(this, arguments);
+}
+
+function SvgBottom(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$12({
+    width: 12,
+    height: 7,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$_ || (_path$_ = /*#__PURE__*/React.createElement("path", {
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })));
+}
+
+var _path$$;
+
+function _extends$13() {
+  _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$13.apply(this, arguments);
+}
+
+function SvgNotificationsOff2(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$13({
+    width: 16,
+    height: 16,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$$ || (_path$$ = /*#__PURE__*/React.createElement("path", {
+    d: "M9.259 14.3a1.454 1.454 0 01-2.517 0M12.821 9.007a13.013 13.013 0 01-.458-3.636M3.826 4.105c-.126.41-.19.837-.189 1.266 0 5.09-2.182 6.545-2.182 6.545h10.182M12.365 5.37a4.363 4.363 0 00-6.786-3.636M1 1l14 14",
+    stroke: "CurrentColor",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  })));
+}
+
+var _path$10, _circle$6;
 
 function _extends$14() {
   _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
@@ -27467,22 +27543,27 @@ function _extends$14() {
   return _extends$14.apply(this, arguments);
 }
 
-function SvgBottom(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$14({
-    width: 12,
-    height: 7,
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+  }, props), _path$10 || (_path$10 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M17.778 8.516a3.958 3.958 0 01-5.117-5.982 7.847 7.847 0 00-2.631-.451c-4.356 0-7.887 3.544-7.887 7.917 0 1.359.341 2.638.942 3.755l-.967 3.118a.732.732 0 00.912.919l3.043-.943a7.827 7.827 0 003.957 1.067c4.356 0 7.887-3.544 7.887-7.916 0-.507-.048-1.003-.139-1.484z",
+    fill: "CurrentColor"
+  })), _circle$6 || (_circle$6 = /*#__PURE__*/React.createElement("circle", {
+    cx: 15.542,
+    cy: 5.25,
+    r: 1.875,
+    fill: "CurrentColor",
+    stroke: "CurrentColor"
   })));
 }
 
-var _path$12;
+var _path$11;
 
 function _extends$15() {
   _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
@@ -27501,22 +27582,21 @@ function _extends$15() {
   return _extends$15.apply(this, arguments);
 }
 
-function SvgNotificationsOff2(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$15({
-    width: 16,
-    height: 16,
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
-    d: "M9.259 14.3a1.454 1.454 0 01-2.517 0M12.821 9.007a13.013 13.013 0 01-.458-3.636M3.826 4.105c-.126.41-.19.837-.189 1.266 0 5.09-2.182 6.545-2.182 6.545h10.182M12.365 5.37a4.363 4.363 0 00-6.786-3.636M1 1l14 14",
-    stroke: "CurrentColor",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+  }, props), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M17.917 10c0 4.372-3.531 7.916-7.887 7.916a7.827 7.827 0 01-3.957-1.067l-3.043.943a.732.732 0 01-.913-.919l.968-3.118A7.904 7.904 0 012.143 10c0-4.373 3.531-7.917 7.887-7.917S17.917 5.627 17.917 10z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$13, _circle$6;
+var _path$12;
 
 function _extends$16() {
   _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
@@ -27535,27 +27615,19 @@ function _extends$16() {
   return _extends$16.apply(this, arguments);
 }
 
-function SvgMarkAsUnRead(props) {
+function SvgDeleteChannel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$16({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M17.778 8.516a3.958 3.958 0 01-5.117-5.982 7.847 7.847 0 00-2.631-.451c-4.356 0-7.887 3.544-7.887 7.917 0 1.359.341 2.638.942 3.755l-.967 3.118a.732.732 0 00.912.919l3.043-.943a7.827 7.827 0 003.957 1.067c4.356 0 7.887-3.544 7.887-7.916 0-.507-.048-1.003-.139-1.484z",
+  }, props), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
     fill: "CurrentColor"
-  })), _circle$6 || (_circle$6 = /*#__PURE__*/React.createElement("circle", {
-    cx: 15.542,
-    cy: 5.25,
-    r: 1.875,
-    fill: "CurrentColor",
-    stroke: "CurrentColor"
   })));
 }
 
-var _path$14;
+var _path$13;
 
 function _extends$17() {
   _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
@@ -27574,21 +27646,21 @@ function _extends$17() {
   return _extends$17.apply(this, arguments);
 }
 
-function SvgMarkAsRead(props) {
+function SvgClear(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$17({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M17.917 10c0 4.372-3.531 7.916-7.887 7.916a7.827 7.827 0 01-3.957-1.067l-3.043.943a.732.732 0 01-.913-.919l.968-3.118A7.904 7.904 0 012.143 10c0-4.373 3.531-7.917 7.887-7.917S17.917 5.627 17.917 10z",
-    fill: "CurrentColor"
+    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
+    fill: "#FA4C56"
   })));
 }
 
-var _path$15;
+var _path$14;
 
 function _extends$18() {
   _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
@@ -27607,19 +27679,19 @@ function _extends$18() {
   return _extends$18.apply(this, arguments);
 }
 
-function SvgDeleteChannel(props) {
+function SvgBlockChannel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$18({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$16;
+var _path$15, _path2$7;
 
 function _extends$19() {
   _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
@@ -27638,21 +27710,24 @@ function _extends$19() {
   return _extends$19.apply(this, arguments);
 }
 
-function SvgClear(props) {
+function SvgReport(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$19({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
-    fill: "#FA4C56"
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$17;
+var _path$16;
 
 function _extends$1a() {
   _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
@@ -27671,19 +27746,19 @@ function _extends$1a() {
   return _extends$1a.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgStar(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1a({
     width: 20,
-    height: 21,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
-    fill: "CurrentColor"
+  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
   })));
 }
 
-var _path$18, _path2$7;
+var _path$17;
 
 function _extends$1b() {
   _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
@@ -27702,80 +27777,13 @@ function _extends$1b() {
   return _extends$1b.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgPin(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1b({
     width: 20,
-    height: 21,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$19;
-
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1c.apply(this, arguments);
-}
-
-function SvgStar(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1c({
-    width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
-  })));
-}
-
-var _path$1a;
-
-function _extends$1d() {
-  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1d.apply(this, arguments);
-}
-
-function SvgPin(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1d({
-    width: 20,
-    height: 20,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
@@ -27843,15 +27851,11 @@ var Actions$1 = function Actions(_ref) {
       blockAndLeaveChannelIconColor = _ref.blockAndLeaveChannelIconColor,
       blockAndLeaveChannelTextColor = _ref.blockAndLeaveChannelTextColor,
       unblockUserTextColor = _ref.unblockUserTextColor,
-      showClearHistoryForDirectChannel = _ref.showClearHistoryForDirectChannel,
-      showClearHistoryForPrivateChannel = _ref.showClearHistoryForPrivateChannel,
-      showClearHistoryForPublicChannel = _ref.showClearHistoryForPublicChannel,
+      showClearHistory = _ref.showClearHistory,
       clearHistoryOrder = _ref.clearHistoryOrder,
       clearHistoryIcon = _ref.clearHistoryIcon,
       clearHistoryTextColor = _ref.clearHistoryTextColor,
-      showDeleteAllMessagesForDirectChannel = _ref.showDeleteAllMessagesForDirectChannel,
-      showDeleteAllMessagesForPrivateChannel = _ref.showDeleteAllMessagesForPrivateChannel,
-      showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
+      showDeleteAllMessages = _ref.showDeleteAllMessages,
       deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
       deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
       deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor;
@@ -27912,9 +27916,6 @@ var Actions$1 = function Actions(_ref) {
   var otherMembers = isDirectChannel && channel.members.filter(function (member) {
     return member.id && member.id !== user.id;
   }) || [];
-  var isPublicChannel = channel.type === CHANNEL_TYPE.BROADCAST;
-  var isPrivateChannel = channel.type === CHANNEL_TYPE.GROUP;
-  var channelType = channel.type === CHANNEL_TYPE.BROADCAST ? 'channel' : isDirectChannel ? 'chat' : 'group';
 
   var handleToggleClearHistoryPopup = function handleToggleClearHistoryPopup() {
     setClearHistoryPopupOpen(!clearHistoryPopupOpen);
@@ -27997,9 +27998,9 @@ var Actions$1 = function Actions(_ref) {
   };
 
   var handleToggleChannelMarkAs = function handleToggleChannelMarkAs() {
-    console.log('handle action mark read ', channel.markedAsUnread);
+    console.log('handle action mark read ', channel.unread);
 
-    if (channel.markedAsUnread) {
+    if (channel.unread) {
       dispatch(markChannelAsReadAC(channel.id));
     } else {
       dispatch(markChannelAsUnReadAC(channel.id));
@@ -28085,7 +28086,7 @@ var Actions$1 = function Actions(_ref) {
     iconColor: pinChannelIconColor || colors.gray4,
     color: pinChannelTextColor || colors.gray6,
     hoverColor: pinChannelTextColor || colors.gray6
-  }, React__default.createElement(React__default.Fragment, null, pinChannelIcon || React__default.createElement(SvgPin, null), " Pin ", channelType)), showMarkAsReadUnread && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.markedAsUnread ? React__default.createElement(ActionItem$1, {
+  }, React__default.createElement(React__default.Fragment, null, pinChannelIcon || React__default.createElement(SvgPin, null), " Pin")), showMarkAsReadUnread && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.unread ? React__default.createElement(ActionItem$1, {
     key: 3,
     onClick: handleToggleChannelMarkAs,
     order: markAsReadUnreadOrder,
@@ -28107,10 +28108,10 @@ var Actions$1 = function Actions(_ref) {
     hoverColor: leaveChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Leave');
-      setPopupTitle("Leave " + channelType);
+      setPopupTitle("Leave " + channel.type);
       handleToggleLeaveChannelPopupOpen();
     }
-  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave ", channelType), isDirectChannel && otherMembers.length === 1 ? React__default.createElement(React__default.Fragment, null, showBlockUser && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (directChannelUser && directChannelUser.blocked ? React__default.createElement(ActionItem$1, {
+  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave ", channel.type), isDirectChannel && otherMembers.length === 1 ? React__default.createElement(React__default.Fragment, null, showBlockUser && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (directChannelUser && directChannelUser.blocked ? React__default.createElement(ActionItem$1, {
     key: 5,
     color: unblockUserTextColor || colors.gray6,
     hoverColor: unblockUserTextColor || colors.gray6,
@@ -28142,10 +28143,10 @@ var Actions$1 = function Actions(_ref) {
     hoverColor: blockAndLeaveChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Block');
-      setPopupTitle("Block and Leave " + channelType);
+      setPopupTitle("Block and Leave " + channel.type);
       handleToggleBlockChannelPopupOpen();
     }
-  }, blockAndLeaveChannelIcon || React__default.createElement(SvgBlockChannel, null), " Block and Leave ", channelType), showReportChannel && React__default.createElement(ActionItem$1, {
+  }, blockAndLeaveChannelIcon || React__default.createElement(SvgBlockChannel, null), " Block and Leave ", channel.type), showReportChannel && React__default.createElement(ActionItem$1, {
     key: 9,
     order: reportChannelOrder,
     color: reportChannelTextColor || colors.red1,
@@ -28156,7 +28157,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Report channel');
       console.log('Report channel');
     }
-  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.BROADCAST ? 'channel' : channel.type === CHANNEL_TYPE.GROUP ? 'group' : 'chat')), (isDirectChannel && showClearHistoryForDirectChannel && directChannelUser && directChannelUser.activityState !== 'Deleted' || isPrivateChannel && showClearHistoryForPrivateChannel || isPublicChannel && showClearHistoryForPublicChannel) && checkActionPermission('deleteAllMessagesForMe') && React__default.createElement(ActionItem$1, {
+  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.BROADCAST ? 'channel' : channel.type === CHANNEL_TYPE.GROUP ? 'group' : 'chat')), showClearHistory && checkActionPermission('deleteAllMessagesForMe') && React__default.createElement(ActionItem$1, {
     key: 10,
     color: clearHistoryTextColor || colors.red1,
     iconColor: clearHistoryTextColor || colors.red1,
@@ -28167,7 +28168,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Clear history');
       handleToggleClearHistoryPopup();
     }
-  }, clearHistoryIcon || React__default.createElement(SvgClear, null), " Clear history"), (isDirectChannel && showDeleteAllMessagesForDirectChannel || isPrivateChannel && showDeleteAllMessagesForPrivateChannel || isPublicChannel && showDeleteAllMessagesForPublicChannel) && checkActionPermission('deleteAllMessagesForAll') && React__default.createElement(ActionItem$1, {
+  }, clearHistoryIcon || React__default.createElement(SvgClear, null), " Clear history"), showDeleteAllMessages && checkActionPermission('deleteAllMessagesForAll') && React__default.createElement(ActionItem$1, {
     key: 11,
     color: deleteAllMessagesTextColor || colors.red1,
     iconColor: deleteAllMessagesTextColor || colors.red1,
@@ -28186,10 +28187,10 @@ var Actions$1 = function Actions(_ref) {
     hoverColor: deleteChannelTextColor || colors.red1,
     onClick: function onClick() {
       setPopupButtonText('Delete');
-      setPopupTitle("Delete  " + channelType);
+      setPopupTitle("Delete  " + channel.type);
       handleToggleDeleteChannelPopupOpen();
     }
-  }, deleteChannelIcon || React__default.createElement(SvgDeleteChannel, null), " Delete ", channelType)), leaveChannelPopupOpen && React__default.createElement(ConfirmPopup, {
+  }, deleteChannelIcon || React__default.createElement(SvgDeleteChannel, null), " Delete ", channel.type)), leaveChannelPopupOpen && React__default.createElement(ConfirmPopup, {
     handleFunction: handleLeaveChannel,
     togglePopup: handleToggleLeaveChannelPopupOpen,
     buttonText: popupButtonText,
@@ -28254,10 +28255,10 @@ var ActionItem$1 = styled__default.li(_templateObject6$i || (_templateObject6$i 
   return props.hoverColor || colors.blue2;
 });
 
-var _rect$1, _rect2, _path$1b;
+var _rect$1, _rect2, _path$18;
 
-function _extends$1e() {
-  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -28270,11 +28271,11 @@ function _extends$1e() {
 
     return target;
   };
-  return _extends$1e.apply(this, arguments);
+  return _extends$1c.apply(this, arguments);
 }
 
 function SvgAddMember(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1e({
+  return /*#__PURE__*/React.createElement("svg", _extends$1c({
     width: 40,
     height: 40,
     fill: "none",
@@ -28293,16 +28294,16 @@ function SvgAddMember(props) {
     stroke: "#000",
     strokeOpacity: 0.08,
     strokeWidth: 0.5
-  })), _path$1b || (_path$1b = /*#__PURE__*/React.createElement("path", {
+  })), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
     d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$1c;
+var _path$19;
 
-function _extends$1f() {
-  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -28315,16 +28316,16 @@ function _extends$1f() {
 
     return target;
   };
-  return _extends$1f.apply(this, arguments);
+  return _extends$1d.apply(this, arguments);
 }
 
 function SvgMoreVert(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1f({
+  return /*#__PURE__*/React.createElement("svg", _extends$1d({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1c || (_path$1c = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
@@ -28413,7 +28414,7 @@ var RolesSelect = styled__default.div(_templateObject$z || (_templateObject$z = 
 var RoleLabel = styled__default.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
 var RoleSpan = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$A, _templateObject2$x, _templateObject3$s, _templateObject4$m, _templateObject5$k, _templateObject6$j, _templateObject7$f, _templateObject8$e;
+var _templateObject$A, _templateObject2$x, _templateObject3$s, _templateObject4$m, _templateObject5$k, _templateObject6$j, _templateObject7$f, _templateObject8$e, _templateObject9$c;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -28577,7 +28578,7 @@ var Members = function Members(_ref) {
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts), member.role === 'owner' ? React__default.createElement(RoleBadge, {
+    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberNameWrapper, null, React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), member.role === 'owner' ? React__default.createElement(RoleBadge, {
       color: colors.primary
     }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
       color: colors.purple
@@ -28667,16 +28668,17 @@ var Members = function Members(_ref) {
 };
 var Container$j = styled__default.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose([""])));
 var ActionsMenu$1 = styled__default.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled__default.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 64px);\n"])));
-var MemberName$3 = styled__default.h4(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  width: 100%;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
-var EditMemberIcon$1 = styled__default.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList$1 = styled__default.ul(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem$1 = styled__default.li(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
+var MemberNamePresence = styled__default.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
+var MemberNameWrapper = styled__default.div(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
+var MemberName$3 = styled__default.h4(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
+var EditMemberIcon$1 = styled__default.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList$1 = styled__default.ul(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var MemberItem$1 = styled__default.li(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
   return props.hoverBackground || colors.gray0;
 }, EditMemberIcon$1, UserStatus);
-var RoleBadge = styled__default.span(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n\n  &::after {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    border-radius: 12px;\n    width: 100%;\n    height: 100%;\n    background-color: ", ";\n    opacity: 0.1;\n  }\n"])), function (props) {
+var RoleBadge = styled__default.span(_templateObject9$c || (_templateObject9$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n\n  &::after {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    border-radius: 12px;\n    width: 100%;\n    height: 100%;\n    background-color: ", ";\n    opacity: 0.1;\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.color || colors.primary;
@@ -28733,10 +28735,10 @@ var Media = function Media(_ref) {
 var Container$k = styled__default.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$1d, _path2$8, _path3$4;
+var _path$1a, _path2$8, _path3$4;
 
-function _extends$1g() {
-  _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -28749,17 +28751,17 @@ function _extends$1g() {
 
     return target;
   };
-  return _extends$1g.apply(this, arguments);
+  return _extends$1e.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1g({
+  return /*#__PURE__*/React.createElement("svg", _extends$1e({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1d || (_path$1d = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -28779,10 +28781,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$1e, _path2$9;
+var _path$1b, _path2$9;
 
-function _extends$1h() {
-  _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1f() {
+  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -28795,16 +28797,16 @@ function _extends$1h() {
 
     return target;
   };
-  return _extends$1h.apply(this, arguments);
+  return _extends$1f.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1h({
+  return /*#__PURE__*/React.createElement("svg", _extends$1f({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1e || (_path$1e = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1b || (_path$1b = /*#__PURE__*/React.createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -28864,10 +28866,10 @@ var FileSizeAndDate = styled__default.span(_templateObject7$g || (_templateObjec
   return props.color || colors.gray6;
 });
 
-var _rect$2, _rect2$1, _g$2, _defs;
+var _rect$2, _rect2$1, _g$3, _defs$1;
 
-function _extends$1i() {
-  _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1g() {
+  _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -28880,11 +28882,11 @@ function _extends$1i() {
 
     return target;
   };
-  return _extends$1i.apply(this, arguments);
+  return _extends$1g.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1i({
+  return /*#__PURE__*/React.createElement("svg", _extends$1g({
     width: 42,
     height: 42,
     fill: "none",
@@ -28903,12 +28905,12 @@ function SvgLinkIcon(props) {
     stroke: "#000",
     strokeOpacity: 0.1,
     strokeWidth: 0.5
-  })), _g$2 || (_g$2 = /*#__PURE__*/React.createElement("g", {
+  })), _g$3 || (_g$3 = /*#__PURE__*/React.createElement("g", {
     clipPath: "url(#linkIcon_svg__clip0)"
   }, /*#__PURE__*/React.createElement("path", {
     d: "M20.314 20.973a.984.984 0 11-1.754.895 3.939 3.939 0 01.724-4.574l2.088-2.088a3.938 3.938 0 115.569 5.569.984.984 0 01-1.392-1.393 1.969 1.969 0 00-2.785-2.784l-2.088 2.088a1.97 1.97 0 00-.362 2.287zm1.522.198a.984.984 0 111.754-.895 3.939 3.939 0 01-.724 4.574l-2.089 2.088a3.938 3.938 0 01-5.568-5.569.984.984 0 011.392 1.392 1.969 1.969 0 002.784 2.785l2.088-2.089a1.97 1.97 0 00.363-2.286z",
     fill: "#95A6FF"
-  }))), _defs || (_defs = /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("clipPath", {
+  }))), _defs$1 || (_defs$1 = /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("clipPath", {
     id: "linkIcon_svg__clip0"
   }, /*#__PURE__*/React.createElement("path", {
     fill: "#fff",
@@ -28976,7 +28978,89 @@ var Links = function Links(_ref) {
 };
 var Container$m = styled__default.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$3, _circle$7, _path$1f;
+var _rect$3, _circle$7, _path$1c;
+
+function _extends$1h() {
+  _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1h.apply(this, arguments);
+}
+
+function SvgVoicePreview(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1h({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#F3F5F7"
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$1c || (_path$1c = /*#__PURE__*/React.createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$4, _circle$8, _path$1d;
+
+function _extends$1i() {
+  _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1i.apply(this, arguments);
+}
+
+function SvgVoicePreviewPause(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1i({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/React.createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#F3F5F7"
+  })), _circle$8 || (_circle$8 = /*#__PURE__*/React.createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$1d || (_path$1d = /*#__PURE__*/React.createElement("path", {
+    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$5, _circle$9, _path$1e;
 
 function _extends$1j() {
   _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
@@ -28995,29 +29079,29 @@ function _extends$1j() {
   return _extends$1j.apply(this, arguments);
 }
 
-function SvgVoicePreview(props) {
+function SvgVoicePreviewHoverIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1j({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/React.createElement("rect", {
+  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/React.createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
-    fill: "#F3F5F7"
-  })), _circle$7 || (_circle$7 = /*#__PURE__*/React.createElement("circle", {
+    fill: "#fff"
+  })), _circle$9 || (_circle$9 = /*#__PURE__*/React.createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1f || (_path$1f = /*#__PURE__*/React.createElement("path", {
+  })), _path$1e || (_path$1e = /*#__PURE__*/React.createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$4, _circle$8, _path$1g;
+var _rect$6, _circle$a, _path$1f;
 
 function _extends$1k() {
   _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
@@ -29036,90 +29120,8 @@ function _extends$1k() {
   return _extends$1k.apply(this, arguments);
 }
 
-function SvgVoicePreviewPause(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1k({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/React.createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 8,
-    fill: "#F3F5F7"
-  })), _circle$8 || (_circle$8 = /*#__PURE__*/React.createElement("circle", {
-    cx: 20,
-    cy: 20,
-    r: 14,
-    fill: "#0DBD8B"
-  })), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
-    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$5, _circle$9, _path$1h;
-
-function _extends$1l() {
-  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1l.apply(this, arguments);
-}
-
-function SvgVoicePreviewHoverIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1l({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/React.createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 8,
-    fill: "#fff"
-  })), _circle$9 || (_circle$9 = /*#__PURE__*/React.createElement("circle", {
-    cx: 20,
-    cy: 20,
-    r: 14,
-    fill: "#0DBD8B"
-  })), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$6, _circle$a, _path$1i;
-
-function _extends$1m() {
-  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1m.apply(this, arguments);
-}
-
 function SvgVoicePreviewPauseHover(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1m({
+  return /*#__PURE__*/React.createElement("svg", _extends$1k({
     width: 40,
     height: 40,
     fill: "none",
@@ -29134,7 +29136,7 @@ function SvgVoicePreviewPauseHover(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1i || (_path$1i = /*#__PURE__*/React.createElement("path", {
+  })), _path$1f || (_path$1f = /*#__PURE__*/React.createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
@@ -29728,15 +29730,11 @@ var Details = function Details(_ref) {
       filePreviewSizeColor = _ref.filePreviewSizeColor,
       filePreviewHoverBackgroundColor = _ref.filePreviewHoverBackgroundColor,
       filePreviewDownloadIcon = _ref.filePreviewDownloadIcon,
-      showClearHistoryForDirectChannel = _ref.showClearHistoryForDirectChannel,
-      showClearHistoryForPrivateChannel = _ref.showClearHistoryForPrivateChannel,
-      showClearHistoryForPublicChannel = _ref.showClearHistoryForPublicChannel,
+      showClearHistory = _ref.showClearHistory,
       clearHistoryOrder = _ref.clearHistoryOrder,
       clearHistoryIcon = _ref.clearHistoryIcon,
       clearHistoryTextColor = _ref.clearHistoryTextColor,
-      showDeleteAllMessagesForDirectChannel = _ref.showDeleteAllMessagesForDirectChannel,
-      showDeleteAllMessagesForPrivateChannel = _ref.showDeleteAllMessagesForPrivateChannel,
-      showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
+      showDeleteAllMessages = _ref.showDeleteAllMessages,
       deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
       deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
       deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor,
@@ -29830,7 +29828,7 @@ var Details = function Details(_ref) {
     onClick: function onClick() {
       return setEditMode(true);
     }
-  }, channelEditIcon || React__default.createElement(SvgEdit, null))), channel.role && React__default.createElement(Actions$1, {
+  }, channelEditIcon || React__default.createElement(SvgEditIcon, null))), channel.role && React__default.createElement(Actions$1, {
     showMuteUnmuteNotifications: showMuteUnmuteNotifications,
     muteUnmuteNotificationsOrder: muteUnmuteNotificationsOrder,
     unmuteNotificationIcon: unmuteNotificationIcon,
@@ -29843,15 +29841,11 @@ var Details = function Details(_ref) {
     staredMessagesIcon: staredMessagesIcon,
     staredMessagesIconColor: staredMessagesIconColor,
     staredMessagesTextColor: staredMessagesTextColor,
-    showClearHistoryForDirectChannel: showClearHistoryForDirectChannel,
-    showClearHistoryForPrivateChannel: showClearHistoryForPrivateChannel,
-    showClearHistoryForPublicChannel: showClearHistoryForPublicChannel,
+    showClearHistory: showClearHistory,
     clearHistoryOrder: clearHistoryOrder,
     clearHistoryIcon: clearHistoryIcon,
     clearHistoryTextColor: clearHistoryTextColor,
-    showDeleteAllMessagesForDirectChannel: showDeleteAllMessagesForDirectChannel,
-    showDeleteAllMessagesForPrivateChannel: showDeleteAllMessagesForPrivateChannel,
-    showDeleteAllMessagesForPublicChannel: showDeleteAllMessagesForPublicChannel,
+    showDeleteAllMessages: showDeleteAllMessages,
     deleteAllMessagesOrder: deleteAllMessagesOrder,
     deleteAllMessagesIcon: deleteAllMessagesIcon,
     deleteAllMessagesTextColor: deleteAllMessagesTextColor,
@@ -29999,15 +29993,11 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       filePreviewSizeColor = _ref.filePreviewSizeColor,
       filePreviewHoverBackgroundColor = _ref.filePreviewHoverBackgroundColor,
       filePreviewDownloadIcon = _ref.filePreviewDownloadIcon,
-      showClearHistoryForDirectChannel = _ref.showClearHistoryForDirectChannel,
-      showClearHistoryForPrivateChannel = _ref.showClearHistoryForPrivateChannel,
-      showClearHistoryForPublicChannel = _ref.showClearHistoryForPublicChannel,
+      showClearHistory = _ref.showClearHistory,
       clearHistoryOrder = _ref.clearHistoryOrder,
       clearHistoryIcon = _ref.clearHistoryIcon,
       clearHistoryTextColor = _ref.clearHistoryTextColor,
-      showDeleteAllMessagesForDirectChannel = _ref.showDeleteAllMessagesForDirectChannel,
-      showDeleteAllMessagesForPrivateChannel = _ref.showDeleteAllMessagesForPrivateChannel,
-      showDeleteAllMessagesForPublicChannel = _ref.showDeleteAllMessagesForPublicChannel,
+      showDeleteAllMessages = _ref.showDeleteAllMessages,
       deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
       deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
       deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor,
@@ -30079,15 +30069,11 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
     filePreviewSizeColor: filePreviewSizeColor,
     filePreviewHoverBackgroundColor: filePreviewHoverBackgroundColor,
     filePreviewDownloadIcon: filePreviewDownloadIcon,
-    showClearHistoryForDirectChannel: showClearHistoryForDirectChannel,
-    showClearHistoryForPrivateChannel: showClearHistoryForPrivateChannel,
-    showClearHistoryForPublicChannel: showClearHistoryForPublicChannel,
+    showClearHistory: showClearHistory,
     clearHistoryOrder: clearHistoryOrder,
     clearHistoryIcon: clearHistoryIcon,
     clearHistoryTextColor: clearHistoryTextColor,
-    showDeleteAllMessagesForDirectChannel: showDeleteAllMessagesForDirectChannel,
-    showDeleteAllMessagesForPrivateChannel: showDeleteAllMessagesForPrivateChannel,
-    showDeleteAllMessagesForPublicChannel: showDeleteAllMessagesForPublicChannel,
+    showDeleteAllMessages: showDeleteAllMessages,
     deleteAllMessagesOrder: deleteAllMessagesOrder,
     deleteAllMessagesIcon: deleteAllMessagesIcon,
     deleteAllMessagesTextColor: deleteAllMessagesTextColor,
@@ -30097,10 +30083,10 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var _path$1j, _path2$a, _path3$5;
+var _path$1g, _path2$a, _path3$5;
 
-function _extends$1n() {
-  _extends$1n = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1l() {
+  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30113,15 +30099,15 @@ function _extends$1n() {
 
     return target;
   };
-  return _extends$1n.apply(this, arguments);
+  return _extends$1l.apply(this, arguments);
 }
 
 function SvgChatLogo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1n({
+  return /*#__PURE__*/React.createElement("svg", _extends$1l({
     viewBox: "0 0 249 41",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1j || (_path$1j = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
     d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
     fill: "#e17335"
   })), _path2$a || (_path2$a = /*#__PURE__*/React.createElement("path", {
@@ -30141,10 +30127,10 @@ function SceytChatHeader() {
   return React__default.createElement(Container$r, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
 }
 
-var _path$1k;
+var _path$1h;
 
-function _extends$1o() {
-  _extends$1o = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1m() {
+  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -30157,16 +30143,16 @@ function _extends$1o() {
 
     return target;
   };
-  return _extends$1o.apply(this, arguments);
+  return _extends$1m.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1o({
+  return /*#__PURE__*/React.createElement("svg", _extends$1m({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1k || (_path$1k = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
@@ -30206,14 +30192,14 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     shadow: buttonShadow,
     onClick: handleScrollToBottom,
     bottomPos: sendMessageInputHeight
-  }, !!(channel.unreadMessageCount && channel.unreadMessageCount > 0) && React__default.createElement(UnreadCount$1, {
+  }, !!(channel.newMessageCount && channel.newMessageCount > 0) && React__default.createElement(UnreadCount$1, {
     width: unreadCountWidth,
     height: unreadCountHeight,
     textColor: unreadCountTextColor,
     fontSize: unreadCountFontSize,
     backgroundColor: colors.primary,
     isMuted: channel.muted
-  }, channel.unreadMessageCount ? channel.unreadMessageCount > 99 ? '99+' : channel.unreadMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
+  }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
 var BottomButton = styled__default.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";

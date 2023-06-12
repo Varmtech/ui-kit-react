@@ -12,6 +12,8 @@ interface IReactionsPopupProps {
         [key: string]: number;
     };
     rtlDirection?: boolean;
+    reactionsDetailsPopupBorderRadius?: string;
+    reactionsDetailsPopupHeaderItemsStyle?: 'bubbles' | 'inline';
 }
-export default function ReactionsPopup({ messageId, handleReactionsPopupClose, handleAddDeleteEmoji, bottomPosition, reactionScores, rtlDirection }: IReactionsPopupProps): JSX.Element;
+export default function ReactionsPopup({ messageId, handleReactionsPopupClose, handleAddDeleteEmoji, bottomPosition, reactionScores, reactionsDetailsPopupBorderRadius, reactionsDetailsPopupHeaderItemsStyle, rtlDirection }: IReactionsPopupProps): JSX.Element;
 export {};
