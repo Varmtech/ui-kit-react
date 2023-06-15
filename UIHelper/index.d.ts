@@ -35,14 +35,16 @@ export declare const Button: import("styled-components").StyledComponent<"button
 export declare const PopupName: import("styled-components").StyledComponent<"h3", any, {
     marginTop?: string | undefined;
     marginBottom?: string | undefined;
+    padding?: string | undefined;
     isDelete?: boolean | undefined;
 }, never>;
 export declare const PopupContainer: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const ButtonBlock: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const Popup: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const PopupBody: import("styled-components").StyledComponent<"div", any, {
-    padding: number;
     withFooter?: boolean | undefined;
+    paddingH?: string | undefined;
+    paddingV?: string | undefined;
 }, never>;
 export declare const PopupDescription: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const BoltText: import("styled-components").StyledComponent<"span", any, {}, never>;
@@ -84,9 +86,14 @@ export declare const ClearTypedText: import("styled-components").StyledComponent
 export declare const StyledSearchSvg: import("styled-components").StyledComponent<any, any, object, string | number | symbol>;
 export declare const SubTitle: import("styled-components").StyledComponent<"span", any, {
     color?: string | undefined;
+    margin?: string | undefined;
 }, never>;
 export declare const AttachmentIconCont: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const UploadingIcon: import("styled-components").StyledComponent<"span", any, {
+    width?: string | undefined;
+    height?: string | undefined;
+    color?: string | undefined;
+    borderWidth?: string | undefined;
     fileAttachment?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
 }, never>;

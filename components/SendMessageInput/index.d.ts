@@ -24,7 +24,6 @@ interface SendMessageProps {
     inputBorderRadius?: string;
     inputBackgroundColor?: string;
     inputPaddings?: string;
-    selectedFileAttachmentsBoxWidth?: string;
     selectedFileAttachmentsBoxBackground?: string;
     selectedFileAttachmentsBoxBorder?: string;
     selectedFileAttachmentsTitleColor?: string;

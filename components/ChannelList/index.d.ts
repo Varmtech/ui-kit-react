@@ -13,10 +13,11 @@ interface IChannelListProps {
         children?: React.ReactNode;
     }>;
     ListItem?: FC<any>;
+    Profile?: JSX.Element;
+    CreateChannel?: JSX.Element;
     searchChannelsPosition?: 'inline' | 'bottom';
     searchInputBorderRadius?: string;
     getActiveChannel?: (channel: IChannel) => void;
-    Profile?: JSX.Element;
     filter?: {
         channelType?: string;
     };

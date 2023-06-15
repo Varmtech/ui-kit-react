@@ -1,5 +1,13 @@
 /// <reference types="react" />
 import { IChannel } from '../../types';
+declare type channelTypesMemberDisplayTextMap = {
+    [key: string]: string;
+};
+declare type defaultRolesByChannelTypesMap = {
+    [key: string]: string;
+};
+declare let channelTypesMemberDisplayTextMap: channelTypesMemberDisplayTextMap;
+declare let defaultRolesByChannelTypesMap: defaultRolesByChannelTypesMap;
 export declare function setChannelInMap(channel: IChannel): void;
 export declare function setActiveChannelId(id: string): void;
 export declare function getActiveChannelId(): string;
@@ -17,3 +25,8 @@ export declare function getUnreadScrollTo(): boolean;
 export declare function setUnreadScrollTo(state: boolean): void;
 export declare function getUploadImageIcon(): JSX.Element;
 export declare function setUploadImageIcon(icon: JSX.Element): void;
+export declare function getChannelTypesMemberDisplayTextMap(): channelTypesMemberDisplayTextMap;
+export declare function setChannelTypesMemberDisplayTextMap(map: channelTypesMemberDisplayTextMap): void;
+export declare function getDefaultRolesByChannelTypesMap(): defaultRolesByChannelTypesMap;
+export declare function setDefaultRolesByChannelTypesMap(map: channelTypesMemberDisplayTextMap): void;
+export {};

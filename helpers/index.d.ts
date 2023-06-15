@@ -4,7 +4,7 @@ export declare const messageStatusIcon: (messageStatus: string, messageStatusDis
 export declare const urlRegex: RegExp;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const systemMessageUserName: (contact: IContact, userId: string) => string;
-export declare const downloadFile: (attachment: IAttachment) => Promise<void>;
+export declare const downloadFile: (attachment: IAttachment, done?: ((attachmentId: string, failed?: boolean | undefined) => void) | undefined) => Promise<void>;
 export declare const calculateRenderedImageWidth: (width: number, height: number, maxWidth?: number | undefined, maxHeight?: number | undefined) => number[];
 export declare const userLastActiveDateFormat: (date: Date) => string;
 export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;
@@ -12,7 +12,7 @@ export declare const getMetadataFromUrl: (url: string) => Promise<any>;
 export declare const formatAudioVideoTime: (duration: number, currentTime: number) => string;
 export declare const formatLargeText: (text: string, maxLength: number) => any;
 export declare const getCaretPosition: (element: any) => number;
-export declare const setCursorPosition: (element: any, position: number, attempt?: number | undefined) => void;
+export declare const setCursorPosition: (element: any, position: number, isAddMention?: boolean | undefined, attempt?: number | undefined) => void;
 export declare const placeCaretAtEnd: (el: any) => void;
 export declare const detectOS: () => string | null;
 export declare const detectBrowser: () => string | undefined;
