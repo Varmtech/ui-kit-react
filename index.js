@@ -32,7 +32,6 @@ var effects = require('redux-saga/effects');
 var LinkifyIt = _interopDefault(require('linkify-it'));
 var Cropper = _interopDefault(require('react-easy-crop'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
-var Videojs = _interopDefault(require('video.js'));
 var uuid = require('uuid');
 
 /** A function that accepts a potential "extra argument" value to be injected later,
@@ -24739,14 +24738,6 @@ var VideoPlayer = function VideoPlayer(_ref) {
   }, [activeFileId]);
   React.useEffect(function () {
     var checkVideoInterval;
-    var options = {};
-    var player = Videojs('my_video', options, function onPlayerReady() {
-      Videojs.log('Your player is ready!');
-      player.play();
-      player.on('ended', function () {
-        Videojs.log('Awww...over so soon?!');
-      });
-    });
 
     if (videoRef.current) {
       checkVideoInterval = setInterval(function () {

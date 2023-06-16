@@ -8,7 +8,6 @@ import { put, call, select, take, takeLatest, takeEvery, all } from 'redux-saga/
 import LinkifyIt from 'linkify-it';
 import Cropper from 'react-easy-crop';
 import Carousel from 'react-elastic-carousel';
-import Videojs from 'video.js';
 import { v4 } from 'uuid';
 
 /** A function that accepts a potential "extra argument" value to be injected later,
@@ -24716,14 +24715,6 @@ var VideoPlayer = function VideoPlayer(_ref) {
   }, [activeFileId]);
   useEffect(function () {
     var checkVideoInterval;
-    var options = {};
-    var player = Videojs('my_video', options, function onPlayerReady() {
-      Videojs.log('Your player is ready!');
-      player.play();
-      player.on('ended', function () {
-        Videojs.log('Awww...over so soon?!');
-      });
-    });
 
     if (videoRef.current) {
       checkVideoInterval = setInterval(function () {
