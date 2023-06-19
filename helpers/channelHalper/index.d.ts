@@ -1,5 +1,5 @@
 /// <reference types="react" />
-import { IChannel } from '../../types';
+import { IChannel, IMessage } from '../../types';
 declare type channelTypesMemberDisplayTextMap = {
     [key: string]: string;
 };
@@ -29,4 +29,6 @@ export declare function getChannelTypesMemberDisplayTextMap(): channelTypesMembe
 export declare function setChannelTypesMemberDisplayTextMap(map: channelTypesMemberDisplayTextMap): void;
 export declare function getDefaultRolesByChannelTypesMap(): defaultRolesByChannelTypesMap;
 export declare function setDefaultRolesByChannelTypesMap(map: channelTypesMemberDisplayTextMap): void;
+export declare let handleNewMessages: (message: IMessage, channel: IChannel) => IMessage | null;
+export declare function setHandleNewMessages(callback: (message: IMessage, channel: IChannel) => IMessage | null): void;
 export {};

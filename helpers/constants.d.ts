@@ -30,6 +30,8 @@ export declare const CHANNEL_TYPE: {
     GROUP: string;
     BROADCAST: string;
     DIRECT: string;
+    PUBLIC: string;
+    PRIVATE: string;
 };
 export declare const PRESENCE_STATUS: {
     OFFLINE: string;

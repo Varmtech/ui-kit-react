@@ -1,7 +1,7 @@
 /// <reference types="react" />
 import SceytChatClient from 'sceyt-chat';
 import { ICustomAvatarColors } from '../Channel/types';
-import { IAttachment, IUser } from '../../types';
+import { IAttachment, IChannel, IMessage, IUser } from '../../types';
 export interface IProgress {
     loaded: number;
     total: number;
@@ -23,6 +23,7 @@ export interface IChatClientProps {
     client: SceytChatClient;
     avatarColors?: ICustomAvatarColors;
     hideUserPresence?: (user: IUser) => boolean;
+    handleNewMessages?: (message: IMessage, channel: IChannel) => IMessage | null;
     showOnlyContactUsers?: boolean;
     sendAttachmentsAsSeparateMessages?: boolean;
     showNotifications?: boolean;
@@ -45,5 +46,5 @@ export interface IChatClientProps {
         defaultAvatarBackground?: string;
     };
 }
-declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, sendAttachmentsAsSeparateMessages, membersDisplayTextByChannelTypesMap, defaultRolesByChannelTypesMap, logoSrc, CustomUploader, customColors, showNotifications, hideUserPresence }: IChatClientProps) => JSX.Element;
+declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, handleNewMessages, sendAttachmentsAsSeparateMessages, membersDisplayTextByChannelTypesMap, defaultRolesByChannelTypesMap, logoSrc, CustomUploader, customColors, showNotifications, hideUserPresence }: IChatClientProps) => JSX.Element;
 export default SceytChatContainer;
