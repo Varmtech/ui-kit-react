@@ -14388,7 +14388,7 @@ function sendMessage(action) {
 }
 
 function sendTextMessage(action) {
-  var payload, message, connectionState, channelId, channel, SceytChatClient, sendMessageTid, mentionedUserIds, attachments, attachmentBuilder, att, messageBuilder, messageToSend, pendingMessage, hasNextMessages, messageResponse, messageUpdateData;
+  var payload, message, connectionState, channelId, channel, sendMessageTid, mentionedUserIds, attachments, attachmentBuilder, att, messageBuilder, messageToSend, pendingMessage, hasNextMessages, messageResponse, messageUpdateData;
   return _regeneratorRuntime().wrap(function sendTextMessage$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
@@ -14400,8 +14400,7 @@ function sendTextMessage(action) {
 
         case 4:
           channel = _context2.sent;
-          SceytChatClient = getClient();
-          _context2.prev = 6;
+          _context2.prev = 5;
           mentionedUserIds = message.mentionedMembers ? message.mentionedMembers.map(function (member) {
             return member.id;
           }) : [];
@@ -14435,49 +14434,49 @@ function sendTextMessage(action) {
             pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
           }
 
-          _context2.next = 20;
+          _context2.next = 19;
           return select(messagesHasNextSelector);
 
-        case 20:
+        case 19:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 29;
+            _context2.next = 28;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 27;
+            _context2.next = 26;
             break;
           }
 
-          _context2.next = 25;
+          _context2.next = 24;
           return put(getMessagesAC(channel));
 
-        case 25:
-          _context2.next = 29;
+        case 24:
+          _context2.next = 28;
           break;
 
-        case 27:
-          _context2.next = 29;
+        case 26:
+          _context2.next = 28;
           return put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 29:
+        case 28:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context2.next = 33;
+          _context2.next = 32;
           return put(scrollToNewMessageAC(true, true));
 
-        case 33:
+        case 32:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 46;
+            _context2.next = 45;
             break;
           }
 
-          _context2.next = 36;
-          return call(SceytChatClient.sendDirectMessage, messageToSend, 'armen');
+          _context2.next = 35;
+          return call(channel.sendMessage, messageToSend);
 
-        case 36:
+        case 35:
           messageResponse = _context2.sent;
           messageUpdateData = {
             id: messageResponse.id,
@@ -14489,34 +14488,34 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 40;
+          _context2.next = 39;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 40:
+        case 39:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 44;
+          _context2.next = 43;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 44:
-          _context2.next = 47;
+        case 43:
+          _context2.next = 46;
           break;
 
-        case 46:
+        case 45:
           throw new Error('Connection required to send message');
 
-        case 47:
-          _context2.next = 56;
+        case 46:
+          _context2.next = 55;
           break;
 
-        case 49:
-          _context2.prev = 49;
-          _context2.t0 = _context2["catch"](6);
+        case 48:
+          _context2.prev = 48;
+          _context2.t0 = _context2["catch"](5);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
             messageId: sendMessageTid,
@@ -14527,17 +14526,17 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 56;
+          _context2.next = 55;
           return put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 56:
+        case 55:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[6, 49]]);
+  }, _marked2$1, null, [[5, 48]]);
 }
 
 function forwardMessage(action) {
