@@ -39,8 +39,12 @@ export declare const AvatarWrapper: import("styled-components").StyledComponent<
 export declare const UserStatus: import("styled-components").StyledComponent<"span", any, {
     backgroundColor?: string | undefined;
 }, never>;
+export declare const DraftMessageTitle: import("styled-components").StyledComponent<"span", any, any, never>;
+export declare const DraftMessageText: import("styled-components").StyledComponent<"span", any, any, never>;
 export declare const LastMessageAuthor: import("styled-components").StyledComponent<"div", any, any, never>;
-export declare const Points: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const Points: import("styled-components").StyledComponent<"span", any, {
+    color?: string | undefined;
+}, never>;
 export declare const LastMessageText: import("styled-components").StyledComponent<"span", any, {
     withAttachments?: boolean | undefined;
     noBody?: boolean | undefined;

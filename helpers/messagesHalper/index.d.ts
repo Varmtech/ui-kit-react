@@ -57,4 +57,20 @@ export declare const getPendingAttachment: (attachmentId: string) => File;
 export declare const deletePendingAttachment: (attachmentId: string) => boolean;
 export declare const getPendingMessages: (channelId: string) => IMessage[];
 export declare const getPendingMessagesMap: () => pendingMessagesMap;
+export declare const draftMessagesMap: {
+    [key: string]: {
+        text: string;
+        mentionedMembers: any;
+    };
+};
+export declare const getDraftMessageFromMap: (channelId: string) => {
+    text: string;
+    mentionedMembers: any;
+};
+export declare const checkDraftMessagesIsEmpty: () => boolean;
+export declare const removeDraftMessageFromMap: (channelId: string) => void;
+export declare const setDraftMessageToMap: (channelId: string, draftMessage: {
+    text: string;
+    mentionedMembers: any;
+}) => void;
 export {};

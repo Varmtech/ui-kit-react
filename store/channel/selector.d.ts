@@ -18,3 +18,4 @@ export declare const channelListHiddenSelector: (store: any) => any;
 export declare const isDraggingSelector: (store: any) => any;
 export declare const draggedAttachmentsSelector: (store: any) => any;
 export declare const tabIsActiveSelector: (store: any) => any;
+export declare const channelMessageDraftIsRemovedSelector: (store: any) => any;

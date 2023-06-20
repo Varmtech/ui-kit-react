@@ -131,7 +131,7 @@ export interface IChannel {
     newReactions: IReaction[];
     lastReactedMessage?: IMessage;
     delete: () => Promise<void>;
-    deleteAllMessages: (deleteForMe?: boolean) => Promise<void>;
+    deleteAllMessages: (forEveryone?: boolean) => Promise<void>;
     hide: () => Promise<boolean>;
     unhide: () => Promise<boolean>;
     markAsUnRead: () => Promise<IChannel>;

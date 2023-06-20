@@ -34,6 +34,7 @@ declare const _default: (state?: {
     }[];
     tabIsActive: boolean;
     hideChannelList: boolean;
+    draftIsRemoved: string;
 }, { type, payload }?: IAction) => {
     channelsLoadingState: string | null;
     channelsForForwardLoadingState: string | null;
@@ -69,5 +70,6 @@ declare const _default: (state?: {
     }[];
     tabIsActive: boolean;
     hideChannelList: boolean;
+    draftIsRemoved: string;
 };
 export default _default;

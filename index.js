@@ -921,6 +921,7 @@ var DELETE_ALL_MESSAGES = 'DELETE_ALL_MESSAGES';
 var DESTROY_SESSION = 'DESTROY_SESSION';
 var SET_TAB_IS_ACTIVE = 'SET_TAB_IS_ACTIVE';
 var SET_HIDE_CHANNEL_LIST = 'SET_HIDE_CHANNEL_LIST';
+var DRAFT_IS_REMOVED = 'DRAFT_IS_REMOVED';
 var CHANNEL_EVENT_TYPES = {
   CREATE: 'CREATE',
   JOIN: 'JOIN',
@@ -1037,7 +1038,8 @@ var initialState = {
   isDragging: false,
   tabIsActive: true,
   hideChannelList: false,
-  draggedAttachments: []
+  draggedAttachments: [],
+  draftIsRemoved: ''
 };
 var ChannelReducer = (function (state, _temp) {
   if (state === void 0) {
@@ -1391,6 +1393,13 @@ var ChannelReducer = (function (state, _temp) {
       {
         var hide = payload.hide;
         newState.hideChannelList = hide;
+        return newState;
+      }
+
+    case DRAFT_IS_REMOVED:
+      {
+        var _channelId2 = payload.channelId;
+        newState.draftIsRemoved = _channelId2;
         return newState;
       }
 
@@ -7627,55 +7636,40 @@ var setCursorPosition = function setCursorPosition(element, position, isAddMenti
   }
 
   try {
+    console.log('attamt ...... ', attempt);
     console.log('set pos ... ', position);
     var range = document.createRange();
     var sel = window.getSelection();
     var currentNode = element.childNodes[0];
     var caretOffset = 0;
-    var textNodes = 0;
     var textNodesAdded = false;
     var currentNodeIsFind = false;
-    console.log('element.childNodes. . . .', element.childNodes);
     element.childNodes.forEach(function (node, index) {
       if (!currentNodeIsFind && node.nodeType === Node.TEXT_NODE) {
         currentNode = node;
         var textLength = node.nodeValue.length;
-        console.log('caretOffset + textLength .. .. . 1 .. caretOffset ', caretOffset);
-        console.log('caretOffset + textLength .. .. . 1 .. textLength ', textLength);
-        console.log('caretOffset + textLength .. .. . 1 .. res ', caretOffset + textLength);
         caretOffset = caretOffset + textLength;
 
         if (element.childNodes.length === index + 1) {
           textNodesAdded = true;
-          console.log('add text nodes. ...   1 .. ', textNodes);
         }
 
         if (caretOffset >= position) {
           currentNodeIsFind = true;
           currentNode = node;
 
-          if (!textNodesAdded) {
-            console.log('add text nodes. ...   2 .. ', textNodes);
-          }
+          if (!textNodesAdded) {}
 
-          console.log('position - (caretOffset - textLength) .. .. . 2 .. caretOffset ', caretOffset);
-          console.log('position - (caretOffset - textLength) .. .. . 2 .. textLength ', textLength);
-          console.log('position - (caretOffset - textLength) .. .. . 2 .. res ', position - (caretOffset - textLength));
           caretOffset = position - (caretOffset - textLength);
           return;
         }
       } else if (!currentNodeIsFind) {
         if (node.nodeName === 'SPAN') {
           caretOffset += node.innerText.length;
-          console.log('caretOffset +. 2  - 1 .. caretOffset ', caretOffset);
-          console.log('node.innerText.length +. 2  - 1 ..  ', node.innerText.length);
-          console.log('caretOffset +innerText.length. 2  - 1 .. caretOffset ', caretOffset + node.innerText.length);
 
           if (caretOffset >= position) {
             currentNodeIsFind = true;
             currentNode = element.childNodes[index + 1];
-            console.log('set current node .... ', currentNode);
-            console.log('caretOffset .... ', caretOffset);
 
             if (isAddMention) {
               caretOffset = 1;
@@ -7683,23 +7677,17 @@ var setCursorPosition = function setCursorPosition(element, position, isAddMenti
               caretOffset = position - caretOffset;
             }
 
-            console.log('set caretOffset 2  - 1 .... ', caretOffset);
             return;
           }
-        } else {
-          textNodes += 1;
-        }
+        } else {}
       }
 
       if (element.childNodes[index + 1] && element.childNodes[index + 1].nodeName === 'BR') {
-        console.log('add line. ...   1 .. ', 1);
         caretOffset += 1;
       }
 
       if (element.childNodes.length === index + 1 && !currentNodeIsFind) {
-        if (!textNodesAdded) {
-          console.log('add text nodes. ...   3 .. ', textNodes);
-        }
+        if (!textNodesAdded) {}
 
         currentNodeIsFind = true;
 
@@ -7708,14 +7696,9 @@ var setCursorPosition = function setCursorPosition(element, position, isAddMenti
         }
 
         currentNode = node;
-        console.log('caretOffset - position .. .. . 3 .. caretOffset ', caretOffset);
-        console.log('caretOffset - position .. .. . 3 .. position ', position);
-        console.log('caretOffset - position .. .. . 3 .. res ', caretOffset - position);
         caretOffset = caretOffset - position;
       }
     });
-    console.log('caretOffset. . . . .', caretOffset);
-    console.log('currentNode. . . . .', currentNode);
     range.setStart(currentNode, caretOffset);
     range.collapse(true);
 
@@ -7725,7 +7708,7 @@ var setCursorPosition = function setCursorPosition(element, position, isAddMenti
     }
   } catch (e) {
     if (attempt <= 5) {
-      setCursorPosition(element, position - 1, isAddMention, attempt++);
+      setCursorPosition(element, position - 1, isAddMention, ++attempt);
     }
   }
 };
@@ -8131,6 +8114,19 @@ var getPendingMessages = function getPendingMessages(channelId) {
 };
 var getPendingMessagesMap = function getPendingMessagesMap() {
   return pendingMessagesMap;
+};
+var draftMessagesMap = {};
+var getDraftMessageFromMap = function getDraftMessageFromMap(channelId) {
+  return draftMessagesMap[channelId];
+};
+var checkDraftMessagesIsEmpty = function checkDraftMessagesIsEmpty() {
+  return Object.keys(draftMessagesMap).length === 0;
+};
+var removeDraftMessageFromMap = function removeDraftMessageFromMap(channelId) {
+  delete draftMessagesMap[channelId];
+};
+var setDraftMessageToMap = function setDraftMessageToMap(channelId, draftMessage) {
+  draftMessagesMap[channelId] = draftMessage;
 };
 
 var initialState$1 = {
@@ -9241,6 +9237,14 @@ function setHideChannelListAC(hide) {
     type: SET_HIDE_CHANNEL_LIST,
     payload: {
       hide: hide
+    }
+  };
+}
+function setChannelDraftMessageIsRemovedAC(channelId) {
+  return {
+    type: DRAFT_IS_REMOVED,
+    payload: {
+      channelId: channelId
     }
   };
 }
@@ -13442,7 +13446,7 @@ function clearHistory(action) {
           }
 
           _context20.next = 12;
-          return effects.call(channel.deleteAllMessages, true);
+          return effects.call(channel.deleteAllMessages);
 
         case 12:
           _context20.next = 14;
@@ -13504,7 +13508,7 @@ function deleteAllMessages(action) {
           }
 
           _context21.next = 12;
-          return effects.call(channel.deleteAllMessages);
+          return effects.call(channel.deleteAllMessages, true);
 
         case 12:
           removeMessagesFromMap(channelId);
@@ -17004,6 +17008,9 @@ var draggedAttachmentsSelector = function draggedAttachmentsSelector(store) {
 var tabIsActiveSelector = function tabIsActiveSelector(store) {
   return store.ChannelReducer.tabIsActive;
 };
+var channelMessageDraftIsRemovedSelector = function channelMessageDraftIsRemovedSelector(store) {
+  return store.ChannelReducer.draftIsRemoved;
+};
 
 var SceytChat = function SceytChat(_ref) {
   var client = _ref.client,
@@ -17663,7 +17670,7 @@ function SvgNotificationsOff3(props) {
   }))));
 }
 
-var _templateObject$4, _templateObject2$4, _templateObject3$4, _templateObject4$3, _templateObject5$2, _templateObject6$1, _templateObject7$1, _templateObject8$1, _templateObject9$1, _templateObject10$1, _templateObject11$1, _templateObject12$1, _templateObject13$1, _templateObject14$1, _templateObject15$1, _templateObject16$1, _templateObject17$1;
+var _templateObject$4, _templateObject2$4, _templateObject3$4, _templateObject4$3, _templateObject5$2, _templateObject6$1, _templateObject7$1, _templateObject8$1, _templateObject9$1, _templateObject10$1, _templateObject11$1, _templateObject12$1, _templateObject13$1, _templateObject14$1, _templateObject15$1, _templateObject16$1, _templateObject17$1, _templateObject18$1, _templateObject19$1;
 
 var Channel = function Channel(_ref) {
   var channel = _ref.channel,
@@ -17682,18 +17689,24 @@ var Channel = function Channel(_ref) {
   var getFromContacts = getShowOnlyContactUsers();
   var user = ChatClient.user;
   var activeChannel = reactRedux.useSelector(activeChannelSelector) || {};
+  var channelDraftIsRemoved = reactRedux.useSelector(channelMessageDraftIsRemovedSelector);
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var directChannelUser = isDirectChannel && channel.members.find(function (member) {
     return member.id !== user.id;
   });
   var withAvatar = avatar === undefined ? true : avatar;
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(channel.id));
+
+  var _useState = React.useState(),
+      draftMessageText = _useState[0],
+      setDraftMessageText = _useState[1];
+
   var lastMessage = channel.lastReactedMessage || channel.lastMessage;
   var lastMessageMetas = lastMessage && lastMessage.type === 'system' && lastMessage.metadata && (isJSON(lastMessage.metadata) ? JSON.parse(lastMessage.metadata) : lastMessage.metadata);
 
-  var _useState = React.useState(0),
-      statusWidth = _useState[0],
-      setStatusWidth = _useState[1];
+  var _useState2 = React.useState(0),
+      statusWidth = _useState2[0],
+      setStatusWidth = _useState2[1];
 
   var handleChangeActiveChannel = function handleChangeActiveChannel(chan) {
     if (activeChannel.id !== chan.id) {
@@ -17711,6 +17724,23 @@ var Channel = function Channel(_ref) {
       setStatusWidth(messageTimeAndStatusRef.current.offsetWidth);
     }
   }, [messageTimeAndStatusRef, lastMessage]);
+  React.useEffect(function () {
+    if (activeChannel.id !== channel.id) {
+      var channelDraftMessage = getDraftMessageFromMap(channel.id);
+
+      if (channelDraftMessage) {
+        setDraftMessageText(channelDraftMessage.text);
+      } else if (draftMessageText) {
+        setDraftMessageText(undefined);
+      }
+    }
+  }, [activeChannel.id]);
+  React.useEffect(function () {
+    if (channelDraftIsRemoved && channelDraftIsRemoved === channel.id) {
+      setDraftMessageText(undefined);
+      dispatch(setChannelDraftMessageIsRemovedAC());
+    }
+  }, [channelDraftIsRemoved]);
   return React__default.createElement(Container$2, {
     selectedChannel: channel.id === activeChannel.id,
     selectedChannelLeftBorder: selectedChannelLeftBorder,
@@ -17744,7 +17774,7 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : draftMessageText ? React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
@@ -17752,11 +17782,13 @@ var Channel = function Channel(_ref) {
     minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
   }, React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage && lastMessage.state !== MESSAGE_STATUS.DELETE : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && React__default.createElement(Points, null, ": "), React__default.createElement(LastMessageText, {
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage && lastMessage.state !== MESSAGE_STATUS.DELETE : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && React__default.createElement(Points, {
+    color: draftMessageText && colors.red1
+  }, ": "), React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
-  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
+  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : draftMessageText ? React__default.createElement(DraftMessageText, null, draftMessageText) : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
@@ -17802,29 +17834,33 @@ var AvatarWrapper = styled__default.div(_templateObject5$2 || (_templateObject5$
 var UserStatus = styled__default.span(_templateObject6$1 || (_templateObject6$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 14px;\n  height: 14px;\n  right: 0;\n  bottom: 0;\n  border-radius: 50%;\n  background-color: ", ";\n  border: 2.5px solid #ffffff;\n  box-sizing: border-box;\n"])), function (props) {
   return props.backgroundColor || '#56E464';
 });
-var LastMessageAuthor = styled__default.div(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  font-style: ", ";\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
+var DraftMessageTitle = styled__default.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.red1);
+var DraftMessageText = styled__default.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.gray8);
+var LastMessageAuthor = styled__default.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  font-style: ", ";\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
   return props.typing && 'italic';
 }, colors.gray8);
-var Points = styled__default.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n"])));
-var LastMessageText = styled__default.span(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), colors.gray9, function (props) {
+var Points = styled__default.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  color: ", ";\n"])), function (props) {
+  return props.color;
+});
+var LastMessageText = styled__default.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), colors.gray9, function (props) {
   return props.deletedMessage && 'italic';
 }, function (props) {
   return props.withAttachments && 'translate(0px, -1.5px)';
 }, colors.gray4, function (props) {
   return props.withAttachments ? 'translate(0px, 3px)' : 'translate(0px, 2px)';
 });
-var ChannelStatus = styled__default.div(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 16px;\n  top: 15px;\n  display: flex;\n  flex-wrap: wrap;\n  height: 42px;\n  margin-left: auto;\n"])));
-var LastMessageDate = styled__default.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.gray9);
-var DeliveryIconCont = styled__default.span(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 6px;\n  line-height: 13px;\n"])));
-var UnreadMentionIconWrapper = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  margin-right: ", ";\n  line-height: 13px;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var ChannelStatus = styled__default.div(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 16px;\n  top: 15px;\n  display: flex;\n  flex-wrap: wrap;\n  height: 42px;\n  margin-left: auto;\n"])));
+var LastMessageDate = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.gray9);
+var DeliveryIconCont = styled__default.span(_templateObject14$1 || (_templateObject14$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 6px;\n  line-height: 13px;\n"])));
+var UnreadMentionIconWrapper = styled__default.span(_templateObject15$1 || (_templateObject15$1 = _taggedTemplateLiteralLoose(["\n  margin-right: ", ";\n  line-height: 13px;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.rightMargin && '8px';
 }, function (props) {
   return props.iconColor || colors.primary;
 });
-var TypingIndicator = styled__default.span(_templateObject14$1 || (_templateObject14$1 = _taggedTemplateLiteralLoose(["\n  font-style: italic;\n"])));
-var ReactionItem = styled__default.span(_templateObject15$1 || (_templateObject15$1 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  padding: 0 3px;\n"])));
-var UnreadInfo = styled__default.span(_templateObject16$1 || (_templateObject16$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  display: flex;\n  margin-top: 7px;\n  align-items: center;\n  flex: 0 0 auto;\n  margin-left: auto;\n"])));
-var UnreadCount = styled__default.span(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var TypingIndicator = styled__default.span(_templateObject16$1 || (_templateObject16$1 = _taggedTemplateLiteralLoose(["\n  font-style: italic;\n"])));
+var ReactionItem = styled__default.span(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  padding: 0 3px;\n"])));
+var UnreadInfo = styled__default.span(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  display: flex;\n  margin-top: 7px;\n  align-items: center;\n  flex: 0 0 auto;\n  margin-left: auto;\n"])));
+var UnreadCount = styled__default.span(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
   return props.fontSize || '13px';
@@ -23472,7 +23508,7 @@ var EmojiItem = styled__default.span(_templateObject2$o || (_templateObject2$o =
 }, colors.gray5);
 var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  border-radius: 50%;\n"])), colors.gray5, colors.gray4);
 
-var _templateObject$s, _templateObject2$p, _templateObject3$k, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$1, _templateObject19$1, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
+var _templateObject$s, _templateObject2$p, _templateObject3$k, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -24284,7 +24320,7 @@ var MessageStatusUpdated = styled__default.span(_templateObject16$2 || (_templat
   return props.color || colors.gray4;
 });
 var MessageStatusDeleted = styled__default.span(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
-var MessageBody = styled__default.div(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  direction: ", ";\n  max-width: ", ";\n  padding: ", ";\n  //direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n"])), function (props) {
+var MessageBody = styled__default.div(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  direction: ", ";\n  max-width: ", ";\n  padding: ", ";\n  //direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n"])), function (props) {
   return props.isSelfMessage ? props.ownMessageBackground : props.incomingMessageBackground;
 }, function (props) {
   return props.borderRadius || '4px 16px 16px 4px';
@@ -24299,7 +24335,7 @@ var MessageBody = styled__default.div(_templateObject18$1 || (_templateObject18$
 }, function (props) {
   return props.noBody && 'hidden';
 });
-var MessageContent = styled__default.div(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+var MessageContent = styled__default.div(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
   return props.withAvatar && '13px';
 }, function (props) {
   return props.withAvatar && '13px';
@@ -26404,7 +26440,7 @@ var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = 
   return props.isActiveItem && colors.gray0;
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$x, _templateObject2$u, _templateObject3$p, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$2, _templateObject19$2, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$x, _templateObject2$u, _templateObject3$p, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -26464,81 +26500,85 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var _usePermissions = usePermissions(activeChannel.role),
       checkActionPermission = _usePermissions[0];
 
-  var _useState = React.useState(''),
-      messageText = _useState[0],
-      setMessageText = _useState[1];
+  var _useState = React.useState(false),
+      listenerIsAdded = _useState[0],
+      setListenerIsAdded = _useState[1];
 
   var _useState2 = React.useState(''),
-      editMessageText = _useState2[0],
-      setEditMessageText = _useState2[1];
+      messageText = _useState2[0],
+      setMessageText = _useState2[1];
 
-  var _useState3 = React.useState({}),
-      readyVideoAttachments = _useState3[0],
-      setReadyVideoAttachments = _useState3[1];
+  var _useState3 = React.useState(''),
+      editMessageText = _useState3[0],
+      setEditMessageText = _useState3[1];
 
-  var _useState4 = React.useState(false),
-      showChooseAttachmentType = _useState4[0],
-      setShowChooseAttachmentType = _useState4[1];
+  var _useState4 = React.useState({}),
+      readyVideoAttachments = _useState4[0],
+      setReadyVideoAttachments = _useState4[1];
 
   var _useState5 = React.useState(false),
-      isEmojisOpened = _useState5[0],
-      setIsEmojisOpened = _useState5[1];
+      showChooseAttachmentType = _useState5[0],
+      setShowChooseAttachmentType = _useState5[1];
 
   var _useState6 = React.useState(false),
-      emojisInRightSide = _useState6[0],
-      setEmojisInRightSide = _useState6[1];
+      isEmojisOpened = _useState6[0],
+      setIsEmojisOpened = _useState6[1];
 
   var _useState7 = React.useState(false),
-      addAttachmentsInRightSide = _useState7[0],
-      setAddAttachmentsInRightSide = _useState7[1];
+      emojisInRightSide = _useState7[0],
+      setEmojisInRightSide = _useState7[1];
 
-  var _useState8 = React.useState([]),
-      mentionedMembers = _useState8[0],
-      setMentionedMembers = _useState8[1];
+  var _useState8 = React.useState(false),
+      addAttachmentsInRightSide = _useState8[0],
+      setAddAttachmentsInRightSide = _useState8[1];
 
-  var _useState9 = React.useState({}),
-      mentionedMembersDisplayName = _useState9[0],
-      setMentionedMembersDisplayName = _useState9[1];
+  var _useState9 = React.useState([]),
+      mentionedMembers = _useState9[0],
+      setMentionedMembers = _useState9[1];
 
-  var _useState10 = React.useState(undefined),
-      currentMentions = _useState10[0],
-      setCurrentMentions = _useState10[1];
+  var _useState10 = React.useState({}),
+      mentionedMembersDisplayName = _useState10[0],
+      setMentionedMembersDisplayName = _useState10[1];
 
-  var _useState11 = React.useState(false),
-      mentionTyping = _useState11[0],
-      setMentionTyping = _useState11[1];
+  var _useState11 = React.useState(undefined),
+      currentMentions = _useState11[0],
+      setCurrentMentions = _useState11[1];
 
-  var _useState12 = React.useState(),
-      selectionPos = _useState12[0],
-      setSelectionPos = _useState12[1];
+  var _useState12 = React.useState(false),
+      mentionTyping = _useState12[0],
+      setMentionTyping = _useState12[1];
 
   var _useState13 = React.useState(),
-      inputContainerHeight = _useState13[0],
-      setInputContainerHeight = _useState13[1];
+      selectionPos = _useState13[0],
+      setSelectionPos = _useState13[1];
 
   var _useState14 = React.useState(),
-      typingTimout = _useState14[0],
-      setTypingTimout = _useState14[1];
+      inputContainerHeight = _useState14[0],
+      setInputContainerHeight = _useState14[1];
 
   var _useState15 = React.useState(),
-      inTypingStateTimout = _useState15[0],
-      setInTypingStateTimout = _useState15[1];
+      typingTimout = _useState15[0],
+      setTypingTimout = _useState15[1];
 
-  var _useState16 = React.useState(false),
-      inTypingState = _useState16[0],
-      setInTypingState = _useState16[1];
+  var _useState16 = React.useState(),
+      inTypingStateTimout = _useState16[0],
+      setInTypingStateTimout = _useState16[1];
 
   var _useState17 = React.useState(false),
-      sendMessageIsActive = _useState17[0],
-      setSendMessageIsActive = _useState17[1];
+      inTypingState = _useState17[0],
+      setInTypingState = _useState17[1];
 
   var _useState18 = React.useState(false),
-      openMention = _useState18[0],
-      setOpenMention = _useState18[1];
+      sendMessageIsActive = _useState18[0],
+      setSendMessageIsActive = _useState18[1];
 
-  var _useState19 = React.useState([]),
-      attachments = _useState19[0],
-      setAttachments = _useState19[1];
+  var _useState19 = React.useState(false),
+      openMention = _useState19[0],
+      setOpenMention = _useState19[1];
+
+  var _useState20 = React.useState([]),
+      attachments = _useState20[0],
+      setAttachments = _useState20[1];
 
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
@@ -26683,8 +26723,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     messageInputRef.current.innerHTML = currentTextCont;
-    console.log('currentMentions.start. . . . . .', currentMentions.start);
-    console.log('mentionDisplayName.length. . . . . .', mentionDisplayName.length);
     setCursorPosition(messageInputRef.current, currentMentions.start + 2 + mentionDisplayName.length, true);
 
     var updateCurrentMentions = _extends({}, currentMentions);
@@ -26772,9 +26810,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
         var lastFoundIndex = 0;
         var starts = {};
         var updatedMentionedMembers = [];
+        console.log('mentionedMembers . . . . .  92133', mentionedMembers);
         mentionedMembers.forEach(function (menMem) {
           var mentionDisplayName = menMem.displayName || mentionedMembersDisplayName[menMem.id].displayName;
+          console.log('find index of mentionDisplayName. .. .  .', mentionDisplayName);
+          console.log('find index on text . .. .  .', currentText);
+          console.log('find index from . .. .  .', lastFoundIndex);
           var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
+          console.log('found in index .. ', menIndex);
           lastFoundIndex = menIndex + mentionDisplayName.length;
 
           if (menIndex >= 0 && !starts[menMem.start]) {
@@ -26791,6 +26834,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
           starts[menMem.start] = true;
         });
+        console.log('set mentioned members,,., ', updatedMentionedMembers);
         setMentionedMembers(updatedMentionedMembers);
         var currentTextCont = typingTextFormat({
           text: currentText,
@@ -27310,6 +27354,48 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setOpenMention(false);
     setCurrentMentions(undefined);
     setMentionTyping(false);
+    var draftMessage = getDraftMessageFromMap(activeChannel.id);
+
+    if (draftMessage) {
+      setMessageText(draftMessage.text);
+      setMentionedMembers(draftMessage.mentionedMembers);
+      var mentionedMembersPositions = [];
+
+      if (draftMessage.mentionedMembers && draftMessage.mentionedMembers.length > 0) {
+        var lastFoundIndex = 0;
+        var starts = {};
+        draftMessage.mentionedMembers.forEach(function (menMem) {
+          var mentionDisplayName = "@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts).trim();
+          var menIndex = draftMessage.text.indexOf(mentionDisplayName, lastFoundIndex);
+          lastFoundIndex = menIndex + mentionDisplayName.length;
+          setMentionedMembersDisplayName(function (prevState) {
+            var _extends4;
+
+            return _extends({}, prevState, (_extends4 = {}, _extends4[menMem.id] = {
+              id: menMem.id,
+              displayName: mentionDisplayName
+            }, _extends4));
+          });
+
+          if (!starts[menIndex]) {
+            mentionedMembersPositions.push({
+              displayName: mentionDisplayName,
+              start: menIndex,
+              end: menIndex + mentionDisplayName.length
+            });
+          }
+
+          starts[menIndex] = true;
+        });
+      }
+
+      messageInputRef.current.innerHTML = typingTextFormat({
+        text: draftMessage.text,
+        mentionedMembers: [].concat(mentionedMembersPositions)
+      });
+      setCursorPosition(messageInputRef.current, draftMessage.text.length);
+      messageInputRef.current.focus();
+    }
   }, [activeChannel.id]);
   React.useEffect(function () {
     if (messageText || editMessageText && editMessageText !== messageToEdit.body || attachments.length) {
@@ -27336,7 +27422,35 @@ var SendMessageInput = function SendMessageInput(_ref) {
     } else {
       setSendMessageIsActive(false);
     }
+
+    if (messageText) {
+      setDraftMessageToMap(activeChannel.id, {
+        text: messageText,
+        mentionedMembers: mentionedMembers
+      });
+
+      if (!listenerIsAdded) {
+        setListenerIsAdded(true);
+        document.body.setAttribute('onbeforeunload', "return () => 'reload?'");
+      }
+    } else if (getDraftMessageFromMap(activeChannel.id)) {
+      removeDraftMessageFromMap(activeChannel.id);
+
+      if (checkDraftMessagesIsEmpty() && listenerIsAdded) {
+        dispatch(setChannelDraftMessageIsRemovedAC(activeChannel.id));
+        setListenerIsAdded(false);
+        document.body.removeAttribute('onbeforeunload');
+      }
+    }
   }, [messageText, attachments, editMessageText, readyVideoAttachments]);
+  useDidUpdate(function () {
+    if (mentionedMembers && mentionedMembers.length) {
+      setDraftMessageToMap(activeChannel.id, {
+        text: messageText,
+        mentionedMembers: mentionedMembers
+      });
+    }
+  }, [mentionedMembers]);
   React.useEffect(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       setTimeout(function () {
@@ -27584,7 +27698,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, React__default.createElement(SvgSend, null)))));
 };
 
-var Container$h = styled__default.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n"])), function (props) {
+var Container$h = styled__default.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
   return props.margin || '30px 0 16px';
 }, function (props) {
   return props.border || '';
@@ -27653,8 +27767,8 @@ var ChosenAttachments = styled__default.div(_templateObject14$4 || (_templateObj
 var TypingIndicator$1 = styled__default.div(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
 var TypingIndicatorCont = styled__default.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
 var TypingFrom = styled__default.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
-var sizeAnimation = styled.keyframes(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
-var DotOne = styled__default.span(_templateObject19$2 || (_templateObject19$2 = _taggedTemplateLiteralLoose([""])));
+var sizeAnimation = styled.keyframes(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var DotOne = styled__default.span(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose([""])));
 var DotTwo = styled__default.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled__default.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
 var TypingAnimation = styled__default.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
@@ -29186,7 +29300,7 @@ var LinkItem = function LinkItem(_ref) {
     hoverBackgroundColor: linkPreviewHoverBackgroundColor
   }, React__default.createElement("a", {
     draggable: false,
-    href: link,
+    href: link.startsWith('http') ? link : "https://" + link,
     target: '_blank',
     rel: 'noreferrer'
   }, React__default.createElement(React__default.Fragment, null, React__default.createElement(LinkIconCont, null, linkPreviewIcon || React__default.createElement(SvgLinkIcon, null)), React__default.createElement(LinkHoverIconCont, null, linkPreviewHoverIcon || React__default.createElement(SvgLinkIcon, null))), React__default.createElement(LinkInfoCont, null, React__default.createElement(LinkUrl, {
@@ -29217,6 +29331,7 @@ var Links = function Links(_ref) {
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
+  console.log('attachments. .. . . ', attachments);
   return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,

@@ -295,6 +295,12 @@ export declare function setHideChannelListAC(hide: boolean): {
         hide: boolean;
     };
 };
+export declare function setChannelDraftMessageIsRemovedAC(channelId?: string): {
+    type: string;
+    payload: {
+        channelId: string | undefined;
+    };
+};
 export declare function watchForEventsAC(): {
     type: string;
 };
