@@ -1,5 +1,6 @@
 export declare const colors: {
     white: string;
+    black: string;
     textColor1: string;
     black1: string;
     blue1: string;

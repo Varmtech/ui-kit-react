@@ -1,8 +1,9 @@
 import React, { FC } from 'react';
-import { IUser } from '../../types';
+import { IMessage, IUser } from '../../types';
 interface SendMessageProps {
     draggedAttachments?: boolean;
     handleAttachmentSelected?: (state: boolean) => void;
+    handleSendMessage?: (message: IMessage, channelId: string) => Promise<IMessage>;
     disabled?: boolean;
     showAddEmojis?: boolean;
     AddEmojisIcon?: JSX.Element;

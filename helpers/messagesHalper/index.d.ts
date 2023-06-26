@@ -11,9 +11,17 @@ export declare type IAttachmentMeta = {
     imageHeight?: number;
     duration?: number;
 };
+declare type draftMessagesMap = {
+    [key: string]: {
+        text: string;
+        mentionedMembers: any;
+    };
+};
 declare type pendingMessagesMap = {
     [key: string]: IMessage[];
 };
+export declare let sendMessageHandler: (message: IMessage, channelId: string) => Promise<IMessage>;
+export declare const setSendMessageHandler: (handler: (message: IMessage, channelId: string) => Promise<IMessage>) => void;
 declare const pendingMessagesMap: pendingMessagesMap;
 export declare const setAllMessages: (messages: IMessage[]) => void;
 export declare const addAllMessages: (messages: IMessage[], direction: string) => void;
@@ -57,12 +65,7 @@ export declare const getPendingAttachment: (attachmentId: string) => File;
 export declare const deletePendingAttachment: (attachmentId: string) => boolean;
 export declare const getPendingMessages: (channelId: string) => IMessage[];
 export declare const getPendingMessagesMap: () => pendingMessagesMap;
-export declare const draftMessagesMap: {
-    [key: string]: {
-        text: string;
-        mentionedMembers: any;
-    };
-};
+export declare const draftMessagesMap: draftMessagesMap;
 export declare const getDraftMessageFromMap: (channelId: string) => {
     text: string;
     mentionedMembers: any;

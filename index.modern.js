@@ -1276,7 +1276,7 @@ var ChannelReducer = (function (state, _temp) {
             return _extends({}, _channel6, {
               lastMessage: _extends({}, _channel6.lastMessage, {
                 deliveryStatus: _message.deliveryStatus,
-                selfMarkers: _message.selfMarkers,
+                userMarkers: _message.userMarkers,
                 state: _message.state
               })
             });
@@ -7287,6 +7287,7 @@ var moment = createCommonjsModule(function (module, exports) {
 
 var colors = {
   white: '#ffffff',
+  black: '#000000',
   textColor1: '#111539',
   black1: '#383B51',
   blue1: '#172268',
@@ -7796,6 +7797,10 @@ var MESSAGE_LOAD_DIRECTION = {
   PREV: 'prev',
   NEXT: 'next'
 };
+var sendMessageHandler;
+var setSendMessageHandler = function setSendMessageHandler(handler) {
+  sendMessageHandler = handler;
+};
 var pendingAttachments = {};
 var messagesMap = {};
 var pendingMessagesMap = {};
@@ -7943,7 +7948,7 @@ function addReactionToMessageOnMap(channelId, message, reaction, isSelf) {
   if (messagesMap[channelId]) {
     messagesMap[channelId] = messagesMap[channelId].map(function (msg) {
       if (msg.id === message.id) {
-        var slfReactions = [].concat(msg.selfReactions);
+        var slfReactions = [].concat(msg.userReactions);
 
         if (isSelf) {
           if (slfReactions) {
@@ -7954,9 +7959,8 @@ function addReactionToMessageOnMap(channelId, message, reaction, isSelf) {
         }
 
         return _extends({}, msg, {
-          selfReactions: slfReactions,
-          lastReactions: message.lastReactions,
-          reactionScores: message.reactionScores
+          userReactions: slfReactions,
+          reactionTotals: message.reactionTotals
         });
       }
 
@@ -7967,7 +7971,7 @@ function addReactionToMessageOnMap(channelId, message, reaction, isSelf) {
 var addReactionOnAllMessages = function addReactionOnAllMessages(message, reaction, isSelf) {
   activeChannelAllMessages = activeChannelAllMessages.map(function (msg) {
     if (msg.id === message.id) {
-      var slfReactions = [].concat(msg.selfReactions);
+      var slfReactions = [].concat(msg.userReactions);
 
       if (isSelf) {
         if (slfReactions) {
@@ -7978,9 +7982,8 @@ var addReactionOnAllMessages = function addReactionOnAllMessages(message, reacti
       }
 
       return _extends({}, msg, {
-        selfReactions: slfReactions,
-        lastReactions: message.lastReactions,
-        reactionScores: message.reactionScores
+        userReactions: slfReactions,
+        reactionTotals: message.reactionTotals
       });
     }
 
@@ -7991,18 +7994,17 @@ function removeReactionToMessageOnMap(channelId, message, reaction, isSelf) {
   if (messagesMap[channelId]) {
     messagesMap[channelId] = messagesMap[channelId].map(function (msg) {
       if (msg.id === message.id) {
-        var selfReactions = msg.selfReactions;
+        var userReactions = msg.userReactions;
 
         if (isSelf) {
-          selfReactions = msg.selfReactions.filter(function (selfReaction) {
+          userReactions = msg.userReactions.filter(function (selfReaction) {
             return selfReaction.key !== reaction.key;
           });
         }
 
         return _extends({}, msg, {
-          lastReactions: message.lastReactions,
-          reactionScores: message.reactionScores,
-          selfReactions: selfReactions
+          reactionTotals: message.reactionTotals,
+          userReactions: userReactions
         });
       }
 
@@ -8013,18 +8015,17 @@ function removeReactionToMessageOnMap(channelId, message, reaction, isSelf) {
 var removeReactionOnAllMessages = function removeReactionOnAllMessages(message, reaction, isSelf) {
   activeChannelAllMessages = activeChannelAllMessages.map(function (msg) {
     if (msg.id === message.id) {
-      var selfReactions = msg.selfReactions;
+      var userReactions = msg.userReactions;
 
       if (isSelf) {
-        selfReactions = msg.selfReactions.filter(function (selfReaction) {
+        userReactions = msg.userReactions.filter(function (selfReaction) {
           return selfReaction.key !== reaction.key;
         });
       }
 
       return _extends({}, msg, {
-        lastReactions: message.lastReactions,
-        reactionScores: message.reactionScores,
-        selfReactions: selfReactions
+        reactionTotals: message.reactionTotals,
+        userReactions: userReactions
       });
     }
 
@@ -8315,7 +8316,7 @@ var MessageReducer = (function (state, _temp) {
             isSelf = payload.isSelf;
         newState.activeChannelMessages = newState.activeChannelMessages.map(function (msg) {
           if (msg.id === message.id) {
-            var slfReactions = [].concat(msg.selfReactions);
+            var slfReactions = [].concat(msg.userReactions);
 
             if (isSelf) {
               if (slfReactions) {
@@ -8326,9 +8327,9 @@ var MessageReducer = (function (state, _temp) {
             }
 
             return _extends({}, msg, {
-              selfReactions: slfReactions,
+              userReactions: slfReactions,
               lastReactions: message.lastReactions,
-              reactionScores: message.reactionScores
+              reactionTotals: message.reactionTotals
             });
           }
 
@@ -8347,18 +8348,18 @@ var MessageReducer = (function (state, _temp) {
 
         newState.activeChannelMessages = _messagesCopy4.map(function (msg) {
           if (msg.id === _message.id) {
-            var selfReactions = msg.selfReactions;
+            var userReactions = msg.userReactions;
 
             if (_isSelf) {
-              selfReactions = msg.selfReactions.filter(function (selfReaction) {
+              userReactions = msg.userReactions.filter(function (selfReaction) {
                 return selfReaction.key !== _reaction.key;
               });
             }
 
             return _extends({}, msg, {
               lastReactions: _message.lastReactions,
-              reactionScores: _message.reactionScores,
-              selfReactions: selfReactions
+              reactionTotals: _message.reactionTotals,
+              userReactions: userReactions
             });
           }
 
@@ -9657,14 +9658,16 @@ var MessageOwner = styled.h3(_templateObject32 || (_templateObject32 = _taggedTe
 }, function (props) {
   return props.fontSize || '15px';
 });
-var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
-  return props.fontFamily || 'Inter, sans-serif';
+var MessageText = styled.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.fontFamily || 'sans-serif';
 }, function (props) {
   return props.withAttachment && (props.showMessageSenderName ? '0 12px 10px' : props.isForwarded ? '4px 12px 10px' : '8px 12px 10px');
 }, function (props) {
   return props.withAttachment && !props.withMediaAttachment && '2px';
 }, function (props) {
   return props.fontSize || '15px';
+}, function (props) {
+  return props.fontSize || '16px';
 }, function (props) {
   return props.lineHeight || '20px';
 }, colors.gray6, function (props) {
@@ -10821,7 +10824,7 @@ var browserTabIsActiveSelector = function browserTabIsActiveSelector(store) {
 
 var _marked = /*#__PURE__*/_regeneratorRuntime().mark(watchForEvents);
 function watchForEvents() {
-  var SceytChatClient, channelListener, connectionListener, typingUsersTimeout, chan, _yield$take, type, args, createdChannel, getFromContacts, channelExists, channel, _channel, member, _channelExists, _activeChannelId, _channel2, _channelExists2, _channel3, removedMembers, _activeChannelId2, _channelExists3, activeChannel, _channel4, addedMembers, _activeChannelId3, _channelExists4, updatedChannel, _channelExists5, subject, avatarUrl, _channel5, message, messageToHandle, _activeChannelId4, _channelExists6, channelForAdd, showNotifications, contactsMap, _getFromContacts, messageBody, _ret, _ret2, _channel6, from, channelId, _activeChannelId6, _channel7, _activeChannel, _channel8, deletedMessage, _activeChannelId7, _channelExists7, _channel9, _message, _activeChannelId8, _channelExists8, _channel10, user, _message2, reaction, isSelf, _activeChannelId9, channelUpdateParams, _channel11, _user, _message3, _reaction, _isSelf, _activeChannelId10, _channelUpdateParams, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId11, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _channel19, _channel20, members, _activeChannelId12, i, status;
+  var SceytChatClient, channelListener, connectionListener, typingUsersTimeout, chan, _yield$take, type, args, createdChannel, getFromContacts, channelExists, channel, _channel, member, _channelExists, _activeChannelId, _channel2, _channelExists2, _channel3, removedMembers, _activeChannelId2, _channelExists3, activeChannel, _channel4, addedMembers, _activeChannelId3, _channelExists4, updatedChannel, _channelExists5, subject, avatarUrl, _channel5, message, messageToHandle, _activeChannelId4, _channelExists6, channelForAdd, showNotifications, contactsMap, _getFromContacts, messageBody, _ret, _ret2, _channel6, from, channelId, _channel7, _channel8, deletedMessage, _activeChannelId6, _channelExists7, _channel9, _message, _activeChannelId7, _channelExists8, _channel10, user, _message2, reaction, isSelf, _activeChannelId8, channelUpdateParams, _channel11, _user, _message3, _reaction, _isSelf, _activeChannelId9, _channelUpdateParams, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId10, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _channel19, _channel20, members, _activeChannelId11, i, status;
 
   return _regeneratorRuntime().wrap(function watchForEvents$(_context3) {
     while (1) {
@@ -11159,7 +11162,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 27 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 34 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 47 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 54 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 56 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 82 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 101 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 108 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 158 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 162 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 166 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 171 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 191 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 207 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 220 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 236 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 250 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 256 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 273 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 278 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 283 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 288 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 293 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 297 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 301 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 319 : 324;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 27 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 34 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 48 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 55 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 57 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 83 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 102 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 109 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 159 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 163 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 167 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 172 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 178 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 207 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 223 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 237 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 243 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 260 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 265 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 270 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 275 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 280 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 284 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 288 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 306 : 311;
           break;
 
         case 14:
@@ -11190,7 +11193,7 @@ function watchForEvents() {
           return put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 26:
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
         case 27:
           channel = args.channel;
@@ -11200,11 +11203,11 @@ function watchForEvents() {
 
         case 31:
 
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
         case 34:
-          console.log('channel LEAVE ... ');
           _channel = args.channel, member = args.member;
+          console.log('channel LEAVE ... ', _channel, member);
           _channelExists = checkChannelExists(_channel.id);
           _context3.next = 39;
           return call(getActiveChannelId);
@@ -11232,252 +11235,256 @@ function watchForEvents() {
           }));
 
         case 46:
-          return _context3.abrupt("break", 325);
+          if (member.id === SceytChatClient.user.id) {
+            removeChannelFromMap(_channel.id);
+          }
 
-        case 47:
+          return _context3.abrupt("break", 312);
+
+        case 48:
           console.log('channel BLOCK ... ');
           _channel2 = args.channel;
           _channelExists2 = checkChannelExists(_channel2.id);
 
           if (!_channelExists2) {
-            _context3.next = 53;
+            _context3.next = 54;
             break;
           }
 
-          _context3.next = 53;
+          _context3.next = 54;
           return put(removeChannelAC(_channel2.id));
 
-        case 53:
-          return _context3.abrupt("break", 325);
-
         case 54:
-          console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
-        case 56:
+        case 55:
+          console.log('channel UNBLOCK ... ');
+          return _context3.abrupt("break", 312);
+
+        case 57:
           _channel3 = args.channel, removedMembers = args.removedMembers;
           console.log('channel KICK_MEMBERS ... ', removedMembers);
-          _context3.next = 60;
+          _context3.next = 61;
           return call(getActiveChannelId);
 
-        case 60:
+        case 61:
           _activeChannelId2 = _context3.sent;
           _channelExists3 = checkChannelExists(_channel3.id);
 
           if (!_channelExists3) {
-            _context3.next = 81;
+            _context3.next = 82;
             break;
           }
 
           if (!(removedMembers[0].id === SceytChatClient.user.id)) {
-            _context3.next = 76;
+            _context3.next = 77;
             break;
           }
 
-          _context3.next = 66;
+          _context3.next = 67;
           return call(removeChannelFromMap, _channel3.id);
 
-        case 66:
-          _context3.next = 68;
+        case 67:
+          _context3.next = 69;
           return put(removeChannelAC(_channel3.id));
 
-        case 68:
-          _context3.next = 70;
+        case 69:
+          _context3.next = 71;
           return call(getLastChannelFromMap);
 
-        case 70:
+        case 71:
           activeChannel = _context3.sent;
 
           if (!activeChannel) {
-            _context3.next = 74;
+            _context3.next = 75;
             break;
           }
 
-          _context3.next = 74;
+          _context3.next = 75;
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(activeChannel))));
 
-        case 74:
-          _context3.next = 81;
+        case 75:
+          _context3.next = 82;
           break;
 
-        case 76:
+        case 77:
           if (!(_activeChannelId2 === _channel3.id)) {
-            _context3.next = 79;
+            _context3.next = 80;
             break;
           }
 
-          _context3.next = 79;
+          _context3.next = 80;
           return put(removeMemberFromListAC(removedMembers));
 
-        case 79:
-          _context3.next = 81;
+        case 80:
+          _context3.next = 82;
           return put(updateChannelDataAC(_channel3.id, {
             memberCount: _channel3.memberCount
           }));
 
-        case 81:
-          return _context3.abrupt("break", 325);
-
         case 82:
+          return _context3.abrupt("break", 312);
+
+        case 83:
           _channel4 = args.channel, addedMembers = args.addedMembers;
           console.log('channel ADD_MEMBERS ... ');
-          _context3.next = 86;
+          _context3.next = 87;
           return call(getActiveChannelId);
 
-        case 86:
+        case 87:
           _activeChannelId3 = _context3.sent;
           _channelExists4 = checkChannelExists(_channel4.id);
 
           if (!_channelExists4) {
-            _context3.next = 96;
+            _context3.next = 97;
             break;
           }
 
           if (!(_activeChannelId3 === _channel4.id)) {
-            _context3.next = 92;
+            _context3.next = 93;
             break;
           }
 
-          _context3.next = 92;
+          _context3.next = 93;
           return put(addMembersToListAC(addedMembers));
 
-        case 92:
-          _context3.next = 94;
+        case 93:
+          _context3.next = 95;
           return put(updateChannelDataAC(_channel4.id, {
             memberCount: _channel4.memberCount
           }));
 
-        case 94:
-          _context3.next = 100;
+        case 95:
+          _context3.next = 101;
           break;
 
-        case 96:
-          _context3.next = 98;
+        case 97:
+          _context3.next = 99;
           return call(setChannelInMap, _channel4);
 
-        case 98:
-          _context3.next = 100;
+        case 99:
+          _context3.next = 101;
           return put(setAddedToChannelAC(JSON.parse(JSON.stringify(_channel4))));
 
-        case 100:
-          return _context3.abrupt("break", 325);
-
         case 101:
+          return _context3.abrupt("break", 312);
+
+        case 102:
           updatedChannel = args.updatedChannel;
           _channelExists5 = checkChannelExists(updatedChannel.id);
 
           if (!_channelExists5) {
-            _context3.next = 107;
+            _context3.next = 108;
             break;
           }
 
           subject = updatedChannel.subject, avatarUrl = updatedChannel.avatarUrl;
-          _context3.next = 107;
+          _context3.next = 108;
           return put(updateChannelDataAC(updatedChannel.id, {
             subject: subject,
             avatarUrl: avatarUrl
           }));
 
-        case 107:
-          return _context3.abrupt("break", 325);
-
         case 108:
+          return _context3.abrupt("break", 312);
+
+        case 109:
           _channel5 = args.channel, message = args.message;
           console.log('channel MESSAGE ... ', message, _channel5);
           messageToHandle = handleNewMessages ? handleNewMessages(message, _channel5) : message;
 
           if (!(messageToHandle && _channel5)) {
-            _context3.next = 157;
+            _context3.next = 158;
             break;
           }
 
-          _context3.next = 114;
+          _context3.next = 115;
           return call(getActiveChannelId);
 
-        case 114:
+        case 115:
           _activeChannelId4 = _context3.sent;
           _channelExists6 = checkChannelExists(_channel5.id);
           channelForAdd = JSON.parse(JSON.stringify(_channel5));
-          _context3.next = 119;
+          _context3.next = 120;
           return put(addChannelAC(channelForAdd));
 
-        case 119:
+        case 120:
           if (_channelExists6) {
-            _context3.next = 124;
+            _context3.next = 125;
             break;
           }
 
-          _context3.next = 122;
+          _context3.next = 123;
           return call(setChannelInMap, _channel5);
 
-        case 122:
-          _context3.next = 129;
+        case 123:
+          _context3.next = 130;
           break;
 
-        case 124:
+        case 125:
           if (message.repliedInThread) {
-            _context3.next = 129;
+            _context3.next = 130;
             break;
           }
 
-          _context3.next = 127;
+          _context3.next = 128;
           return put(updateChannelLastMessageAC(message, channelForAdd));
 
-        case 127:
-          _context3.next = 129;
+        case 128:
+          _context3.next = 130;
           return put(updateChannelDataAC(message, channelForAdd));
 
-        case 129:
+        case 130:
           if (!(_channel5.id === _activeChannelId4)) {
-            _context3.next = 135;
+            _context3.next = 136;
             break;
           }
 
           if (getHasNextCached()) {
-            _context3.next = 133;
+            _context3.next = 134;
             break;
           }
 
-          _context3.next = 133;
+          _context3.next = 134;
           return put(addMessageAC(message));
 
-        case 133:
+        case 134:
           addAllMessages([message], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 135:
+        case 136:
           if (getMessagesFromMap(_channel5.id) && getMessagesFromMap(_channel5.id).length) {
             addMessageToMap(_channel5.id, message);
           }
 
-          _context3.next = 138;
+          _context3.next = 139;
           return put(updateChannelDataAC(_channel5.id, _extends({}, channelForAdd, {
             userMessageReactions: [],
             lastReactedMessage: null
           })));
 
-        case 138:
+        case 139:
           console.log('channel MESSAGE ... ', message);
           showNotifications = getShowNotifications();
 
           if (!(showNotifications && !message.silent && message.user.id !== SceytChatClient.user.id && !_channel5.muted)) {
-            _context3.next = 157;
+            _context3.next = 158;
             break;
           }
 
           if (!(Notification.permission === 'granted')) {
-            _context3.next = 150;
+            _context3.next = 151;
             break;
           }
 
           if (!(document.visibilityState !== 'visible' || _channel5.id !== _activeChannelId4)) {
-            _context3.next = 150;
+            _context3.next = 151;
             break;
           }
 
-          _context3.next = 145;
+          _context3.next = 146;
           return select(contactsMapSelector);
 
-        case 145:
+        case 146:
           contactsMap = _context3.sent;
           _getFromContacts = getShowOnlyContactUsers();
           messageBody = MessageTextFormat({
@@ -11491,29 +11498,29 @@ function watchForEvents() {
           console.log('messageBody. . . . ', messageBody);
           setNotification(messageBody, message.user, _channel5);
 
-        case 150:
+        case 151:
           if (!(message.repliedInThread && message.parent.id)) {
-            _context3.next = 155;
+            _context3.next = 156;
             break;
           }
 
-          _context3.next = 153;
+          _context3.next = 154;
           return put(markMessagesAsDeliveredAC(message.parent.id, [message.id]));
 
-        case 153:
-          _context3.next = 157;
+        case 154:
+          _context3.next = 158;
           break;
 
-        case 155:
-          _context3.next = 157;
+        case 156:
+          _context3.next = 158;
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
-        case 157:
-          return _context3.abrupt("break", 325);
-
         case 158:
+          return _context3.abrupt("break", 312);
+
+        case 159:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-            var channelId, markerList, channel, _activeChannelId5, lastMessage, updateLastMessage, markersMap;
+            var channelId, markerList, channel, _activeChannelId5, updateLastMessage, markersMap, lastMessage;
 
             return _regeneratorRuntime().wrap(function _callee$(_context) {
               while (1) {
@@ -11528,7 +11535,7 @@ function watchForEvents() {
                     console.log('channel MESSAGE_MARKERS_RECEIVED ... channel: ', channel, 'markers list: ', markerList);
 
                     if (!channel) {
-                      _context.next = 21;
+                      _context.next = 22;
                       break;
                     }
 
@@ -11537,9 +11544,6 @@ function watchForEvents() {
 
                   case 8:
                     _activeChannelId5 = _context.sent;
-                    lastMessage = _extends({}, channel.lastMessage, {
-                      deliveryStatus: markerList.name
-                    });
                     updateLastMessage = false;
                     markersMap = {};
                     markerList.messageIds.forEach(function (messageId) {
@@ -11551,53 +11555,57 @@ function watchForEvents() {
                     });
 
                     if (!updateLastMessage) {
-                      _context.next = 16;
+                      _context.next = 17;
                       break;
                     }
 
-                    _context.next = 16;
+                    lastMessage = _extends({}, channel.lastMessage, {
+                      deliveryStatus: markerList.name
+                    });
+                    console.log('update last message. . .. ', lastMessage);
+                    _context.next = 17;
                     return put(updateChannelLastMessageStatusAC(lastMessage, JSON.parse(JSON.stringify(channel))));
 
-                  case 16:
+                  case 17:
                     if (!(_activeChannelId5 === channelId)) {
-                      _context.next = 20;
+                      _context.next = 21;
                       break;
                     }
 
-                    _context.next = 19;
+                    _context.next = 20;
                     return put(updateMessagesStatusAC(markerList.name, markersMap));
 
-                  case 19:
+                  case 20:
                     updateMarkersOnAllMessages(markersMap, markerList.name);
 
-                  case 20:
+                  case 21:
                     updateMessageStatusOnMap(channel.id, {
                       name: markerList.name,
                       markersMap: markersMap
                     });
 
-                  case 21:
+                  case 22:
                     return _context.abrupt("return", "break");
 
-                  case 22:
+                  case 23:
                   case "end":
                     return _context.stop();
                 }
               }
             }, _callee);
-          })(), "t1", 159);
+          })(), "t1", 160);
 
-        case 159:
+        case 160:
           _ret = _context3.t1;
 
           if (!(_ret === "break")) {
-            _context3.next = 162;
+            _context3.next = 163;
             break;
           }
 
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
-        case 162:
+        case 163:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
             var channel, from;
             return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -11625,150 +11633,117 @@ function watchForEvents() {
                 }
               }
             }, _callee2);
-          })(), "t2", 163);
+          })(), "t2", 164);
 
-        case 163:
+        case 164:
           _ret2 = _context3.t2;
 
           if (!(_ret2 === "break")) {
-            _context3.next = 166;
+            _context3.next = 167;
             break;
           }
 
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
-        case 166:
+        case 167:
           _channel6 = args.channel, from = args.from;
 
           if (typingUsersTimeout[from.id]) {
             clearTimeout(typingUsersTimeout[from.id]);
           }
 
-          _context3.next = 170;
+          _context3.next = 171;
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
-        case 170:
-          return _context3.abrupt("break", 325);
-
         case 171:
+          return _context3.abrupt("break", 312);
+
+        case 172:
           channelId = args.channelId;
           console.log('channel DELETE ... ');
-          _context3.next = 175;
-          return call(getActiveChannelId);
-
-        case 175:
-          _activeChannelId6 = _context3.sent;
           _channel7 = getChannelFromMap(channelId);
-
-          if (!_channel7) {
-            _context3.next = 182;
-            break;
-          }
-
-          _context3.next = 180;
-          return put(removeChannelAC(channelId));
-
-        case 180:
-          _context3.next = 182;
-          return call(removeChannelFromMap, channelId);
-
-        case 182:
-          _context3.next = 184;
+          _context3.next = 177;
           return put(setChannelToRemoveAC(_channel7));
 
-        case 184:
-          if (!(_activeChannelId6 === channelId)) {
-            _context3.next = 190;
-            break;
-          }
+        case 177:
+          return _context3.abrupt("break", 312);
 
-          _context3.next = 187;
-          return call(getLastChannelFromMap);
-
-        case 187:
-          _activeChannel = _context3.sent;
-          _context3.next = 190;
-          return put(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
-
-        case 190:
-          return _context3.abrupt("break", 325);
-
-        case 191:
+        case 178:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
-          _activeChannelId7 = getActiveChannelId();
+          _activeChannelId6 = getActiveChannelId();
           console.log('channel DELETE_MESSAGE ... ');
           _channelExists7 = checkChannelExists(_channel8.id);
 
-          if (!(_channel8.id === _activeChannelId7)) {
-            _context3.next = 199;
+          if (!(_channel8.id === _activeChannelId6)) {
+            _context3.next = 186;
             break;
           }
 
           updateMessageOnAllMessages(deletedMessage.id, deletedMessage);
-          _context3.next = 199;
+          _context3.next = 186;
           return put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 199:
+        case 186:
           updateMessageOnMap(_channel8.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
 
           if (!_channelExists7) {
-            _context3.next = 206;
+            _context3.next = 193;
             break;
           }
 
-          _context3.next = 203;
+          _context3.next = 190;
           return put(updateChannelDataAC(_channel8.id, {
             unreadMessageCount: _channel8.newMessageCount
           }));
 
-        case 203:
+        case 190:
           if (!(_channel8.lastMessage.id === deletedMessage.id)) {
-            _context3.next = 206;
+            _context3.next = 193;
             break;
           }
 
-          _context3.next = 206;
+          _context3.next = 193;
           return put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
-        case 206:
-          return _context3.abrupt("break", 325);
+        case 193:
+          return _context3.abrupt("break", 312);
 
-        case 207:
+        case 194:
           _channel9 = args.channel, _message = args.message;
           console.log('channel EDIT_MESSAGE ... ');
-          _activeChannelId8 = getActiveChannelId();
+          _activeChannelId7 = getActiveChannelId();
           _channelExists8 = checkChannelExists(_channel9.id);
 
-          if (!(_channel9.id === _activeChannelId8)) {
-            _context3.next = 214;
+          if (!(_channel9.id === _activeChannelId7)) {
+            _context3.next = 201;
             break;
           }
 
-          _context3.next = 214;
+          _context3.next = 201;
           return put(updateMessageAC(_message.id, {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments
           }));
 
-        case 214:
+        case 201:
           if (!_channelExists8) {
-            _context3.next = 218;
+            _context3.next = 205;
             break;
           }
 
           if (!(_channel9.lastMessage.id === _message.id)) {
-            _context3.next = 218;
+            _context3.next = 205;
             break;
           }
 
-          _context3.next = 218;
+          _context3.next = 205;
           return put(updateChannelLastMessageAC(_message, _channel9));
 
-        case 218:
+        case 205:
           if (checkChannelExistsOnMessagesMap(_channel9.id)) {
             updateMessageOnMap(_channel9.id, {
               messageId: _message.id,
@@ -11776,39 +11751,39 @@ function watchForEvents() {
             });
           }
 
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
-        case 220:
+        case 207:
           _channel10 = args.channel, user = args.user, _message2 = args.message, reaction = args.reaction;
           console.log('channel REACTION_ADDED ... ', args);
           isSelf = user.id === SceytChatClient.user.id;
-          _activeChannelId9 = getActiveChannelId();
+          _activeChannelId8 = getActiveChannelId();
 
-          if (!(_channel10.id === _activeChannelId9)) {
-            _context3.next = 228;
+          if (!(_channel10.id === _activeChannelId8)) {
+            _context3.next = 215;
             break;
           }
 
-          _context3.next = 227;
+          _context3.next = 214;
           return put(addReactionToMessageAC(_message2, reaction, isSelf));
 
-        case 227:
+        case 214:
           addReactionOnAllMessages(_message2, reaction, true);
 
-        case 228:
+        case 215:
           if (!(_message2.user.id === SceytChatClient.user.id)) {
-            _context3.next = 234;
+            _context3.next = 221;
             break;
           }
 
           if (!isSelf && Notification.permission === 'granted') {
-            if (document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId9) {
+            if (document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId8) {
               setNotification(_message2.body, reaction.user, _channel10, reaction.key);
             }
           }
 
           if (!(_channel10.newReactions && _channel10.newReactions.length)) {
-            _context3.next = 234;
+            _context3.next = 221;
             break;
           }
 
@@ -11816,36 +11791,36 @@ function watchForEvents() {
             userMessageReactions: _channel10.newReactions,
             lastReactedMessage: _message2
           };
-          _context3.next = 234;
+          _context3.next = 221;
           return put(updateChannelDataAC(_channel10.id, channelUpdateParams));
 
-        case 234:
+        case 221:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
-        case 236:
+        case 223:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ');
           _isSelf = _user.id === SceytChatClient.user.id;
-          _activeChannelId10 = getActiveChannelId();
+          _activeChannelId9 = getActiveChannelId();
 
-          if (!(_channel11.id === _activeChannelId10)) {
-            _context3.next = 244;
+          if (!(_channel11.id === _activeChannelId9)) {
+            _context3.next = 231;
             break;
           }
 
-          _context3.next = 243;
+          _context3.next = 230;
           return put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 243:
+        case 230:
           removeReactionOnAllMessages(_message3, _reaction, true);
 
-        case 244:
+        case 231:
           if (_channel11.newReactions && _channel11.newReactions.length) {
-            _context3.next = 248;
+            _context3.next = 235;
             break;
           }
 
@@ -11853,192 +11828,192 @@ function watchForEvents() {
             userMessageReactions: [],
             lastReactedMessage: null
           };
-          _context3.next = 248;
+          _context3.next = 235;
           return put(updateChannelDataAC(_channel11.id, _channelUpdateParams));
 
-        case 248:
+        case 235:
           if (checkChannelExistsOnMessagesMap(_channel11.id)) {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 325);
+          return _context3.abrupt("break", 312);
 
-        case 250:
+        case 237:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .channelUnreadCount', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 255;
+          _context3.next = 242;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 255:
-          return _context3.abrupt("break", 325);
+        case 242:
+          return _context3.abrupt("break", 312);
 
-        case 256:
+        case 243:
           _channel13 = args.channel;
           console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 260;
+          _context3.next = 247;
           return call(getActiveChannelId);
 
-        case 260:
-          _activeChannelId11 = _context3.sent;
-          _context3.next = 263;
+        case 247:
+          _activeChannelId10 = _context3.sent;
+          _context3.next = 250;
           return call(checkChannelExists, _channel13.id);
 
-        case 263:
+        case 250:
           channelExist = _context3.sent;
 
-          if (!(_channel13.id === _activeChannelId11)) {
-            _context3.next = 268;
+          if (!(_channel13.id === _activeChannelId10)) {
+            _context3.next = 255;
             break;
           }
 
-          _context3.next = 267;
+          _context3.next = 254;
           return put(clearMessagesAC());
 
-        case 267:
+        case 254:
           removeAllMessages();
 
-        case 268:
+        case 255:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 272;
+            _context3.next = 259;
             break;
           }
 
-          _context3.next = 272;
+          _context3.next = 259;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: null,
             unreadMessageCount: 0
           }));
 
-        case 272:
-          return _context3.abrupt("break", 325);
+        case 259:
+          return _context3.abrupt("break", 312);
 
-        case 273:
+        case 260:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 277;
+          _context3.next = 264;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             mutedTill: _channel14.mutedTill
           }));
 
-        case 277:
-          return _context3.abrupt("break", 325);
+        case 264:
+          return _context3.abrupt("break", 312);
 
-        case 278:
+        case 265:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 282;
+          _context3.next = 269;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             mutedTill: _channel15.mutedTill
           }));
 
-        case 282:
-          return _context3.abrupt("break", 325);
+        case 269:
+          return _context3.abrupt("break", 312);
 
-        case 283:
+        case 270:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context3.next = 287;
+          _context3.next = 274;
           return put(setChannelToHideAC(_channel16));
 
-        case 287:
-          return _context3.abrupt("break", 325);
+        case 274:
+          return _context3.abrupt("break", 312);
 
-        case 288:
+        case 275:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context3.next = 292;
+          _context3.next = 279;
           return put(setChannelToUnHideAC(_channel17));
 
-        case 292:
-          return _context3.abrupt("break", 325);
+        case 279:
+          return _context3.abrupt("break", 312);
 
-        case 293:
+        case 280:
           _channel18 = args.channel;
-          _context3.next = 296;
+          _context3.next = 283;
           return put(updateChannelDataAC(_channel18.id, {
             markedAsUnread: _channel18.unread
           }));
 
-        case 296:
-          return _context3.abrupt("break", 325);
+        case 283:
+          return _context3.abrupt("break", 312);
 
-        case 297:
+        case 284:
           _channel19 = args.channel;
-          _context3.next = 300;
+          _context3.next = 287;
           return put(updateChannelDataAC(_channel19.id, {
             markedAsUnread: _channel19.unread
           }));
 
-        case 300:
-          return _context3.abrupt("break", 325);
+        case 287:
+          return _context3.abrupt("break", 312);
 
-        case 301:
+        case 288:
           _channel20 = args.channel, members = args.members;
           console.log('channel CHANGE_ROLE  channel ... ', _channel20);
           console.log('channel CHANGE_ROLE  member ... ', members);
-          _context3.next = 306;
+          _context3.next = 293;
           return call(getActiveChannelId);
 
-        case 306:
-          _activeChannelId12 = _context3.sent;
+        case 293:
+          _activeChannelId11 = _context3.sent;
 
-          if (!(_channel20.id === _activeChannelId12)) {
-            _context3.next = 310;
+          if (!(_channel20.id === _activeChannelId11)) {
+            _context3.next = 297;
             break;
           }
 
-          _context3.next = 310;
+          _context3.next = 297;
           return put(updateMembersAC(members));
 
-        case 310:
+        case 297:
           i = 0;
 
-        case 311:
+        case 298:
           if (!(i < members.length)) {
-            _context3.next = 318;
+            _context3.next = 305;
             break;
           }
 
           if (!(members[i].id === SceytChatClient.user.id)) {
-            _context3.next = 315;
+            _context3.next = 302;
             break;
           }
 
-          _context3.next = 315;
+          _context3.next = 302;
           return put(updateChannelDataAC(_channel20.id, {
-            role: members[i].role
+            userRole: members[i].role
           }));
 
-        case 315:
+        case 302:
           i++;
-          _context3.next = 311;
+          _context3.next = 298;
           break;
 
-        case 318:
-          return _context3.abrupt("break", 325);
+        case 305:
+          return _context3.abrupt("break", 312);
 
-        case 319:
+        case 306:
           status = args.status;
           console.log('connection status changed lst. . . . . ', status);
-          _context3.next = 323;
+          _context3.next = 310;
           return put(setConnectionStatusAC(status));
 
-        case 323:
-          return _context3.abrupt("break", 325);
+        case 310:
+          return _context3.abrupt("break", 312);
 
-        case 324:
+        case 311:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 325:
+        case 312:
           _context3.next = 5;
           break;
 
-        case 327:
+        case 314:
         case "end":
           return _context3.stop();
       }
@@ -12146,7 +12121,7 @@ function createChannel(action) {
 
         case 26:
           _context.next = 28;
-          return put(addChannelAC(JSON.parse(JSON.stringify(createdChannel))));
+          return put(setChannelToAddAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 28:
           _context.next = 30;
@@ -12467,7 +12442,7 @@ function getChannelsForForward(action) {
         case 28:
           groupChannelsData = _context3.sent;
           groupChannelsToAdd = groupChannelsData.channels.filter(function (channel) {
-            return channel.type === CHANNEL_TYPE.BROADCAST ? channel.role === 'admin' || channel.role === 'owner' : true;
+            return channel.type === CHANNEL_TYPE.BROADCAST ? channel.userRole === 'admin' || channel.userRole === 'owner' : true;
           });
           allChannels = directChannelsToAdd.concat(groupChannelsToAdd);
           _context3.next = 33;
@@ -12506,7 +12481,7 @@ function getChannelsForForward(action) {
 
         case 52:
           channelsToAdd = channelsData.channels.filter(function (channel) {
-            return channel.type === CHANNEL_TYPE.BROADCAST ? channel.role === 'admin' || channel.role === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.members.find(function (member) {
+            return channel.type === CHANNEL_TYPE.BROADCAST ? channel.userRole === 'admin' || channel.userRole === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.members.find(function (member) {
               return member.id && member.id !== SceytChatClient.user.id;
             }) : true;
           });
@@ -12674,7 +12649,7 @@ function channelsForForwardLoadMore(action) {
 
         case 13:
           channelsToAdd = channelsData.channels.filter(function (channel) {
-            return channel.type === CHANNEL_TYPE.BROADCAST ? channel.role === 'admin' || channel.role === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.members.find(function (member) {
+            return channel.type === CHANNEL_TYPE.BROADCAST ? channel.userRole === 'admin' || channel.userRole === 'owner' : channel.type === CHANNEL_TYPE.DIRECT ? channel.members.find(function (member) {
               return member.id && member.id !== SceytChatClient.user.id;
             }) : true;
           });
@@ -12709,7 +12684,7 @@ function channelsForForwardLoadMore(action) {
 }
 
 function markMessagesRead(action) {
-  var payload, channelId, messageIds, channel, markedMessageIds, _iterator, _step, messageId;
+  var payload, channelId, messageIds, channel, messageListMarker, _iterator, _step, messageId;
 
   return _regeneratorRuntime().wrap(function markMessagesRead$(_context6) {
     while (1) {
@@ -12729,10 +12704,10 @@ function markMessagesRead(action) {
           }
 
           _context6.next = 8;
-          return call(channel.markMessagesAsRead, messageIds);
+          return call(channel.markMessagesAsDisplayed, messageIds);
 
         case 8:
-          markedMessageIds = _context6.sent;
+          messageListMarker = _context6.sent;
           _context6.next = 11;
           return put(updateChannelDataAC(channel.id, {
             markedAsUnread: channel.unread,
@@ -12741,7 +12716,7 @@ function markMessagesRead(action) {
           }));
 
         case 11:
-          _iterator = _createForOfIteratorHelperLoose(markedMessageIds);
+          _iterator = _createForOfIteratorHelperLoose(messageListMarker.messageIds);
 
         case 12:
           if ((_step = _iterator()).done) {
@@ -12753,7 +12728,7 @@ function markMessagesRead(action) {
           _context6.next = 16;
           return put(updateMessageAC(messageId, {
             deliveryStatus: MESSAGE_DELIVERY_STATUS.READ,
-            selfMarkers: [MESSAGE_DELIVERY_STATUS.READ]
+            userMarkers: [MESSAGE_DELIVERY_STATUS.READ]
           }));
 
         case 16:
@@ -12788,7 +12763,7 @@ function markMessagesDelivered(action) {
           }
 
           _context7.next = 8;
-          return call(channel.markMessagesAsDelivered, messageIds);
+          return call(channel.markMessagesAsReceived, messageIds);
 
         case 8:
         case "end":
@@ -14473,15 +14448,31 @@ function sendTextMessage(action) {
 
         case 32:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 45;
+            _context2.next = 51;
             break;
           }
 
-          _context2.next = 35;
+          if (!sendMessageHandler) {
+            _context2.next = 39;
+            break;
+          }
+
+          _context2.next = 36;
+          return call(sendMessageHandler, messageToSend, channelId);
+
+        case 36:
+          messageResponse = _context2.sent;
+          _context2.next = 42;
+          break;
+
+        case 39:
+          _context2.next = 41;
           return call(channel.sendMessage, messageToSend);
 
-        case 35:
+        case 41:
           messageResponse = _context2.sent;
+
+        case 42:
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -14492,33 +14483,33 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 39;
+          _context2.next = 45;
           return put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 39:
+        case 45:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 43;
+          _context2.next = 49;
           return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 43:
-          _context2.next = 46;
+        case 49:
+          _context2.next = 52;
           break;
 
-        case 45:
+        case 51:
           throw new Error('Connection required to send message');
 
-        case 46:
-          _context2.next = 55;
+        case 52:
+          _context2.next = 61;
           break;
 
-        case 48:
-          _context2.prev = 48;
+        case 54:
+          _context2.prev = 54;
           _context2.t0 = _context2["catch"](5);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
@@ -14530,17 +14521,17 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 55;
+          _context2.next = 61;
           return put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 55:
+        case 61:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[5, 48]]);
+  }, _marked2$1, null, [[5, 54]]);
 }
 
 function forwardMessage(action) {
@@ -14563,7 +14554,7 @@ function forwardMessage(action) {
           }) : [];
           attachments = _message.attachments;
 
-          if (channel.type === CHANNEL_TYPE.BROADCAST && !(channel.role === 'admin' || channel.role === 'owner')) {
+          if (channel.type === CHANNEL_TYPE.BROADCAST && !(channel.userRole === 'admin' || channel.userRole === 'owner')) {
             _context3.next = 55;
             break;
           }
@@ -15544,30 +15535,31 @@ function deleteReaction(action) {
           return put(updateChannelDataAC(channel.id, channelUpdateParam));
 
         case 15:
-          _context10.next = 17;
+          console.log('message received. ... ', _message5);
+          _context10.next = 18;
           return put(deleteReactionFromListAC(reaction));
 
-        case 17:
-          _context10.next = 19;
+        case 18:
+          _context10.next = 20;
           return put(deleteReactionFromMessageAC(_message5, reaction, true));
 
-        case 19:
+        case 20:
           removeReactionToMessageOnMap(channelId, _message5, reaction, true);
           removeReactionOnAllMessages(_message5, reaction, true);
-          _context10.next = 26;
+          _context10.next = 27;
           break;
 
-        case 23:
-          _context10.prev = 23;
+        case 24:
+          _context10.prev = 24;
           _context10.t0 = _context10["catch"](0);
           console.log('ERROR in delete reaction', _context10.t0.message);
 
-        case 26:
+        case 27:
         case "end":
           return _context10.stop();
       }
     }
-  }, _marked10$1, null, [[0, 23]]);
+  }, _marked10$1, null, [[0, 24]]);
 }
 
 function getReactions(action) {
@@ -17785,7 +17777,7 @@ var Channel = function Channel(_ref) {
     isMuted: channel.muted
   }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : '')));
 };
-var Container$2 = styled.div(_templateObject$4 || (_templateObject$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  height: 48px;\n  background-color: ", ";\n  border-left: ", ";\n  // padding: selectedChannel ? '8px 16px 8px 13px' : '8px 16px'\n  padding: ", ";\n  margin: ", ";\n  border-radius: ", ";\n"])), function (props) {
+var Container$2 = styled.div(_templateObject$4 || (_templateObject$4 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  background-color: ", ";\n  border-left: ", ";\n  // padding: selectedChannel ? '8px 16px 8px 13px' : '8px 16px'\n  padding: ", ";\n  margin: ", ";\n  border-radius: ", ";\n"])), function (props) {
   return props.selectedChannel ? props.selectedBackgroundColor || colors.primaryLight : 'inherit';
 }, function (props) {
   return props.selectedChannel ? props.selectedChannelLeftBorder : null;
@@ -18188,6 +18180,7 @@ function SvgAddChat(props) {
   return /*#__PURE__*/createElement("svg", _extends$i({
     width: 24,
     height: 24,
+    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$g || (_path$g = /*#__PURE__*/createElement("path", {
@@ -18357,7 +18350,6 @@ var UsersPopup = function UsersPopup(_ref) {
 
   var memberDisplayText = getChannelTypesMemberDisplayTextMap();
   var channelTypeRoleMap = getDefaultRolesByChannelTypesMap();
-  console.log('channel ..... ', channel);
   var popupTitleText = channel && (memberDisplayText && memberDisplayText[channel.type] ? "Add " + memberDisplayText[channel.type] + "s" : channel.type === CHANNEL_TYPE.BROADCAST ? 'subscribers' : 'members');
 
   var handleMembersListScroll = function handleMembersListScroll(event) {
@@ -18618,7 +18610,7 @@ var MembersContainer = styled(List)(_templateObject2$8 || (_templateObject2$8 = 
 });
 var SearchUserCont = styled.div(_templateObject3$6 || (_templateObject3$6 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin: 24px 12px 0;\n\n  ", " {\n    top: 10px;\n    right: 11px;\n  }\n"])), ClearTypedText);
 var SearchUsersInput = styled.input(_templateObject4$4 || (_templateObject4$4 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  font-size: 14px;\n  background: #ffffff;\n  border: 1px solid rgb(225, 226, 229);\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding-left: 36px;\n\n  &::placeholder {\n    color: ", ";\n    font-size: 14px;\n    opacity: 1;\n  }\n\n  &:focus {\n    outline: none;\n  }\n"])), colors.gray4);
-var ListRow = styled.div(_templateObject5$3 || (_templateObject5$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  flex-direction: row;\n  align-items: center;\n  min-height: 40px;\n  padding: 7px 12px;\n  cursor: ", ";\n  border-radius: 6px;\n  transition: all 0.2s;\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+var ListRow = styled.div(_templateObject5$3 || (_templateObject5$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  flex-direction: row;\n  align-items: center;\n  padding: 7px 12px;\n  cursor: ", ";\n  border-radius: 6px;\n  transition: all 0.2s;\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return !props.isAdd && 'pointer';
 }, function (props) {
   return !props.isAdd && colors.gray0;
@@ -19650,6 +19642,7 @@ var ChannelList = function ChannelList(_ref) {
       });
     }
 
+    console.log('dispatch setChannel s.... ', updatedChannels);
     dispatch(setChannelsAC(updatedChannels));
   };
 
@@ -19690,12 +19683,18 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (deletedChannel) {
       if (onChannelDeleted) {
-        onChannelDeleted(function (updatedChannels) {
+        onChannelDeleted(channels, deletedChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
-        }, deletedChannel);
+        });
       } else {
         removeChannelFromMap(deletedChannel.id);
         dispatch(removeChannelAC(deletedChannel.id));
+
+        if (activeChannel.id === deletedChannel.id) {
+          var _activeChannel = getLastChannelFromMap();
+
+          dispatch(switchChannelActionAC(JSON.parse(JSON.stringify(_activeChannel))));
+        }
       }
 
       dispatch(setChannelToRemoveAC(null));
@@ -19711,12 +19710,12 @@ var ChannelList = function ChannelList(_ref) {
       }, false));
     }
   }, [connectionStatus]);
-  useEffect(function () {
+  useDidUpdate(function () {
     if (addedChannel) {
       if (onChannelCreated) {
-        onChannelCreated(function (updatedChannels) {
+        onChannelCreated(channels, addedChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, false);
-        }, addedChannel);
+        });
       } else {
         dispatch(addChannelAC(addedChannel));
       }
@@ -19727,9 +19726,9 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (addedToChannel) {
       if (onAddedToChannel) {
-        onAddedToChannel(function (updatedChannels) {
+        onAddedToChannel(channels, addedToChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, false);
-        }, addedToChannel);
+        });
       } else {
         dispatch(addChannelAC(addedToChannel));
       }
@@ -19740,9 +19739,9 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (hiddenChannel) {
       if (onChannelHidden) {
-        onChannelHidden(function (updatedChannels) {
+        onChannelHidden(channels, hiddenChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
-        }, hiddenChannel);
+        });
       } else {
         dispatch(removeChannelAC(hiddenChannel.id));
       }
@@ -19753,9 +19752,9 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (visibleChannel) {
       if (onChannelVisible) {
-        onChannelVisible(function (updatedChannels) {
+        onChannelVisible(channels, visibleChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
-        }, visibleChannel);
+        });
       } else {
         dispatch(addChannelAC(hiddenChannel));
       }
@@ -20852,6 +20851,7 @@ function SvgDeleteUpload(props) {
   return /*#__PURE__*/createElement("svg", _extends$E({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _circle$1 || (_circle$1 = /*#__PURE__*/createElement("circle", {
@@ -22406,7 +22406,7 @@ function ReactionsPopup(_ref) {
       handleReactionsPopupClose = _ref.handleReactionsPopupClose,
       handleAddDeleteEmoji = _ref.handleAddDeleteEmoji,
       bottomPosition = _ref.bottomPosition,
-      reactionScores = _ref.reactionScores,
+      reactionTotals = _ref.reactionTotals,
       reactionsDetailsPopupBorderRadius = _ref.reactionsDetailsPopupBorderRadius,
       reactionsDetailsPopupHeaderItemsStyle = _ref.reactionsDetailsPopupHeaderItemsStyle,
       rtlDirection = _ref.rtlDirection;
@@ -22439,13 +22439,14 @@ function ReactionsPopup(_ref) {
       setCloseIsApproved = _useState5[1];
 
   var totalReactions = 0;
-  var reactionsList = Object.keys(reactionScores).map(function (key) {
-    totalReactions += reactionScores[key];
-    return {
-      key: key,
-      count: reactionScores[key]
-    };
-  });
+  console.log('reactionTotals. . . . ', reactionTotals);
+
+  if (reactionTotals) {
+    reactionTotals.forEach(function (summery) {
+      totalReactions += summery.count;
+    });
+  }
+
   var user = getClient().user;
   var dispatch = useDispatch();
 
@@ -22482,6 +22483,11 @@ function ReactionsPopup(_ref) {
     };
   }, [messageId]);
   useEffect(function () {
+    if (!reactionTotals || !reactionTotals.length) {
+      handleReactionsPopupClose();
+    }
+  }, [reactionTotals]);
+  useEffect(function () {
     if (reactions && reactionsPrevLength < reactions.length) {
       var reactionsHeight = reactions.length * 44 + 45;
 
@@ -22493,14 +22499,15 @@ function ReactionsPopup(_ref) {
     } else {
       reactionsPrevLength = !reactions ? 0 : reactions.length;
     }
-  }, [reactions]);
-  useEffect(function () {
+
     if (reactions && reactions.length) {
       if (calculateSizes) {
         var botPost = bottomPosition - messageInputHeight - 40;
-        var reactionsHeight = reactions.length * 44 + 45;
-        setPopupHeight(reactionsHeight);
-        setPopupVerticalPosition(botPost >= (reactionsHeight > 320 ? 320 : reactionsHeight) ? 'bottom' : 'top');
+
+        var _reactionsHeight = reactions.length * 44 + 45;
+
+        setPopupHeight(_reactionsHeight);
+        setPopupVerticalPosition(botPost >= (_reactionsHeight > 320 ? 320 : _reactionsHeight) ? 'bottom' : 'top');
         setCalculateSizes(false);
       }
     }
@@ -22522,7 +22529,7 @@ function ReactionsPopup(_ref) {
     onClick: function onClick() {
       return handleGetReactions();
     }
-  }, React__default.createElement("span", null, "All " + totalReactions)), reactionsList.map(function (reaction) {
+  }, React__default.createElement("span", null, "All " + totalReactions)), reactionTotals.map(function (reaction) {
     return React__default.createElement(ReactionScoreItem, {
       bubbleStyle: reactionsDetailsPopupHeaderItemsStyle === 'bubbles',
       key: reaction.key,
@@ -23662,9 +23669,8 @@ var Message = function Message(_ref) {
 
   var messageItemRef = useRef();
   var isVisible = useOnScreen(messageItemRef);
-  var reactionsList = message.reactionScores && Object.keys(message.reactionScores);
-  var reactionsCount = message.reactionScores && Object.values(message.reactionScores).reduce(function (prevValue, currentValue) {
-    return prevValue + currentValue;
+  var reactionsCount = message.reactionTotals && message.reactionTotals.reduce(function (prevValue, currentValue) {
+    return prevValue + currentValue.count;
   }, 0);
   var messageTextRef = useRef(null);
   var messageActionsTimeout = useRef(null);
@@ -23803,7 +23809,7 @@ var Message = function Message(_ref) {
   };
 
   var handleReactionAddDelete = function handleReactionAddDelete(selectedEmoji) {
-    if (message.selfReactions && message.selfReactions.some(function (item) {
+    if (message.userReactions && message.userReactions.some(function (item) {
       return item.key === selectedEmoji;
     })) {
       dispatch(deleteReactionAC(channel.id, message.id, selectedEmoji, channel.newReactions && channel.newReactions[0] && channel.newReactions[0].messageId === message.id && channel.newReactions[0].key === selectedEmoji));
@@ -23819,7 +23825,10 @@ var Message = function Message(_ref) {
   };
 
   var handleSendReadMarker = function handleSendReadMarker() {
-    if (isVisible && message.incoming && !(message.selfMarkers.length && message.selfMarkers.includes(MESSAGE_DELIVERY_STATUS.READ))) {
+    if (isVisible && message.incoming && !(message.userMarkers && message.userMarkers.length && message.userMarkers.find(function (marker) {
+      return marker.name === MESSAGE_DELIVERY_STATUS.READ;
+    }))) {
+      console.log('send marker for message ... ', message);
       dispatch(markMessagesAsReadAC(channel.id, [message.id]));
     }
   };
@@ -23905,7 +23914,7 @@ var Message = function Message(_ref) {
     withAvatar: renderAvatar,
     hoverBackground: hoverBackground ? message.incoming ? incomingMessageBackground || 'rgb(238, 245, 255)' : ownMessageBackground || 'rgb(238, 245, 255)' : '',
     topMargin: (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system' ? '0' : prevMessageUserID !== messageUserID || firstMessageInInterval ? differentUserMessageSpacing || '16px' : sameUserMessageSpacing || '8px',
-    bottomMargin: reactionsList && reactionsList.length ? reactionsContainerTopPosition : '',
+    bottomMargin: message.reactionTotals && message.reactionTotals.length ? reactionsContainerTopPosition : '',
     ref: messageItemRef,
     className: 'MessageItem'
   }, renderAvatar && React__default.createElement(Avatar, {
@@ -23989,7 +23998,7 @@ var Message = function Message(_ref) {
     starIconTooltipText: starIconTooltipText,
     reportIconTooltipText: reportIconTooltipText,
     messageActionIconsColor: messageActionIconsColor,
-    myRole: channel.role,
+    myRole: channel.userRole,
     isIncoming: message.incoming,
     handleOpenEmojis: handleOpenEmojis
   }), message.parent && message.parent.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
@@ -24112,7 +24121,7 @@ var Message = function Message(_ref) {
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     handleAddEmoji: handleReactionAddDelete,
     handleEmojiPopupToggle: setEmojisPopupOpen,
-    frequentlyEmojis: message.selfReactions
+    frequentlyEmojis: message.userReactions
   }))), messageStatusAndTimePosition === 'bottomOfMessage' && (messageStatusVisible || messageTimeVisible) && React__default.createElement(MessageStatusAndTime, {
     isSelfMessage: !message.incoming,
     marginBottom: sameUserMessageSpacing,
@@ -24127,14 +24136,14 @@ var Message = function Message(_ref) {
   }, message.replyCount + " replies"), reactionsPopupOpen && React__default.createElement(ReactionsPopup, {
     bottomPosition: reactionsPopupPosition,
     horizontalPositions: reactionsPopupHorizontalPosition,
-    reactionScores: message.reactionScores || {},
+    reactionTotals: message.reactionTotals || [],
     messageId: message.id,
     handleReactionsPopupClose: handleToggleReactionsPopup,
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     handleAddDeleteEmoji: handleReactionAddDelete,
     reactionsDetailsPopupBorderRadius: reactionsDetailsPopupBorderRadius,
     reactionsDetailsPopupHeaderItemsStyle: reactionsDetailsPopupHeaderItemsStyle
-  }), reactionsList && reactionsList.length && React__default.createElement(ReactionsContainer, {
+  }), message.reactionTotals && message.reactionTotals.length && React__default.createElement(ReactionsContainer, {
     id: message.id + "_reactions_container",
     border: reactionsContainerBorder,
     boxShadow: reactionsContainerBoxShadow,
@@ -24146,11 +24155,11 @@ var Message = function Message(_ref) {
   }, React__default.createElement(MessageReactionsCont, {
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     onClick: handleToggleReactionsPopup
-  }, reactionsList.slice(0, reactionsDisplayCount || 5).map(function (key) {
+  }, message.reactionTotals.slice(0, reactionsDisplayCount || 5).map(function (summery) {
     return React__default.createElement(MessageReaction, {
-      key: key,
-      self: !!message.selfReactions.find(function (selfReaction) {
-        return selfReaction.key === key;
+      key: summery.key,
+      self: !!message.userReactions.find(function (userReaction) {
+        return userReaction.key === summery.key;
       }),
       border: reactionItemBorder,
       borderRadius: reactionItemBorderRadius,
@@ -24159,7 +24168,7 @@ var Message = function Message(_ref) {
       margin: reactionItemMargin,
       isLastReaction: reactionsCount === 1,
       fontSize: reactionsFontSize
-    }, React__default.createElement(MessageReactionKey, null, key, showEachReactionCount && React__default.createElement(ReactionItemCount, null, message.reactionScores[key], " ")));
+    }, React__default.createElement(MessageReactionKey, null, summery.key, showEachReactionCount && React__default.createElement(ReactionItemCount, null, summery.count)));
   }), showTotalReactionCount && reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
     borderRadius: reactionItemBorderRadius,
@@ -24174,7 +24183,7 @@ var Message = function Message(_ref) {
     description: 'Who do you want to remove this message for?',
     isDeleteMessage: true,
     isIncomingMessage: message.incoming,
-    myRole: channel.role,
+    myRole: channel.userRole,
     allowDeleteIncoming: allowEditDeleteIncomingMessage,
     isDirectChannel: channel.type === CHANNEL_TYPE.DIRECT,
     title: 'Delete message'
@@ -26087,7 +26096,7 @@ var Container$f = styled.div(_templateObject$v || (_templateObject$v = _taggedTe
 });
 var EmptyDiv = styled.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
 var MessagesBox = styled.div(_templateObject3$n || (_templateObject3$n = _taggedTemplateLiteralLoose(["\n  //height: auto;\n  display: flex;\n  //flex-direction: column-reverse;\n  flex-direction: column;\n  padding-bottom: 20px;\n  //overflow: auto;\n  //scroll-behavior: unset;\n"])));
-var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n  }\n"])), function (props) {
+var MessageTopDate = styled.div(_templateObject4$i || (_templateObject4$i = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  width: 100%;\n  top: ", ";\n  left: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  text-align: center;\n  z-index: 10;\n  background: transparent;\n  opacity: ", ";\n  transition: all 0.2s ease-in-out;\n  span {\n    //display: ", ";\n    display: inline-block;\n    max-width: 380px;\n    font-style: normal;\n    font-weight: normal;\n    font-size: ", ";\n    color: ", ";\n    background: ", ";\n    border: ", ";\n    box-sizing: border-box;\n    border-radius: ", ";\n    padding: 5px 16px;\n    box-shadow: 0 0 2px rgba(0, 0, 0, 0.08), 0 2px 24px rgba(0, 0, 0, 0.08);\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), function (props) {
   return props.systemMessage ? '' : 'absolute';
 }, function (props) {
   return props.topOffset ? props.topOffset + 22 + "px" : '22px';
@@ -26214,6 +26223,7 @@ function SvgAddAttachment(props) {
   return /*#__PURE__*/createElement("svg", _extends$10({
     width: 24,
     height: 24,
+    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Y || (_path$Y = /*#__PURE__*/createElement("path", {
@@ -26422,6 +26432,7 @@ var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
   var handleAttachmentSelected = _ref.handleAttachmentSelected,
+      handleSendMessage = _ref.handleSendMessage,
       _ref$disabled = _ref.disabled,
       disabled = _ref$disabled === void 0 ? false : _ref$disabled,
       sendIconOrder = _ref.sendIconOrder,
@@ -26474,7 +26485,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var isDeletedUserChat = directChannelUser && directChannelUser.activityState === 'Deleted';
   var messageContRef = useRef(null);
 
-  var _usePermissions = usePermissions(activeChannel.role),
+  var _usePermissions = usePermissions(activeChannel.userRole),
       checkActionPermission = _usePermissions[0];
 
   var _useState = useState(false),
@@ -27540,6 +27551,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   }, [messageToEdit]);
   useEffect(function () {
+    if (handleSendMessage) {
+      setSendMessageHandler(handleSendMessage);
+    }
+
     document.addEventListener('mousedown', handleClick);
     return function () {
       document.removeEventListener('mousedown', handleClick);
@@ -27549,10 +27564,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
     margin: margin,
     border: border,
     ref: messageContRef
-  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disabled ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disabled ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.role && activeChannel.type !== CHANNEL_TYPE.DIRECT ? React__default.createElement(JoinChannelCont, {
+  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disabled ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disabled ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.userRole && activeChannel.type !== CHANNEL_TYPE.DIRECT ? React__default.createElement(JoinChannelCont, {
     onClick: handleJoinToChannel,
     color: colors.primary
-  }, "Join") : (activeChannel.type === CHANNEL_TYPE.BROADCAST ? !(activeChannel.role === 'admin' || activeChannel.role === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
+  }, "Join") : (activeChannel.type === CHANNEL_TYPE.BROADCAST ? !(activeChannel.userRole === 'admin' || activeChannel.userRole === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
     iconColor: colors.primary
   }, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, typingIndicator && typingIndicator.typingState && (CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
@@ -27989,6 +28004,7 @@ function SvgBlockChannel(props) {
   return /*#__PURE__*/createElement("svg", _extends$18({
     width: 20,
     height: 21,
+    viewBox: "0 0 20.01 21.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$14 || (_path$14 = /*#__PURE__*/createElement("path", {
@@ -28200,7 +28216,7 @@ var Actions$1 = function Actions(_ref) {
       reportUserPopupOpen = _useState8[0],
       setReportUserPopupOpen = _useState8[1];
 
-  var _usePermissions = usePermissions(channel.role),
+  var _usePermissions = usePermissions(channel.userRole),
       checkActionPermission = _usePermissions[0];
 
   var _useState9 = useState(''),
@@ -28549,7 +28565,7 @@ var MenuTriggerIcon = styled.span(_templateObject3$q || (_templateObject3$q = _t
 });
 var ActionsMenu = styled.ul(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DefaultMutedIcon = styled(SvgNotificationsOff2)(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  height: 20px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.blue6;
 }, function (props) {
   return props.order;
@@ -28584,6 +28600,7 @@ function SvgAddMember(props) {
   return /*#__PURE__*/createElement("svg", _extends$1c({
     width: 40,
     height: 40,
+    viewBox: "0 0 40.01 40.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
@@ -29934,7 +29951,6 @@ var EditChannel = function EditChannel(_ref) {
       url: channel.avatarUrl
     });
   }, [channel]);
-  console.log('channel on etid channel .... ', channel);
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
@@ -29942,7 +29958,7 @@ var EditChannel = function EditChannel(_ref) {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode
-  }, React__default.createElement(AvatarCont, null, React__default.createElement(DropDownWrapper, null, !isDirectChannel && channel.role && React__default.createElement(DropDown, {
+  }, React__default.createElement(AvatarCont, null, React__default.createElement(DropDownWrapper, null, !isDirectChannel && channel.userRole && React__default.createElement(DropDown, {
     position: 'center',
     iconColor: colors.white,
     trigger: getUploadImageIcon() || React__default.createElement(SvgCameraIcon, null)
@@ -30113,7 +30129,7 @@ var Details = function Details(_ref) {
   var editMode = useSelector(channelEditModeSelector);
   var channel = useSelector(activeChannelSelector, shallowEqual);
 
-  var _usePermissions = usePermissions(channel.role),
+  var _usePermissions = usePermissions(channel.userRole),
       checkActionPermission = _usePermissions[0];
 
   var membersLoading = useSelector(membersLoadingStateSelector);
@@ -30185,7 +30201,7 @@ var Details = function Details(_ref) {
     onClick: function onClick() {
       return setEditMode(true);
     }
-  }, channelEditIcon || React__default.createElement(SvgEditIcon, null))), channel.role && React__default.createElement(Actions$1, {
+  }, channelEditIcon || React__default.createElement(SvgEditIcon, null))), channel.userRole && React__default.createElement(Actions$1, {
     showMuteUnmuteNotifications: showMuteUnmuteNotifications,
     muteUnmuteNotificationsOrder: muteUnmuteNotificationsOrder,
     unmuteNotificationIcon: unmuteNotificationIcon,

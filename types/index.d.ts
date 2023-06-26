@@ -70,15 +70,25 @@ export interface IMessage {
     updatedAt?: Date | number;
     type: string;
     deliveryStatus: string;
-    selfMarkers: string[];
+    markerTotals: {
+        name: string;
+        count: number;
+    }[];
+    userMarkers?: {
+        name: string;
+        messageId: string;
+        createdAt: Date;
+        user: IUser | null;
+    }[];
     incoming: boolean;
     metadata: any;
     state: string;
-    selfReactions: IReaction[] | [];
-    lastReactions: IReaction[] | [];
-    reactionScores: {
-        [key: string]: number;
-    } | null;
+    userReactions: IReaction[] | [];
+    reactionTotals: {
+        key: string;
+        count: number;
+        score: number;
+    }[];
     attachments: IAttachment[] | [];
     mentionedUsers: IUser[];
     requestedMentionUserIds: string[] | null;
@@ -112,11 +122,11 @@ export interface IChannel {
     memberCount: number;
     messageCount: number;
     createdBy: IUser;
-    role: string;
+    userRole: string;
     unread: boolean;
     newMessageCount: number;
     newMentionCount: number;
-    newReactionCount: number;
+    newReactedMessageCount: number;
     hidden: boolean;
     archived: boolean;
     muted: boolean;
@@ -137,8 +147,8 @@ export interface IChannel {
     markAsUnRead: () => Promise<IChannel>;
     mute: (_muteExpireTime: number) => Promise<IChannel>;
     unmute: () => Promise<IChannel>;
-    markMessagesAsDelivered: (_messageIds: string[]) => Promise<void>;
-    markMessagesAsRead: (_messageIds: string[]) => Promise<void>;
+    markMessagesAsReceived: (_messageIds: string[]) => Promise<void>;
+    markMessagesAsDisplayed: (_messageIds: string[]) => Promise<void>;
     startTyping: () => void;
     stopTyping: () => void;
     sendMessage: (message: any) => Promise<any>;

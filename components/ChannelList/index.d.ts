@@ -43,11 +43,11 @@ interface IChannelListProps {
     selectedChannelPaddings?: string;
     channelsPaddings?: string;
     channelsMargin?: string;
-    onChannelDeleted?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
-    onChannelCreated?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
-    onChannelHidden?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
-    onChannelVisible?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
-    onAddedToChannel?: (setChannels: (channels: IChannel[]) => void, channel: IChannel) => void;
+    onChannelDeleted?: (channelList: IChannel[], deletedChannel: IChannel, setChannels: (updatedChannelList: IChannel[]) => void) => void;
+    onChannelCreated?: (channelList: IChannel[], createdChannel: IChannel, setChannels: (updatedChannelList: IChannel[]) => void) => void;
+    onChannelHidden?: (channelList: IChannel[], hiddenChannel: IChannel, setChannels: (updatedChannelList: IChannel[]) => void) => void;
+    onChannelVisible?: (channelList: IChannel[], visibleChannel: IChannel, setChannels: (updatedChannelList: IChannel[]) => void) => void;
+    onAddedToChannel?: (channelList: IChannel[], channel: IChannel, setChannels: (updatedChannelList: IChannel[]) => void) => void;
 }
 declare const ChannelList: React.FC<IChannelListProps>;
 export default ChannelList;
