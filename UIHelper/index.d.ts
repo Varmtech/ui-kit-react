@@ -63,6 +63,7 @@ export declare const Popup: import("styled-components").StyledComponent<"div", a
     display?: string | undefined;
     padding?: string | undefined;
     backgroundColor?: string | undefined;
+    boxShadow?: string | undefined;
     isLoading?: boolean | undefined;
 }, never>;
 export declare const PopupBody: import("styled-components").StyledComponent<"div", any, {

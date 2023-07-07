@@ -9296,7 +9296,7 @@ function SvgClose(props) {
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$4 || (_path$4 = /*#__PURE__*/createElement("path", {
     d: "M11 1L1 11M1 1l10 10",
-    stroke: "CurrentColor",
+    stroke: "#707388",
     strokeWidth: 1.6,
     strokeLinecap: "round",
     strokeLinejoin: "round"
@@ -9628,7 +9628,7 @@ var ButtonBlock = styled.div(_templateObject19 || (_templateObject19 = _taggedTe
 }, function (props) {
   return props.backgroundColor;
 });
-var Popup = styled.div(_templateObject20 || (_templateObject20 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  min-height: 150px;\n  min-width: ", ";\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  display: ", ";\n  flex-direction: column;\n  padding: ", ";\n  background: ", ";\n  box-shadow: 4px 4px 30px rgba(0, 0, 0, 0.06);\n  border-radius: 8px;\n  box-sizing: border-box;\n\n  ", ";\n"])), function (props) {
+var Popup = styled.div(_templateObject20 || (_templateObject20 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  min-height: 150px;\n  min-width: ", ";\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  display: ", ";\n  flex-direction: column;\n  padding: ", ";\n  background: ", ";\n  box-shadow: ", ";\n  border-radius: 8px;\n  box-sizing: border-box;\n\n  ", ";\n"])), function (props) {
   return props.minWidth || '400px';
 }, function (props) {
   return props.maxWidth || '600px';
@@ -9644,6 +9644,8 @@ var Popup = styled.div(_templateObject20 || (_templateObject20 = _taggedTemplate
   return props.padding ? props.padding : '22px 24px';
 }, function (props) {
   return props.backgroundColor || colors.white;
+}, function (props) {
+  return props.boxShadow || '4px 4px 30px rgba(0, 0, 0, 0.06)';
 }, function (props) {
   return props.isLoading && "\n        user-select: none;\n\n        & > * {\n           pointer-events: none;\n           user-select: none;\n        }\n\n         " + ButtonBlock + " {\n          a, button {\n            pointer-events: none;\n            user-select: none;\n            opacity: 0.7;\n          }\n        }\n    ";
 });
@@ -18466,12 +18468,15 @@ var CustomLabel = styled.label(_templateObject$7 || (_templateObject$7 = _tagged
 });
 var Checkbox = styled.input(_templateObject2$7 || (_templateObject2$7 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
+var themeSelector = function themeSelector(store) {
+  return store.ThemeReducer.theme;
+};
+
 var _templateObject$8, _templateObject2$8, _templateObject3$6, _templateObject4$4, _templateObject5$3, _templateObject6$2, _templateObject7$2, _templateObject8$2, _templateObject9$2, _templateObject10$2, _templateObject11$2;
 
 var UsersPopup = function UsersPopup(_ref) {
   var channel = _ref.channel,
       toggleCreatePopup = _ref.toggleCreatePopup,
-      theme = _ref.theme,
       actionType = _ref.actionType,
       getSelectedUsers = _ref.getSelectedUsers,
       memberIds = _ref.memberIds,
@@ -18483,6 +18488,7 @@ var UsersPopup = function UsersPopup(_ref) {
   var contactList = useSelector(contactListSelector);
   var contactsMap = useSelector(contactsMapSelector);
   var usersList = useSelector(usersListSelector);
+  var theme = useSelector(themeSelector);
   var getFromContacts = getShowOnlyContactUsers();
   var usersLoadingState = useSelector(usersLoadingStateSelector);
   var selectedMembersCont = useRef('');
@@ -19000,10 +19006,6 @@ var ImageCrop = function ImageCrop(_ref) {
 var CropperWrapper = styled.div(_templateObject$9 || (_templateObject$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  height: 300px;\n  margin: 14px 0;\n"])));
 var Controls = styled.div(_templateObject2$9 || (_templateObject2$9 = _taggedTemplateLiteralLoose(["\n  & > input {\n    width: 100%;\n    -webkit-appearance: none;\n    background-color: rgba(178, 182, 190, 0.4);\n    border-radius: 3px;\n\n    &::-webkit-slider-runnable-track {\n      height: 6px;\n      -webkit-appearance: none;\n      color: ", ";\n      margin-top: -1px;\n      border-radius: 3px;\n    }\n    &::-webkit-slider-thumb {\n      width: 16px;\n      -webkit-appearance: none;\n      height: 16px;\n      cursor: ew-resize;\n      background: ", ";\n      border-radius: 50%;\n      transform: translate(0, -5px);\n    }\n  }\n"])), colors.primary, colors.primary);
 
-var themeSelector = function themeSelector(store) {
-  return store.ThemeReducer.theme;
-};
-
 var _templateObject$a, _templateObject2$a, _templateObject3$7, _templateObject4$5, _templateObject5$4, _templateObject6$3, _templateObject7$3, _templateObject8$3, _templateObject9$3;
 function CreateChannel(_ref) {
   var handleClose = _ref.handleClose,
@@ -19260,7 +19262,6 @@ function CreateChannel(_ref) {
     toggleCreatePopup: handleClose,
     actionType: 'createChat'
   }) : React__default.createElement(React__default.Fragment, null, usersPopupVisible && React__default.createElement(UsersPopup, {
-    theme: theme,
     toggleCreatePopup: toggleCreatePopup,
     getSelectedUsers: handleAddMembersForCreateChannel,
     creatChannelSelectedMembers: selectedMembers,
@@ -19273,6 +19274,7 @@ function CreateChannel(_ref) {
     popupWidth: '520px'
   }), createGroupChannelPopupVisible && React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
     backgroundColor: theme === THEME.DARK ? colors.dark : colors.white,
+    boxShadow: theme === THEME.DARK ? '0px 0px 30px rgba(255,255,255,0.1)' : '',
     maxHeight: '600px',
     width: '520px',
     maxWidth: '520px',
@@ -30205,7 +30207,8 @@ var DetailsTab = function DetailsTab(_ref) {
   return React__default.createElement(Container$n, {
     theme: theme
   }, React__default.createElement(DetailsTabHeader, {
-    activeTabColor: colors.primary
+    activeTabColor: colors.primary,
+    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
       if (showMembers) {
@@ -30268,8 +30271,10 @@ var DetailsTab = function DetailsTab(_ref) {
   }));
 };
 var Container$n = styled.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
+var DetailsTabHeader = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
+}, function (props) {
+  return props.backgroundColor || colors.white;
 }, colors.textColor2, function (props) {
   return props.activeTabColor || colors.primary;
 }, function (props) {
