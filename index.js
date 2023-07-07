@@ -12322,7 +12322,7 @@ function getChannels(action) {
           }
 
           channelQueryBuilder.sortByLastMessage();
-          channelQueryBuilder.limit(params.limit || 20);
+          channelQueryBuilder.limit(params.limit || 50);
           _context2.next = 52;
           return effects.call(channelQueryBuilder.build);
 
@@ -18030,7 +18030,7 @@ var ChannelSearch = function ChannelSearch(_ref) {
     inline: inline,
     borderColor: colors.backgroundColor
   }, React__default.createElement(StyledSearchSvg, {
-    left: !inline && '22px'
+    left: !inline ? '22px' : ''
   }), React__default.createElement(SearchInput, {
     backgroundColor: searchInputBackgroundColor || colors.primaryLight,
     color: searchInputTextColor || colors.textColor1,
@@ -19273,7 +19273,7 @@ function CreateChannel(_ref) {
     getSelectedUsers: handleAddMembersForCreateChannel,
     creatChannelSelectedMembers: selectedMembers,
     actionType: 'selectUsers',
-    selectIsRequired: channelTypeRequiredFieldsMap && channelTypeRequiredFieldsMap[channelType].members,
+    selectIsRequired: channelTypeRequiredFieldsMap && channelTypeRequiredFieldsMap[channelType] && channelTypeRequiredFieldsMap[channelType].members,
     channel: {
       type: channelType
     },
