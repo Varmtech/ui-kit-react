@@ -38,6 +38,7 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;
+    ThemeReducer: import("./theme/reducers").IThemeStore;
     UserReducer: import("./user/reducers").IUserStore;
 }>, import("redux").AnyAction, import("@reduxjs/toolkit").MiddlewareArray<[any, ...any[]]>>;
 export default store;

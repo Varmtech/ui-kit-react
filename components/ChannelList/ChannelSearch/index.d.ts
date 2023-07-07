@@ -5,6 +5,8 @@ interface IChannelSearchProps {
     getMyChannels: () => void;
     inline?: boolean;
     borderRadius?: string;
+    searchInputBackgroundColor?: string;
+    searchInputTextColor?: string;
 }
 declare const ChannelSearch: React.FC<IChannelSearchProps>;
 export default ChannelSearch;

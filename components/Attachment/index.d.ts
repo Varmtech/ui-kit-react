@@ -2,7 +2,7 @@
 import { IAttachment } from '../../types';
 interface AttachmentPops {
     attachment: IAttachment;
-    isPrevious?: boolean;
+    isPreview?: boolean;
     isRepliedMessage?: boolean;
     isDetailsView?: boolean;
     removeSelected?: (attachmentUrl: string) => void;
@@ -23,10 +23,10 @@ interface AttachmentPops {
     videoAttachmentMaxWidth?: number;
     videoAttachmentMaxHeight?: number;
 }
-declare const Attachment: ({ attachment, isPrevious, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, imageMinWidth, closeMessageActions, fileAttachmentWidth, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight }: AttachmentPops) => JSX.Element;
+declare const Attachment: ({ attachment, isPreview, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, imageMinWidth, closeMessageActions, fileAttachmentWidth, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight }: AttachmentPops) => JSX.Element;
 export default Attachment;
 export declare const AttachmentFile: import("styled-components").StyledComponent<"div", any, {
-    isPrevious?: boolean | undefined;
+    isPreview?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
     isUploading?: boolean | undefined;
     borderRadius?: string | undefined;
@@ -39,7 +39,7 @@ export declare const AttachmentImg: import("styled-components").StyledComponent<
     borderRadius?: string | undefined;
     ref?: any;
     withBorder?: boolean | undefined;
-    isPrevious?: boolean | undefined;
+    isPreview?: boolean | undefined;
     hidden?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
     fitTheContainer?: boolean | undefined;

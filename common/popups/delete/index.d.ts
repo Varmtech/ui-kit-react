@@ -3,6 +3,7 @@ interface IProps {
     title: string;
     description: string | JSX.Element;
     buttonText: string;
+    theme?: string;
     buttonTextColor?: string;
     buttonBackground?: string;
     togglePopup: () => void;
@@ -14,5 +15,5 @@ interface IProps {
     allowDeleteIncoming?: boolean;
     myRole?: string;
 }
-declare function ConfirmPopup({ title, description, buttonText, buttonTextColor, buttonBackground, togglePopup, handleFunction, isDeleteMessage, isIncomingMessage, allowDeleteIncoming, isDirectChannel, myRole, loading }: IProps): JSX.Element;
+declare function ConfirmPopup({ title, description, theme, buttonText, buttonTextColor, buttonBackground, togglePopup, handleFunction, isDeleteMessage, isIncomingMessage, allowDeleteIncoming, isDirectChannel, myRole, loading }: IProps): JSX.Element;
 export default ConfirmPopup;

@@ -8,6 +8,7 @@ interface MessagesProps {
     ownMessageBackground?: string;
     incomingMessageBackground?: string;
     showMessageStatus?: boolean;
+    showMessageTimeAndStatusOnlyOnHover?: boolean;
     showMessageTime?: boolean;
     showMessageStatusForEachMessage?: boolean;
     showMessageTimeForEachMessage?: boolean;
@@ -122,4 +123,6 @@ export declare const DropAttachmentArea: import("styled-components").StyledCompo
     margin?: string | undefined;
 }, never>;
 export declare const MessageWrapper: import("styled-components").StyledComponent<"div", any, {}, never>;
-export declare const NoMessagesContainer: import("styled-components").StyledComponent<"div", any, {}, never>;
+export declare const NoMessagesContainer: import("styled-components").StyledComponent<"div", any, {
+    color?: string | undefined;
+}, never>;

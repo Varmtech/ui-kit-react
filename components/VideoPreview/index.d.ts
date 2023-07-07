@@ -3,6 +3,7 @@ import { IAttachment } from '../../types';
 interface IVideoPreviewProps {
     maxWidth?: string;
     maxHeight?: string;
+    theme?: string;
     file: IAttachment;
     borderRadius?: string;
     isPreview?: boolean;

@@ -21,6 +21,7 @@ export interface ICustomUploader {
 }
 export interface IChatClientProps {
     client: SceytChatClient;
+    theme?: 'dark' | 'light';
     avatarColors?: ICustomAvatarColors;
     hideUserPresence?: (user: IUser) => boolean;
     handleNewMessages?: (message: IMessage, channel: IChannel) => IMessage | null;
@@ -46,5 +47,5 @@ export interface IChatClientProps {
         defaultAvatarBackground?: string;
     };
 }
-declare const SceytChatContainer: ({ client, avatarColors, children, showOnlyContactUsers, handleNewMessages, sendAttachmentsAsSeparateMessages, membersDisplayTextByChannelTypesMap, defaultRolesByChannelTypesMap, logoSrc, CustomUploader, customColors, showNotifications, hideUserPresence }: IChatClientProps) => JSX.Element;
+declare const SceytChatContainer: ({ client, theme, avatarColors, children, showOnlyContactUsers, handleNewMessages, sendAttachmentsAsSeparateMessages, membersDisplayTextByChannelTypesMap, defaultRolesByChannelTypesMap, logoSrc, CustomUploader, customColors, showNotifications, hideUserPresence }: IChatClientProps) => JSX.Element;
 export default SceytChatContainer;

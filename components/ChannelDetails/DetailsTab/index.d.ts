@@ -3,6 +3,7 @@ import { IChannel } from '../../../types';
 interface IProps {
     channel: IChannel;
     activeTab: string;
+    theme: string;
     setActiveTab: (activeTab: string) => void;
     checkActionPermission: (permission: string) => boolean;
     linkPreviewIcon?: JSX.Element;
@@ -28,5 +29,5 @@ interface IProps {
     showKickAndBlockMember?: boolean;
     showMakeMemberAdmin?: boolean;
 }
-declare const DetailsTab: ({ channel, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewPlayIcon, voicePreviewPlayHoverIcon, voicePreviewPauseIcon, voicePreviewPauseHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, showChangeMemberRole, showKickMember, showKickAndBlockMember, showMakeMemberAdmin }: IProps) => JSX.Element;
+declare const DetailsTab: ({ channel, theme, activeTab, checkActionPermission, setActiveTab, linkPreviewIcon, linkPreviewHoverIcon, linkPreviewTitleColor, linkPreviewColor, linkPreviewHoverBackgroundColor, voicePreviewPlayIcon, voicePreviewPlayHoverIcon, voicePreviewPauseIcon, voicePreviewPauseHoverIcon, voicePreviewTitleColor, voicePreviewDateAndTimeColor, voicePreviewHoverBackgroundColor, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon, showChangeMemberRole, showKickMember, showKickAndBlockMember, showMakeMemberAdmin }: IProps) => JSX.Element;
 export default DetailsTab;

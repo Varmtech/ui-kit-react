@@ -28,17 +28,18 @@ export interface ICreateChannel {
 }
 export interface IAttachment {
     id?: string;
-    attachmentId?: string;
-    createdAt: Date;
-    url: any;
-    attachmentUrl: string;
-    type: string;
+    messageId: string;
     name: string;
-    data: any;
-    fileSize: number;
-    title?: string;
+    type: string;
     metadata?: any;
-    user: IUser;
+    url: any;
+    size: number;
+    createdAt: Date;
+    upload: boolean;
+    user?: IUser;
+    attachmentId?: string;
+    attachmentUrl: string;
+    data: any;
 }
 declare class AttachmentBuilder {
     url: string;
@@ -92,7 +93,7 @@ export interface IMessage {
     attachments: IAttachment[] | [];
     mentionedUsers: IUser[];
     requestedMentionUserIds: string[] | null;
-    parent?: IMessage | null;
+    parentMessage?: IMessage | null;
     parentId?: string;
     repliedInThread?: boolean;
     replyCount?: number;

@@ -2,6 +2,7 @@
 export declare const Container: import("styled-components").StyledComponent<"div", any, any, never>;
 interface IProps {
     dividerText: string;
+    theme?: string;
     visibility?: boolean;
     unread?: boolean;
     dateDividerFontSize?: string;
@@ -21,5 +22,5 @@ interface IProps {
     marginBottom?: boolean;
     marginTop?: string;
 }
-export default function MessageDivider({ dividerText, visibility, unread, dateDividerFontSize, dateDividerTextColor, dateDividerBorder, dateDividerBackgroundColor, dateDividerBorderRadius, systemMessage, newMessagesSeparatorTextColor, newMessagesSeparatorFontSize, newMessagesSeparatorWidth, newMessagesSeparatorBorder, newMessagesSeparatorBorderRadius, newMessagesSeparatorBackground, newMessagesSeparatorLeftRightSpaceWidth, noMargin, marginTop, marginBottom }: IProps): JSX.Element;
+export default function MessageDivider({ dividerText, visibility, unread, dateDividerFontSize, dateDividerTextColor, dateDividerBorder, dateDividerBackgroundColor, dateDividerBorderRadius, systemMessage, newMessagesSeparatorTextColor, newMessagesSeparatorFontSize, newMessagesSeparatorWidth, newMessagesSeparatorBorder, newMessagesSeparatorBorderRadius, newMessagesSeparatorBackground, newMessagesSeparatorLeftRightSpaceWidth, noMargin, marginTop, theme, marginBottom }: IProps): JSX.Element;
 export {};

@@ -1,6 +1,7 @@
 import React from 'react';
 interface IChannelListProps {
     showSearch?: boolean;
+    theme?: string;
     uriPrefixOnCreateChannel?: string;
     createChannelIcon?: JSX.Element;
     newChannelIcon?: JSX.Element;

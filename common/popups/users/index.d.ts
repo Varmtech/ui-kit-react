@@ -3,6 +3,7 @@ import { IAddMember, IChannel } from '../../../types';
 interface IProps {
     channel?: IChannel;
     toggleCreatePopup: () => void;
+    theme?: string;
     actionType: 'addMembers' | 'createChat' | 'selectUsers';
     getSelectedUsers?: (members: IAddMember[], action: 'create' | 'back') => void;
     memberIds?: string[];
@@ -11,5 +12,5 @@ interface IProps {
     popupWidth?: string;
     popupHeight?: string;
 }
-declare const UsersPopup: ({ channel, toggleCreatePopup, actionType, getSelectedUsers, memberIds, creatChannelSelectedMembers, popupHeight, selectIsRequired, popupWidth }: IProps) => JSX.Element;
+declare const UsersPopup: ({ channel, toggleCreatePopup, theme, actionType, getSelectedUsers, memberIds, creatChannelSelectedMembers, popupHeight, selectIsRequired, popupWidth }: IProps) => JSX.Element;
 export default UsersPopup;

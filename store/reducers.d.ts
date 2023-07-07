@@ -38,6 +38,7 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
     };
     MessageReducer: import("./message/reducers").IMessageStore;
     MembersReducer: import("./member/reducers").IMembersStore;
+    ThemeReducer: import("./theme/reducers").IThemeStore;
     UserReducer: import("./user/reducers").IUserStore;
 }>, import("redux").AnyAction>;
 export default _default;

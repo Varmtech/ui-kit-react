@@ -3,6 +3,7 @@ import { IChannel, IContact } from '../../types';
 interface IChannelProps {
     channel: IChannel;
     avatar?: boolean;
+    theme?: string;
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;
     selectedChannelLeftBorder?: string;
@@ -26,9 +27,10 @@ export interface UnreadCountProps {
     fontSize?: string;
 }
 export declare const ChannelInfo: import("styled-components").StyledComponent<"div", any, {
+    statusWidth: number;
     avatar?: boolean | undefined;
     isMuted?: boolean | undefined;
-    statusWidth: number;
+    theme?: string | undefined;
 }, never>;
 export declare const MutedIcon: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const LastMessage: import("styled-components").StyledComponent<"div", any, {
@@ -41,7 +43,10 @@ export declare const UserStatus: import("styled-components").StyledComponent<"sp
 }, never>;
 export declare const DraftMessageTitle: import("styled-components").StyledComponent<"span", any, any, never>;
 export declare const DraftMessageText: import("styled-components").StyledComponent<"span", any, any, never>;
-export declare const LastMessageAuthor: import("styled-components").StyledComponent<"div", any, any, never>;
+export declare const LastMessageAuthor: import("styled-components").StyledComponent<"div", any, {
+    theme?: string | undefined;
+    typing?: boolean | undefined;
+}, never>;
 export declare const Points: import("styled-components").StyledComponent<"span", any, {
     color?: string | undefined;
 }, never>;

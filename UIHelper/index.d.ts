@@ -11,14 +11,27 @@ export declare const DropdownOptionLi: import("styled-components").StyledCompone
     iconColor?: string | undefined;
     margin?: string | undefined;
 }, never>;
-export declare const CustomSelect: import("styled-components").StyledComponent<"div", any, {}, never>;
-export declare const CustomSelectTrigger: import("styled-components").StyledComponent<"span", any, {}, never>;
-export declare const Label: import("styled-components").StyledComponent<"label", any, {}, never>;
+export declare const CustomSelect: import("styled-components").StyledComponent<"div", any, {
+    isError?: boolean | undefined;
+    minWidth?: string | undefined;
+    maxWidth?: string | undefined;
+    marginTop?: string | undefined;
+    backgroundColor?: string | undefined;
+    color?: string | undefined;
+}, never>;
+export declare const CustomSelectTrigger: import("styled-components").StyledComponent<"span", any, {
+    color?: string | undefined;
+}, never>;
+export declare const Label: import("styled-components").StyledComponent<"label", any, {
+    color?: string | undefined;
+}, never>;
 export declare const UploadFile: import("styled-components").StyledComponent<"input", any, {}, never>;
 export declare const UploadFileLabel: import("styled-components").StyledComponent<"label", any, {}, never>;
 export declare const InputErrorMessage: import("styled-components").StyledComponent<"p", any, {}, never>;
 export declare const CustomInput: import("styled-components").StyledComponent<"input", any, {
     error?: boolean | undefined;
+    theme?: string | undefined;
+    color?: string | undefined;
 }, never>;
 export declare const FilterField: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const FilterFieldSpan: import("styled-components").StyledComponent<"span", any, {}, never>;
@@ -37,10 +50,21 @@ export declare const PopupName: import("styled-components").StyledComponent<"h3"
     marginBottom?: string | undefined;
     padding?: string | undefined;
     isDelete?: boolean | undefined;
+    color?: string | undefined;
 }, never>;
 export declare const PopupContainer: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const ButtonBlock: import("styled-components").StyledComponent<"div", any, any, never>;
-export declare const Popup: import("styled-components").StyledComponent<"div", any, any, never>;
+export declare const Popup: import("styled-components").StyledComponent<"div", any, {
+    minWidth?: string | undefined;
+    maxWidth?: string | undefined;
+    maxHeight?: string | undefined;
+    width?: string | undefined;
+    height?: string | undefined;
+    display?: string | undefined;
+    padding?: string | undefined;
+    backgroundColor?: string | undefined;
+    isLoading?: boolean | undefined;
+}, never>;
 export declare const PopupBody: import("styled-components").StyledComponent<"div", any, {
     withFooter?: boolean | undefined;
     paddingH?: string | undefined;
@@ -52,6 +76,7 @@ export declare const PopupFooter: import("styled-components").StyledComponent<"d
 export declare const SectionHeader: import("styled-components").StyledComponent<"h4", any, {
     color?: string | undefined;
     margin?: string | undefined;
+    theme?: string | undefined;
 }, never>;
 export declare const ItemNote: import("styled-components").StyledComponent<"div", any, {
     direction: string;
@@ -67,6 +92,7 @@ export declare const MentionedUser: import("styled-components").StyledComponent<
 export declare const MessageOwner: import("styled-components").StyledComponent<"h3", any, any, never>;
 export declare const MessageText: import("styled-components").StyledComponent<"pre", any, {
     fontFamily?: string | undefined;
+    color?: string | undefined;
     withAttachment?: boolean | undefined;
     fontSize?: string | undefined;
     lineHeight?: string | undefined;
@@ -74,6 +100,7 @@ export declare const MessageText: import("styled-components").StyledComponent<"p
     isRepliedMessage?: boolean | undefined;
     withMediaAttachment?: boolean | undefined;
     isForwarded?: boolean | undefined;
+    withPaddings?: boolean | undefined;
 }, never>;
 export declare const ReplyMessageText: import("styled-components").StyledComponent<"span", any, {
     withAttachment?: boolean | undefined;

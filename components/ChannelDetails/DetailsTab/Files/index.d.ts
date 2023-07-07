@@ -1,6 +1,7 @@
 /// <reference types="react" />
 interface IProps {
     channelId: string;
+    theme?: string;
     filePreviewIcon?: JSX.Element;
     filePreviewHoverIcon?: JSX.Element;
     filePreviewTitleColor?: string;
@@ -8,5 +9,5 @@ interface IProps {
     filePreviewHoverBackgroundColor?: string;
     filePreviewDownloadIcon?: JSX.Element;
 }
-declare const Files: ({ channelId, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon }: IProps) => JSX.Element;
+declare const Files: ({ channelId, theme, filePreviewIcon, filePreviewHoverIcon, filePreviewTitleColor, filePreviewSizeColor, filePreviewHoverBackgroundColor, filePreviewDownloadIcon }: IProps) => JSX.Element;
 export default Files;

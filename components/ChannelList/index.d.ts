@@ -8,13 +8,19 @@ interface IChannelListProps {
     List?: FC<{
         channels: IChannel[];
         loadMoreChannels: (count?: number) => void;
-        searchValue?: string;
-        handleSetChannelListWithGroups?: (channelListGroups: IChannelGroup[]) => void;
-        children?: React.ReactNode;
+        searchValue: string;
+        handleSetChannelListWithGroups: (channelGroupList: IChannelGroup[]) => void;
+        children: React.ReactNode;
+        activeChannel?: IChannel;
+        setActiveChannel?: (channel: IChannel) => void;
     }>;
     ListItem?: FC<any>;
     Profile?: JSX.Element;
     CreateChannel?: JSX.Element;
+    ChannelsTitle?: JSX.Element;
+    backgroundColor?: string;
+    searchInputBackgroundColor?: string;
+    searchInputTextColor?: string;
     searchChannelsPosition?: 'inline' | 'bottom';
     searchInputBorderRadius?: string;
     getActiveChannel?: (channel: IChannel) => void;

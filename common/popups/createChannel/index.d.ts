@@ -2,6 +2,7 @@
 interface ICreateChannelPopup {
     handleClose: () => void;
     channelType: string;
+    theme?: string;
     uriPrefixOnCreateChannel?: string;
     uploadPhotoIcon?: JSX.Element;
     channelTypeRequiredFieldsMap?: {
@@ -18,6 +19,6 @@ interface ICreateChannelPopup {
     showUploadAvatar?: boolean;
     withoutConfig?: boolean;
 }
-export default function CreateChannel({ handleClose, channelType, uriPrefixOnCreateChannel, channelTypeRequiredFieldsMap, uploadPhotoIcon, showSubject, showDescription, showUri, showUploadAvatar, withoutConfig }: ICreateChannelPopup): JSX.Element;
+export default function CreateChannel({ handleClose, channelType, theme, uriPrefixOnCreateChannel, channelTypeRequiredFieldsMap, uploadPhotoIcon, showSubject, showDescription, showUri, showUploadAvatar, withoutConfig }: ICreateChannelPopup): JSX.Element;
 export declare const URILabel: import("styled-components").StyledComponent<"label", any, {}, never>;
 export {};

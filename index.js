@@ -1003,6 +1003,10 @@ var channelDetailsTabs = {
   link: 'Links',
   voice: 'Voice'
 };
+var THEME = {
+  DARK: 'dark',
+  LIGHT: 'light'
+};
 
 var SceytChatClient = {};
 var setClient = function setClient(client) {
@@ -7311,38 +7315,30 @@ var moment = createCommonjsModule(function (module, exports) {
 var colors = {
   white: '#ffffff',
   black: '#000000',
+  dark: '#050610',
+  blue: '#438CED',
+  backgroundColor: '#f1f2f6',
+  darkModeBackgroundColor: '#1e1f28',
+  lightModeBackgroundColor: '#f1f2f6',
+  hoverBackgroundColor: '#f1f2f6',
+  darkModeHoverBackgroundColor: '#34353d',
+  lightModeHoverBackgroundColor: '#f1f2f6',
   textColor1: '#111539',
-  black1: '#383B51',
-  blue1: '#172268',
-  blue2: '#438CED',
-  blue3: '#63afff',
-  blue4: '#1F223C',
-  blue5: '#172268',
-  blue6: '#18273A',
-  blue7: '#383B51',
-  blue8: '#9AABFB',
-  blue9: '#2d44bf',
-  blue10: '#060A26',
+  darkModeTextColor1: '#ffffffcc',
+  lightModeTextColor1: '#111539',
+  textColor2: '#707388',
+  textColor3: '#A0A1B0',
   gray0: '#F3F5F8',
   gray1: '#EDEDED',
-  gray2: '#ecedf0',
-  gray3: '#B2B6BE',
-  gray4: '#818C99',
-  gray5: '#F0F2F5',
-  gray6: '#17191C',
-  gray7: '#898B99',
-  gray8: '#3A3C3E',
-  gray9: '#757D8B',
-  gray10: '#707388',
-  gray11: '#F1F2F6',
-  pink1: '#ff3e74',
-  purple1: '#9f35e7',
+  borderColor: '#dfe0eb',
   primary: '#5159F6',
   primaryLight: '#E3E7FF',
+  darkModePrimary: '#6B72FF',
+  lightModePrimary: '#5159F6',
+  darkModePrimaryLight: '#1c1f47',
+  lightModePrimaryLight: '#E3E7FF',
   red1: '#FA4C56',
   red2: '#d7596c',
-  red3: '#F94C56',
-  yellow1: '#FCD36E',
   purple: '#7A6EF6',
   defaultAvatarBackground: '#D0D8E3',
   deleteUserIconBackground: '#D0D8E3'
@@ -7430,18 +7426,18 @@ var cancelUpload = function cancelUpload(attachmentId) {
 };
 
 var _templateObject, _templateObject2, _templateObject3, _templateObject4, _templateObject5;
-var StatusText = styled__default.span(_templateObject || (_templateObject = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 12px;\n"])), colors.gray9);
+var StatusText = styled__default.span(_templateObject || (_templateObject = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 12px;\n"])), colors.textColor2);
 var ReadIconWrapper = styled__default(SvgTicksRead)(_templateObject2 || (_templateObject2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
 var DeliveredIconWrapper = styled__default(SvgTicksDelivered)(_templateObject3 || (_templateObject3 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray4;
+  return props.color || colors.textColor2;
 });
 var SentIconWrapper = styled__default(SvgTicksSent)(_templateObject4 || (_templateObject4 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray4;
+  return props.color || colors.textColor2;
 });
 var PendingIconWrapper = styled__default(SvgPendingIcon)(_templateObject5 || (_templateObject5 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray4;
+  return props.color || colors.textColor2;
 });
 var messageStatusIcon = function messageStatusIcon(messageStatus, messageStatusDisplayingType, iconColor, readIconColor) {
   switch (messageStatus) {
@@ -8351,7 +8347,6 @@ var MessageReducer = (function (state, _temp) {
 
             return _extends({}, msg, {
               userReactions: slfReactions,
-              lastReactions: message.lastReactions,
               reactionTotals: message.reactionTotals
             });
           }
@@ -8380,7 +8375,6 @@ var MessageReducer = (function (state, _temp) {
             }
 
             return _extends({}, msg, {
-              lastReactions: _message.lastReactions,
               reactionTotals: _message.reactionTotals,
               userReactions: userReactions
             });
@@ -8849,10 +8843,39 @@ var UserReducer = (function (state, _ref) {
   }
 });
 
+var SET_THEME = 'SET_THEME';
+
+var initialState$4 = {
+  theme: 'light'
+};
+var ThemeReducer = (function (state, _ref) {
+  if (state === void 0) {
+    state = initialState$4;
+  }
+
+  var type = _ref.type,
+      payload = _ref.payload;
+
+  var newState = _extends({}, state);
+
+  switch (type) {
+    case SET_THEME:
+      {
+        var theme = payload.theme;
+        newState.theme = theme;
+        return newState;
+      }
+
+    default:
+      return state;
+  }
+});
+
 var reducers = redux.combineReducers({
   ChannelReducer: ChannelReducer,
   MessageReducer: MessageReducer,
   MembersReducer: MembersReducer,
+  ThemeReducer: ThemeReducer,
   UserReducer: UserReducer
 });
 
@@ -9487,7 +9510,7 @@ function md5(inputString) {
 
   return rh(a) + rh(b) + rh(c) + rh(d);
 }
-var GlobalStyles = styled.createGlobalStyle(_templateObject$1 || (_templateObject$1 = _taggedTemplateLiteralLoose(["\n\n  .rc-mentions {\n    position: relative;\n\n    // ================= Input Area =================\n    > textarea {\n\n      resize: none;\n      //padding: 16px 45px 16px 108px;\n      padding: 16px 45px 16px 80px;\n      width: 100%;\n      display: block;\n      border: none;\n      font: inherit;\n      box-sizing: border-box;\n      border-radius: 6px;\n      font-size: 15px;\n      line-height: 17px;\n\n      &::placeholder {\n        font-size: 15px;\n        color: ", ";\n        opacity: 1;\n      }\n\n      & {\n        border: none;\n        outline: none !important;\n      }\n    }\n\n    & .rc-mentions-measure {\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 0;\n      bottom: 0;\n      pointer-events: none;\n      // color: rgba(255, 0, 0, 0.3);\n      color: transparent;\n      z-index: -1;\n\n      font-size: inherit;\n      font-size-adjust: inherit;\n      font-style: inherit;\n      font-variant: inherit;\n      font-stretch: inherit;\n      font-weight: inherit;\n      font-family: inherit;\n\n      padding: 0;\n      margin: 0;\n      line-height: inherit;\n      vertical-align: top;\n      overflow: inherit;\n      word-break: inherit;\n      white-space: inherit;\n      word-wrap: break-word;\n      overflow-x: initial;\n      overflow-y: auto;\n      text-align: inherit;\n      letter-spacing: inherit;\n      white-space: inherit;\n      tab-size: inherit;\n      direction: inherit;\n    }\n\n    // ================== Dropdown ==================\n    & .rc-mentions-dropdown {\n      position: absolute;\n\n      & .rc-mentions-menu {\n        list-style: none;\n        margin: 0;\n        padding: 0;\n\n        & .rc-mentions-item {\n          cursor: pointer;\n        }\n      }\n    }\n  }\n\n  // Customize style\n  .rc-mentions-dropdown {\n    width: 300px;\n    height: 237px;\n    overflow-y: auto;\n    background: #FFFFFF;\n    border: 1px solid ", ";\n    box-sizing: border-box;\n    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n    border-radius: 6px;\n    & ul {\n      padding: 16px 0;\n      margin: 0;\n      list-style: none;\n    }\n  }\n\n  .mention_menu_item-active {\n    background: #e6f7ff;\n  }\n  /*.mention_menu_item {\n    display: flex;\n    align-items: center;\n    font-size: 15px;\n    padding: 6px 16px;\n    transition: all 0.2s;\n    cursor: pointer;\n\n    &:hover {\n      background-color: ", ";\n    }\n\n    & .dropdown-wrapper {\n      margin-left: auto;\n    }\n\n    & .dropdown-body {\n      bottom: -100px;\n      right: 0;\n    }\n  }*/\n  .rc-mentions-dropdown-menu-item-active {\n    background-color: ", ";\n  }\n\n  .rc-mentions-disabled {\n    opacity: 0.5;\n  }\n\n  .button {\n    display: inline-block;\n    box-sizing: border-box;\n    text-decoration: none;\n    outline: none;\n    cursor: pointer;\n    text-align: center;\n    font-style: normal;\n    border-radius: 4px;\n    font-weight: 500;\n    font-size: 0.875rem;\n    line-height: 1.25rem;\n    padding: 0.375rem 0.75rem;\n    background-color: white;\n    border: 1px solid ", ";\n    margin: 0;\n    user-select: none;\n    //border: none;\n    //transition: all 0.2s;\n    //box-shadow: 0 0 4px rgba(0,0,0,0.1);\n\n    //&:hover, &:focus {\n    //    box-shadow: 0 0 10px -2px rgba(0,0,0,0.25);\n    //}\n\n\n    &.blue {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n\n      &:disabled {\n        background-color: #D7D8E3;\n        border: 1px solid #D7D8E3;\n        pointer-events: none;\n      }\n    }\n\n    &.blue-dark {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.green {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.red {\n      color: ", ";\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    &.gray {\n      color: black;\n      border: 1px solid ", ";\n\n      &.filled {\n        color: white;\n        background-color: ", ";\n      }\n\n      &:hover, &:focus {\n        &:not(.loading).filled {\n          background-color: ", ";\n        }\n      }\n    }\n\n    @media ", " {\n      font-size: 0.812rem;\n      line-height: 1.25rem;\n      padding: 0.375rem 0.625rem;\n    }\n  }\n\n  @keyframes makeVisible {\n    0% {\n      opacity: 0;\n      visibility: visible;\n    }\n    100% {\n      opacity: 1;\n      visibility: visible;\n    }\n  }\n"])), colors.gray7, colors.gray1, colors.gray0, colors.gray0, colors.gray2, colors.blue1, colors.primary, colors.primary, colors.blue2, colors.blue5, colors.blue5, colors.blue5, colors.blue4, colors.primary, colors.primary, colors.primary, colors.primary, colors.red1, colors.red1, colors.red1, colors.red2, colors.gray2, colors.gray2, colors.gray2, device.tablet);
+var GlobalStyles = styled.createGlobalStyle(_templateObject$1 || (_templateObject$1 = _taggedTemplateLiteralLoose(["\n\n  .mention_menu_item-active {\n    background: #e6f7ff;\n  }\n\n  @keyframes makeVisible {\n    0% {\n      opacity: 0;\n      visibility: visible;\n    }\n    100% {\n      opacity: 1;\n      visibility: visible;\n    }\n  }\n"])));
 function generateAvatarColor(itemName) {
   var avatarColors = getAvatarColors();
 
@@ -9502,7 +9525,7 @@ function generateAvatarColor(itemName) {
 }
 var DropdownOptionsUl = styled__default.ul(_templateObject2$1 || (_templateObject2$1 = _taggedTemplateLiteralLoose(["\n  list-style: none;\n  margin: 0;\n  padding: 0;\n"])));
 var DropdownOptionLi = styled__default.li(_templateObject3$1 || (_templateObject3$1 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n  padding: 6px 6px 6px 16px;\n\n  &:hover {\n    background: ", ";\n  }\n\n  & > svg {\n    width: ", ";\n    min-width: ", ";\n    height: ", ";\n    color: ", ";\n    margin-right: 10px;\n  }\n"])), function (props) {
-  return props.textColor || colors.blue6;
+  return props.textColor || colors.textColor1;
 }, function (props) {
   return props.margin;
 }, function (props) {
@@ -9516,30 +9539,42 @@ var DropdownOptionLi = styled__default.li(_templateObject3$1 || (_templateObject
 }, function (props) {
   return props.iconColor;
 });
-var CustomSelect = styled__default.div(_templateObject4$1 || (_templateObject4$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 40px;\n  min-height: 40px;\n  width: 100%;\n  min-width: ", ";\n  max-width: ", ";\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: ", ";\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  &:disabled {\n    background-color: ", ";\n  }\n\n  .dropdown-wrapper {\n    width: 100%;\n  }\n\n  .dropdown-body {\n    width: 100%;\n  }\n\n  .dropdown-trigger {\n    & .default-selection {\n      color: ", ";\n    }\n\n    //width: calc(100% - 20px);\n\n    &::after {\n      border-color: black;\n    }\n  }\n"])), function (props) {
+var CustomSelect = styled__default.div(_templateObject4$1 || (_templateObject4$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 40px;\n  min-height: 40px;\n  width: 100%;\n  min-width: ", ";\n  max-width: ", ";\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 4px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: ", ";\n\n  ::placeholder {\n    color: ", ";\n  }\n\n  &:disabled {\n    background-color: ", ";\n  }\n\n  .dropdown-wrapper {\n    width: 100%;\n  }\n\n  .dropdown-body {\n    width: 100%;\n  }\n\n  .dropdown-trigger {\n    & .default-selection {\n      color: ", ";\n    }\n\n    //width: calc(100% - 20px);\n  }\n"])), function (props) {
   return props.minWidth;
 }, function (props) {
   return props.maxWidth;
 }, function (props) {
-  return props.isError ? "1px solid " + colors.red1 : "1px solid " + colors.gray2;
-}, colors.blue7, function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
+  return props.isError ? "1px solid " + colors.red1 : "1px solid " + colors.gray1;
+}, function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
   return props.marginTop;
-}, colors.gray7, colors.gray2, colors.gray7);
-var CustomSelectTrigger = styled__default.span(_templateObject5$1 || (_templateObject5$1 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: calc(100% - 22px);\n  padding: 8px 10px 8px 15px;\n  text-align: left;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n  text-transform: capitalize;\n"])), colors.blue7);
-var Label = styled__default.label(_templateObject6 || (_templateObject6 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  margin-top: 20px;\n  margin-bottom: 4px;\n  color: ", ";\n"])), colors.gray6);
+}, colors.textColor3, colors.gray1, colors.textColor3);
+var CustomSelectTrigger = styled__default.span(_templateObject5$1 || (_templateObject5$1 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: calc(100% - 22px);\n  padding: 8px 10px 8px 15px;\n  text-align: left;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 23px;\n  color: ", ";\n  text-transform: capitalize;\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
+var Label = styled__default.label(_templateObject6 || (_templateObject6 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 20px;\n  margin-top: 20px;\n  margin-bottom: 4px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
 var UploadFile = styled__default.input(_templateObject7 || (_templateObject7 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 var UploadFileLabel = styled__default.label(_templateObject8 || (_templateObject8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 100%;\n  display: block;\n"])));
 var InputErrorMessage = styled__default.p(_templateObject9 || (_templateObject9 = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  color: ", ";\n  margin: 4px 0 0;\n"])), colors.red1);
-var CustomInput = styled__default.input(_templateObject10 || (_templateObject10 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  background: #ffffff;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding: 11px 14px;\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  opacity: 1;\n  outline: none;\n\n  &:focus {\n    border: 1px solid ", ";\n    outline: 2px solid ", ";\n  }\n  &:disabled {\n    background-color: ", ";\n    opacity: 1;\n    color: #383b51;\n  }\n  &::placeholder {\n    opacity: 1;\n    color: ", ";\n  }\n"])), function (props) {
-  return props.error ? "1px solid " + colors.red1 : '1px solid #ededed';
+var CustomInput = styled__default.input(_templateObject10 || (_templateObject10 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  background: ", ";\n  border: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding: 11px 14px;\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  opacity: 1;\n  outline: none;\n\n  &:focus {\n    border: 1px solid ", ";\n    outline: ", ";\n  }\n  &:disabled {\n    background-color: ", ";\n    opacity: 1;\n    color: #383b51;\n  }\n  &::placeholder {\n    opacity: 1;\n    color: ", ";\n  }\n"])), function (props) {
+  return props.theme === THEME.DARK ? colors.backgroundColor : colors.white;
+}, function (props) {
+  return props.error ? "1px solid " + colors.red1 : props.theme !== THEME.DARK ? "1px solid " + colors.gray1 : 'none';
+}, function (props) {
+  return props.color || colors.textColor1;
 }, function (props) {
   return props.error ? "1px solid " + colors.red1 : colors.primary;
 }, function (props) {
-  return props.error ? "1px solid " + colors.red2 : '#ebf7f1';
-}, colors.gray0, colors.gray7);
-var FilterField = styled__default.div(_templateObject11 || (_templateObject11 = _taggedTemplateLiteralLoose(["\n  border: 1px solid #d7d8e3;\n  border-radius: 4px;\n  background-color: transparent;\n  margin-left: 12px;\n\n  .dropdown-trigger::after {\n    border-color: black;\n  }\n"])));
+  return props.error ? "1px solid " + colors.red2 : props.theme !== THEME.DARK ? "2px solid " + colors.backgroundColor : 'none';
+}, colors.gray0, colors.textColor3);
+var FilterField = styled__default.div(_templateObject11 || (_templateObject11 = _taggedTemplateLiteralLoose(["\n  border: 1px solid #d7d8e3;\n  border-radius: 4px;\n  background-color: transparent;\n  margin-left: 12px;\n"])));
 var FilterFieldSpan = styled__default.span(_templateObject12 || (_templateObject12 = _taggedTemplateLiteralLoose(["\n  display: block;\n  width: 100px;\n  padding: 8px 0 8px 8px;\n  text-align: left;\n  font-size: 0.875rem;\n  line-height: 1rem;\n"])));
-var CustomRadioWrapper = styled__default.div(_templateObject13 || (_templateObject13 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: 16px;\n  label {\n    font-size: 14px;\n    line-height: 16px;\n    color: ", ";\n  }\n"])), colors.blue7);
+var CustomRadioWrapper = styled__default.div(_templateObject13 || (_templateObject13 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-top: 16px;\n  label {\n    font-size: 14px;\n    line-height: 16px;\n    color: ", ";\n  }\n"])), colors.textColor1);
 var CustomRadio = styled__default.input(_templateObject14 || (_templateObject14 = _taggedTemplateLiteralLoose(["\n  height: 16px;\n  width: 16px;\n  margin: 0 10px 0 0;\n  cursor: pointer;\n"])));
 var Row = styled__default.div(_templateObject15 || (_templateObject15 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: row;\n  margin: ", ";\n  margin-top: ", ";\n  margin-bottom: ", ";\n  margin-right: ", ";\n  margin-left: ", ";\n  align-items: ", ";\n  justify-content: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  padding: ", ";\n  padding-left: ", ";\n  padding-right: ", ";\n  flex-wrap: ", ";\n"])), function (props) {
   return props.margin;
@@ -9577,9 +9612,9 @@ var Button = styled__default.button(_templateObject16 || (_templateObject16 = _t
 }, function (props) {
   return props.backgroundColor || colors.white;
 }, function (props) {
-  return props.color || (props.backgroundColor ? colors.white : colors.gray6);
+  return props.color || (props.backgroundColor ? colors.white : colors.textColor1);
 }, function (props) {
-  return props.backgroundColor || colors.gray2;
+  return props.backgroundColor || colors.gray1;
 }, function (props) {
   return props.margin || '0';
 }, function (props) {
@@ -9587,7 +9622,9 @@ var Button = styled__default.button(_templateObject16 || (_templateObject16 = _t
 }, function (props) {
   return props.disabled ? 0.5 : 0.8;
 });
-var PopupName = styled__default.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: ", ";\n  word-break: break-word;\n\n  ", "\n"])), colors.gray6, function (props) {
+var PopupName = styled__default.h3(_templateObject17 || (_templateObject17 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 23px;\n  color: ", ";\n  margin: 0;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: ", ";\n  word-break: break-word;\n\n  ", "\n"])), function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
   return props.marginTop;
 }, function (props) {
   return props.marginBottom;
@@ -9614,7 +9651,7 @@ var ButtonBlock = styled__default.div(_templateObject19 || (_templateObject19 = 
 }, function (props) {
   return props.backgroundColor;
 });
-var Popup = styled__default.div(_templateObject20 || (_templateObject20 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  min-height: 150px;\n  min-width: ", ";\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  display: ", ";\n  flex-direction: column;\n  padding: ", ";\n  background: #ffffff;\n  box-shadow: 4px 4px 30px rgba(0, 0, 0, 0.06);\n  border-radius: 8px;\n  box-sizing: border-box;\n\n  ", ";\n"])), function (props) {
+var Popup = styled__default.div(_templateObject20 || (_templateObject20 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  min-height: 150px;\n  min-width: ", ";\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  display: ", ";\n  flex-direction: column;\n  padding: ", ";\n  background: ", ";\n  box-shadow: 4px 4px 30px rgba(0, 0, 0, 0.06);\n  border-radius: 8px;\n  box-sizing: border-box;\n\n  ", ";\n"])), function (props) {
   return props.minWidth || '400px';
 }, function (props) {
   return props.maxWidth || '600px';
@@ -9629,6 +9666,8 @@ var Popup = styled__default.div(_templateObject20 || (_templateObject20 = _tagge
 }, function (props) {
   return props.padding ? props.padding : '22px 24px';
 }, function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
   return props.isLoading && "\n        user-select: none;\n\n        & > * {\n           pointer-events: none;\n           user-select: none;\n        }\n\n         " + ButtonBlock + " {\n          a, button {\n            pointer-events: none;\n            user-select: none;\n            opacity: 0.7;\n          }\n        }\n    ";
 });
 var PopupBody = styled__default.div(_templateObject21 || (_templateObject21 = _taggedTemplateLiteralLoose(["\n  padding: ", ";\n  margin-bottom: 8px;\n  height: ", ";\n"])), function (props) {
@@ -9636,17 +9675,17 @@ var PopupBody = styled__default.div(_templateObject21 || (_templateObject21 = _t
 }, function (props) {
   return props.withFooter ? "calc(100% - (54px + " + props.paddingV + "))" : 'calc(100% - 54px)';
 });
-var PopupDescription = styled__default.span(_templateObject22 || (_templateObject22 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 22px;\n  color: ", ";\n  cursor: default;\n  white-space: pre-line;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  .highlight {\n    text-decoration: underline;\n    font-weight: 500;\n    color: ", ";\n  }\n"])), colors.gray8, function (props) {
+var PopupDescription = styled__default.span(_templateObject22 || (_templateObject22 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 22px;\n  color: ", ";\n  cursor: default;\n  white-space: pre-line;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  word-break: break-word;\n\n  .highlight {\n    text-decoration: underline;\n    font-weight: 500;\n    color: ", ";\n  }\n"])), colors.textColor2, function (props) {
   return props.marginTop || '10px';
 }, function (props) {
   return props.marginBottom || '10px';
-}, colors.blue1);
+}, colors.primary);
 var BoltText = styled__default.span(_templateObject23 || (_templateObject23 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n"])));
 var PopupFooter = styled__default(ButtonBlock)(_templateObject24 || (_templateObject24 = _taggedTemplateLiteralLoose(["\n  margin-top: ", ";\n  padding: 8px 16px;\n  border-radius: 0 0 8px 8px;\n  z-index: 2;\n"])), function (props) {
   return props.marginTop || '0';
 });
 var SectionHeader = styled__default.h4(_templateObject25 || (_templateObject25 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n  margin: ", ";\n"])), function (props) {
-  return props.color || colors.gray6;
+  return props.color || colors.textColor1;
 }, function (props) {
   return props.margin || 0;
 });
@@ -9661,18 +9700,18 @@ var ItemNote = styled__default.div(_templateObject26 || (_templateObject26 = _ta
 }, function (props) {
   return props.direction === 'top' && "\n        bottom: calc(100% + 15px);\n        left: 50%;\n        transform: translateX(-50%);\n    ";
 }, function (props) {
-  return props.disabled && "\n        color: " + colors.gray4 + ";\n    ";
+  return props.disabled && "\n        color: " + colors.textColor2 + ";\n    ";
 });
 var CustomSwitcher = styled__default.div(_templateObject27 || (_templateObject27 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  position: relative;\n"])));
 var SwitcherLabel = styled__default.label(_templateObject28 || (_templateObject28 = _taggedTemplateLiteralLoose(["\n  width: 48px;\n  height: 28px;\n  background: rgb(226, 226, 226);\n  display: inline-block;\n  border-radius: 50px;\n  position: relative;\n  transition: all 0.3s ease;\n  transform-origin: 20% center;\n  border: 3px solid #fff;\n  cursor: pointer;\n\n  &:before {\n    content: '';\n    position: absolute;\n    display: block;\n    transition: all 0.2s ease;\n    width: 24px;\n    height: 24px;\n    top: 2px;\n    left: 2px;\n    border-radius: 20px;\n    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.251475), 0 2px 6px rgba(0, 0, 0, 0.404256);\n    background: #fff;\n  }\n"])));
-var UploadAvatarButton = styled__default.button(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.blue5);
-var UploadAvatarHandler = styled__default.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.blue7);
+var UploadAvatarButton = styled__default.button(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.primary);
+var UploadAvatarHandler = styled__default.div(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.textColor1);
 var MentionedUser = styled__default.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: ", ";\n"])), function (props) {
-  return props.isLastMessage ? colors.gray9 : props.color || colors.primary;
+  return props.isLastMessage ? colors.textColor2 : props.color || colors.primary;
 }, function (props) {
   return props.isLastMessage && '500';
 });
-var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 2px 0;\n  white-space: nowrap;\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n"])), function (props) {
+var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 4px 0;\n  white-space: nowrap;\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.rtlDirection && 'auto';
@@ -9684,7 +9723,7 @@ var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = 
 var MessageText = styled__default.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'sans-serif';
 }, function (props) {
-  return props.withAttachment && (props.showMessageSenderName ? '0 12px 10px' : props.isForwarded ? '4px 12px 10px' : '8px 12px 10px');
+  return props.withAttachment && (props.showMessageSenderName ? props.withPaddings ? '0 12px 10px' : '0 0 10px' : props.isForwarded ? props.withPaddings ? '4px 12px 10px' : '4px 0px 10px' : '8px 12px 10px');
 }, function (props) {
   return props.withAttachment && !props.withMediaAttachment && '2px';
 }, function (props) {
@@ -9693,23 +9732,27 @@ var MessageText = styled__default.pre(_templateObject33 || (_templateObject33 = 
   return props.fontSize || '16px';
 }, function (props) {
   return props.lineHeight || '20px';
-}, colors.gray6, function (props) {
+}, function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
   return props.isRepliedMessage && "\n      display: -webkit-box;\n      -webkit-line-clamp: 1;\n      -webkit-box-orient: vertical;\n      overflow: hidden;\n      text-overflow: ellipsis;\n  ";
-}, colors.blue2);
+}, colors.blue);
 var ReplyMessageText = styled__default.span(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
   return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
 }, function (props) {
   return props.fontSize || '15px';
 }, function (props) {
   return props.lineHeight || '20px';
-}, colors.gray6);
-var CloseIcon = styled__default(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n"])));
+}, colors.textColor1);
+var CloseIcon = styled__default(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  color: ", ";\n"])), function (props) {
+  return props.color;
+});
 var ClearTypedText = styled__default(CloseIcon)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
 var StyledSearchSvg = styled__default(SvgSearch)(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: ", ";\n"])), function (props) {
   return props.left || '14px';
 });
 var SubTitle = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  margin: ", ";\n"])), function (props) {
-  return props.color || colors.gray9;
+  return props.color || colors.textColor2;
 }, function (props) {
   return props.margin;
 });
@@ -9765,7 +9808,7 @@ var UploadProgress = styled__default.div(_templateObject43 || (_templateObject43
   return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
 });
 var AttachmentPreviewTitle = styled__default.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.blue10;
+  return props.color || colors.textColor1;
 });
 
 var hideUserPresence;
@@ -11522,13 +11565,13 @@ function watchForEvents() {
           setNotification(messageBody, message.user, _channel5);
 
         case 151:
-          if (!(message.repliedInThread && message.parent.id)) {
+          if (!(message.repliedInThread && message.parentMessage.id)) {
             _context3.next = 156;
             break;
           }
 
           _context3.next = 154;
-          return effects.put(markMessagesAsDeliveredAC(message.parent.id, [message.id]));
+          return effects.put(markMessagesAsDeliveredAC(message.parentMessage.id, [message.id]));
 
         case 154:
           _context3.next = 158;
@@ -11558,7 +11601,7 @@ function watchForEvents() {
                     console.log('channel MESSAGE_MARKERS_RECEIVED ... channel: ', channel, 'markers list: ', markerList);
 
                     if (!channel) {
-                      _context.next = 22;
+                      _context.next = 21;
                       break;
                     }
 
@@ -11578,39 +11621,38 @@ function watchForEvents() {
                     });
 
                     if (!updateLastMessage) {
-                      _context.next = 17;
+                      _context.next = 16;
                       break;
                     }
 
                     lastMessage = _extends({}, channel.lastMessage, {
                       deliveryStatus: markerList.name
                     });
-                    console.log('update last message. . .. ', lastMessage);
-                    _context.next = 17;
+                    _context.next = 16;
                     return effects.put(updateChannelLastMessageStatusAC(lastMessage, JSON.parse(JSON.stringify(channel))));
 
-                  case 17:
+                  case 16:
                     if (!(_activeChannelId5 === channelId)) {
-                      _context.next = 21;
+                      _context.next = 20;
                       break;
                     }
 
-                    _context.next = 20;
+                    _context.next = 19;
                     return effects.put(updateMessagesStatusAC(markerList.name, markersMap));
 
-                  case 20:
+                  case 19:
                     updateMarkersOnAllMessages(markersMap, markerList.name);
 
-                  case 21:
+                  case 20:
                     updateMessageStatusOnMap(channel.id, {
                       name: markerList.name,
                       markersMap: markersMap
                     });
 
-                  case 22:
+                  case 21:
                     return _context.abrupt("return", "break");
 
-                  case 23:
+                  case 22:
                   case "end":
                     return _context.stop();
                 }
@@ -13689,7 +13731,6 @@ var THUMBNAIL_MAX_HEIGHT = 6;
 var THUMBNAIL_MIME_TYPE = 'image/jpeg';
 var THUMBNAIL_QUALITY = 0.7;
 function resizeImage(file, maxWidth, maxHeight, quality) {
-  console.log('resize image. .. ', quality);
   return new Promise(function (resolve) {
     var blobURL = URL.createObjectURL(file);
     var img = new Image();
@@ -13865,7 +13906,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse, _messageUpdateData;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -13879,18 +13920,21 @@ function sendMessage(action) {
 
         case 5:
           channel = _context.sent;
+          console.log('send message . . . ', message);
           mentionedUserIds = message.mentionedMembers ? message.mentionedMembers.map(function (member) {
             return member.id;
           }) : [];
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 148;
+            _context.next = 172;
             break;
           }
 
+          console.log('saga sendAttachmentsAsSeparateMessage. .... ', sendAttachmentsAsSeparateMessage);
+
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 104;
+            _context.next = 129;
             break;
           }
 
@@ -13901,29 +13945,29 @@ function sendMessage(action) {
           fileType = messageAttachment.type;
 
           if (!(fileType === 'video')) {
-            _context.next = 17;
+            _context.next = 19;
             break;
           }
 
           thumbnailMetas = getVideoThumb(messageAttachment.attachmentId);
-          _context.next = 24;
+          _context.next = 26;
           break;
 
-        case 17:
+        case 19:
           if (!(fileType === 'image')) {
-            _context.next = 23;
+            _context.next = 25;
             break;
           }
 
-          _context.next = 20;
+          _context.next = 22;
           return effects.call(createImageThumbnail, message.attachments[0].data, undefined, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 20:
+        case 22:
           thumbnailMetas = _context.sent;
-          _context.next = 24;
+          _context.next = 26;
           break;
 
-        case 23:
+        case 25:
           if (fileType === attachmentTypes.voice) {
             thumbnailMetas = {
               duration: 3,
@@ -13931,20 +13975,20 @@ function sendMessage(action) {
             };
           }
 
-        case 24:
+        case 26:
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
             szh: thumbnailMetas.imageHeight,
             dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
-          messageAttachment.fileSize = message.attachments[0].data.size;
+          messageAttachment.size = message.attachments[0].data.size;
           setPendingAttachment(messageAttachment.attachmentId, messageAttachment.data);
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments([]).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
-          if (message.parent) {
-            messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
+          if (message.parentMessage) {
+            messageBuilder.setParentMessageId(message.parentMessage ? message.parentMessage.id : null);
           }
 
           if (message.repliedInThread) {
@@ -13957,49 +14001,49 @@ function sendMessage(action) {
           });
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageCopy, {
             createdAt: new Date(Date.now()),
-            parent: message.parent
+            parentMessage: message.parentMessage
           })));
-          _context.next = 36;
+          _context.next = 38;
           return effects.select(messagesHasNextSelector);
 
-        case 36:
+        case 38:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 45;
+            _context.next = 47;
             break;
           }
 
           if (!hasNextMessages) {
-            _context.next = 43;
+            _context.next = 45;
             break;
           }
 
-          _context.next = 41;
+          _context.next = 43;
           return effects.put(getMessagesAC(channel));
 
-        case 41:
-          _context.next = 45;
+        case 43:
+          _context.next = 47;
           break;
 
-        case 43:
-          _context.next = 45;
+        case 45:
+          _context.next = 47;
           return effects.put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 45:
+        case 47:
           console.log('add pending message .. ', pendingMessage);
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context.next = 50;
+          _context.next = 52;
           return effects.put(scrollToNewMessageAC(true, true));
 
-        case 50:
-          _context.next = 52;
+        case 52:
+          _context.next = 54;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.attachmentId));
 
-        case 52:
+        case 54:
           if (!customUploader) {
-            _context.next = 102;
+            _context.next = 106;
             break;
           }
 
@@ -14028,41 +14072,41 @@ function sendMessage(action) {
             });
           };
 
-          _context.prev = 55;
+          _context.prev = 57;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 90;
+            _context.next = 92;
             break;
           }
 
-          _context.next = 59;
+          _context.next = 61;
           return effects.call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 59:
+        case 61:
           uri = _context.sent;
-          _context.next = 62;
+          _context.next = 64;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
 
-        case 62:
+        case 64:
           fileSize = messageAttachment.size;
 
           if (!(messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 70;
+            _context.next = 72;
             break;
           }
 
-          _context.next = 66;
+          _context.next = 68;
           return effects.call(getImageSize, filePath);
 
-        case 66:
+        case 68:
           fileSize = _context.sent;
-          _context.next = 69;
+          _context.next = 71;
           return effects.call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 69:
+        case 71:
           thumbnailMetas = _context.sent;
 
-        case 70:
+        case 72:
           attachmentMeta = JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -14073,29 +14117,26 @@ function sendMessage(action) {
           attachmentToSend.attachmentId = messageAttachment.attachmentId;
           attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [attachmentToSend];
-          _context.next = 78;
+          _context.next = 80;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 78:
+        case 80:
           messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
-            attachments: [_extends({}, messageResponse.attachments[0], {
-              attachmentUrl: attachmentToSend.attachmentUrl,
-              attachmentId: attachmentToSend.attachmentId
-            })],
+            attachments: messageResponse.attachments,
             mentionedUsers: messageResponse.mentionedUsers,
             metadata: messageResponse.metadata,
-            parent: messageResponse.parent,
+            parentMessage: messageResponse.parentMessage,
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 83;
+          _context.next = 85;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 83:
+        case 85:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -14105,30 +14146,30 @@ function sendMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context.next = 88;
+          _context.next = 90;
           return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
             id: channel.id
           }));
 
-        case 88:
-          _context.next = 91;
+        case 90:
+          _context.next = 93;
           break;
 
-        case 90:
+        case 92:
           throw Error('Network error');
 
-        case 91:
-          _context.next = 102;
+        case 93:
+          _context.next = 104;
           break;
 
-        case 93:
-          _context.prev = 93;
-          _context.t0 = _context["catch"](55);
+        case 95:
+          _context.prev = 95;
+          _context.t0 = _context["catch"](57);
           console.log('Error on uploading attachment', messageAttachment.attachmentId);
-          _context.next = 98;
+          _context.next = 100;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 98:
+        case 100:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -14138,16 +14179,78 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 102;
+          _context.next = 104;
           return effects.put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 102:
-          _context.next = 148;
+        case 104:
+          _context.next = 127;
           break;
 
-        case 104:
+        case 106:
+          console.log('messageAttachment. . . .. . .  .', messageAttachment);
+          _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
+          _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
+
+          if (!customUploader) {
+            _attachmentToSend.progress = function (progressPercent) {
+              console.log('progress ... ', progressPercent);
+            };
+
+            _attachmentToSend.completion = function (updatedAttachment, error) {
+              if (error) {
+                console.log('fail to upload attachment ... ', error);
+              } else {
+                console.log('success attachment. .. ', updatedAttachment);
+              }
+            };
+          }
+
+          _attachmentToSend.attachmentId = messageAttachment.attachmentId;
+          _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
+          messageToSend.attachments = [_attachmentToSend];
+          console.log('messageToSend, , , ,  ', messageToSend);
+          _context.next = 116;
+          return effects.call(channel.sendMessage, messageToSend);
+
+        case 116:
+          _messageResponse = _context.sent;
+          console.log('message response ... ', _messageResponse);
+          deletePendingAttachment(messageAttachment.attachmentId);
+          _messageUpdateData = {
+            id: _messageResponse.id,
+            deliveryStatus: _messageResponse.deliveryStatus,
+            attachments: _messageResponse.attachments,
+            mentionedUsers: _messageResponse.mentionedUsers,
+            metadata: _messageResponse.metadata,
+            parentMessage: _messageResponse.parentMessage,
+            repliedInThread: _messageResponse.repliedInThread,
+            createdAt: _messageResponse.createdAt
+          };
+          _context.next = 122;
+          return effects.put(updateMessageAC(messageToSend.tid, _messageUpdateData));
+
+        case 122:
+          if (fileType === 'video') {
+            deleteVideoThumb(messageAttachment.attachmentId);
+          }
+
+          updateMessageOnMap(channel.id, {
+            messageId: messageToSend.tid,
+            params: _messageUpdateData
+          });
+          updateMessageOnAllMessages(messageToSend.tid, _messageUpdateData);
+          _context.next = 127;
+          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
+            id: channel.id
+          }));
+
+        case 127:
+          _context.next = 172;
+          break;
+
+        case 129:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -14174,8 +14277,8 @@ function sendMessage(action) {
 
           _messageBuilder.setBody(message.body).setAttachments(message.attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
-          if (message.parent) {
-            _messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
+          if (message.parentMessage) {
+            _messageBuilder.setParentMessageId(message.parentMessage ? message.parentMessage.id : null);
           }
 
           if (message.repliedInThread) {
@@ -14185,7 +14288,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 122;
+            _context.next = 147;
             break;
           }
 
@@ -14222,7 +14325,7 @@ function sendMessage(action) {
                         payload: {
                           message: JSON.parse(JSON.stringify(_extends({}, _messageCopy, {
                             createdAt: new Date(Date.now()),
-                            parent: message.parent
+                            parentMessage: message.parentMessage
                           })))
                         }
                       });
@@ -14235,12 +14338,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 116;
+          _context.next = 141;
           return effects.call(uploadAllAttachments);
 
-        case 116:
+        case 141:
           uploadedAttachments = _context.sent;
-          _context.next = 119;
+          _context.next = 144;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -14283,12 +14386,12 @@ function sendMessage(action) {
             }
           });
 
-        case 119:
+        case 144:
           attachmentsToSend = _context.sent;
-          _context.next = 137;
+          _context.next = 161;
           break;
 
-        case 122:
+        case 147:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -14300,93 +14403,92 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 125;
+          _context.next = 150;
           return effects.select(messagesHasNextSelector);
 
-        case 125:
+        case 150:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 134;
+            _context.next = 159;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 132;
+            _context.next = 157;
             break;
           }
 
-          _context.next = 130;
+          _context.next = 155;
           return effects.put(getMessagesAC(channel));
 
-        case 130:
-          _context.next = 134;
+        case 155:
+          _context.next = 159;
           break;
 
-        case 132:
-          _context.next = 134;
+        case 157:
+          _context.next = 159;
           return effects.put(addMessageAC(_extends({}, _messageCopy2)));
 
-        case 134:
-          console.log('add pending message .. ', _messageCopy2);
+        case 159:
           addMessageToMap(channelId, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 137:
+        case 161:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 148;
+            _context.next = 172;
             break;
           }
 
-          _context.next = 141;
+          _context.next = 165;
           return effects.call(channel.sendMessage, _messageToSend);
 
-        case 141:
-          _messageResponse = _context.sent;
-          _messageUpdateData = {
-            id: _messageResponse.id,
-            deliveryStatus: _messageResponse.deliveryStatus,
-            attachments: _messageResponse.attachments,
-            mentionedUsers: _messageResponse.mentionedUsers,
-            metadata: _messageResponse.metadata,
-            parent: _messageResponse.parent,
-            repliedInThread: _messageResponse.repliedInThread,
-            createdAt: _messageResponse.createdAt
+        case 165:
+          _messageResponse2 = _context.sent;
+          _messageUpdateData2 = {
+            id: _messageResponse2.id,
+            deliveryStatus: _messageResponse2.deliveryStatus,
+            attachments: _messageResponse2.attachments,
+            mentionedUsers: _messageResponse2.mentionedUsers,
+            metadata: _messageResponse2.metadata,
+            parentMessage: _messageResponse2.parentMessage,
+            repliedInThread: _messageResponse2.repliedInThread,
+            createdAt: _messageResponse2.createdAt
           };
-          _context.next = 145;
-          return effects.put(updateMessageAC(_messageToSend.tid, _messageUpdateData));
+          _context.next = 169;
+          return effects.put(updateMessageAC(_messageToSend.tid, _messageUpdateData2));
 
-        case 145:
+        case 169:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
-            params: _messageUpdateData
+            params: _messageUpdateData2
           });
-          _context.next = 148;
-          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
+          _context.next = 172;
+          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse2)), {
             id: channel.id
           }));
 
-        case 148:
-          _context.next = 150;
+        case 172:
+          _context.next = 174;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 150:
-          _context.next = 155;
+        case 174:
+          _context.next = 179;
           break;
 
-        case 152:
-          _context.prev = 152;
+        case 176:
+          _context.prev = 176;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 155:
+        case 179:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 152], [55, 93]]);
+  }, _marked$2, null, [[0, 176], [57, 95]]);
 }
 
 function sendTextMessage(action) {
@@ -14417,8 +14519,8 @@ function sendTextMessage(action) {
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
-          if (message.parent) {
-            messageBuilder.setParentMessageId(message.parent ? message.parent.id : null);
+          if (message.parentMessage) {
+            messageBuilder.setParentMessageId(message.parentMessage ? message.parentMessage.id : null);
           }
 
           if (message.repliedInThread) {
@@ -14428,7 +14530,7 @@ function sendTextMessage(action) {
           messageToSend = messageBuilder.create();
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageToSend, {
             createdAt: new Date(Date.now()),
-            parent: message.parent
+            parentMessage: message.parentMessage
           })));
           sendMessageTid = messageToSend.tid;
 
@@ -14502,7 +14604,7 @@ function sendTextMessage(action) {
             attachments: messageResponse.attachments,
             mentionedUsers: messageResponse.mentionedUsers,
             metadata: messageResponse.metadata,
-            parent: messageResponse.parent,
+            parentMessage: messageResponse.parentMessage,
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
@@ -14584,7 +14686,7 @@ function forwardMessage(action) {
 
           if (_message.attachments && _message.attachments.length) {
             attachmentBuilder = channel.createAttachmentBuilder(attachments[0].url, attachments[0].type);
-            att = attachmentBuilder.setName(attachments[0].name).setMetadata(attachments[0].metadata).setFileSize(attachments[0].fileSize).setUpload(false).create();
+            att = attachmentBuilder.setName(attachments[0].name).setMetadata(attachments[0].metadata).setFileSize(attachments[0].size).setUpload(false).create();
             attachments = [att];
           }
 
@@ -14664,7 +14766,7 @@ function forwardMessage(action) {
             attachments: messageResponse.attachments,
             mentionedUsers: messageResponse.mentionedUsers,
             metadata: messageResponse.metadata,
-            parent: messageResponse.parent,
+            parentMessage: messageResponse.parentMessage,
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
@@ -14722,7 +14824,7 @@ function forwardMessage(action) {
 }
 
 function resendMessage(action) {
-  var payload, _message2, connectionState, channelId, channel, customUploader, attachmentCompilation, _messageAttachment, _messageCopy3, pendingAttachment, fileType, handleUploadProgress, uri, _filePath, handleUpdateLocalPath, _thumbnailMetas, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _messageCopy4, _messageResponse2, _messageUpdateData2;
+  var payload, _message2, connectionState, channelId, channel, customUploader, attachmentCompilation, _messageAttachment, _messageCopy3, pendingAttachment, fileType, handleUploadProgress, uri, _filePath, handleUpdateLocalPath, _thumbnailMetas, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _messageCopy4, _messageResponse3, _messageUpdateData3;
 
   return _regeneratorRuntime().wrap(function resendMessage$(_context4) {
     while (1) {
@@ -14867,7 +14969,7 @@ function resendMessage(action) {
             })],
             mentionedUsers: messageResponse.mentionedUsers,
             metadata: messageResponse.metadata,
-            parent: messageResponse.parent,
+            parentMessage: messageResponse.parentMessage,
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
@@ -14932,24 +15034,24 @@ function resendMessage(action) {
           return effects.call(channel.sendMessage, _messageCopy4);
 
         case 80:
-          _messageResponse2 = _context4.sent;
-          _messageUpdateData2 = {
-            id: _messageResponse2.id,
-            deliveryStatus: _messageResponse2.deliveryStatus,
+          _messageResponse3 = _context4.sent;
+          _messageUpdateData3 = {
+            id: _messageResponse3.id,
+            deliveryStatus: _messageResponse3.deliveryStatus,
             attachments: [],
-            mentionedUsers: _messageResponse2.mentionedUsers,
-            metadata: _messageResponse2.metadata,
-            parent: _messageResponse2.parent,
-            repliedInThread: _messageResponse2.repliedInThread,
-            createdAt: _messageResponse2.createdAt
+            mentionedUsers: _messageResponse3.mentionedUsers,
+            metadata: _messageResponse3.metadata,
+            parentMessage: _messageResponse3.parentMessage,
+            repliedInThread: _messageResponse3.repliedInThread,
+            createdAt: _messageResponse3.createdAt
           };
           _context4.next = 84;
-          return effects.put(updateMessageAC(_messageCopy4.tid, _messageUpdateData2));
+          return effects.put(updateMessageAC(_messageCopy4.tid, _messageUpdateData3));
 
         case 84:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
-            params: _messageUpdateData2
+            params: _messageUpdateData3
           });
 
         case 85:
@@ -15044,10 +15146,10 @@ function editMessage(action) {
           channel = _context6.sent;
           _context6.next = 8;
           return effects.call(channel.editMessage, _extends({}, _message3, {
-            metadata: JSON.stringify(_message3.metadata),
+            metadata: isJSON(_message3.metadata) ? _message3.metadata : JSON.stringify(_message3.metadata),
             attachments: _message3.attachments.map(function (att) {
               return _extends({}, att, {
-                metadata: JSON.stringify(att.metadata)
+                metadata: isJSON(att.metadata) ? att.metadata : JSON.stringify(att.metadata)
               });
             })
           }));
@@ -16786,34 +16888,36 @@ function getUsers(action) {
           return effects.put(setUsersLoadingStateAC(LOADING_STATE.LOADING));
 
         case 21:
-          _context5.next = 23;
+          console.log('usersQuery', usersQuery);
+          _context5.next = 24;
           return effects.call(usersQuery.loadNextPage);
 
-        case 23:
+        case 24:
           _yield$call = _context5.sent;
           users = _yield$call.users;
-          _context5.next = 27;
+          console.log('users', users);
+          _context5.next = 29;
           return effects.put(setUsersAC(users));
 
-        case 27:
-          _context5.next = 29;
+        case 29:
+          _context5.next = 31;
           return effects.put(setUsersLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 29:
-          _context5.next = 35;
+        case 31:
+          _context5.next = 37;
           break;
 
-        case 31:
-          _context5.prev = 31;
+        case 33:
+          _context5.prev = 33;
           _context5.t0 = _context5["catch"](0);
           console.log('ERROR on get users', _context5.t0.message);
 
-        case 35:
+        case 37:
         case "end":
           return _context5.stop();
       }
     }
-  }, _marked5$3, null, [[0, 31]]);
+  }, _marked5$3, null, [[0, 33]]);
 }
 
 function loadMoreUsers(action) {
@@ -16934,10 +17038,10 @@ sagaMiddleware.run(rootSaga);
 
 var _templateObject$2, _templateObject2$2, _templateObject3$2;
 var Container = styled__default.div(_templateObject$2 || (_templateObject$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 100vh;\n"])));
-var ChatContainer = styled__default.div(_templateObject2$2 || (_templateObject2$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  //height: ", ";\n  height: 100%;\n  max-height: 100vh;\n  min-width: ", ";\n"])), function (props) {
-  return props.withHeader ? 'calc(100vh - 60px)' : '100vh';
-}, function (props) {
+var ChatContainer = styled__default.div(_templateObject2$2 || (_templateObject2$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: 100%;\n  max-height: 100vh;\n  min-width: ", ";\n  background-color: ", ";\n"])), function (props) {
   return props.withChannelsList && '1200px';
+}, function (props) {
+  return props.backgroundColor || colors.white;
 });
 var Chat = styled__default.div(_templateObject3$2 || (_templateObject3$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
 
@@ -17004,8 +17108,18 @@ var channelMessageDraftIsRemovedSelector = function channelMessageDraftIsRemoved
   return store.ChannelReducer.draftIsRemoved;
 };
 
+function setThemeAC(theme) {
+  return {
+    type: SET_THEME,
+    payload: {
+      theme: theme
+    }
+  };
+}
+
 var SceytChat = function SceytChat(_ref) {
   var client = _ref.client,
+      theme = _ref.theme,
       avatarColors = _ref.avatarColors,
       children = _ref.children,
       showOnlyContactUsers = _ref.showOnlyContactUsers,
@@ -17020,25 +17134,20 @@ var SceytChat = function SceytChat(_ref) {
       showNotifications = _ref.showNotifications;
   var dispatch = reactRedux.useDispatch();
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
-  var childrenArr = React.Children.toArray(children);
   var draggingSelector = reactRedux.useSelector(isDraggingSelector, reactRedux.shallowEqual);
   var channelsListWidth = reactRedux.useSelector(channelListWidthSelector, reactRedux.shallowEqual);
-  var OtherChildren = childrenArr.filter(function (_ref2) {
-    var type = _ref2.type;
-    return type.name !== 'SceytChatHeader';
-  });
-  var SceytChatHeader = childrenArr.find(function (_ref3) {
-    var type = _ref3.type;
-    return type.name === 'SceytChatHeader';
-  });
 
-  var _useState = React.useState(null),
-      SceytChatClient = _useState[0],
-      setSceytChatClient = _useState[1];
+  var _useState = React.useState(false),
+      darkTheme = _useState[0],
+      setDarkTheme = _useState[1];
 
-  var _useState2 = React.useState(true),
-      tabIsActive = _useState2[0],
-      setTabIsActive = _useState2[1];
+  var _useState2 = React.useState(null),
+      SceytChatClient = _useState2[0],
+      setSceytChatClient = _useState2[1];
+
+  var _useState3 = React.useState(true),
+      tabIsActive = _useState3[0],
+      setTabIsActive = _useState3[1];
 
   var hidden = null;
   var visibilityChange = null;
@@ -17128,15 +17237,15 @@ var SceytChat = function SceytChat(_ref) {
       }
 
       if (customColors.textColor1) {
-        colors.gray6 = customColors.textColor1;
+        colors.textColor1 = customColors.textColor1;
       }
 
       if (customColors.textColor2) {
-        colors.gray8 = customColors.textColor2;
+        colors.textColor2 = customColors.textColor2;
       }
 
       if (customColors.textColor3) {
-        colors.gray9 = customColors.textColor3;
+        colors.textColor3 = customColors.textColor3;
       }
 
       if (customColors.defaultAvatarBackground) {
@@ -17196,6 +17305,25 @@ var SceytChat = function SceytChat(_ref) {
     }
   }, [tabIsActive]);
   React.useEffect(function () {
+    if (theme === THEME.DARK) {
+      dispatch(setThemeAC(THEME.DARK));
+      colors.primary = colors.darkModePrimary;
+      colors.textColor1 = colors.darkModeTextColor1;
+      colors.primaryLight = colors.darkModePrimaryLight;
+      colors.backgroundColor = colors.darkModeBackgroundColor;
+      colors.hoverBackgroundColor = colors.darkModeHoverBackgroundColor;
+      setDarkTheme(true);
+    } else {
+      dispatch(setThemeAC(THEME.LIGHT));
+      colors.primary = colors.lightModePrimary;
+      colors.textColor1 = colors.lightModeTextColor1;
+      colors.primaryLight = colors.lightModePrimaryLight;
+      colors.backgroundColor = colors.lightModeBackgroundColor;
+      colors.hoverBackgroundColor = colors.lightModeHoverBackgroundColor;
+      setDarkTheme(false);
+    }
+  }, [theme]);
+  React.useEffect(function () {
     if (hideUserPresence) {
       setHideUserPresence(hideUserPresence);
     }
@@ -17204,17 +17332,17 @@ var SceytChat = function SceytChat(_ref) {
       setContactsMap(contactsMap);
     }
   }, [contactsMap]);
-  return React__default.createElement(React__default.Fragment, null, SceytChatClient ? React__default.createElement(React__default.Fragment, null, SceytChatHeader, React__default.createElement(ChatContainer, {
+  return React__default.createElement(React__default.Fragment, null, SceytChatClient ? React__default.createElement(ChatContainer, {
     onDrop: handleDropFile,
     onDragOver: handleDragOver,
-    className: 'sceyt-chat-container',
-    withHeader: SceytChatHeader,
-    withChannelsList: channelsListWidth && channelsListWidth > 0
-  }, OtherChildren)) : '');
+    withChannelsList: channelsListWidth && channelsListWidth > 0,
+    backgroundColor: darkTheme ? colors.dark : colors.white
+  }, children) : '');
 };
 
 var SceytChatContainer = function SceytChatContainer(_ref) {
   var client = _ref.client,
+      theme = _ref.theme,
       avatarColors = _ref.avatarColors,
       children = _ref.children,
       showOnlyContactUsers = _ref.showOnlyContactUsers,
@@ -17232,6 +17360,7 @@ var SceytChatContainer = function SceytChatContainer(_ref) {
     store: store
   }, React__default.createElement(SceytChat, {
     client: client,
+    theme: theme,
     avatarColors: avatarColors,
     children: children,
     showOnlyContactUsers: showOnlyContactUsers,
@@ -17666,6 +17795,7 @@ var _templateObject$4, _templateObject2$4, _templateObject3$4, _templateObject4$
 
 var Channel = function Channel(_ref) {
   var channel = _ref.channel,
+      theme = _ref.theme,
       avatar = _ref.avatar,
       notificationsIsMutedIcon = _ref.notificationsIsMutedIcon,
       notificationsIsMutedIconColor = _ref.notificationsIsMutedIconColor,
@@ -17734,9 +17864,10 @@ var Channel = function Channel(_ref) {
     }
   }, [channelDraftIsRemoved]);
   return React__default.createElement(Container$2, {
+    theme: theme,
     selectedChannel: channel.id === activeChannel.id,
     selectedChannelLeftBorder: selectedChannelLeftBorder,
-    selectedBackgroundColor: selectedChannelBackground || colors.primaryLight,
+    selectedBackgroundColor: selectedChannelBackground || (theme === THEME.DARK ? colors.darkModePrimaryLight : colors.primaryLight),
     selectedChannelPaddings: selectedChannelPaddings,
     channelsPaddings: channelsPaddings,
     selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -17753,6 +17884,7 @@ var Channel = function Channel(_ref) {
   }), isDirectChannel && directChannelUser && hideUserPresence && (hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) && React__default.createElement(UserStatus, {
     backgroundColor: colors.primary
   })), React__default.createElement(ChannelInfo, {
+    theme: theme,
     avatar: withAvatar,
     isMuted: channel.muted,
     statusWidth: statusWidth
@@ -17762,16 +17894,16 @@ var Channel = function Channel(_ref) {
     markedAsUnread: !!(channel.unread || channel.newMessageCount && channel.newMessageCount > 0),
     unreadMentions: !!(channel.newMentionCount && channel.newMentionCount > 0)
   }, typingIndicator ? !isDirectChannel ? React__default.createElement(LastMessageAuthor, {
-    typing: typingIndicator,
-    minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
+    theme: theme,
+    typing: typingIndicator
   }, React__default.createElement("span", {
     ref: messageAuthorRef
   }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : draftMessageText ? React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
-    minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
+    theme: theme
   }, React__default.createElement("span", {
     ref: messageAuthorRef
   }, channel.newReactions[0].user.id === user.id ? 'You' : contactsMap[channel.newReactions[0].user.id] ? contactsMap[channel.newReactions[0].user.id].firstName : channel.newReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
-    minWidth: messageAuthorRef.current && messageAuthorRef.current.offsetWidth
+    theme: theme
   }, React__default.createElement("span", {
     ref: messageAuthorRef
   }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage && lastMessage.state !== MESSAGE_STATUS.DELETE : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && React__default.createElement(Points, {
@@ -17815,11 +17947,13 @@ var ChannelInfo = styled__default.div(_templateObject2$4 || (_templateObject2$4 
   return props.avatar && '12px';
 }, function (props) {
   return "calc(100% - " + (props.statusWidth + (props.isMuted ? 20 : 0) + 2) + "px)";
-}, colors.gray6);
+}, function (props) {
+  return props.theme === THEME.DARK ? colors.darkModeTextColor1 : colors.textColor1;
+});
 var MutedIcon = styled__default.span(_templateObject3$4 || (_templateObject3$4 = _taggedTemplateLiteralLoose(["\n  & > svg {\n    height: 16px;\n    width: 16px;\n    margin-left: 5px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || '#818C99';
 });
-var LastMessage = styled__default.div(_templateObject4$3 || (_templateObject4$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  color: ", ";\n  max-width: ", ";\n"])), colors.gray6, function (props) {
+var LastMessage = styled__default.div(_templateObject4$3 || (_templateObject4$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  color: ", ";\n  max-width: ", ";\n"])), colors.textColor1, function (props) {
   return props.markedAsUnread || props.unreadMentions ? "calc(100% - " + (props.markedAsUnread && props.unreadMentions ? 48 : 24) + "px)" : '100%';
 });
 var AvatarWrapper = styled__default.div(_templateObject5$2 || (_templateObject5$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n"])));
@@ -17827,22 +17961,24 @@ var UserStatus = styled__default.span(_templateObject6$1 || (_templateObject6$1 
   return props.backgroundColor || '#56E464';
 });
 var DraftMessageTitle = styled__default.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.red1);
-var DraftMessageText = styled__default.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.gray8);
+var DraftMessageText = styled__default.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.textColor2);
 var LastMessageAuthor = styled__default.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  font-style: ", ";\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
   return props.typing && 'italic';
-}, colors.gray8);
+}, function (props) {
+  return props.theme === THEME.DARK ? colors.darkModeTextColor1 : colors.textColor1;
+});
 var Points = styled__default.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var LastMessageText = styled__default.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), colors.gray9, function (props) {
+var LastMessageText = styled__default.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    transform: ", ";\n  }\n"])), colors.textColor2, function (props) {
   return props.deletedMessage && 'italic';
 }, function (props) {
   return props.withAttachments && 'translate(0px, -1.5px)';
-}, colors.gray4, function (props) {
+}, colors.textColor2, function (props) {
   return props.withAttachments ? 'translate(0px, 3px)' : 'translate(0px, 2px)';
 });
 var ChannelStatus = styled__default.div(_templateObject12$1 || (_templateObject12$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 16px;\n  top: 15px;\n  display: flex;\n  flex-wrap: wrap;\n  height: 42px;\n  margin-left: auto;\n"])));
-var LastMessageDate = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.gray9);
+var LastMessageDate = styled__default.span(_templateObject13$1 || (_templateObject13$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), colors.textColor2);
 var DeliveryIconCont = styled__default.span(_templateObject14$1 || (_templateObject14$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 6px;\n  line-height: 13px;\n"])));
 var UnreadMentionIconWrapper = styled__default.span(_templateObject15$1 || (_templateObject15$1 = _taggedTemplateLiteralLoose(["\n  margin-right: ", ";\n  line-height: 13px;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.rightMargin && '8px';
@@ -17867,24 +18003,37 @@ var UnreadCount = styled__default.span(_templateObject19$1 || (_templateObject19
 });
 
 var _templateObject$5, _templateObject2$5;
-var SearchInputContainer = styled__default.div(_templateObject$5 || (_templateObject$5 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: calc(100% - 24px);\n  box-sizing: border-box;\n  margin: ", ";\n  margin-bottom: ", ";\n"])), function (props) {
-  return !props.inline && '0 12px';
+var SearchInputContainer = styled__default.div(_templateObject$5 || (_templateObject$5 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  box-sizing: border-box;\n  padding: ", ";\n  border-right: ", ";\n"])), function (props) {
+  return props.inline && 'calc(100% - 24px)';
 }, function (props) {
-  return !props.inline && '16px';
+  return !props.inline && '0 12px 16px';
+}, function (props) {
+  return !props.inline && "1px solid " + props.borderColor;
 });
-var SearchInput = styled__default.input(_templateObject2$5 || (_templateObject2$5 = _taggedTemplateLiteralLoose(["\n  padding: 0 34px;\n  background: #ebedf0;\n  border-radius: ", ";\n  width: 100%;\n  border: none;\n  height: 36px;\n  outline: none;\n  box-sizing: border-box;\n  font-size: 15px;\n\n  &::placeholder {\n    font-style: normal;\n    font-weight: normal;\n    font-size: 15px;\n    //line-height: 22px;\n    color: #818c99;\n    opacity: 1;\n  }\n"])), function (props) {
+var SearchInput = styled__default.input(_templateObject2$5 || (_templateObject2$5 = _taggedTemplateLiteralLoose(["\n  padding: 0 34px;\n  background: ", ";\n  color: ", ";\n  border-radius: ", ";\n  width: 100%;\n  border: none;\n  height: 36px;\n  outline: none;\n  box-sizing: border-box;\n  font-size: 15px;\n\n  &::placeholder {\n    font-style: normal;\n    font-weight: normal;\n    font-size: 15px;\n    //line-height: 22px;\n    color: ", ";\n    opacity: 1;\n  }\n"])), function (props) {
+  return props.backgroundColor;
+}, function (props) {
+  return props.color;
+}, function (props) {
   return props.borderRadius || '30px';
-});
+}, colors.textColor2);
 
 var ChannelSearch = function ChannelSearch(_ref) {
   var searchValue = _ref.searchValue,
       handleSearchValueChange = _ref.handleSearchValueChange,
       getMyChannels = _ref.getMyChannels,
       inline = _ref.inline,
-      borderRadius = _ref.borderRadius;
+      borderRadius = _ref.borderRadius,
+      searchInputBackgroundColor = _ref.searchInputBackgroundColor,
+      searchInputTextColor = _ref.searchInputTextColor;
   return React__default.createElement(SearchInputContainer, {
-    inline: inline
-  }, React__default.createElement(StyledSearchSvg, null), React__default.createElement(SearchInput, {
+    inline: inline,
+    borderColor: colors.backgroundColor
+  }, React__default.createElement(StyledSearchSvg, {
+    left: !inline && '22px'
+  }), React__default.createElement(SearchInput, {
+    backgroundColor: searchInputBackgroundColor || colors.primaryLight,
+    color: searchInputTextColor || colors.textColor1,
     borderRadius: borderRadius,
     type: 'text',
     onChange: handleSearchValueChange,
@@ -17975,14 +18124,16 @@ var DropDownContainer = styled__default.div(_templateObject$6 || (_templateObjec
 var DropDownTriggerContainer = styled__default.div(_templateObject2$6 || (_templateObject2$6 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  cursor: pointer;\n  height: 100%;\n  width: 100%;\n  user-select: none;\n  background-color: transparent;\n  box-shadow: none;\n  border: none;\n  padding: 0;\n  outline: none !important;\n  -webkit-tap-highlight-color: transparent;\n  & svg {\n    color: ", ";\n  }\n  ", " ", ";\n"])), function (props) {
   return props.iconColor;
 }, function (props) {
-  return props.withIcon && "\n        // padding-right: 20px;\n\n        &::after {\n            content: \"\";\n            position: absolute;\n            width: 7px;\n            height: 7px;\n            border-width: 1px 1px 0 0;\n            //border-color: " + colors.gray2 + ";\n            border-color: " + (props.iconColor || 'white') + ";\n            border-style: solid;\n            //border-radius: 2px;\n            top: calc(50% - 2px);\n            right: 14px;\n            transform: translateY(-50%) rotate(135deg);\n            transition: all 0.2s;\n        }\n    ";
+  return props.withIcon && "\n        // padding-right: 20px;\n\n        &::after {\n            content: \"\";\n            position: absolute;\n            width: 7px;\n            height: 7px;\n            border-width: 1px 1px 0 0;\n            border-color: " + (props.iconColor || 'black') + ";\n            border-style: solid;\n            top: calc(50% - 2px);\n            right: 14px;\n            transform: translateY(-50%) rotate(135deg);\n            transition: all 0.2s;\n        }\n    ";
 }, function (props) {
   return props.isOpen && "\n        &::after {\n            transform: translateY(-50%) rotate(-45deg);\n            top: calc(50% + 2px);\n        }\n        ";
 });
-var DropDownBody = styled__default.div(_templateObject3$5 || (_templateObject3$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 300;\n  min-width: 200px;\n  right: ", ";\n  left: ", ";\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: #ffffff;\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
+var DropDownBody = styled__default.div(_templateObject3$5 || (_templateObject3$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 300;\n  min-width: 200px;\n  right: ", ";\n  left: ", ";\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: ", ";\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
   return props.position !== 'left' && '0';
 }, function (props) {
   return props.position === 'left' && '0';
+}, function (props) {
+  return props.backgroundColor || colors.backgroundColor;
 }, function (props) {
   return props.position === 'top' ? "top: inherit;\n         bottom: 100%;" : props.position === 'topRight' ? "top: inherit;\n         right: inherit;\n         bottom: 100%" : props.position === 'right' || props.position === 'center' ? "right: inherit;" : props.position === 'left' ? "right: inherit;\n          left: 0;" : '';
 });
@@ -18000,6 +18151,7 @@ var DropDown = function DropDown(_ref) {
       watchToggleState = _ref.watchToggleState,
       height = _ref.height,
       children = _ref.children,
+      theme = _ref.theme,
       order = _ref.order;
 
   var _useState = React.useState(false),
@@ -18058,6 +18210,7 @@ var DropDown = function DropDown(_ref) {
     }
   }, [dropDownState]);
   return React__default.createElement(DropDownContainer, {
+    theme: theme,
     order: order,
     margin: margin,
     className: 'dropdown-wrapper',
@@ -18072,8 +18225,9 @@ var DropDown = function DropDown(_ref) {
     withIcon: React__default.isValidElement(trigger) ? withIcon : true,
     isOpen: isOpen,
     className: "dropdown-trigger " + (isOpen ? 'open' : ''),
-    iconColor: iconColor
+    iconColor: iconColor || (theme === THEME.DARK ? colors.white : '')
   }, React__default.isValidElement(trigger) ? trigger : React__default.createElement("span", null, trigger)), isOpen && React__default.createElement(DropDownBody, {
+    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     onScroll: handleScrolling,
     className: 'dropdown-body',
     ref: dropDownBodyRef,
@@ -18340,6 +18494,7 @@ var _templateObject$8, _templateObject2$8, _templateObject3$6, _templateObject4$
 var UsersPopup = function UsersPopup(_ref) {
   var channel = _ref.channel,
       toggleCreatePopup = _ref.toggleCreatePopup,
+      theme = _ref.theme,
       actionType = _ref.actionType,
       getSelectedUsers = _ref.getSelectedUsers,
       memberIds = _ref.memberIds,
@@ -18373,10 +18528,10 @@ var UsersPopup = function UsersPopup(_ref) {
 
   var memberDisplayText = getChannelTypesMemberDisplayTextMap();
   var channelTypeRoleMap = getDefaultRolesByChannelTypesMap();
-  var popupTitleText = channel && (memberDisplayText && memberDisplayText[channel.type] ? "Add " + memberDisplayText[channel.type] + "s" : channel.type === CHANNEL_TYPE.BROADCAST ? 'subscribers' : 'members');
+  var popupTitleText = channel && (memberDisplayText && memberDisplayText[channel.type] ? "Add " + memberDisplayText[channel.type] + "s" : channel.type === CHANNEL_TYPE.BROADCAST ? 'Subscribers' : 'Members');
 
   var handleMembersListScroll = function handleMembersListScroll(event) {
-    if (event.target.scrollHeight - event.target.scrollTop <= event.target.offsetHeight + 300) {
+    if (!userSearchValue && event.target.scrollHeight - event.target.scrollTop <= event.target.offsetHeight + 300) {
       if (!getFromContacts && usersLoadingState === LOADING_STATE.LOADED) {
         dispatch(loadMoreUsersAC(20));
       }
@@ -18463,8 +18618,6 @@ var UsersPopup = function UsersPopup(_ref) {
     if (getSelectedUsers) {
       getSelectedUsers(selectedMembers, 'back');
     }
-
-    handleClosePopup();
   };
 
   var handleClosePopup = function handleClosePopup() {
@@ -18479,6 +18632,7 @@ var UsersPopup = function UsersPopup(_ref) {
         }));
       }
     } else {
+      console.log('set filered users....', usersList);
       setFilteredUsers(usersList);
     }
   }, [contactList, usersList]);
@@ -18522,18 +18676,22 @@ var UsersPopup = function UsersPopup(_ref) {
       }));
     }
   }, []);
-  return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+  return React__default.createElement(PopupContainer, {
+    theme: theme
+  }, React__default.createElement(Popup, {
     maxHeight: popupHeight || '721px',
     width: popupWidth || '433px',
     maxWidth: popupWidth || '433px',
     height: popupHeight,
     padding: '0',
-    display: 'flex'
+    display: 'flex',
+    backgroundColor: theme === THEME.DARK ? colors.dark : colors.white
   }, React__default.createElement(PopupBody, {
     paddingH: '12px',
     paddingV: '24px',
     withFooter: actionType !== 'createChat'
   }, React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
     onClick: handleClosePopup
   }), React__default.createElement(PopupName, {
     padding: '0 12px'
@@ -18544,15 +18702,20 @@ var UsersPopup = function UsersPopup(_ref) {
     onChange: handleTypeSearchUser,
     value: userSearchValue,
     placeholder: 'Search for users',
-    type: 'text'
+    type: 'text',
+    widthBorder: theme !== THEME.DARK,
+    backgroundColor: colors.backgroundColor,
+    color: colors.textColor1
   }), userSearchValue && React__default.createElement(ClearTypedText, {
+    color: colors.textColor1,
     onClick: function onClick() {
       return setUserSearchValue('');
     }
   })), actionType !== 'createChat' && selectedMembers.length !== 0 && React__default.createElement(SelectedMembersContainer, {
     ref: selectedMembersCont
   }, selectedMembers.map(function (member) {
-    return React__default.createElement(SelectedMemberBuble, {
+    return React__default.createElement(SelectedMemberBubble, {
+      backgroundColor: colors.backgroundColor,
       key: "selected-" + member.id
     }, React__default.createElement(Avatar, {
       image: member.avatarUrl,
@@ -18561,7 +18724,9 @@ var UsersPopup = function UsersPopup(_ref) {
       textSize: 12,
       setDefaultAvatar: true,
       border: '0.5px solid rgba(0, 0, 0, 0.1)'
-    }), React__default.createElement(SelectedMemberName, null, member.displayName), React__default.createElement(StyledSubtractSvg, {
+    }), React__default.createElement(SelectedMemberName, {
+      color: colors.textColor1
+    }, member.displayName), React__default.createElement(StyledSubtractSvg, {
       onClick: function onClick() {
         return removeMember(member);
       }
@@ -18581,6 +18746,7 @@ var UsersPopup = function UsersPopup(_ref) {
     var memberDisplayName = makeUsername(contactsMap[user.id], user, getFromContacts);
     return React__default.createElement(ListRow, {
       isAdd: actionType !== 'createChat',
+      hoverBackground: colors.hoverBackgroundColor,
       key: user.id,
       onClick: function onClick() {
         return actionType === 'createChat' && handleAddMember(user);
@@ -18591,9 +18757,13 @@ var UsersPopup = function UsersPopup(_ref) {
       size: 40,
       textSize: 16,
       setDefaultAvatar: true
-    }), React__default.createElement(UserNamePresence, null, React__default.createElement(MemberName, null, memberDisplayName), React__default.createElement(SubTitle, null, user.presence && user.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : user.presence && user.presence.lastActiveAt && userLastActiveDateFormat(user.presence.lastActiveAt))), actionType !== 'createChat' && React__default.createElement(CustomCheckbox, {
+    }), React__default.createElement(UserNamePresence, null, React__default.createElement(MemberName, {
+      color: colors.textColor1
+    }, memberDisplayName), React__default.createElement(SubTitle, null, user.presence && user.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : user.presence && user.presence.lastActiveAt && userLastActiveDateFormat(user.presence.lastActiveAt))), actionType !== 'createChat' && React__default.createElement(CustomCheckbox, {
       index: user.id,
       state: isSelected,
+      backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
+      checkedBackgroundColor: colors.primary,
       onChange: function onChange(e) {
         return handleUserSelect(e, {
           id: user.id,
@@ -18604,16 +18774,16 @@ var UsersPopup = function UsersPopup(_ref) {
       size: '18px'
     }));
   }))), actionType !== 'createChat' && React__default.createElement(PopupFooter, {
-    backgroundColor: colors.gray5,
+    backgroundColor: colors.backgroundColor,
     marginTop: 'auto'
   }, actionType === 'selectUsers' ? React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: handleGoBack
   }, "Back") : React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: toggleCreatePopup
   }, "Cancel"), React__default.createElement(Button, {
@@ -18632,17 +18802,29 @@ var MembersContainer = styled__default(List)(_templateObject2$8 || (_templateObj
   return "calc(100% - (" + ((props.isAdd ? 67 : 70) + props.selectedMembersHeight) + "px))";
 });
 var SearchUserCont = styled__default.div(_templateObject3$6 || (_templateObject3$6 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin: 24px 12px 0;\n\n  ", " {\n    top: 10px;\n    right: 11px;\n  }\n"])), ClearTypedText);
-var SearchUsersInput = styled__default.input(_templateObject4$4 || (_templateObject4$4 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  font-size: 14px;\n  background: #ffffff;\n  border: 1px solid rgb(225, 226, 229);\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding-left: 36px;\n\n  &::placeholder {\n    color: ", ";\n    font-size: 14px;\n    opacity: 1;\n  }\n\n  &:focus {\n    outline: none;\n  }\n"])), colors.gray4);
+var SearchUsersInput = styled__default.input(_templateObject4$4 || (_templateObject4$4 = _taggedTemplateLiteralLoose(["\n  height: 40px;\n  width: 100%;\n  font-size: 14px;\n  border: ", ";\n  box-sizing: border-box;\n  border-radius: 8px;\n  padding-left: 36px;\n  color: ", ";\n  background-color: ", ";\n\n  &::placeholder {\n    color: ", ";\n    font-size: 14px;\n    opacity: 1;\n  }\n\n  &:focus {\n    outline: none;\n  }\n"])), function (props) {
+  return props.widthBorder ? "1px solid " + colors.gray1 : 'none';
+}, function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
+  return props.backgroundColor || colors.backgroundColor;
+}, colors.textColor2);
 var ListRow = styled__default.div(_templateObject5$3 || (_templateObject5$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  flex-direction: row;\n  align-items: center;\n  padding: 7px 12px;\n  cursor: ", ";\n  border-radius: 6px;\n  transition: all 0.2s;\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return !props.isAdd && 'pointer';
 }, function (props) {
-  return !props.isAdd && colors.gray0;
+  return !props.isAdd && (props.hoverBackground || colors.gray0);
 }, UserStatus);
 var UserNamePresence = styled__default.div(_templateObject6$2 || (_templateObject6$2 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  max-width: calc(100% - 70px);\n  margin: 0 auto 0 8px;\n  line-height: 10px;\n"])));
-var MemberName = styled__default.h4(_templateObject7$2 || (_templateObject7$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 16px;\n  color: ", ";\n  margin: 0;\n  max-width: calc(100% - 10px);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n"])), colors.blue6);
+var MemberName = styled__default.h4(_templateObject7$2 || (_templateObject7$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 16px;\n  color: ", ";\n  margin: 0;\n  max-width: calc(100% - 10px);\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  overflow: hidden;\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
 var SelectedMembersContainer = styled__default.div(_templateObject8$2 || (_templateObject8$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding: 2px 12px 0;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedMemberBuble = styled__default.div(_templateObject9$2 || (_templateObject9$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px 4px 0;\n  height: 28px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.gray5);
-var SelectedMemberName = styled__default.span(_templateObject10$2 || (_templateObject10$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  margin-left: 8px;\n  color: ", ";\n"])), colors.blue6);
+var SelectedMemberBubble = styled__default.div(_templateObject9$2 || (_templateObject9$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px 4px 0;\n  height: 28px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), function (props) {
+  return props.backgroundColor;
+});
+var SelectedMemberName = styled__default.span(_templateObject10$2 || (_templateObject10$2 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  margin-left: 8px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
 var StyledSubtractSvg = styled__default(SvgCross)(_templateObject11$2 || (_templateObject11$2 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
 var _path$j;
@@ -18732,7 +18914,8 @@ function getRadianAngle(degreeValue) {
 var _templateObject$9, _templateObject2$9;
 
 var ImageCrop = function ImageCrop(_ref) {
-  var image = _ref.image,
+  var theme = _ref.theme,
+      image = _ref.image,
       onAccept = _ref.onAccept,
       handleClosePopup = _ref.handleClosePopup;
 
@@ -18784,6 +18967,8 @@ var ImageCrop = function ImageCrop(_ref) {
     }
   }, [area]);
   return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+    theme: theme,
+    backgroundColor: colors.backgroundColor,
     minWidth: '500px',
     maxWidth: '600px',
     padding: '0'
@@ -18820,10 +19005,10 @@ var ImageCrop = function ImageCrop(_ref) {
     },
     className: 'zoom-range'
   })))), React__default.createElement(PopupFooter, {
-    backgroundColor: colors.gray5
+    backgroundColor: colors.backgroundColor
   }, React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return handleClosePopup();
@@ -18838,10 +19023,11 @@ var ImageCrop = function ImageCrop(_ref) {
 var CropperWrapper = styled__default.div(_templateObject$9 || (_templateObject$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  height: 300px;\n  margin: 14px 0;\n"])));
 var Controls = styled__default.div(_templateObject2$9 || (_templateObject2$9 = _taggedTemplateLiteralLoose(["\n  & > input {\n    width: 100%;\n    -webkit-appearance: none;\n    background-color: rgba(178, 182, 190, 0.4);\n    border-radius: 3px;\n\n    &::-webkit-slider-runnable-track {\n      height: 6px;\n      -webkit-appearance: none;\n      color: ", ";\n      margin-top: -1px;\n      border-radius: 3px;\n    }\n    &::-webkit-slider-thumb {\n      width: 16px;\n      -webkit-appearance: none;\n      height: 16px;\n      cursor: ew-resize;\n      background: ", ";\n      border-radius: 50%;\n      transform: translate(0, -5px);\n    }\n  }\n"])), colors.primary, colors.primary);
 
-var _templateObject$a, _templateObject2$a, _templateObject3$7, _templateObject4$5, _templateObject5$4, _templateObject6$3, _templateObject7$3, _templateObject8$3, _templateObject9$3, _templateObject10$3;
+var _templateObject$a, _templateObject2$a, _templateObject3$7, _templateObject4$5, _templateObject5$4, _templateObject6$3, _templateObject7$3, _templateObject8$3, _templateObject9$3;
 function CreateChannel(_ref) {
   var handleClose = _ref.handleClose,
       channelType = _ref.channelType,
+      theme = _ref.theme,
       uriPrefixOnCreateChannel = _ref.uriPrefixOnCreateChannel,
       channelTypeRequiredFieldsMap = _ref.channelTypeRequiredFieldsMap,
       uploadPhotoIcon = _ref.uploadPhotoIcon,
@@ -18912,6 +19098,7 @@ function CreateChannel(_ref) {
 
   var toggleCreatePopup = function toggleCreatePopup() {
     setUsersPopupVisible(!usersPopupVisible);
+    handleClose();
   };
 
   var handleAddMembersForCreateChannel = function handleAddMembersForCreateChannel(members, action) {
@@ -18920,6 +19107,8 @@ function CreateChannel(_ref) {
 
     if (action === 'create') {
       handleCreateChannel(members);
+    } else {
+      setUsersPopupVisible(!usersPopupVisible);
     }
   };
 
@@ -19073,12 +19262,13 @@ function CreateChannel(_ref) {
       setNextButtonDisable(false);
     }
   }, [subjectValue, createGroupChannel, URIValue]);
-  return React__default.createElement(Container$3, null, withoutConfig ? React__default.createElement(UsersPopup, {
+  return React__default.createElement(React__default.Fragment, null, withoutConfig ? React__default.createElement(UsersPopup, {
     popupHeight: '540px',
     popupWidth: '520px',
     toggleCreatePopup: handleClose,
     actionType: 'createChat'
   }) : React__default.createElement(React__default.Fragment, null, usersPopupVisible && React__default.createElement(UsersPopup, {
+    theme: theme,
     toggleCreatePopup: toggleCreatePopup,
     getSelectedUsers: handleAddMembersForCreateChannel,
     creatChannelSelectedMembers: selectedMembers,
@@ -19090,6 +19280,7 @@ function CreateChannel(_ref) {
     popupHeight: '540px',
     popupWidth: '520px'
   }), createGroupChannelPopupVisible && React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+    backgroundColor: theme === THEME.DARK ? colors.dark : colors.white,
     maxHeight: '600px',
     width: '520px',
     maxWidth: '520px',
@@ -19098,8 +19289,10 @@ function CreateChannel(_ref) {
     paddingH: '24px',
     paddingV: '24px'
   }, React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
     onClick: toggleCreateGroupChannelPopup
   }), React__default.createElement(PopupName, {
+    color: colors.textColor1,
     marginBottom: '20px'
   }, "Create ", createGroupChannel ? 'Group' : 'Channel'), !createGroupChannel && React__default.createElement(CrateChannelTitle, null, "Create a Channel to post your content to a large audience."), showUploadAvatar && React__default.createElement(UploadChannelAvatar, null, newAvatar.url ? React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
     image: newAvatar.url,
@@ -19122,17 +19315,27 @@ function CreateChannel(_ref) {
     accept: '.png,.jpeg,.jpg',
     id: 'uploadImage',
     onChange: handleSelectImage
-  })), showSubject && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, null, " ", createGroupChannel ? 'Group' : 'Channel', " name"), React__default.createElement(CustomInput, {
+  })), showSubject && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, {
+    color: colors.textColor1
+  }, " ", createGroupChannel ? 'Group' : 'Channel', " name"), React__default.createElement(CustomInput, {
     type: 'text',
     value: subjectValue,
     onChange: handleTypeSubject,
-    placeholder: "Enter " + (createGroupChannel ? 'group' : 'channel') + " name"
-  })), showDescription && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, null, "Description"), React__default.createElement(CustomInput, {
+    placeholder: "Enter " + (createGroupChannel ? 'group' : 'channel') + " name",
+    theme: theme,
+    color: colors.textColor1
+  })), showDescription && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, {
+    color: colors.textColor1
+  }, "Description"), React__default.createElement(CustomInput, {
     type: 'text',
     value: metadataValue,
     onChange: handleTypeMetadata,
-    placeholder: "Enter " + (createGroupChannel ? 'group' : 'channel') + " description"
-  })), showUri && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, null, "URL"), React__default.createElement(UriInputWrapper, {
+    placeholder: "Enter " + (createGroupChannel ? 'group' : 'channel') + " description",
+    theme: theme,
+    color: colors.textColor1
+  })), showUri && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, {
+    color: colors.textColor1
+  }, "URL"), React__default.createElement(UriInputWrapper, {
     uriPrefixWidth: uriPrefixWidth
   }, uriPrefixOnCreateChannel && React__default.createElement(UriPrefix, {
     ref: uriPrefixRef
@@ -19142,12 +19345,14 @@ function CreateChannel(_ref) {
     onChange: handleTypeURI,
     onBlur: checkURIRegexp,
     placeholder: 'chan12',
-    error: !!wrongUri
+    error: !!wrongUri,
+    theme: theme,
+    color: colors.textColor1
   }), !!wrongUri && React__default.createElement(InputErrorMessage, null, wrongUri === 'short' ? 'The name should be 5-50 characters long' : 'The name is invalid. Please provide na name from the allowed range of characters')), React__default.createElement(ChannelUriDescription, null, "Give a URL to your channel so you can share it with others inviting them to join. Choose a name from the allowed range: a-z, 0-9, and _(underscores) between 5-50 characters."))), React__default.createElement(PopupFooter, {
-    backgroundColor: colors.gray5
+    backgroundColor: colors.backgroundColor
   }, React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return handleClose();
@@ -19168,27 +19373,27 @@ function CreateChannel(_ref) {
     }
   }))));
 }
-var Container$3 = styled__default.div(_templateObject$a || (_templateObject$a = _taggedTemplateLiteralLoose([""])));
-var CrateChannelTitle = styled__default.h3(_templateObject2$a || (_templateObject2$a = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 400;\n  line-height: 150%;\n  margin: 0 0 20px;\n  color: ", ";\n"])), colors.gray8);
-var UploadAvatarLabel = styled__default.label(_templateObject3$7 || (_templateObject3$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 90px;\n  height: 90px;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border-radius: 50%;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
-  return props.backgroundColor || colors.gray5;
+var CrateChannelTitle = styled__default.p(_templateObject$a || (_templateObject$a = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 400;\n  line-height: 150%;\n  margin: 0 0 20px;\n  color: ", ";\n"])), colors.textColor2);
+var UploadAvatarLabel = styled__default.label(_templateObject2$a || (_templateObject2$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 90px;\n  height: 90px;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border-radius: 50%;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.backgroundColor || colors.backgroundColor;
 }, function (props) {
   return props.iconColor;
 });
-var URILabel = styled__default.label(_templateObject4$5 || (_templateObject4$5 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 15px;\n  margin-top: 18px;\n  margin-bottom: 5px;\n"])));
-var UploadChannelAvatar = styled__default.div(_templateObject5$4 || (_templateObject5$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
-var FileUploaderInput = styled__default.input(_templateObject6$3 || (_templateObject6$3 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-var RemoveSelectedAvatar = styled__default.span(_templateObject7$3 || (_templateObject7$3 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 16px;\n  cursor: pointer;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n"])), colors.red1);
-var ChannelUriDescription = styled__default.p(_templateObject8$3 || (_templateObject8$3 = _taggedTemplateLiteralLoose(["\n  margin-bottom: 8px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
-var UriInputWrapper = styled__default.div(_templateObject9$3 || (_templateObject9$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n\n  & > input {\n    padding-left: ", ";\n  }\n"])), function (props) {
+var URILabel = styled__default.label(_templateObject3$7 || (_templateObject3$7 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 15px;\n  margin-top: 18px;\n  margin-bottom: 5px;\n"])));
+var UploadChannelAvatar = styled__default.div(_templateObject4$5 || (_templateObject4$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
+var FileUploaderInput = styled__default.input(_templateObject5$4 || (_templateObject5$4 = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var RemoveSelectedAvatar = styled__default.span(_templateObject6$3 || (_templateObject6$3 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 16px;\n  cursor: pointer;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n"])), colors.red1);
+var ChannelUriDescription = styled__default.p(_templateObject7$3 || (_templateObject7$3 = _taggedTemplateLiteralLoose(["\n  margin-bottom: 8px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
+var UriInputWrapper = styled__default.div(_templateObject8$3 || (_templateObject8$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n\n  & > input {\n    padding-left: ", ";\n  }\n"])), function (props) {
   return props.uriPrefixWidth && props.uriPrefixWidth + "px";
 });
-var UriPrefix = styled__default.span(_templateObject10$3 || (_templateObject10$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 15px;\n  top: 11px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n"])));
+var UriPrefix = styled__default.span(_templateObject9$3 || (_templateObject9$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 15px;\n  top: 11px;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n"])));
 
 var _templateObject$b;
 
 var CreateChannelButton = function CreateChannelButton(_ref) {
   var showSearch = _ref.showSearch,
+      theme = _ref.theme,
       uriPrefixOnCreateChannel = _ref.uriPrefixOnCreateChannel,
       createChannelIcon = _ref.createChannelIcon,
       newChannelIcon = _ref.newChannelIcon,
@@ -19221,30 +19426,31 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
   return React__default.createElement(React__default.Fragment, null, React__default.createElement(DropDown, {
     forceClose: showAddMemberPopup || !!showCreateChannel,
     position: 'center',
+    theme: theme,
     trigger: React__default.createElement(CreateDropdownButton, {
       hoverBackground: colors.primaryLight,
       leftAuto: !showSearch
     }, createChannelIcon || React__default.createElement(SvgAddChat, null))
   }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
     key: 1,
-    textColor: colors.gray6,
-    hoverBackground: colors.gray5,
+    textColor: colors.textColor1,
+    hoverBackground: colors.hoverBackgroundColor,
     onClick: function onClick() {
       return handleOpenCreateChannel('broadcast');
     },
     iconWidth: '20px'
   }, newChannelIcon || React__default.createElement(SvgCreateChannel, null), "New channel"), React__default.createElement(DropdownOptionLi, {
     key: 2,
-    textColor: colors.gray6,
-    hoverBackground: colors.gray5,
+    textColor: colors.textColor1,
+    hoverBackground: colors.hoverBackgroundColor,
     onClick: function onClick() {
       return handleOpenCreateChannel('group');
     },
     iconWidth: '20px'
   }, newGroupIcon || React__default.createElement(SvgCreateGroup, null), "New group"), React__default.createElement(DropdownOptionLi, {
     key: 3,
-    textColor: colors.gray6,
-    hoverBackground: colors.gray5,
+    textColor: colors.textColor1,
+    hoverBackground: colors.hoverBackgroundColor,
     onClick: function onClick() {
       return handleOpenCreateChannel('direct');
     },
@@ -19255,8 +19461,10 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
     toggleCreatePopup: function toggleCreatePopup() {
       return setShowAddMemberPopup(false);
     },
-    actionType: 'createChat'
+    actionType: 'createChat',
+    theme: theme
   }), showCreateChannel && React__default.createElement(CreateChannel, {
+    theme: theme,
     handleClose: function handleClose() {
       return setShowCreateChannel(false);
     },
@@ -19468,7 +19676,7 @@ var EditProfile = function EditProfile(_ref) {
     handleCloseEditProfile();
   };
 
-  return React__default.createElement(Container$4, null, React__default.createElement(EditAvatarCont, null, React__default.createElement(Avatar, {
+  return React__default.createElement(Container$3, null, React__default.createElement(EditAvatarCont, null, React__default.createElement(Avatar, {
     name: user.firstName || user.id,
     size: 144,
     image: user.avatarUrl,
@@ -19486,7 +19694,7 @@ var EditProfile = function EditProfile(_ref) {
   })), React__default.createElement(PopupFooter, null, React__default.createElement(Button, {
     onClick: handleCloseEditProfile,
     backgroundColor: colors.gray0,
-    color: colors.gray6,
+    color: colors.textColor1,
     borderRadius: '8px'
   }, "Cancel"), React__default.createElement(Button, {
     onClick: handleEditProfile,
@@ -19495,7 +19703,7 @@ var EditProfile = function EditProfile(_ref) {
     margin: '0 0 0 12px'
   }, "Save")));
 };
-var Container$4 = styled__default.div(_templateObject$c || (_templateObject$c = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 64px;\n  left: 0;\n  background-color: ", ";\n"])), colors.white);
+var Container$3 = styled__default.div(_templateObject$c || (_templateObject$c = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  top: 64px;\n  left: 0;\n  background-color: ", ";\n"])), colors.white);
 var EditAvatarCont = styled__default.div(_templateObject2$b || (_templateObject2$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  margin: 20px 0 24px;\n"])));
 var EditProfileBody = styled__default.div(_templateObject3$8 || (_templateObject3$8 = _taggedTemplateLiteralLoose(["\n  padding: 0 16px;\n  margin-bottom: 16px;\n"])));
 
@@ -19524,7 +19732,7 @@ var ProfileSettings = function ProfileSettings(_ref) {
     setEditProfileIsOpen(!editProfileIsOpen);
   };
 
-  return React__default.createElement(Container$5, null, React__default.createElement(SettingsHeader, null, React__default.createElement(ArrowLeftWrapper, {
+  return React__default.createElement(Container$4, null, React__default.createElement(SettingsHeader, null, React__default.createElement(ArrowLeftWrapper, {
     onClick: activeSettingPage === settingsPages.profile ? handleOpenEditProfile : handleCloseProfile
   }, React__default.createElement(SvgArrowLeft, null)), React__default.createElement(SectionHeader, null, activeSettingPage === settingsPages.profile ? 'Edit profile' : 'Settings')), React__default.createElement(ProfileInfo, null, React__default.createElement(Avatar, {
     name: user.firstName || user.id,
@@ -19534,21 +19742,21 @@ var ProfileSettings = function ProfileSettings(_ref) {
   }), React__default.createElement(Username, null, user.firstName + " " + user.lastName), React__default.createElement(UserNumber, null, "+" + user.id)), React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
-    textColor: colors.gray6,
-    iconColor: colors.gray4,
+    textColor: colors.textColor1,
+    iconColor: colors.textColor2,
     margin: '0 0 24px',
     onClick: handleOpenEditProfile
   }, React__default.createElement(SvgDevaultAvatar50, null), " Profile"), React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
-    textColor: colors.gray6,
-    iconColor: colors.gray4,
+    textColor: colors.textColor1,
+    iconColor: colors.textColor2,
     margin: '0 0 24px'
   }, React__default.createElement(SvgNotifications, null), " Notifications"), React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
-    textColor: colors.gray6,
-    iconColor: colors.gray4,
+    textColor: colors.textColor1,
+    iconColor: colors.textColor2,
     margin: '0 0 24px'
   }, React__default.createElement(SvgLock, null), " About"), React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
@@ -19561,18 +19769,25 @@ var ProfileSettings = function ProfileSettings(_ref) {
     handleCloseEditProfile: handleOpenEditProfile
   }));
 };
-var Container$5 = styled__default.div(_templateObject$d || (_templateObject$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  background-color: ", ";\n  border-right: 1px solid ", ";\n"])), colors.white, colors.gray1);
+var Container$4 = styled__default.div(_templateObject$d || (_templateObject$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  height: 100%;\n  width: 100%;\n  background-color: ", ";\n  border-right: 1px solid ", ";\n"])), colors.white, colors.gray1);
 var SettingsHeader = styled__default.div(_templateObject2$c || (_templateObject2$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  border-bottom: 1px solid ", ";\n  box-sizing: border-box;\n"])), colors.gray1);
 var ArrowLeftWrapper = styled__default.span(_templateObject3$9 || (_templateObject3$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  margin-right: 12px;\n"])));
 var ProfileInfo = styled__default.div(_templateObject4$6 || (_templateObject4$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  margin: 20px 0 24px;\n"])));
-var Username = styled__default.h3(_templateObject5$5 || (_templateObject5$5 = _taggedTemplateLiteralLoose(["\n  margin: 16px 0 0;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray6);
-var UserNumber = styled__default.h4(_templateObject6$4 || (_templateObject6$4 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
+var Username = styled__default.h3(_templateObject5$5 || (_templateObject5$5 = _taggedTemplateLiteralLoose(["\n  margin: 16px 0 0;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor1);
+var UserNumber = styled__default.h4(_templateObject6$4 || (_templateObject6$4 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
+
+var themeSelector = function themeSelector(store) {
+  return store.ThemeReducer.theme;
+};
 
 var _templateObject$e, _templateObject2$d, _templateObject3$a, _templateObject4$7, _templateObject5$6, _templateObject6$5, _templateObject7$4, _templateObject8$4;
 
 var ChannelList = function ChannelList(_ref) {
   var selectedChannelBackground = _ref.selectedChannelBackground,
       selectedChannelLeftBorder = _ref.selectedChannelLeftBorder,
+      backgroundColor = _ref.backgroundColor,
+      searchInputBackgroundColor = _ref.searchInputBackgroundColor,
+      searchInputTextColor = _ref.searchInputTextColor,
       _ref$searchChannelsPo = _ref.searchChannelsPosition,
       searchChannelsPosition = _ref$searchChannelsPo === void 0 ? 'bottom' : _ref$searchChannelsPo,
       searchInputBorderRadius = _ref.searchInputBorderRadius,
@@ -19585,6 +19800,7 @@ var ChannelList = function ChannelList(_ref) {
       getActiveChannel = _ref.getActiveChannel,
       Profile = _ref.Profile,
       CreateChannel = _ref.CreateChannel,
+      ChannelsTitle = _ref.ChannelsTitle,
       filter = _ref.filter,
       limit = _ref.limit,
       sort = _ref.sort,
@@ -19610,6 +19826,7 @@ var ChannelList = function ChannelList(_ref) {
       uploadPhotoIcon = _ref.uploadPhotoIcon;
   var dispatch = reactRedux.useDispatch();
   var getFromContacts = getShowOnlyContactUsers();
+  var theme = reactRedux.useSelector(themeSelector);
   var channelListRef = React.useRef(null);
 
   var _useState = React.useState(''),
@@ -19818,19 +20035,26 @@ var ChannelList = function ChannelList(_ref) {
 
     dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
   }, []);
-  return React__default.createElement(Container$6, {
+  return React__default.createElement(Container$5, {
     withCustomList: !!List,
-    ref: channelListRef
+    ref: channelListRef,
+    backgroundColor: backgroundColor
   }, React__default.createElement(ChannelListHeader, {
     withCustomList: !!List,
-    maxWidth: channelListRef.current && channelListRef.current.clientWidth || 0
+    maxWidth: channelListRef.current && channelListRef.current.clientWidth || 0,
+    borderColor: colors.backgroundColor
   }, Profile, showSearch && searchChannelsPosition === 'inline' ? React__default.createElement(ChannelSearch, {
     inline: true,
     borderRadius: searchInputBorderRadius,
     searchValue: searchValue,
     handleSearchValueChange: handleSearchValueChange,
-    getMyChannels: getMyChannels
-  }) : React__default.createElement(ChannelsTitle, null, "Chats"), showCreateChannelIcon && (CreateChannel || React__default.createElement(CreateChannelButton, {
+    getMyChannels: getMyChannels,
+    searchInputBackgroundColor: searchInputBackgroundColor,
+    searchInputTextColor: searchInputTextColor
+  }) : ChannelsTitle || React__default.createElement(ChatsTitle, {
+    theme: theme
+  }, "Chats"), showCreateChannelIcon && (CreateChannel || React__default.createElement(CreateChannelButton, {
+    theme: theme,
     newChannelIcon: newChannelIcon,
     newGroupIcon: newGroupIcon,
     newChatIcon: newChatIcon,
@@ -19842,9 +20066,13 @@ var ChannelList = function ChannelList(_ref) {
     searchValue: searchValue,
     borderRadius: searchInputBorderRadius,
     handleSearchValueChange: handleSearchValueChange,
-    getMyChannels: getMyChannels
+    getMyChannels: getMyChannels,
+    searchInputBackgroundColor: searchInputBackgroundColor,
+    searchInputTextColor: searchInputTextColor
   }), List ? React__default.createElement(List, {
     channels: channels,
+    activeChannel: activeChannel,
+    setActiveChannel: handleChangeActiveChannel,
     loadMoreChannels: handleLoadMoreChannels,
     searchValue: searchValue,
     handleSetChannelListWithGroups: handleSetChannelListWithGroups
@@ -19867,9 +20095,15 @@ var ChannelList = function ChannelList(_ref) {
       key: channel.id,
       contactsMap: contactsMap
     });
-  })) : channelsLoading === LOADING_STATE.LOADED && searchValue && (searchOption === 'custom' ? React__default.createElement("div", null, channelGroupsList ? channelGroupsList.map(function (channelGroup) {
+  })) : channelsLoading === LOADING_STATE.LOADED && searchValue && (searchOption === 'custom' ? React__default.createElement("div", {
+    className: 'custom_channel_list'
+  }, channelGroupsList ? channelGroupsList.map(function (channelGroup) {
     return React__default.createElement(React__default.Fragment, null, React__default.createElement(SearchedChannelsHeader, null, channelGroup.groupName), channelGroup.channelList.map(function (channel) {
-      return React__default.createElement(Channel, {
+      return ListItem ? React__default.createElement(ListItem, {
+        channel: channel,
+        setActiveChannel: handleChangeActiveChannel,
+        key: channel.id
+      }) : React__default.createElement(Channel, {
         selectedChannelLeftBorder: selectedChannelLeftBorder,
         selectedChannelBackground: selectedChannelBackground,
         selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -19930,6 +20164,7 @@ var ChannelList = function ChannelList(_ref) {
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
     }) : React__default.createElement(Channel, {
+      theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
       selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -19985,12 +20220,14 @@ var ChannelList = function ChannelList(_ref) {
     handleCloseProfile: handleOpenProfile
   }));
 };
-var Container$6 = styled__default.div(_templateObject$e || (_templateObject$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  width: ", ";\n  min-width: ", ";\n  border-right: ", ";\n\n  ", ";\n"])), function (props) {
+var Container$5 = styled__default.div(_templateObject$e || (_templateObject$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  width: ", ";\n  min-width: ", ";\n  border-right: ", ";\n  background-color: ", ";\n  ", ";\n"])), function (props) {
   return props.withCustomList ? '' : '400px';
 }, function (props) {
   return props.withCustomList ? '' : '400px';
 }, function (props) {
-  return props.withCustomList ? '' : '1px solid rgb(237, 237, 237)';
+  return props.withCustomList ? '' : "1px solid " + colors.backgroundColor;
+}, function (props) {
+  return props.backgroundColor;
 }, function (props) {
   return props.withCustomList ? '' : "\n    @media  " + device.laptopL + " {\n      width: 400px;\n      min-width: 400px;\n    }\n ";
 });
@@ -19999,16 +20236,19 @@ var SearchedChannels = styled__default.div(_templateObject3$a || (_templateObjec
 var SearchedChannelsHeader = styled__default.p(_templateObject4$7 || (_templateObject4$7 = _taggedTemplateLiteralLoose(["\n  padding-left: 16px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  color: #676a7c;\n"])));
 var DirectChannels = styled__default.div(_templateObject5$6 || (_templateObject5$6 = _taggedTemplateLiteralLoose([""])));
 var GroupChannels = styled__default.div(_templateObject6$5 || (_templateObject6$5 = _taggedTemplateLiteralLoose([""])));
-var ChannelsTitle = styled__default.h3(_templateObject7$4 || (_templateObject7$4 = _taggedTemplateLiteralLoose(["\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 28px;\n  margin: 0 auto;\n  color: ", ";\n"])), colors.textColor1);
+var ChatsTitle = styled__default.h3(_templateObject7$4 || (_templateObject7$4 = _taggedTemplateLiteralLoose(["\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 28px;\n  margin: 0 auto;\n  color: ", ";\n"])), function (props) {
+  return props.theme === THEME.DARK ? colors.darkModeTextColor1 : colors.textColor1;
+});
 var ChannelListHeader = styled__default.div(_templateObject8$4 || (_templateObject8$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  flex-direction: row;\n  justify-content: space-between;\n  //justify-content: flex-end;\n  padding: 12px;\n  box-sizing: border-box;\n  max-width: ", ";\n  padding-left: ", ";\n  border-right: ", ";\n"])), function (props) {
   return props.maxWidth && props.maxWidth + "px";
 }, function (props) {
   return props.withoutProfile && '52px';
 }, function (props) {
-  return props.withCustomList ? '1px solid rgb(237, 237, 237)' : '';
+  return props.withCustomList && "1px solid " + props.borderColor;
 });
 
 var _templateObject$f;
+var detailsSwitcherTimeout;
 function Chat$1(_ref) {
   var children = _ref.children,
       hideChannelList = _ref.hideChannelList,
@@ -20018,6 +20258,11 @@ function Chat$1(_ref) {
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
   var addedChannel = reactRedux.useSelector(addedToChannelSelector);
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
+
+  var _useState = React.useState(0),
+      channelDetailsWidth = _useState[0],
+      setChannelDetailsWidth = _useState[1];
+
   React.useEffect(function () {
     if (hideChannelList && !channelListWidth) {
       dispatch(setHideChannelListAC(true));
@@ -20039,13 +20284,27 @@ function Chat$1(_ref) {
       dispatch(setActiveChannelAC(addedChannel));
     }
   }, [addedChannel]);
-  return React__default.createElement(Container$7, {
+  useDidUpdate(function () {
+    if (channelDetailsIsOpen) {
+      detailsSwitcherTimeout = setTimeout(function () {
+        var detailsContainer = document.getElementById('channel_details_wrapper');
+
+        if (detailsContainer) {
+          setChannelDetailsWidth(detailsContainer.offsetWidth);
+        }
+      }, 100);
+    } else {
+      clearTimeout(detailsSwitcherTimeout);
+      setChannelDetailsWidth(0);
+    }
+  }, [channelDetailsIsOpen]);
+  return React__default.createElement(Container$6, {
     widthOffset: channelListWidth,
-    channelDetailsIsOpen: channelDetailsIsOpen
+    channelDetailsWidth: channelDetailsWidth
   }, children);
 }
-var Container$7 = styled__default.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
-  return props.widthOffset || props.channelDetailsIsOpen ? "calc(100% - " + (props.widthOffset + (props.channelDetailsIsOpen ? 402 : 0)) + "px)" : '';
+var Container$6 = styled__default.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+  return props.widthOffset || props.channelDetailsWidth ? "calc(100% - " + (props.widthOffset + (props.channelDetailsWidth ? props.channelDetailsWidth + 1 : 0)) + "px)" : '';
 });
 
 var _path$o;
@@ -20083,10 +20342,14 @@ function SvgInfo(props) {
 }
 
 var _templateObject$g, _templateObject2$e, _templateObject3$b, _templateObject4$8;
-var Container$8 = styled__default.div(_templateObject$g || (_templateObject$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n"])), colors.gray1, function (props) {
+var Container$7 = styled__default.div(_templateObject$g || (_templateObject$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
+}, function (props) {
   return props.background;
 });
-var ChannelInfo$1 = styled__default.div(_templateObject2$e || (_templateObject2$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+var ChannelInfo$1 = styled__default.div(_templateObject2$e || (_templateObject2$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n  cursor: ", ";\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+  return props.clickable && 'pointer';
+}, UserStatus);
 var ChannelName = styled__default.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n  width: 100%;\n\n  & > ", " {\n    max-width: calc(100% - 8px);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), SectionHeader);
 var ChanelInfo = styled__default.span(_templateObject4$8 || (_templateObject4$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.infoIconColor;
@@ -20108,6 +20371,7 @@ function ChatHeader(_ref) {
       setInfoButtonVisible = _useState[1];
 
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
+  var theme = reactRedux.useSelector(themeSelector);
   var channelListHidden = reactRedux.useSelector(channelListHiddenSelector);
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
   var isDirectChannel = activeChannel.type === CHANNEL_TYPE.DIRECT;
@@ -20130,16 +20394,21 @@ function ChatHeader(_ref) {
       }, 90);
     }
   }, [channelDetailsOpen]);
-  return React__default.createElement(Container$8, {
-    background: backgroundColor
-  }, React__default.createElement(ChannelInfo$1, null, React__default.createElement(AvatarWrapper, null, (activeChannel.subject || isDirectChannel && directChannelUser) && React__default.createElement(Avatar, {
+  return React__default.createElement(Container$7, {
+    background: backgroundColor,
+    borderColor: colors.backgroundColor
+  }, React__default.createElement(ChannelInfo$1, {
+    onClick: !channelListHidden && channelDetailsOnOpen,
+    clickable: !channelListHidden
+  }, React__default.createElement(AvatarWrapper, null, (activeChannel.subject || isDirectChannel && directChannelUser) && React__default.createElement(Avatar, {
     name: activeChannel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
     image: activeChannel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
     size: 36,
     textSize: 13,
     setDefaultAvatar: isDirectChannel
   })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, {
-    color: titleColor
+    color: titleColor || colors.textColor1,
+    theme: theme
   }, activeChannel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), showMemberInfo && (isDirectChannel && directChannelUser ? React__default.createElement(SubTitle, {
     color: memberInfoTextColor
   }, hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, {
@@ -20148,12 +20417,12 @@ function ChatHeader(_ref) {
     onClick: function onClick() {
       return channelDetailsOnOpen();
     },
-    infoIconColor: channelDetailsIsOpen ? colors.primary : colors.gray4
+    infoIconColor: channelDetailsIsOpen ? colors.primary : colors.textColor2
   }, infoButtonVisible && (infoIcon || React__default.createElement(SvgInfo, null))));
 }
 
 var _templateObject$h;
-var Container$9 = styled__default.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  margin-bottom: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: #fff;\n      }\n    }\n  }\n"])), function (props) {
+var Container$8 = styled__default.div(_templateObject$h || (_templateObject$h = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  margin-bottom: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 26px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -13px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n    }\n  }\n"])), function (props) {
   return props.noMargin ? '0 auto' : (props.marginTop || '16px') + " auto 0";
 }, function (props) {
   return props.marginBottom ? '8px' : '0';
@@ -20162,13 +20431,13 @@ var Container$9 = styled__default.div(_templateObject$h || (_templateObject$h = 
 }, function (props) {
   return props.width || '100%';
 }, function (props) {
-  return props.dateDividerBorder || "1px solid " + colors.gray1;
+  return props.dateDividerBorder;
 }, function (props) {
   return props.dateDividerFontSize || '14px';
 }, function (props) {
-  return props.dateDividerTextColor || colors.blue6;
+  return props.dateDividerTextColor || colors.textColor1;
 }, function (props) {
-  return props.dateDividerBackgroundColor || '#ffffff';
+  return props.dateDividerBackgroundColor;
 }, function (props) {
   return props.dateDividerBorder || "1px solid " + colors.gray1;
 }, function (props) {
@@ -20178,9 +20447,13 @@ var Container$9 = styled__default.div(_templateObject$h || (_templateObject$h = 
 }, function (props) {
   return props.newMessagesSeparatorLeftRightSpaceWidth ? "" + props.newMessagesSeparatorLeftRightSpaceWidth : '12px';
 }, function (props) {
+  return props.theme === THEME.DARK ? colors.dark : colors.white;
+}, function (props) {
   return props.newMessagesSeparatorLeftRightSpaceWidth ? "-" + props.newMessagesSeparatorLeftRightSpaceWidth : '-12px';
 }, function (props) {
   return props.newMessagesSeparatorLeftRightSpaceWidth ? "" + props.newMessagesSeparatorLeftRightSpaceWidth : '12px';
+}, function (props) {
+  return props.theme === THEME.DARK ? colors.dark : colors.white;
 });
 function MessageDivider(_ref) {
   var dividerText = _ref.dividerText,
@@ -20201,16 +20474,18 @@ function MessageDivider(_ref) {
       newMessagesSeparatorLeftRightSpaceWidth = _ref.newMessagesSeparatorLeftRightSpaceWidth,
       noMargin = _ref.noMargin,
       marginTop = _ref.marginTop,
+      theme = _ref.theme,
       marginBottom = _ref.marginBottom;
-  return React__default.createElement(Container$9, {
+  return React__default.createElement(Container$8, {
     className: unread ? 'unread' : 'divider',
+    theme: theme,
     systemMessage: systemMessage,
     marginTop: marginTop,
     dividerVisibility: !visibility || unread,
     dateDividerFontSize: dateDividerFontSize || newMessagesSeparatorFontSize,
-    dateDividerTextColor: dateDividerTextColor || newMessagesSeparatorTextColor,
+    dateDividerTextColor: dateDividerTextColor || newMessagesSeparatorTextColor || colors.textColor1,
     dateDividerBorder: dateDividerBorder || newMessagesSeparatorBorder,
-    dateDividerBackgroundColor: dateDividerBackgroundColor || newMessagesSeparatorBackground,
+    dateDividerBackgroundColor: dateDividerBackgroundColor || newMessagesSeparatorBackground || colors.backgroundColor,
     dateDividerBorderRadius: dateDividerBorderRadius || newMessagesSeparatorBorderRadius,
     width: newMessagesSeparatorWidth,
     newMessagesSeparatorLeftRightSpaceWidth: newMessagesSeparatorLeftRightSpaceWidth,
@@ -20654,6 +20929,7 @@ function MessageActions(_ref) {
   var _usePermissions = usePermissions(myRole),
       checkActionPermission = _usePermissions[0];
 
+  var theme = reactRedux.useSelector(themeSelector);
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var directChannelUser = isDirectChannel && channel.members.find(function (member) {
     return member.id !== user.id;
@@ -20672,17 +20948,20 @@ function MessageActions(_ref) {
     isThreadMessage: isThreadMessage,
     rtlDirection: rtlDirection
   }, React__default.createElement(EditMessageContainer, {
+    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     className: 'message_actions_cont '
   }, showMessageReaction && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && checkActionPermission('addMessageReaction') && React__default.createElement(Action, {
     order: reactionIconOrder || 0,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: handleOpenReaction
   }, React__default.createElement(ItemNote, {
     direction: 'top'
   }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgEmojiSmileIcon, null)), showEditMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && (isIncoming ? allowEditDeleteIncomingMessage : true) && editMessagePermitted && (isDirectChannel && directChannelUser ? !isIncoming && directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
     order: editIconOrder || 1,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return editModeToggle();
@@ -20690,7 +20969,8 @@ function MessageActions(_ref) {
   }, React__default.createElement(ItemNote, {
     direction: 'top'
   }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditIcon, null)), messageStatus === MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleResendMessage();
@@ -20699,7 +20979,8 @@ function MessageActions(_ref) {
     direction: 'top'
   }, " Resend Message "), React__default.createElement(SvgResend, null)), !isThreadMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
     order: replyIconOrder || 2,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleReplyMessage();
@@ -20708,7 +20989,8 @@ function MessageActions(_ref) {
     direction: 'top'
   }, replyIconTooltipText || 'Reply'), replyIcon || React__default.createElement(SvgReplyIcon, null)), showReplyMessageInThread && replyMessagePermitted && React__default.createElement(Action, {
     order: replyInThreadIconOrder || 3,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleReplyMessage(true);
@@ -20717,7 +20999,8 @@ function MessageActions(_ref) {
     direction: 'top'
   }, replyInThreadIconTooltipText || 'Reply in thread'), replyInThreadIcon || React__default.createElement(SvgReplyInThreadIcon, null))), showCopyMessage && React__default.createElement(Action, {
     order: copyIconOrder || 4,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleCopyMessage();
@@ -20726,7 +21009,8 @@ function MessageActions(_ref) {
     direction: 'top'
   }, copyIconTooltipText || 'Copy'), copyIcon || React__default.createElement(SvgCopyIcon, null)), showForwardMessage && forwardMessagePermitted && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
     order: forwardIconOrder || 5,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleOpenForwardMessage();
@@ -20735,7 +21019,8 @@ function MessageActions(_ref) {
     direction: 'top'
   }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && (channel.type === CHANNEL_TYPE.BROADCAST ? myRole === 'owner' || myRole === 'admin' : true) && React__default.createElement(Action, {
     order: deleteIconOrder || 6,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return messageStatus === MESSAGE_DELIVERY_STATUS.PENDING ? handleDeletePendingMessage() : handleOpenDeleteMessage();
@@ -20744,7 +21029,8 @@ function MessageActions(_ref) {
     direction: 'top'
   }, deleteIconTooltipText || 'Delete Message'), deleteIcon || React__default.createElement(SvgDeleteIcon, null)), showReportMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
     order: reportIconOrder || 7,
-    iconColor: messageActionIconsColor,
+    iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
+    hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleReportMessage();
@@ -20763,16 +21049,20 @@ var MessageActionsWrapper = styled__default.div(_templateObject$i || (_templateO
 }, function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var EditMessageContainer = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: #fff;\n  padding: 8px 2px;\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  padding: 8px 2px;\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
-});
-var Action = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 0 6px;\n  cursor: pointer;\n  color: ", ";\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
-  return props.iconColor || colors.gray6;
 }, function (props) {
+  return props.backgroundColor;
+});
+var Action = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 0 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.order || 1;
-}, colors.gray10, function (props) {
+}, function (props) {
+  return props.iconColor || colors.textColor2;
+}, function (props) {
   return props.hoverIconColor || colors.primary;
-}, colors.gray11, ItemNote);
+}, function (props) {
+  return props.hoverBackgroundColor || colors.backgroundColor;
+}, ItemNote);
 
 var _path$z;
 
@@ -20881,7 +21171,7 @@ function SvgDeleteUpload(props) {
     cx: 10,
     cy: 10,
     r: 9.3,
-    fill: "#A3A5B0",
+    fill: "CurrentColor",
     stroke: "#fff",
     strokeWidth: 1.4
   })), _path$B || (_path$B = /*#__PURE__*/React.createElement("path", {
@@ -21567,7 +21857,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
           return Promise.resolve(new Promise(function (resolve) { resolve(_interopNamespace(require('wavesurfer.js'))); })).then(function (WaveSurfer) {
             wavesurfer.current = WaveSurfer["default"].create({
               container: wavesurferContainer.current,
-              waveColor: colors.gray9,
+              waveColor: colors.textColor2,
               skipLength: 0,
               progressColor: colors.primary,
               audioRate: audioRate,
@@ -21637,7 +21927,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
       wavesurfer.current.pause();
     }
   }, [payingAudioId]);
-  return React__default.createElement(Container$a, null, React__default.createElement(PlayPause, {
+  return React__default.createElement(Container$9, null, React__default.createElement(PlayPause, {
     onClick: handlePlayPause
   }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioVisualization, {
     ref: wavesurferContainer
@@ -21645,19 +21935,19 @@ var AudioPlayer = function AudioPlayer(_ref) {
     onClick: handleSetAudioRate
   }, audioRate, React__default.createElement("span", null, "X"))), React__default.createElement(Timer, null, currentTime));
 };
-var Container$a = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var Container$9 = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
 var PlayPause = styled__default.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var AudioVisualization = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.gray9);
+var AudioRate = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
 var WaveContainer = styled__default.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.gray9);
+var Timer = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
 
-var _templateObject$l, _templateObject2$i, _templateObject3$f, _templateObject4$b, _templateObject5$9, _templateObject6$8, _templateObject7$6, _templateObject8$5, _templateObject9$4, _templateObject10$4, _templateObject11$3;
+var _templateObject$l, _templateObject2$i, _templateObject3$f, _templateObject4$b, _templateObject5$9, _templateObject6$8, _templateObject7$6, _templateObject8$5, _templateObject9$4, _templateObject10$3, _templateObject11$3;
 
 var Attachment = function Attachment(_ref) {
   var attachment = _ref.attachment,
-      _ref$isPrevious = _ref.isPrevious,
-      isPrevious = _ref$isPrevious === void 0 ? false : _ref$isPrevious,
+      _ref$isPreview = _ref.isPreview,
+      isPreview = _ref$isPreview === void 0 ? false : _ref$isPreview,
       removeSelected = _ref.removeSelected,
       isRepliedMessage = _ref.isRepliedMessage,
       borderRadius = _ref.borderRadius,
@@ -21679,6 +21969,7 @@ var Attachment = function Attachment(_ref) {
   var dispatch = reactRedux.useDispatch();
   var attachmentCompilationState = reactRedux.useSelector(attachmentCompilationStateSelector) || {};
   var connectionStatus = reactRedux.useSelector(connectionStatusSelector);
+  var theme = reactRedux.useSelector(themeSelector);
   var imageContRef = React.useRef(null);
 
   var _useState = React.useState(false),
@@ -21773,16 +22064,14 @@ var Attachment = function Attachment(_ref) {
   React.useEffect(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED && !(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
-        if (attachment.type === 'image' && !isPrevious) {
+        if (attachment.type === 'image' && !isPreview) {
           if (cachedUrl) {
             setAttachmentUrl(cachedUrl);
             setIsCached(true);
           } else {
             if (customDownloader) {
-              console.log('is not cached, download with custom downloader');
               customDownloader(attachment.url).then(function (url) {
                 try {
-                  console.log('image is downloaded. . . should load image', url);
                   downloadImage(url);
                   return Promise.resolve(fetch(url)).then(function (response) {
                     setAttachmentToCache(attachment.id, response);
@@ -21792,7 +22081,6 @@ var Attachment = function Attachment(_ref) {
                 }
               });
             } else {
-              console.log('is not cached, load attachment', attachment.url);
               downloadImage(attachment.url);
             }
           }
@@ -21842,32 +22130,32 @@ var Attachment = function Attachment(_ref) {
     onClick: function onClick() {
       return handleMediaItemClick && handleMediaItemClick(attachment);
     },
-    isPrevious: isPrevious,
+    isPreview: isPreview,
     ref: imageContRef,
     borderRadius: borderRadius,
     backgroundImage: attachment.metadata && attachment.metadata.tmb,
     isRepliedMessage: isRepliedMessage,
     fitTheContainer: isDetailsView,
-    width: !isPrevious && !isRepliedMessage ? renderWidth : undefined,
-    height: !isPrevious && !isRepliedMessage ? renderHeight : undefined
+    width: !isPreview && !isRepliedMessage ? renderWidth : undefined,
+    height: !isPreview && !isRepliedMessage ? renderHeight : undefined
   }, (attachment.attachmentUrl || attachmentUrl) && React__default.createElement(AttachmentImg$1, {
     draggable: false,
     backgroundColor: backgroundColor,
     src: attachment.attachmentUrl || attachmentUrl,
     borderRadius: borderRadius,
     imageMinWidth: imageMinWidth,
-    isPrevious: isPrevious,
+    isPreview: isPreview,
     isRepliedMessage: isRepliedMessage,
-    withBorder: !isPrevious && !isDetailsView,
+    withBorder: !isPreview && !isDetailsView,
     fitTheContainer: isDetailsView,
     imageMaxHeight: attachment.metadata && (attachment.metadata.szh > 400 ? '400px' : attachment.metadata.szh + "px")
-  }), !isPrevious && !(attachment.attachmentUrl || attachmentUrl) && React__default.createElement(UploadProgress, {
+  }), !isPreview && !(attachment.attachmentUrl || attachmentUrl) && React__default.createElement(UploadProgress, {
     backgroundImage: attachment.metadata && attachment.metadata.tmb,
     isRepliedMessage: isRepliedMessage,
     onClick: handlePauseResumeDownload,
     width: renderWidth,
     height: renderHeight,
-    withBorder: !isPrevious && !isDetailsView,
+    withBorder: !isPreview && !isDetailsView,
     backgroundColor: backgroundColor,
     isDetailsView: isDetailsView,
     imageMinWidth: imageMinWidth
@@ -21876,15 +22164,16 @@ var Attachment = function Attachment(_ref) {
   }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
     isRepliedMessage: isRepliedMessage,
     className: 'rotate_cont'
-  }))), !isPrevious && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
+  }))), !isPreview && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
     onClick: handlePauseResumeUpload
   }, React__default.createElement(UploadPercent, null, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(SvgCancel, null) : React__default.createElement(SvgUpload, null)), attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING && React__default.createElement(UploadingIcon, {
     className: 'rotate_cont'
-  })) : null, isPrevious && React__default.createElement(RemoveChosenFile, {
+  })) : null, isPreview && React__default.createElement(RemoveChosenFile, {
+    color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
-  })) : attachment.type === 'video' ? React__default.createElement(React__default.Fragment, null, !isPrevious ? React__default.createElement(VideoCont, {
+  })) : attachment.type === 'video' ? React__default.createElement(React__default.Fragment, null, !isPreview ? React__default.createElement(VideoCont, {
     onClick: function onClick() {
       return handleMediaItemClick && (attachmentCompilationState[attachment.attachmentId] ? attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.FAIL || attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.UPLOADING : true) && handleMediaItemClick(attachment);
     },
@@ -21900,6 +22189,7 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     className: 'rotate_cont'
   }))) : null, React__default.createElement(VideoPreview, {
+    theme: theme,
     maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : videoAttachmentMaxWidth ? videoAttachmentMaxWidth + "px" : '320px',
     maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : videoAttachmentMaxHeight ? videoAttachmentMaxHeight + "px" : '240px',
     file: attachment,
@@ -21910,7 +22200,7 @@ var Attachment = function Attachment(_ref) {
     isDetailsView: isDetailsView,
     backgroundColor: backgroundColor
   })) : React__default.createElement(AttachmentImgCont, {
-    isPrevious: isPrevious,
+    isPreview: isPreview,
     backgroundColor: colors.defaultAvatarBackground
   }, React__default.createElement(VideoPreview, {
     maxWidth: '48px',
@@ -21922,6 +22212,7 @@ var Attachment = function Attachment(_ref) {
     backgroundColor: backgroundColor,
     isPreview: true
   }), React__default.createElement(RemoveChosenFile, {
+    color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
@@ -21930,18 +22221,18 @@ var Attachment = function Attachment(_ref) {
     file: attachment
   }) : attachment.type === attachmentTypes.link ? null : React__default.createElement(AttachmentFile$1, {
     draggable: false,
-    isPrevious: isPrevious,
+    isPreview: isPreview,
     isUploading: attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED,
     borderRadius: borderRadius,
     background: backgroundColor,
     isRepliedMessage: isRepliedMessage,
-    border: selectedFileAttachmentsBoxBorder,
+    border: selectedFileAttachmentsBoxBorder || (theme === THEME.DARK ? 'none' : ''),
     width: fileAttachmentWidth
   }, attachment.metadata && attachment.metadata.tmb ? React__default.createElement(FileThumbnail, {
     src: "data:image/jpeg;base64," + attachment.metadata.tmb
   }) : React__default.createElement(AttachmentIconCont, {
     className: 'icon-warpper'
-  }, selectedFileAttachmentsIcon || React__default.createElement(SvgFileIcon, null)), !isRepliedMessage && !isPrevious && React__default.createElement(DownloadFile$1, {
+  }, selectedFileAttachmentsIcon || React__default.createElement(SvgFileIcon, null)), !isRepliedMessage && !isPreview && React__default.createElement(DownloadFile$1, {
     backgroundColor: colors.primary,
     onClick: function onClick() {
       return handleDownloadFile(attachment);
@@ -21954,7 +22245,7 @@ var Attachment = function Attachment(_ref) {
     }
   }, downloadingFile ? React__default.createElement(UploadingIcon, {
     fileAttachment: true
-  }) : React__default.createElement(SvgDownload, null)), !isPrevious && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
+  }) : React__default.createElement(SvgDownload, null)), !isPreview && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
     fileAttachment: true,
     onClick: handlePauseResumeUpload
   }, React__default.createElement(UploadPercent, {
@@ -21964,13 +22255,14 @@ var Attachment = function Attachment(_ref) {
     fileAttachment: true,
     className: 'rotate_cont'
   })) : null, !isRepliedMessage && React__default.createElement(AttachmentFileInfo, {
-    isPrevious: isPrevious
+    isPreview: isPreview
   }, React__default.createElement(AttachmentName, {
     color: selectedFileAttachmentsTitleColor,
     ref: fileNameRef
-  }, formatLargeText(isPrevious ? attachment.data.name : attachment.name, fileAttachmentWidth ? fileAttachmentWidth / 12.5 : isPrevious ? 18 : 30)), React__default.createElement(AttachmentSize, {
+  }, formatLargeText(isPreview ? attachment.data.name : attachment.name, fileAttachmentWidth ? fileAttachmentWidth / 12.5 : isPreview ? 18 : 30)), React__default.createElement(AttachmentSize, {
     color: selectedFileAttachmentsSizeColor
-  }, (attachment.data && attachment.data.size || attachment.fileSize) && bytesToSize(isPrevious ? attachment.data.size : +attachment.fileSize))), isPrevious && React__default.createElement(RemoveChosenFile, {
+  }, (attachment.data && attachment.data.size || attachment.size) && bytesToSize(isPreview ? attachment.data.size : +attachment.size))), isPreview && React__default.createElement(RemoveChosenFile, {
+    color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
@@ -21978,7 +22270,7 @@ var Attachment = function Attachment(_ref) {
 };
 var DownloadImage = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
 var AttachmentImgCont = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
-  return props.isPrevious ? '16px' : props.isRepliedMessage ? '8px' : '';
+  return props.isPreview ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
 }, function (props) {
@@ -21992,7 +22284,7 @@ var AttachmentImgCont = styled__default.div(_templateObject2$i || (_templateObje
 }, function (props) {
   return props.backgroundColor && "\n    background-color: " + props.backgroundColor + ";\n    border-radius: 8px;\n    justify-content: center;\n    align-items: center;\n     & > svg:first-child {\n      width: 40px;\n      height: 40px;\n      transform: translate(2px, 3px);\n    }\n  ";
 }, DownloadImage, function (props) {
-  return props.isPrevious && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
+  return props.isPreview && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
 });
 var FileThumbnail = styled__default.img(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
 var DownloadFile$1 = styled__default.span(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
@@ -22003,27 +22295,29 @@ var AttachmentFile$1 = styled__default.div(_templateObject5$9 || (_templateObjec
 }, function (props) {
   return !props.isRepliedMessage && (props.width ? props.width + "px" : '350px');
 }, function (props) {
-  return props.background || '#ffffff';
+  return props.background;
 }, function (props) {
   return props.border || "1px solid  " + colors.gray1;
 }, function (props) {
-  return props.isPrevious ? '16px' : props.isRepliedMessage ? '8px' : '';
+  return props.isPreview ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return props.borderRadius || '6px';
 }, function (props) {
-  return !props.isRepliedMessage && !props.isPrevious && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
+  return !props.isRepliedMessage && !props.isPreview && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
-var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  z-index: 4;\n"])));
+var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
+  return props.color || colors.textColor3;
+});
 var AttachmentName = styled__default.h3(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
-  return props.color || colors.blue6;
+  return props.color || colors.textColor1;
 });
 var AttachmentSize = styled__default.span(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
-  return props.color || colors.blue6;
+  return props.color || colors.textColor1;
 }, colors.red1);
 var AttachmentFileInfo = styled__default.div(_templateObject9$4 || (_templateObject9$4 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  ", "\n"])), function (props) {
-  return props.isPrevious && "line-height: 14px;\n      max-width: calc(100% - 44px);\n  ";
+  return props.isPreview && "line-height: 14px;\n      max-width: calc(100% - 44px);\n  ";
 });
-var AttachmentImg$1 = styled__default.img(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  border-radius: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  max-width: 100%;\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  min-width: ", ";\n  object-fit: cover;\n  visibility: ", ";\n  z-index: 2;\n"])), function (props) {
+var AttachmentImg$1 = styled__default.img(_templateObject10$3 || (_templateObject10$3 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  border-radius: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  max-width: 100%;\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  min-width: ", ";\n  object-fit: cover;\n  visibility: ", ";\n  z-index: 2;\n"])), function (props) {
   return props.absolute && 'absolute';
 }, function (props) {
   return props.isRepliedMessage ? '4px' : props.borderRadius || '6px';
@@ -22032,13 +22326,13 @@ var AttachmentImg$1 = styled__default.img(_templateObject10$4 || (_templateObjec
 }, function (props) {
   return props.imageMaxHeight || '400px';
 }, function (props) {
-  return props.isRepliedMessage ? '40px' : props.isPrevious ? '48px' : props.fitTheContainer ? '100%' : '';
+  return props.isRepliedMessage ? '40px' : props.isPreview ? '48px' : props.fitTheContainer ? '100%' : '';
 }, function (props) {
-  return props.isRepliedMessage ? '40px' : props.isPrevious ? '48px' : props.fitTheContainer ? '100%' : '';
+  return props.isRepliedMessage ? '40px' : props.isPreview ? '48px' : props.fitTheContainer ? '100%' : '';
 }, function (props) {
-  return !props.isRepliedMessage && !props.isPrevious && !props.fitTheContainer ? '90px' : props.isRepliedMessage ? '40px' : '';
+  return !props.isRepliedMessage && !props.isPreview && !props.fitTheContainer ? '90px' : props.isRepliedMessage ? '40px' : '';
 }, function (props) {
-  return !props.isRepliedMessage && !props.isPrevious && !props.fitTheContainer ? props.imageMinWidth || '130px' : props.isRepliedMessage ? '40px' : '';
+  return !props.isRepliedMessage && !props.isPreview && !props.fitTheContainer ? props.imageMinWidth || '130px' : props.isRepliedMessage ? '40px' : '';
 }, function (props) {
   return props.hidden && 'hidden';
 });
@@ -22079,7 +22373,7 @@ var CustomLabel$1 = styled__default.label(_templateObject$m || (_templateObject$
 }, function (props) {
   return props.size || '12px';
 }, function (props) {
-  return props.isChecked ? props.checkedBorder || "6px solid " + colors.primary : props.border || "1px solid " + colors.gray4;
+  return props.isChecked ? props.checkedBorder || "6px solid " + colors.primary : props.border || "1px solid " + colors.textColor2;
 }, function (props) {
   return props.borderRadius || '50%';
 });
@@ -22090,6 +22384,7 @@ var _templateObject$n, _templateObject2$k;
 function ConfirmPopup(_ref) {
   var title = _ref.title,
       description = _ref.description,
+      theme = _ref.theme,
       buttonText = _ref.buttonText,
       buttonTextColor = _ref.buttonTextColor,
       buttonBackground = _ref.buttonBackground,
@@ -22131,6 +22426,8 @@ function ConfirmPopup(_ref) {
     setInitialRender(false);
   }, []);
   return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+    theme: theme,
+    backgroundColor: colors.backgroundColor,
     maxWidth: '520px',
     minWidth: '520px',
     isLoading: loading,
@@ -22139,10 +22436,12 @@ function ConfirmPopup(_ref) {
     paddingH: '24px',
     paddingV: '24px'
   }, React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
     onClick: function onClick() {
       return togglePopup();
     }
   }), React__default.createElement(PopupName, {
+    color: colors.textColor1,
     isDelete: true,
     marginBottom: '20px'
   }, title), React__default.createElement(PopupDescription, null, description), isDeleteMessage && React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && React__default.createElement(DeleteOptionItem, {
@@ -22168,10 +22467,10 @@ function ConfirmPopup(_ref) {
       return handleChoseDeleteOption(e, 'forMe');
     }
   }), "Delete for me"))), React__default.createElement(PopupFooter, {
-    backgroundColor: colors.gray5
+    backgroundColor: colors.backgroundColor
   }, React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return togglePopup();
@@ -22186,7 +22485,7 @@ function ConfirmPopup(_ref) {
   }, buttonText || 'Delete'))));
 }
 var DeleteMessageOptions = styled__default.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
-var DeleteOptionItem = styled__default.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.gray8);
+var DeleteOptionItem = styled__default.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
 
 function useOnScreen(ref) {
   var _useState = React.useState(false),
@@ -22386,10 +22685,10 @@ function ForwardMessagePopup(_ref) {
       size: '18px'
     }));
   }))), React__default.createElement(PopupFooter, {
-    backgroundColor: colors.gray5
+    backgroundColor: colors.backgroundColor
   }, React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return togglePopup();
@@ -22406,11 +22705,11 @@ var ForwardChannelsCont = styled__default.div(_templateObject$o || (_templateObj
 });
 var ChannelItem = styled__default.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
 var ChannelInfo$2 = styled__default.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
-var ChannelTitle = styled__default.h3(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray6);
-var ChannelMembers = styled__default.h4(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.gray9);
+var ChannelTitle = styled__default.h3(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
+var ChannelMembers = styled__default.h4(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
 var SelectedChannelsContainer = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedChannelBuble = styled__default.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.gray5);
-var SelectedChannelName = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.blue6);
+var SelectedChannelBuble = styled__default.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
+var SelectedChannelName = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
 var StyledSubtractSvg$1 = styled__default(SvgCross)(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
 var LOADING_STATE$1 = {
@@ -22421,8 +22720,12 @@ var PRESENCE_STATUS$1 = {
   OFFLINE: 'Offline',
   ONLINE: 'Online'
 };
+var THEME$1 = {
+  DARK: 'dark',
+  LIGHT: 'light'
+};
 
-var _templateObject$p, _templateObject2$m, _templateObject3$h, _templateObject4$d, _templateObject5$b, _templateObject6$a, _templateObject7$8, _templateObject8$7, _templateObject9$6, _templateObject10$5;
+var _templateObject$p, _templateObject2$m, _templateObject3$h, _templateObject4$d, _templateObject5$b, _templateObject6$a, _templateObject7$8, _templateObject8$7, _templateObject9$6, _templateObject10$4;
 var reactionsPrevLength = 0;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
@@ -22535,7 +22838,7 @@ function ReactionsPopup(_ref) {
       }
     }
   }, [reactions]);
-  return React__default.createElement(Container$b, {
+  return React__default.createElement(Container$a, {
     ref: popupRef,
     popupVerticalPosition: popupVerticalPosition,
     className: 'reactions_popup',
@@ -22581,7 +22884,7 @@ function ReactionsPopup(_ref) {
     }, reaction.key));
   })));
 }
-var Container$b = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  /*right: ", ";*/\n  right: ", ";\n  /*left: ", ";*/\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
+var Container$a = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  /*right: ", ";*/\n  right: ", ";\n  /*left: ", ";*/\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
   return props.popupHorizontalPosition === 'left' && (props.rtlDirection ? 'calc(100% - 80px)' : 0);
 }, function (props) {
   return props.rtlDirection && 0;
@@ -22629,7 +22932,7 @@ var ReactionScoreItem = styled__default.div(_templateObject8$7 || (_templateObje
 }, function (props) {
   return !props.bubbleStyle && "1px solid " + colors.gray1;
 }, function (props) {
-  return props.active ? colors.gray6 : colors.gray9;
+  return props.active ? colors.textColor1 : colors.textColor2;
 }, function (props) {
   return props.bubbleStyle && !props.active && "1px solid " + colors.gray1;
 }, function (props) {
@@ -22644,7 +22947,7 @@ var ReactionScoreItem = styled__default.div(_templateObject8$7 || (_templateObje
   return props.active && !props.bubbleStyle && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n    }\n  ";
 }, TabKey);
 var ReactionKey = styled__default.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
-var ReactionItem$1 = styled__default.li(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+var ReactionItem$1 = styled__default.li(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
 var _path$H;
 
@@ -23183,6 +23486,7 @@ function EmojisPopup(_ref2) {
       fixEmojiCategoriesTitleOnTop = _ref2.fixEmojiCategoriesTitleOnTop,
       emojisPopupPosition = _ref2.emojisPopupPosition,
       relativePosition = _ref2.relativePosition;
+  var theme = reactRedux.useSelector(themeSelector);
 
   var _useState = React.useState(false),
       rendered = _useState[0],
@@ -23252,7 +23556,9 @@ function EmojisPopup(_ref2) {
       }
     }, 300);
   }, []);
-  return React__default.createElement(Container$c, {
+  return React__default.createElement(Container$b, {
+    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
+    noBorder: theme === THEME.DARK,
     relativePosition: relativePosition,
     borderRadius: emojisContainerBorderRadius,
     rightSide: rightSide,
@@ -23262,6 +23568,7 @@ function EmojisPopup(_ref2) {
     rendered: rendered,
     emojisPopupPosition: emojisPopupPosition
   }, emojisCategoryIconsPosition === 'top' && React__default.createElement(EmojiFooter, {
+    borderColor: colors.hoverBackgroundColor,
     emojisCategoryIconsPosition: emojisCategoryIconsPosition
   }, EMOJIS.map(function (emoji) {
     return React__default.createElement(EmojiCollection, {
@@ -23289,6 +23596,7 @@ function EmojisPopup(_ref2) {
       var array = emojiSmallCollection.array;
       return array.map(function (emoji, i) {
         return React__default.createElement(Emoji, {
+          hoverBackgroundColor: colors.hoverBackgroundColor,
           key: "" + emoji,
           className: 'emoji-cont',
           onClick: function onClick() {
@@ -23317,7 +23625,7 @@ function EmojisPopup(_ref2) {
     }));
   })));
 }
-var Container$c = styled__default.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: 1px solid ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  transform: scaleY(0);\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
+var Container$b = styled__default.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  transform: scaleY(0);\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
   return props.relativePosition ? 'relative' : 'absolute';
 }, function (props) {
   return props.rtlDirection ? '' : props.rightSide ? '' : '5px';
@@ -23327,28 +23635,34 @@ var Container$c = styled__default.div(_templateObject$q || (_templateObject$q = 
   return props.rtlDirection ? 'initial' : '';
 }, function (props) {
   return props.bottomPosition;
-}, colors.gray1, function (props) {
+}, function (props) {
+  return props.noBorder ? 'none' : "1px solid " + colors.gray1;
+}, function (props) {
   return props.borderRadius || '12px';
-}, colors.white, function (props) {
+}, function (props) {
+  return props.backgroundColor;
+}, function (props) {
   return props.emojisPopupPosition === 'bottom' ? '0 0' : '0 100%';
 }, function (props) {
   return props.rendered && "\n    transform: scaleY(1);\n  ";
 });
-var EmojiHeader = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.gray9, function (props) {
+var EmojiHeader = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.textColor2, function (props) {
   return props.padding || '6px 18px';
 });
 var EmojiSection = styled__default.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  height: 180px;\n  overflow-x: hidden;\n"])));
 var EmojiCollection = styled__default.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
-  return props.activeCollection ? colors.primary : colors.gray7;
+  return props.activeCollection ? colors.primary : colors.textColor3;
 });
 var CollectionPointer = styled__default.span(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose([""])));
 var AllEmojis = styled__default.ul(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
 var EmojiFooter = styled__default.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
-  return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + colors.gray1;
+  return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + (props.borderColor || colors.gray1);
 }, function (props) {
-  return props.emojisCategoryIconsPosition === 'top' && "1px solid " + colors.gray1;
+  return props.emojisCategoryIconsPosition === 'top' && "1px solid " + (props.borderColor || colors.gray1);
 });
-var Emoji = styled__default.li(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: #f5f5f8;\n  }\n"])));
+var Emoji = styled__default.li(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: ", ";\n  }\n"])), function (props) {
+  return props.hoverBackgroundColor || colors.backgroundColor;
+});
 
 var _path$M;
 
@@ -23415,6 +23729,7 @@ function FrequentlyEmojis(_ref) {
       reacted: false
     }
   };
+  var theme = reactRedux.useSelector(themeSelector);
 
   var _useState = React.useState(false),
       rendered = _useState[0],
@@ -23487,12 +23802,14 @@ function FrequentlyEmojis(_ref) {
 
     setRendered(true);
   }, []);
-  return React__default.createElement(Container$d, {
+  return React__default.createElement(Container$c, {
     id: 'emojisContainer',
+    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     rendered: rendered,
     rightSide: rtlDirection
   }, emojis.map(function (emoji) {
     return React__default.createElement(EmojiItem, {
+      hoverBackground: colors.hoverBackgroundColor,
       active: emoji.reacted,
       key: emoji.key,
       onClick: function onClick() {
@@ -23502,20 +23819,30 @@ function FrequentlyEmojis(_ref) {
   }), React__default.createElement(OpenMoreEmojis, {
     onClick: function onClick() {
       return handleEmojiPopupToggle(true);
-    }
+    },
+    iconBackgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
+    hoverBackground: colors.hoverBackgroundColor
   }, React__default.createElement(SvgPlus, null)));
 }
-var Container$d = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  transform: scale(0, 0);\n  transform-origin: ", ";\n  display: flex;\n  align-items: center;\n  padding: 6px;\n  background: ", ";\n  box-shadow: 0 3px 10px -4px rgba(0, 0, 0, 0.2);\n  border-radius: 24px;\n  overflow: hidden;\n  box-sizing: border-box;\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
+var Container$c = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  transform: scale(0, 0);\n  transform-origin: ", ";\n  display: flex;\n  align-items: center;\n  padding: 6px;\n  background-color: ", ";\n  box-shadow: 0 3px 10px -4px rgba(0, 0, 0, 0.2);\n  border-radius: 24px;\n  overflow: hidden;\n  box-sizing: border-box;\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
   return props.rightSide ? '100% 100%' : '0 100%';
-}, colors.white, function (props) {
+}, function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
   return props.rendered && "\n    transform: scale(1, 1);\n  ";
 });
 var EmojiItem = styled__default.span(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 8px;\n  font-size: 28px;\n  line-height: 32px;\n  cursor: pointer;\n  border-radius: 50%;\n  width: 36px;\n  height: 36px;\n  background-color: ", ";\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
-  return props.active && colors.gray5;
-}, colors.gray5);
-var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  border-radius: 50%;\n"])), colors.gray5, colors.gray4);
+  return props.active && colors.backgroundColor;
+}, function (props) {
+  return props.hoverBackground || colors.backgroundColor;
+});
+var OpenMoreEmojis = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  &:hover {\n    background-color: ", ";\n  }\n  border-radius: 50%;\n"])), function (props) {
+  return props.iconBackgroundColor || colors.backgroundColor;
+}, colors.textColor2, function (props) {
+  return props.hoverBackground || colors.hoverBackgroundColor;
+});
 
-var _templateObject$s, _templateObject2$p, _templateObject3$k, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
+var _templateObject$s, _templateObject2$p, _templateObject3$k, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$5, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -23549,6 +23876,7 @@ var Message = function Message(_ref) {
       showOwnAvatar = _ref$showOwnAvatar === void 0 ? true : _ref$showOwnAvatar,
       _ref$showMessageStatu = _ref.showMessageStatus,
       showMessageStatus = _ref$showMessageStatu === void 0 ? true : _ref$showMessageStatu,
+      showMessageTimeAndStatusOnlyOnHover = _ref.showMessageTimeAndStatusOnlyOnHover,
       _ref$showMessageTime = _ref.showMessageTime,
       showMessageTime = _ref$showMessageTime === void 0 ? true : _ref$showMessageTime,
       _ref$showMessageStatu2 = _ref.showMessageStatusForEachMessage,
@@ -23709,7 +24037,7 @@ var Message = function Message(_ref) {
   var notLinkAttachment = withAttachments && message.attachments.some(function (a) {
     return a.type !== attachmentTypes.link;
   });
-  var parentNotLinkAttachment = message.parent && message.parent.attachments && message.parent.attachments.some(function (a) {
+  var parentNotLinkAttachment = message.parentMessage && message.parentMessage.attachments && message.parentMessage.attachments.some(function (a) {
     return a.type !== attachmentTypes.link;
   });
   var mediaAttachment = withAttachments && message.attachments.find(function (attachment) {
@@ -23866,10 +24194,10 @@ var Message = function Message(_ref) {
 
   var MessageHeader = function MessageHeader() {
     return React__default.createElement(MessageHeaderCont, {
-      isReplied: !!message.parent,
+      isReplied: !!message.parentMessage,
       isForwarded: !!message.forwardingDetails,
       messageBody: !!message.body,
-      withPadding: withAttachments && notLinkAttachment
+      withPadding: withAttachments && notLinkAttachment && (message.incoming ? incomingMessageBackground !== 'inherit' : ownMessageBackground !== 'inherit')
     }, showMessageSenderName && React__default.createElement(MessageOwner, {
       className: 'message-owner',
       color: colors.primary,
@@ -23956,9 +24284,9 @@ var Message = function Message(_ref) {
   }, React__default.createElement(ErrorIconWrapper, null)), React__default.createElement(MessageBody, {
     className: 'messageBody',
     isSelfMessage: !message.incoming,
-    isReplyMessage: !!(message.parent && message.parent.id && !isThreadMessage),
+    isReplyMessage: !!(message.parentMessage && message.parentMessage.id && !isThreadMessage),
     rtlDirection: ownMessageOnRightSide && !message.incoming,
-    parentMessageIsVoice: message.parent && message.parent.attachments && message.parent.attachments[0] && message.parent.attachments[0].type === attachmentTypes.voice,
+    parentMessageIsVoice: message.parentMessage && message.parentMessage.attachments && message.parentMessage.attachments[0] && message.parentMessage.attachments[0].type === attachmentTypes.voice,
     ownMessageBackground: ownMessageBackground,
     incomingMessageBackground: incomingMessageBackground,
     borderRadius: borderRadius,
@@ -24024,15 +24352,15 @@ var Message = function Message(_ref) {
     myRole: channel.userRole,
     isIncoming: message.incoming,
     handleOpenEmojis: handleOpenEmojis
-  }), message.parent && message.parent.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
+  }), message.parentMessage && message.parentMessage.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
     withSenderName: showMessageSenderName,
     withBody: !!message.body,
     withAttachments: withAttachments && notLinkAttachment,
     leftBorderColor: colors.primary,
     onClick: function onClick() {
-      return handleScrollToRepliedMessage && handleScrollToRepliedMessage(message.parent.id);
+      return handleScrollToRepliedMessage && handleScrollToRepliedMessage(message.parentMessage.id);
     }
-  }, message.parent.attachments && !!message.parent.attachments.length && message.parent.attachments[0].type !== attachmentTypes.voice && parentNotLinkAttachment && message.parent.attachments.map(function (attachment, index) {
+  }, message.parentMessage.attachments && !!message.parentMessage.attachments.length && message.parentMessage.attachments[0].type !== attachmentTypes.voice && parentNotLinkAttachment && message.parentMessage.attachments.map(function (attachment, index) {
     return React__default.createElement(Attachment, {
       key: attachment.attachmentId || attachment.url,
       backgroundColor: message.incoming ? incomingMessageBackground : ownMessageBackground,
@@ -24042,7 +24370,7 @@ var Message = function Message(_ref) {
       removeSelected: handleRemoveFailedAttachment,
       selectedFileAttachmentsIcon: fileAttachmentsIcon,
       isRepliedMessage: true,
-      borderRadius: index === message.parent.attachments.length - 1 ? borderRadius : '16px',
+      borderRadius: index === message.parentMessage.attachments.length - 1 ? borderRadius : '16px',
       selectedFileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
       selectedFileAttachmentsTitleColor: fileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor: fileAttachmentsSizeColor,
@@ -24059,26 +24387,29 @@ var Message = function Message(_ref) {
     color: colors.primary,
     fontSize: '12px',
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, message.parent.user.id === user.id ? 'You' : makeUsername(contactsMap[message.parent.user.id], message.parent.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
+  }, message.parentMessage.user.id === user.id ? 'You' : makeUsername(contactsMap[message.parentMessage.user.id], message.parentMessage.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
     fontSize: '14px',
     lineHeight: '16px'
-  }, !!message.parent.attachments.length && message.parent.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, {
+  }, !!message.parentMessage.attachments.length && message.parentMessage.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, {
     color: colors.primary
-  }), message.parent.body ? MessageTextFormat({
-    text: message.parent.body,
-    message: message.parent,
+  }), message.parentMessage.body ? MessageTextFormat({
+    text: message.parentMessage.body,
+    message: message.parentMessage,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  }) : parentNotLinkAttachment && (message.parent.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parent.attachments[0].type === attachmentTypes.video ? 'Video' : message.parent.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && message.forwardingDetails.user && message.user && message.forwardingDetails.user.id !== message.user.id && React__default.createElement(ForwardedTitle, {
+  }) : parentNotLinkAttachment && (message.parentMessage.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parentMessage.attachments[0].type === attachmentTypes.video ? 'Video' : message.parentMessage.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && message.forwardingDetails.user && message.user && message.forwardingDetails.user.id !== message.user.id && React__default.createElement(ForwardedTitle, {
     withPadding: withAttachments && notLinkAttachment,
     withAttachments: withAttachments,
     withMediaAttachment: withMediaAttachment,
     withBody: !!message.body,
     showSenderName: showMessageSenderName,
+    leftPadding: message.incoming ? incomingMessageBackground !== 'inherit' : ownMessageBackground !== 'inherit',
     color: colors.primary
   }, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
     draggable: false,
+    color: colors.textColor1,
     showMessageSenderName: showMessageSenderName,
+    withPaddings: message.incoming ? incomingMessageBackground !== 'inherit' : ownMessageBackground !== 'inherit',
     withAttachment: notLinkAttachment && !!message.body,
     withMediaAttachment: withMediaAttachment,
     fontFamily: fontFamily,
@@ -24091,11 +24422,13 @@ var Message = function Message(_ref) {
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
   })), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', messageStatusAndTimePosition === 'onMessage' && (!withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link) && (messageStatusVisible || messageTimeVisible) ? React__default.createElement(MessageStatusAndTime, {
+    showOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
     leftMargin: true,
     isSelfMessage: !message.incoming
   }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimeVisible && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && React__default.createElement(MessageStatus, {
     iconColor: colors.primary
   }, messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType))) : null), notLinkAttachment && messageStatusAndTimePosition === 'onMessage' && (messageStatusVisible || messageTimeVisible) && React__default.createElement(MessageStatusAndTime, {
+    showOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
     withAttachment: true,
     leftMargin: true,
     isSelfMessage: !message.incoming,
@@ -24110,7 +24443,7 @@ var Message = function Message(_ref) {
         metadata: isJSON(attachment.metadata) ? JSON.parse(attachment.metadata) : attachment.metadata
       }),
       removeSelected: handleRemoveFailedAttachment,
-      imageMinWidth: message.parent && message.parent.attachments && message.parent.attachments[0] && message.parent.attachments[0].type === attachmentTypes.voice ? '210px' : undefined,
+      imageMinWidth: message.parentMessage && message.parentMessage.attachments && message.parentMessage.attachments[0] && message.parentMessage.attachments[0].type === attachmentTypes.voice ? '210px' : undefined,
       borderRadius: ownMessageOnRightSide ? borderRadius : '16px',
       selectedFileAttachmentsIcon: fileAttachmentsIcon,
       backgroundColor: message.incoming ? incomingMessageBackground : ownMessageBackground,
@@ -24146,6 +24479,7 @@ var Message = function Message(_ref) {
     handleEmojiPopupToggle: setEmojisPopupOpen,
     frequentlyEmojis: message.userReactions
   }))), messageStatusAndTimePosition === 'bottomOfMessage' && (messageStatusVisible || messageTimeVisible) && React__default.createElement(MessageStatusAndTime, {
+    showOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
     isSelfMessage: !message.incoming,
     marginBottom: sameUserMessageSpacing,
     rtlDirection: ownMessageOnRightSide && !message.incoming,
@@ -24173,7 +24507,7 @@ var Message = function Message(_ref) {
     borderRadius: reactionsContainerBorderRadius,
     topPosition: reactionsContainerTopPosition,
     padding: reactionsContainerPadding,
-    backgroundColor: reactionsContainerBackground,
+    backgroundColor: reactionsContainerBackground || colors.backgroundColor,
     rtlDirection: ownMessageOnRightSide && !message.incoming
   }, React__default.createElement(MessageReactionsCont, {
     rtlDirection: ownMessageOnRightSide && !message.incoming,
@@ -24181,12 +24515,13 @@ var Message = function Message(_ref) {
   }, message.reactionTotals.slice(0, reactionsDisplayCount || 5).map(function (summery) {
     return React__default.createElement(MessageReaction, {
       key: summery.key,
+      color: colors.textColor1,
       self: !!message.userReactions.find(function (userReaction) {
         return userReaction.key === summery.key;
       }),
       border: reactionItemBorder,
       borderRadius: reactionItemBorderRadius,
-      backgroundColor: reactionItemBackground,
+      backgroundColor: reactionItemBackground || colors.backgroundColor,
       padding: reactionItemPadding,
       margin: reactionItemMargin,
       isLastReaction: reactionsCount === 1,
@@ -24194,6 +24529,7 @@ var Message = function Message(_ref) {
     }, React__default.createElement(MessageReactionKey, null, summery.key, showEachReactionCount && React__default.createElement(ReactionItemCount, null, summery.count)));
   }), showTotalReactionCount && reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
+    color: colors.textColor1,
     borderRadius: reactionItemBorderRadius,
     backgroundColor: reactionItemBackground,
     padding: reactionItemPadding,
@@ -24218,7 +24554,9 @@ var Message = function Message(_ref) {
   }));
 };
 var MessageReactionKey = styled__default.span(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  align-items: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
-var ReactionItemCount = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
+var ReactionItemCount = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
 var MessageReaction = styled__default.span(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n\n  &:last-child {\n    margin-right: 0;\n  }\n"])), function (props) {
   return props.margin || '0 8px 0 0';
 }, function (props) {
@@ -24228,7 +24566,7 @@ var MessageReaction = styled__default.span(_templateObject3$k || (_templateObjec
 }, function (props) {
   return props.self && colors.primary;
 }, function (props) {
-  return props.self ? colors.primary : '';
+  return props.color;
 }, function (props) {
   return props.borderRadius || '16px';
 }, function (props) {
@@ -24270,7 +24608,7 @@ var MessageReactionsCont = styled__default.div(_templateObject8$9 || (_templateO
 var MessageHeaderCont = styled__default.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: ", ";\n"])), function (props) {
   return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReplied && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
 });
-var ReplyMessageContainer = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
+var ReplyMessageContainer = styled__default.div(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.leftBorderColor || '#b8b9c2';
 }, function (props) {
   return props.withAttachments ? '8px 8px' : '0 0 8px';
@@ -24287,7 +24625,7 @@ var ForwardedTitle = styled__default.h3(_templateObject12$2 || (_templateObject1
 }, function (props) {
   return props.withAttachments && props.withBody ? '0' : '0 0 4px';
 }, function (props) {
-  return props.withPadding && '8px 0 0 12px';
+  return props.withPadding && (props.leftPadding ? '8px 0 0 12px' : '8px 0 0 ');
 }, function (props) {
   return props.showSenderName && (props.withBody ? '4px' : '0');
 }, function (props) {
@@ -24301,8 +24639,10 @@ var MessageStatus = styled__default.span(_templateObject13$2 || (_templateObject
 });
 var HiddenMessageTime = styled__default.span(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.hide && 'none';
-}, colors.gray9);
-var MessageStatusAndTime = styled__default.div(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-right: ", ";\n  margin-left: ", ";\n  margin-bottom: ", ";\n  direction: ", ";\n  transform: translate(0px, 4px);\n  white-space: nowrap;\n  width: ", ";\n  justify-content: ", ";\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
+}, colors.textColor2);
+var MessageStatusAndTime = styled__default.div(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  visibility: ", ";\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-right: ", ";\n  margin-left: ", ";\n  margin-bottom: ", ";\n  direction: ", ";\n  transform: translate(0px, 4px);\n  white-space: nowrap;\n  width: ", ";\n  justify-content: ", ";\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
+  return props.showOnlyOnHover && 'hidden';
+}, function (props) {
   return props.hide ? 'none' : 'flex';
 }, function (props) {
   return props.withAttachment && '4px 6px';
@@ -24321,14 +24661,14 @@ var MessageStatusAndTime = styled__default.div(_templateObject15$2 || (_template
 }, function (props) {
   return props.bottomOfMessage && props.rtlDirection && 'flex-end';
 }, HiddenMessageTime, function (props) {
-  return props.fileAttachment ? colors.gray9 : props.withAttachment ? colors.white : '';
+  return props.fileAttachment ? colors.textColor2 : props.withAttachment ? colors.white : '';
 }, function (props) {
   return props.withAttachment && "\n    position: absolute;\n    z-index: 3;\n    right: " + (props.fileAttachment ? '6px' : '10px') + ";\n    bottom: " + (props.fileAttachment ? '9px' : '14px') + ";\n  ";
 });
 var MessageStatusUpdated = styled__default.span(_templateObject16$2 || (_templateObject16$2 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  font-style: italic;\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray4;
+  return props.color || colors.textColor2;
 });
-var MessageStatusDeleted = styled__default.span(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.gray9);
+var MessageStatusDeleted = styled__default.span(_templateObject17$2 || (_templateObject17$2 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-style: italic;\n"])), colors.textColor2);
 var MessageBody = styled__default.div(_templateObject18$2 || (_templateObject18$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  background-color: ", ";\n  //display: inline-block;\n  border-radius: ", ";\n  direction: ", ";\n  max-width: ", ";\n  padding: ", ";\n  //direction: ", ";\n  overflow: ", ";\n  transition: all 0.3s;\n  transform-origin: right;\n"])), function (props) {
   return props.isSelfMessage ? props.ownMessageBackground : props.incomingMessageBackground;
 }, function (props) {
@@ -24338,7 +24678,7 @@ var MessageBody = styled__default.div(_templateObject18$2 || (_templateObject18$
 }, function (props) {
   return props.withAttachments ? props.attachmentWidth && props.attachmentWidth < 420 ? props.attachmentWidth < 130 ? props.isReplyMessage ? '210px' : '130px' : props.attachmentWidth + "px" : '420px' : '100%';
 }, function (props) {
-  return props.withAttachments ? props.isReplyMessage ? '1px 0 0 ' : '0' : props.isSelfMessage ? '8px 12px' : '8px 12px 8px 12px';
+  return props.withAttachments ? props.isReplyMessage ? '1px 0 0 ' : '0' : props.isSelfMessage ? props.ownMessageBackground === 'inherit' ? '0' : '8px 12px' : props.incomingMessageBackground === 'inherit' ? ' 0' : '8px 12px';
 }, function (props) {
   return props.isSelfMessage ? 'initial' : '';
 }, function (props) {
@@ -24356,7 +24696,7 @@ var MessageContent = styled__default.div(_templateObject19$2 || (_templateObject
 var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject20$1 || (_templateObject20$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
 });
-var MessageItem = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 4%;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
+var MessageItem = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  margin-top: ", ";\n  margin-bottom: ", ";\n  padding: 0 4%;\n  padding-left: ", ";\n  padding-right: ", ";\n  transition: all 0.2s;\n  width: 100%;\n  box-sizing: border-box;\n\n  ", "\n  /* &:last-child {\n    margin-bottom: 0;\n  }*/\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    display: inline-block;\n  }\n  &:hover ", " {\n    display: flex;\n    visibility: visible;\n  }\n\n  &:hover ", " {\n    visibility: visible;\n  }\n"])), function (props) {
   return props.topMargin || '12px';
 }, function (props) {
   return props.bottomMargin;
@@ -24650,7 +24990,7 @@ function SvgFullscreenExit(props) {
   })));
 }
 
-var _templateObject$t, _templateObject2$q, _templateObject3$l, _templateObject4$g, _templateObject5$e, _templateObject6$d, _templateObject7$b, _templateObject8$a, _templateObject9$8, _templateObject10$7;
+var _templateObject$t, _templateObject2$q, _templateObject3$l, _templateObject4$g, _templateObject5$e, _templateObject6$d, _templateObject7$b, _templateObject8$a, _templateObject9$8, _templateObject10$6;
 var timerInterval;
 
 var VideoPlayer = function VideoPlayer(_ref) {
@@ -24880,9 +25220,9 @@ var VolumeController = styled__default.div(_templateObject6$d || (_templateObjec
 var VolumeIconWrapper = styled__default.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 var VolumeSlide = styled__default.input(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
 var Progress = styled__default.input(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
-var FullScreenWrapper = styled__default.div(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var FullScreenWrapper = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$u, _templateObject2$r, _templateObject3$m, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$9, _templateObject10$8, _templateObject11$5, _templateObject12$3, _templateObject13$3, _templateObject14$3;
+var _templateObject$u, _templateObject2$r, _templateObject3$m, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$9, _templateObject10$7, _templateObject11$5, _templateObject12$3, _templateObject13$3, _templateObject14$3;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -25157,12 +25497,12 @@ var SliderPopup = function SliderPopup(_ref) {
       setAttachmentsList([]);
     };
   }, []);
-  return React__default.createElement(Container$e, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
+  return React__default.createElement(Container$d, null, React__default.createElement(SliderHeader, null, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
     name: attachmentUserName,
     setDefaultAvatar: true,
     size: 36,
     image: currentFile && currentFile.user && currentFile.user.avatarUrl
-  }), React__default.createElement(Info, null, React__default.createElement(UserName, null, attachmentUserName), React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.createdAt).format('DD.MM.YYYY HH:mm'), ' ', React__default.createElement(FileSize, null, currentFile && currentFile.fileSize && currentFile.fileSize > 0 ? bytesToSize(currentFile.fileSize, 1) : '')))), React__default.createElement(ActionDownload, {
+  }), React__default.createElement(Info, null, React__default.createElement(UserName, null, attachmentUserName), React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.createdAt).format('DD.MM.YYYY HH:mm'), ' ', React__default.createElement(FileSize, null, currentFile && currentFile.size && currentFile.size > 0 ? bytesToSize(currentFile.size, 1) : '')))), React__default.createElement(ActionDownload, {
     onClick: function onClick() {
       return handleDownloadFile(currentFile);
     }
@@ -25170,7 +25510,7 @@ var SliderPopup = function SliderPopup(_ref) {
     width: '24px',
     height: '24px',
     borderWidth: '3px',
-    color: colors.gray10
+    color: colors.textColor2
   }) : React__default.createElement(SvgDownload, null)), React__default.createElement(Actions, null, React__default.createElement(ActionItem, {
     onClick: handleClosePopup
   }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, {
@@ -25235,16 +25575,16 @@ var SliderPopup = function SliderPopup(_ref) {
     }))) : React__default.createElement(UploadingIcon, null));
   })) : React__default.createElement(UploadingIcon, null)));
 };
-var Container$e = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
-var SliderHeader = styled__default.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.gray6);
+var Container$d = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
+var SliderHeader = styled__default.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), colors.textColor1);
 var SliderBody = styled__default.div(_templateObject3$m || (_templateObject3$m = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.8);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
 var FileInfo = styled__default.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
 var Info = styled__default.div(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
 var Actions = styled__default.div(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
-var FileDateAndSize = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.gray9);
-var FileSize = styled__default.span(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.gray9);
+var FileDateAndSize = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
+var FileSize = styled__default.span(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
 var UserName = styled__default.h4(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
-var ActionItem = styled__default.span(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
+var ActionItem = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
 var CarouselItem = styled__default.div(_templateObject12$3 || (_templateObject12$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
   return props.visibleSlide ? 1 : 0;
@@ -25254,7 +25594,7 @@ var ArrowButton = styled__default.button(_templateObject14$3 || (_templateObject
   return !props.leftButton && '24px';
 }, function (props) {
   return props.leftButton && '24px';
-}, colors.gray6, function (props) {
+}, colors.textColor1, function (props) {
   return props.hide && 'hidden';
 }, function (props) {
   return !props.leftButton && '4px';
@@ -25315,6 +25655,7 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
       dateDividerBackgroundColor = _ref.dateDividerBackgroundColor,
       dateDividerBorderRadius = _ref.dateDividerBorderRadius,
       noMargin = _ref.noMargin,
+      theme = _ref.theme,
       marginBottom = _ref.marginBottom,
       marginTop = _ref.marginTop;
   var today = moment().endOf('day');
@@ -25329,6 +25670,7 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
   }
 
   return !differentDays ? null : React__default.createElement(MessageDivider, {
+    theme: theme,
     dividerText: dividerText,
     visibility: messagesHasNext && lastIndex,
     dateDividerFontSize: dateDividerFontSize,
@@ -25350,13 +25692,14 @@ var MessageList = function MessageList(_ref2) {
       messageStatusAndTimePosition = _ref2.messageStatusAndTimePosition,
       messageStatusDisplayingType = _ref2.messageStatusDisplayingType,
       showMessageStatus = _ref2.showMessageStatus,
+      showMessageTimeAndStatusOnlyOnHover = _ref2.showMessageTimeAndStatusOnlyOnHover,
       showMessageTime = _ref2.showMessageTime,
       showMessageStatusForEachMessage = _ref2.showMessageStatusForEachMessage,
       showMessageTimeForEachMessage = _ref2.showMessageTimeForEachMessage,
       _ref2$ownMessageBackg = _ref2.ownMessageBackground,
       ownMessageBackground = _ref2$ownMessageBackg === void 0 ? colors.primaryLight : _ref2$ownMessageBackg,
       _ref2$incomingMessage = _ref2.incomingMessageBackground,
-      incomingMessageBackground = _ref2$incomingMessage === void 0 ? colors.gray11 : _ref2$incomingMessage,
+      incomingMessageBackground = _ref2$incomingMessage === void 0 ? colors.backgroundColor : _ref2$incomingMessage,
       _ref2$hoverBackground = _ref2.hoverBackground,
       hoverBackground = _ref2$hoverBackground === void 0 ? false : _ref2$hoverBackground,
       _ref2$showSenderNameO = _ref2.showSenderNameOnDirectChannel,
@@ -25467,6 +25810,7 @@ var MessageList = function MessageList(_ref2) {
       sameUserMessageSpacing = _ref2.sameUserMessageSpacing,
       differentUserMessageSpacing = _ref2.differentUserMessageSpacing;
   var dispatch = reactRedux.useDispatch();
+  var theme = reactRedux.useSelector(themeSelector);
   var getFromContacts = getShowOnlyContactUsers();
   var channel = reactRedux.useSelector(activeChannelSelector);
   var ChatClient = getClient();
@@ -25936,14 +26280,14 @@ var MessageList = function MessageList(_ref2) {
   }, React__default.createElement(SvgChoseMedia, null)), "Drag & drop to send as media")), React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
     visible: showTopDate,
     dateDividerFontSize: dateDividerFontSize,
-    dateDividerTextColor: dateDividerTextColor,
+    dateDividerTextColor: dateDividerTextColor || colors.textColor1,
     dateDividerBorder: dateDividerBorder,
-    dateDividerBackgroundColor: dateDividerBackgroundColor,
+    dateDividerBackgroundColor: dateDividerBackgroundColor || colors.backgroundColor,
     dateDividerBorderRadius: dateDividerBorderRadius,
     topOffset: scrollRef && scrollRef.current && scrollRef.current.offsetTop
   }, React__default.createElement("span", {
     ref: messageTopDateRef
-  })), React__default.createElement(Container$f, {
+  })), React__default.createElement(Container$e, {
     id: 'scrollableDiv',
     ref: scrollRef,
     stopScrolling: stopScrolling,
@@ -25964,6 +26308,7 @@ var MessageList = function MessageList(_ref2) {
       key: message.id || message.tid
     }, React__default.createElement(CreateMessageDateDivider, {
       noMargin: !isUnreadMessage && prevMessage && prevMessage.type === 'system' && message.type !== 'system',
+      theme: theme,
       lastIndex: false,
       currentMessageDate: message.createdAt,
       nextMessageDate: prevMessage && prevMessage.createdAt,
@@ -25982,9 +26327,9 @@ var MessageList = function MessageList(_ref2) {
       visible: showTopFixedDate,
       dividerText: message.body,
       dateDividerFontSize: dateDividerFontSize,
-      dateDividerTextColor: dateDividerTextColor,
+      dateDividerTextColor: dateDividerTextColor || colors.textColor1,
       dateDividerBorder: dateDividerBorder,
-      dateDividerBackgroundColor: dateDividerBackgroundColor,
+      dateDividerBackgroundColor: dateDividerBackgroundColor || colors.backgroundColor,
       dateDividerBorderRadius: dateDividerBorderRadius
     }, React__default.createElement("span", null, message.incoming ? makeUsername(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(messageMetas && messageMetas.m) && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
@@ -26017,6 +26362,7 @@ var MessageList = function MessageList(_ref2) {
       ownMessageBackground: ownMessageBackground,
       incomingMessageBackground: incomingMessageBackground,
       showMessageStatus: showMessageStatus,
+      showMessageTimeAndStatusOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
       showMessageTime: showMessageTime,
       showMessageStatusForEachMessage: showMessageStatusForEachMessage,
       showMessageTimeForEachMessage: showMessageTimeForEachMessage,
@@ -26098,6 +26444,7 @@ var MessageList = function MessageList(_ref2) {
       sameUserMessageSpacing: sameUserMessageSpacing,
       differentUserMessageSpacing: differentUserMessageSpacing
     })), isUnreadMessage ? React__default.createElement(MessageDivider, {
+      theme: theme,
       newMessagesSeparatorTextColor: newMessagesSeparatorTextColor,
       newMessagesSeparatorFontSize: newMessagesSeparatorFontSize,
       newMessagesSeparatorWidth: newMessagesSeparatorWidth,
@@ -26108,13 +26455,15 @@ var MessageList = function MessageList(_ref2) {
       dividerText: newMessagesSeparatorText || 'Unread Messages',
       unread: true
     }) : null);
-  })) : messagesLoading === LOADING_STATE.LOADED && React__default.createElement(NoMessagesContainer, null, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.GROUP ? ' group chat' : ' channel'), attachmentsPreview && mediaFile && React__default.createElement(SliderPopup, {
+  })) : messagesLoading === LOADING_STATE.LOADED && React__default.createElement(NoMessagesContainer, {
+    color: colors.textColor1
+  }, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.GROUP ? ' group chat' : ' channel'), attachmentsPreview && mediaFile && React__default.createElement(SliderPopup, {
     channelId: channel.id,
     setIsSliderOpen: setMediaFile,
     currentMediaFile: mediaFile
   }))));
 };
-var Container$f = styled__default.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
+var Container$e = styled__default.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column-reverse;\n  //flex-direction: column;\n  flex-grow: 1;\n  position: relative;\n  //overflow: ", ";\n  overflow: auto;\n  scroll-behavior: smooth;\n  will-change: left, top;\n"])), function (props) {
   return props.stopScrolling ? 'hidden' : 'auto';
 });
 var EmptyDiv = styled__default.div(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  height: 300px;\n"])));
@@ -26134,11 +26483,11 @@ var MessageTopDate = styled__default.div(_templateObject4$i || (_templateObject4
 }, function (props) {
   return props.dateDividerFontSize || '14px';
 }, function (props) {
-  return props.dateDividerTextColor || colors.blue6;
+  return props.dateDividerTextColor || colors.textColor1;
 }, function (props) {
   return props.dateDividerBackgroundColor || '#ffffff';
 }, function (props) {
-  return props.dateDividerBorder || "1px solid " + colors.gray1;
+  return props.dateDividerBorder;
 }, function (props) {
   return props.dateDividerBorderRadius || '14px';
 });
@@ -26147,14 +26496,16 @@ var DragAndDropContainer = styled__default.div(_templateObject5$g || (_templateO
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper = styled__default.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.gray5, function (props) {
+var IconWrapper = styled__default.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.backgroundColor, function (props) {
   return props.iconColor || colors.primary;
 });
-var DropAttachmentArea = styled__default.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.gray3, function (props) {
+var DropAttachmentArea = styled__default.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.textColor2, function (props) {
   return props.margin || '12px 32px 32px';
-}, colors.gray6, colors.gray5, IconWrapper, colors.white);
+}, colors.textColor1, colors.backgroundColor, IconWrapper, colors.white);
 var MessageWrapper = styled__default.div(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
-var NoMessagesContainer = styled__default.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray6);
+var NoMessagesContainer = styled__default.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
 
 var _circle$5, _path$W;
 
@@ -26289,6 +26640,7 @@ function SvgErrorCircle(props) {
 var _templateObject$w, _templateObject2$t, _templateObject3$o, _templateObject4$j, _templateObject5$h, _templateObject6$g;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
+      theme = _ref.theme,
       addMentionMember = _ref.addMentionMember,
       handleMentionsPopupClose = _ref.handleMentionsPopupClose,
       searchMention = _ref.searchMention;
@@ -26412,10 +26764,12 @@ function MentionMembersPopup(_ref) {
       setHideMenu(false);
     }
   }, [filteredMembersLength.current]);
-  return React__default.createElement(Container$g, {
+  return React__default.createElement(Container$f, {
     className: 'mention_member_popup',
     hidden: hideMenu,
-    height: filteredMembers && filteredMembers.length * 44
+    height: filteredMembers && filteredMembers.length * 44,
+    backgroundColor: theme === THEME$1.DARK ? colors.backgroundColor : colors.white,
+    withBorder: theme !== THEME$1.DARK
   }, React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
   }, filteredMembers.map(function (member, index) {
@@ -26427,30 +26781,39 @@ function MentionMembersPopup(_ref) {
       isActiveItem: activeIndex === index,
       onMouseEnter: function onMouseEnter() {
         return setActiveIndex(index);
-      }
+      },
+      activeBackgroundColor: colors.hoverBackgroundColor
     }, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
       name: member.firstName || member.id,
       image: member.avatarUrl,
       size: 32,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, null, makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
+    })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, {
+      color: colors.textColor1
+    }, makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
   })));
 }
-var Container$g = styled__default.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  background: #ffffff;\n  border: 1px solid #dfe0eb;\n  box-sizing: border-box;\n  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
+var Container$f = styled__default.div(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
   return props.height && props.height + 22;
+}, function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
+  return props.withBorder && "1px solid " + colors.borderColor;
 }, function (props) {
   return props.hidden ? 'hidden' : 'visible';
 });
 var UserNamePresence$2 = styled__default.div(_templateObject2$t || (_templateObject2$t = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
-var MemberName$2 = styled__default.h3(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var MemberName$2 = styled__default.h3(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
 var EditMemberIcon = styled__default.span(_templateObject4$j || (_templateObject4$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled__default.ul(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  margin: 10px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
+var MembersList = styled__default.ul(_templateObject5$h || (_templateObject5$h = _taggedTemplateLiteralLoose(["\n  margin: 4px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
 var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
-  return props.isActiveItem && colors.gray0;
+  return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$x, _templateObject2$u, _templateObject3$p, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$x, _templateObject2$u, _templateObject3$p, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$8, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -26495,6 +26858,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var ChatClient = getClient();
   var user = ChatClient.user;
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
+  var theme = reactRedux.useSelector(themeSelector);
   var getFromContacts = getShowOnlyContactUsers();
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
   var messageToEdit = reactRedux.useSelector(messageToEditSelector);
@@ -26948,7 +27312,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         });
 
         if (messageForReply) {
-          messageToSend.parent = messageForReply;
+          messageToSend.parentMessage = messageForReply;
         }
 
         if (messageTexToSend && !attachments.length) {
@@ -26973,6 +27337,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
         if (attachments.length) {
           var sendAsSeparateMessage = getSendAttachmentsAsSeparateMessages();
+          console.log('send as separate message ... ', sendAsSeparateMessage);
           messageToSend.attachments = attachments.map(function (attachment, index) {
             var attachmentToSend = {
               name: attachment.data.name,
@@ -27175,6 +27540,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
     try {
       var customUploader = getCustomUploader();
+      var sendAsSeparateMessage = getSendAttachmentsAsSeparateMessages();
       var fileType = file.type.split('/')[0];
 
       var _temp5 = function () {
@@ -27225,26 +27591,48 @@ var SendMessageInput = function SendMessageInput(_ref) {
             if (fileType === 'image') {
               var _temp7 = function () {
                 if (isMediaAttachment) {
-                  resizeImage(file).then(function (resizedFile) {
-                    try {
-                      return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
-                        var thumbnail = _ref2.thumbnail;
-                        setAttachments(function (prevState) {
-                          return [].concat(prevState, [{
-                            data: new File([resizedFile.blob], resizedFile.file.name),
-                            attachmentUrl: URL.createObjectURL(file),
-                            attachmentId: uuid.v4(),
-                            type: fileType,
-                            metadata: JSON.stringify({
-                              tmb: thumbnail,
-                              szw: resizedFile.newWidth,
-                              szh: resizedFile.newHeight
-                            })
-                          }]);
-                        });
+                  return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
+                    var thumbnail = _ref2.thumbnail,
+                        imageWidth = _ref2.imageWidth,
+                        imageHeight = _ref2.imageHeight;
+
+                    if (file.type === 'image/gif') {
+                      console.log('imageWidth', imageWidth);
+                      console.log('imageHeight', imageHeight);
+                      setAttachments(function (prevState) {
+                        return [].concat(prevState, [{
+                          data: file,
+                          attachmentUrl: URL.createObjectURL(file),
+                          attachmentId: uuid.v4(),
+                          type: fileType,
+                          metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                            tmb: thumbnail,
+                            szw: imageWidth,
+                            szh: imageHeight
+                          })
+                        }]);
                       });
-                    } catch (e) {
-                      return Promise.reject(e);
+                    } else {
+                      resizeImage(file).then(function (resizedFile) {
+                        try {
+                          setAttachments(function (prevState) {
+                            return [].concat(prevState, [{
+                              data: new File([resizedFile.blob], resizedFile.file.name),
+                              attachmentUrl: URL.createObjectURL(file),
+                              attachmentId: uuid.v4(),
+                              type: fileType,
+                              metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                                tmb: thumbnail,
+                                szw: resizedFile.newWidth,
+                                szh: resizedFile.newHeight
+                              })
+                            }]);
+                          });
+                          return Promise.resolve();
+                        } catch (e) {
+                          return Promise.reject(e);
+                        }
+                      });
                     }
                   });
                 } else {
@@ -27256,7 +27644,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
                         type: 'file',
                         attachmentUrl: URL.createObjectURL(file),
                         attachmentId: uuid.v4(),
-                        metadata: JSON.stringify({
+                        metadata: sendAsSeparateMessage ? '' : JSON.stringify({
                           tmb: thumbnail
                         })
                       }]);
@@ -27279,7 +27667,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
                         type: 'video',
                         attachmentUrl: URL.createObjectURL(file),
                         attachmentId: uuid.v4(),
-                        metadata: JSON.stringify({
+                        metadata: sendAsSeparateMessage ? '' : JSON.stringify({
                           tmb: thumb,
                           szw: width,
                           szh: height
@@ -27583,10 +27971,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(Container$h, {
+  return React__default.createElement(Container$g, {
     margin: margin,
     border: border,
-    ref: messageContRef
+    ref: messageContRef,
+    theme: theme
   }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disabled ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disabled ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.userRole && activeChannel.type !== CHANNEL_TYPE.DIRECT ? React__default.createElement(JoinChannelCont, {
     onClick: handleJoinToChannel,
     color: colors.primary
@@ -27622,13 +28011,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
   })))), !!attachments.length && !sendAttachmentSeparately && React__default.createElement(ChosenAttachments, null, attachments.map(function (attachment) {
     return React__default.createElement(Attachment, {
       attachment: attachment,
-      isPrevious: true,
+      isPreview: true,
       removeSelected: removeUpload,
       key: attachment.attachmentId,
       setVideoIsReadyToSend: setVideoIsReadyToSend,
       borderRadius: selectedAttachmentsBorderRadius,
       selectedFileAttachmentsIcon: selectedFileAttachmentsIcon,
-      backgroundColor: selectedFileAttachmentsBoxBackground || '',
+      backgroundColor: selectedFileAttachmentsBoxBackground || colors.backgroundColor,
       selectedFileAttachmentsBoxBorder: selectedFileAttachmentsBoxBorder,
       selectedFileAttachmentsTitleColor: selectedFileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor: selectedFileAttachmentsSizeColor
@@ -27639,6 +28028,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, React__default.createElement(MentionsContainer, {
     mentionsIsOpen: openMention
   }, openMention && React__default.createElement(MentionMembersPopup, {
+    theme: theme,
     channelId: activeChannel.id,
     addMentionMember: handleSetMention,
     searchMention: currentMentions.typed,
@@ -27651,7 +28041,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }), React__default.createElement(MessageInputWrapper, {
     borderRadius: borderRadius,
     ref: inputWrapperRef,
-    backgroundColor: backgroundColor,
+    backgroundColor: backgroundColor || colors.backgroundColor,
     channelDetailsIsOpen: channelDetailsIsOpen
   }, showAddEmojis && React__default.createElement(EmojiButton, {
     order: emojiIcoOrder,
@@ -27663,6 +28053,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setIsEmojisOpened(!isEmojisOpened);
     }
   }, AddEmojisIcon || React__default.createElement(SvgEmojiSmileIcon, null)), showAddAttachments && React__default.createElement(DropDown, {
+    theme: theme,
     forceClose: showChooseAttachmentType,
     position: addAttachmentsInRightSide ? 'top' : 'topRight',
     margin: 'auto 0 0',
@@ -27674,28 +28065,29 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }, AddAttachmentsIcon || React__default.createElement(SvgAddAttachment, null))
   }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
     key: 1,
-    textColor: colors.gray6,
-    hoverBackground: colors.gray5,
+    textColor: colors.textColor1,
+    hoverBackground: colors.hoverBackgroundColor,
     onClick: function onClick() {
       return onOpenFileUploader(mediaExtensions);
     },
     iconWidth: '20px',
-    iconColor: colors.gray4
+    iconColor: colors.textColor2
   }, React__default.createElement(SvgChoseMedia, null), "Photo or video"), React__default.createElement(DropdownOptionLi, {
     key: 2,
-    textColor: colors.gray6,
-    hoverBackground: colors.gray5,
+    textColor: colors.textColor1,
+    hoverBackground: colors.hoverBackgroundColor,
     onClick: function onClick() {
       return onOpenFileUploader('');
     },
     iconWidth: '20px',
-    iconColor: colors.gray4
+    iconColor: colors.textColor2
   }, React__default.createElement(SvgChoseFile, null), "File"))), React__default.createElement(MessageInput, {
     contentEditable: true,
     suppressContentEditableWarning: true,
     onKeyUp: handleTyping,
     onChange: handleTyping,
     onPaste: handlePastAttachments,
+    color: colors.textColor1,
     onCut: handleCut,
     onKeyPress: handleSendEditMessage,
     "data-placeholder": 'Type message here ...',
@@ -27708,21 +28100,22 @@ var SendMessageInput = function SendMessageInput(_ref) {
   })), React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
+    color: colors.backgroundColor,
     height: inputContainerHeight || minHeight,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
   }, React__default.createElement(SvgSend, null)))));
 };
 
-var Container$h = styled__default.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
+var Container$g = styled__default.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
   return props.margin || '30px 0 16px';
 }, function (props) {
   return props.border || '';
 }, function (props) {
   return props.borderRadius || '4px';
 });
-var EditReplyMessageCont = styled__default.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.gray6, colors.gray5, colors.gray1);
+var EditReplyMessageCont = styled__default.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
 var EditMessageText = styled__default.p(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled__default.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.gray4);
+var CloseEditMode = styled__default.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
 var UserName$1 = styled__default.span(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
 var EditReplyMessageHeader = styled__default.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
@@ -27746,11 +28139,13 @@ var SendMessageInputContainer = styled__default.div(_templateObject8$d || (_temp
 var MessageInputWrapper = styled__default.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 100%;\n  max-width: calc(100% - 50px);\n  //max-width: ", ";\n  //max-width: calc(100% - 110px);\n  background-color: ", ";\n  border-radius: ", ";\n  position: relative;\n"])), function (props) {
   return props.channelDetailsIsOpen ? "calc(100% - " + (props.channelDetailsIsOpen ? 362 : 0) + "px)" : '';
 }, function (props) {
-  return props.backgroundColor || colors.gray11;
+  return props.backgroundColor || colors.backgroundColor;
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var MessageInput = styled__default.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: read-only;\n  }\n\n  //caret-color: #000;\n"])), function (props) {
+var MessageInput = styled__default.div(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  color: ", ";\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: read-only;\n  }\n\n  //caret-color: #000;\n"])), function (props) {
+  return props.color;
+}, function (props) {
   return props.borderRadius;
 }, function (props) {
   return props.backgroundColor;
@@ -27758,10 +28153,10 @@ var MessageInput = styled__default.div(_templateObject10$9 || (_templateObject10
   return props.paddings;
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
-}, colors.gray7, colors.gray7, function (props) {
+}, colors.textColor3, colors.textColor3, function (props) {
   return props.mentionColor || colors.primary;
 });
-var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 2;
@@ -27776,23 +28171,23 @@ var SendMessageIcon = styled__default.span(_templateObject13$4 || (_templateObje
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
-  return props.isActive ? colors.primary : '#ccc';
+  return props.isActive ? colors.primary : props.color;
 });
 var ChosenAttachments = styled__default.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
 var TypingIndicator$1 = styled__default.div(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
 var TypingIndicatorCont = styled__default.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
-var TypingFrom = styled__default.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.gray9);
+var TypingFrom = styled__default.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
 var sizeAnimation = styled.keyframes(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
 var DotOne = styled__default.span(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose([""])));
 var DotTwo = styled__default.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled__default.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
 var TypingAnimation = styled__default.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: #818c99;\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), sizeAnimation, DotOne, DotTwo, DotThree);
 var Loading = styled__default.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
-var BlockedUserInfo = styled__default.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.gray6);
+var BlockedUserInfo = styled__default.div(_templateObject24$1 || (_templateObject24$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
 var JoinChannelCont = styled__default.div(_templateObject25$1 || (_templateObject25$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
-}, colors.gray5);
-var ReadOnlyCont = styled__default.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), colors.gray6, function (props) {
+}, colors.backgroundColor);
+var ReadOnlyCont = styled__default.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), colors.textColor1, function (props) {
   return props.iconColor || colors.primary;
 });
 var ReplyMessageCont = styled__default.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
@@ -28139,6 +28534,7 @@ var _templateObject$y, _templateObject2$v, _templateObject3$q, _templateObject4$
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
       actionMenuOpen = _ref.actionMenuOpen,
+      theme = _ref.theme,
       menuIsOpen = _ref.menuIsOpen,
       toggleable = _ref.toggleable,
       _ref$showMuteUnmuteNo = _ref.showMuteUnmuteNotifications,
@@ -28352,8 +28748,10 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return React__default.createElement(Container$i, {
-    isDirect: isDirectChannel
+  return React__default.createElement(Container$h, {
+    isDirect: isDirectChannel,
+    theme: theme,
+    borderColor: colors.backgroundColor
   }, toggleable && React__default.createElement(ActionHeader, {
     onClick: handleActionsOpen
   }, React__default.createElement(SectionHeader, null, "ACTIONS"), React__default.createElement(MenuTriggerIcon, {
@@ -28366,20 +28764,21 @@ var Actions$1 = function Actions(_ref) {
     onClick: function onClick() {
       return handleNotificationOnOff();
     },
-    iconColor: muteNotificationIconColor || colors.gray4,
-    color: muteUnmuteNotificationTextColor || colors.gray6,
-    hoverColor: muteUnmuteNotificationTextColor || colors.gray6
+    iconColor: muteNotificationIconColor || colors.textColor2,
+    color: muteUnmuteNotificationTextColor || colors.textColor1,
+    hoverColor: muteUnmuteNotificationTextColor || colors.textColor1
   }, React__default.createElement(React__default.Fragment, null, muteNotificationIcon || React__default.createElement(DefaultMutedIcon, null), " Unmute notifications")) : React__default.createElement(DropDown, {
     isSelect: true,
+    theme: theme,
     height: 'auto',
     position: 'left',
     order: muteUnmuteNotificationsOrder,
     trigger: React__default.createElement(ActionItem$1, {
       key: 0,
       disableEvent: true,
-      iconColor: unmuteNotificationIconColor || colors.gray4,
-      color: muteUnmuteNotificationTextColor || colors.gray6,
-      hoverColor: muteUnmuteNotificationTextColor || colors.gray6
+      iconColor: unmuteNotificationIconColor || colors.textColor2,
+      color: muteUnmuteNotificationTextColor || colors.textColor1,
+      hoverColor: muteUnmuteNotificationTextColor || colors.textColor1
     }, React__default.createElement(React__default.Fragment, null, unmuteNotificationIcon || React__default.createElement(SvgNotifications, null), " Mute notifications"))
   }, React__default.createElement(DropdownOptionsUl, null, timeOptionsToMuteNotifications && timeOptionsToMuteNotifications.length ? timeOptionsToMuteNotifications.map(function (value, index) {
     return React__default.createElement(DropdownOptionLi, {
@@ -28419,32 +28818,32 @@ var Actions$1 = function Actions(_ref) {
       return console.log('stared messages');
     },
     order: starredMessagesOrder,
-    iconColor: staredMessagesIconColor || colors.gray4,
-    color: staredMessagesTextColor || colors.gray6,
-    hoverColor: staredMessagesTextColor || colors.gray6
+    iconColor: staredMessagesIconColor || colors.textColor2,
+    color: staredMessagesTextColor || colors.textColor1,
+    hoverColor: staredMessagesTextColor || colors.textColor1
   }, React__default.createElement(React__default.Fragment, null, staredMessagesIcon || React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(ActionItem$1, {
     key: 2,
     onClick: function onClick() {
       return console.log('pin channel');
     },
     order: pinChannelOrder,
-    iconColor: pinChannelIconColor || colors.gray4,
-    color: pinChannelTextColor || colors.gray6,
-    hoverColor: pinChannelTextColor || colors.gray6
+    iconColor: pinChannelIconColor || colors.textColor2,
+    color: pinChannelTextColor || colors.textColor1,
+    hoverColor: pinChannelTextColor || colors.textColor1
   }, React__default.createElement(React__default.Fragment, null, pinChannelIcon || React__default.createElement(SvgPin, null), " Pin")), showMarkAsReadUnread && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.unread ? React__default.createElement(ActionItem$1, {
     key: 3,
     onClick: handleToggleChannelMarkAs,
     order: markAsReadUnreadOrder,
-    iconColor: markAsReadIconColor || colors.gray4,
-    color: markAsReadUnreadTextColor || colors.gray6,
-    hoverColor: markAsReadUnreadTextColor || colors.gray6
+    iconColor: markAsReadIconColor || colors.textColor2,
+    color: markAsReadUnreadTextColor || colors.textColor1,
+    hoverColor: markAsReadUnreadTextColor || colors.textColor1
   }, React__default.createElement(React__default.Fragment, null, markAsReadIcon || React__default.createElement(SvgMarkAsRead, null), " Mark as read")) : React__default.createElement(ActionItem$1, {
     key: 3,
     order: markAsReadUnreadOrder,
     onClick: handleToggleChannelMarkAs,
-    iconColor: markAsUnreadIconColor || colors.gray4,
-    color: markAsReadUnreadTextColor || colors.gray6,
-    hoverColor: markAsReadUnreadTextColor || colors.gray6
+    iconColor: markAsUnreadIconColor || colors.textColor2,
+    color: markAsReadUnreadTextColor || colors.textColor1,
+    hoverColor: markAsReadUnreadTextColor || colors.textColor1
   }, React__default.createElement(React__default.Fragment, null, markAsUnreadIcon || React__default.createElement(SvgMarkAsUnRead, null), " Mark as unread"))), !isDirectChannel && showLeaveChannel && React__default.createElement(ActionItem$1, {
     key: 4,
     order: leaveChannelOrder,
@@ -28458,8 +28857,8 @@ var Actions$1 = function Actions(_ref) {
     }
   }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type)), isDirectChannel && otherMembers.length === 1 ? React__default.createElement(React__default.Fragment, null, showBlockUser && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (directChannelUser && directChannelUser.blocked ? React__default.createElement(ActionItem$1, {
     key: 5,
-    color: unblockUserTextColor || colors.gray6,
-    hoverColor: unblockUserTextColor || colors.gray6,
+    color: unblockUserTextColor || colors.textColor1,
+    hoverColor: unblockUserTextColor || colors.textColor1,
     onClick: function onClick() {
       handleUnblockUser();
     }
@@ -28579,8 +28978,8 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$i = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-top: 0.5px solid ", ";\n  border-bottom: 6px solid ", ";\n  /*", "*/\n"])), colors.gray1, colors.gray0, function (props) {
-  return !props.isDirect && "border-bottom: 6px solid " + colors.gray0;
+var Container$h = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-bottom: 6px solid ", ";\n]"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
 });
 var ActionHeader = styled__default.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
 var MenuTriggerIcon = styled__default.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
@@ -28589,15 +28988,15 @@ var MenuTriggerIcon = styled__default.span(_templateObject3$q || (_templateObjec
 var ActionsMenu = styled__default.ul(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DefaultMutedIcon = styled__default(SvgNotificationsOff2)(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose([""])));
 var ActionItem$1 = styled__default.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  & > ", " {\n    margin-right: 12px;\n    margin-left: 2px;\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
-  return props.color || colors.blue6;
+  return props.color || colors.textColor1;
 }, function (props) {
   return props.order;
 }, function (props) {
   return props.disableEvent && 'none';
 }, function (props) {
-  return props.iconColor || colors.gray4;
+  return props.iconColor || colors.textColor2;
 }, DefaultMutedIcon, function (props) {
-  return props.hoverColor || colors.blue2;
+  return props.hoverColor || colors.blue;
 });
 
 var _rect$1, _rect2, _path$18;
@@ -28680,7 +29079,8 @@ function SvgMoreVert(props) {
 var _templateObject$z, _templateObject2$w, _templateObject3$r;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
-  var channelId = _ref.channelId,
+  var theme = _ref.theme,
+      channelId = _ref.channelId,
       member = _ref.member,
       handleClosePopup = _ref.handleClosePopup;
   var dispatch = reactRedux.useDispatch();
@@ -28719,32 +29119,47 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }
 
   return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+    backgroundColor: colors.backgroundColor,
     maxWidth: '400px',
     padding: '0'
   }, React__default.createElement(PopupBody, {
     paddingH: '24px',
     paddingV: '24px'
   }, React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
     onClick: function onClick() {
       return handleClosePopup();
     }
-  }), React__default.createElement(PopupName, null, "Change member role"), React__default.createElement(RolesSelect, null, React__default.createElement(RoleLabel, null, "Roles"), React__default.createElement(CustomSelect, null, React__default.createElement(DropDown, {
+  }), React__default.createElement(PopupName, {
+    color: colors.textColor1
+  }, "Change member role"), React__default.createElement(RolesSelect, null, React__default.createElement(RoleLabel, {
+    color: colors.textColor1
+  }, "Roles"), React__default.createElement(CustomSelect, {
+    backgroundColor: colors.backgroundColor,
+    color: colors.textColor1
+  }, React__default.createElement(DropDown, {
     withIcon: true,
+    theme: theme,
     isSelect: true,
-    trigger: React__default.createElement(CustomSelectTrigger, null, selectedRole || member.role || 'Select')
-  }, React__default.createElement(DropdownOptionsUl, null, !!roles.length && roles.map(function (role) {
+    trigger: React__default.createElement(CustomSelectTrigger, {
+      color: colors.textColor1
+    }, selectedRole || member.role || 'Select')
+  }, React__default.createElement(DropdownOptionsUl, {
+    theme: theme
+  }, !!roles.length && roles.map(function (role) {
     return React__default.createElement(DropdownOptionLi, {
       hoverBackground: colors.primaryLight,
       key: role.name,
       onClick: function onClick() {
         return onChangeFunction(role.name);
-      }
+      },
+      textColor: colors.textColor1
     }, React__default.createElement(RoleSpan, null, role.name));
   })))))), React__default.createElement(PopupFooter, {
-    backgroundColor: colors.gray5
+    backgroundColor: colors.backgroundColor
   }, React__default.createElement(Button, {
     type: 'button',
-    color: colors.gray6,
+    color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return handleClosePopup();
@@ -28758,13 +29173,17 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
 };
 
 var RolesSelect = styled__default.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled__default.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: #1f233c;\n"])));
-var RoleSpan = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  color: #383b51;\n  text-transform: capitalize;\n"])));
+var RoleLabel = styled__default.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: ", ";\n"])), function (_ref2) {
+  var color = _ref2.color;
+  return color || colors.textColor1;
+});
+var RoleSpan = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  text-transform: capitalize;\n"])));
 
 var _templateObject$A, _templateObject2$x, _templateObject3$s, _templateObject4$m, _templateObject5$k, _templateObject6$j, _templateObject7$f, _templateObject8$e, _templateObject9$c;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
+      theme = _ref.theme,
       chekActionPermission = _ref.chekActionPermission,
       _ref$showChangeMember = _ref.showChangeMemberRole,
       showChangeMemberRole = _ref$showChangeMember === void 0 ? true : _ref$showChangeMember,
@@ -28913,17 +29332,22 @@ var Members = function Members(_ref) {
 
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return React__default.createElement(Container$j, null, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
+  return React__default.createElement(Container$i, {
+    theme: theme
+  }, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
     onScroll: handleMembersListScroll
   }, chekActionPermission('addMember') && React__default.createElement(MemberItem$1, {
     key: 1,
     onClick: handleAddMemberPopup,
+    color: colors.textColor1,
     hoverBackground: colors.primaryLight,
+    addMemberBackground: colors.backgroundColor,
     addMemberIconColor: colors.primary
   }, React__default.createElement(SvgAddMember, null), "Add " + displayMemberText), !!members.length && members.map(function (member, index) {
     return React__default.createElement(MemberItem$1, {
       key: member.id + index,
-      hoverBackground: colors.primaryLight
+      color: colors.textColor1,
+      hoverBackground: colors.hoverBackgroundColor
     }, React__default.createElement(Avatar, {
       name: member.firstName || member.id,
       image: member.avatarUrl,
@@ -28937,6 +29361,7 @@ var Members = function Members(_ref) {
     }, "Admin") : ''), React__default.createElement(SubTitle, {
       margin: '1px 0 0'
     }, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && member.role !== 'owner' && member.id !== user.id && React__default.createElement(DropDown, {
+      theme: theme,
       isSelect: true,
       forceClose: !!(closeMenu && closeMenu !== member.id),
       watchToggleState: function watchToggleState(state) {
@@ -28949,7 +29374,7 @@ var Members = function Members(_ref) {
         toggleChangeRolePopup();
       },
       key: 1,
-      hoverBackground: colors.primaryLight
+      hoverBackground: colors.hoverBackgroundColor
     }, "Change role"), showMakeMemberAdmin && chekActionPermission('changeMemberRole') && member.role !== 'owner' && React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
@@ -28957,7 +29382,7 @@ var Members = function Members(_ref) {
       },
       textColor: member.role === 'admin' ? colors.red1 : '',
       key: 2,
-      hoverBackground: colors.primaryLight
+      hoverBackground: colors.hoverBackgroundColor
     }, member.role === 'admin' ? 'Revoke Admin' : 'Make Admin'), showKickMember && chekActionPermission('kickMember') && member.role !== 'owner' && React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
@@ -28965,29 +29390,32 @@ var Members = function Members(_ref) {
       },
       textColor: colors.red1,
       key: 3,
-      hoverBackground: colors.primaryLight
+      hoverBackground: colors.hoverBackgroundColor
     }, "Remove"), showKickAndBlockMember && chekActionPermission('kickAndBlockMember') && React__default.createElement(DropdownOptionLi, {
       textColor: colors.red1,
       key: 4,
-      hoverBackground: colors.primaryLight,
+      hoverBackground: colors.hoverBackgroundColor,
       onClick: function onClick() {
         setSelectedMember(member);
         toggleBlockMemberPopup();
       }
     }, "Remove and Block member"))));
   }))), kickMemberPopupOpen && React__default.createElement(ConfirmPopup, {
+    theme: theme,
     handleFunction: handleKickMember,
     togglePopup: toggleKickMemberPopup,
     buttonText: 'Remove',
     title: channel.type === CHANNEL_TYPE.GROUP ? 'Remove member' : 'Remove subscriber',
     description: React__default.createElement("span", null, "Are you sure to remove", !!selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "from this", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : 'group', "?")
   }), blockMemberPopupOpen && React__default.createElement(ConfirmPopup, {
+    theme: theme,
     handleFunction: handleBlockMember,
     togglePopup: toggleBlockMemberPopup,
     buttonText: 'Block',
     description: "Block and remove member - " + (selectedMember && (selectedMember.firstName || selectedMember.lastName || selectedMember.id)),
     title: 'Block and remove user'
   }), makeAdminPopup && React__default.createElement(ConfirmPopup, {
+    theme: theme,
     handleFunction: handleMakeAdmin,
     togglePopup: function togglePopup() {
       return toggleMakeAdminPopup(false);
@@ -29003,8 +29431,10 @@ var Members = function Members(_ref) {
     },
     buttonText: 'Revoke',
     title: 'Revoke admin',
+    theme: theme,
     description: React__default.createElement("span", null, "Are you sure you want to revoke", React__default.createElement(BoltText, null, " \u201CAdmin\u201D "), "rights from user:", selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "?")
   }), changeMemberRolePopup && React__default.createElement(ChangeMemberRole, {
+    theme: theme,
     channelId: channel.id,
     member: selectedMember,
     handleClosePopup: toggleChangeRolePopup
@@ -29017,17 +29447,22 @@ var Members = function Members(_ref) {
     memberIds: members.map(function (mem) {
       return mem.id;
     }),
-    toggleCreatePopup: handleAddMemberPopup
+    toggleCreatePopup: handleAddMemberPopup,
+    theme: theme
   }));
 };
-var Container$j = styled__default.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose([""])));
+var Container$i = styled__default.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose([""])));
 var ActionsMenu$1 = styled__default.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
 var MemberNamePresence = styled__default.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
 var MemberNameWrapper = styled__default.div(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
-var MemberName$3 = styled__default.h4(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), colors.gray6);
+var MemberName$3 = styled__default.h4(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
 var EditMemberIcon$1 = styled__default.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList$1 = styled__default.ul(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem$1 = styled__default.li(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  &:first-child {\n    color: ", ";\n    cursor: pointer;\n    background-color: #fff;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), colors.gray6, function (props) {
+var MemberItem$1 = styled__default.li(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n\n  &:first-child {\n    cursor: pointer;\n    background-color: ", "};\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
+  return props.addMemberBackground || colors.backgroundColor;
+}, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
   return props.hoverBackground || colors.gray0;
@@ -29054,11 +29489,12 @@ var Media = function Media(_ref) {
     setMediaFile(file);
   };
 
+  console.log('attachments. .. . . . . ', attachments);
   React.useEffect(function () {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return React__default.createElement(Container$k, null, attachments.map(function (file) {
+  return React__default.createElement(Container$j, null, attachments.map(function (file) {
     return React__default.createElement(MediaItem, {
       key: file.id,
       onClick: function onClick() {
@@ -29086,7 +29522,7 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$k = styled__default.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var Container$j = styled__default.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
 var _path$1a, _path2$8, _path3$4;
@@ -29179,6 +29615,7 @@ var _templateObject$C, _templateObject2$z, _templateObject3$t, _templateObject4$
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
+      theme = _ref.theme,
       filePreviewIcon = _ref.filePreviewIcon,
       filePreviewHoverIcon = _ref.filePreviewHoverIcon,
       filePreviewTitleColor = _ref.filePreviewTitleColor,
@@ -29215,10 +29652,12 @@ var Files = function Files(_ref) {
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
-  return React__default.createElement(Container$l, null, attachments.map(function (file) {
+  return React__default.createElement(Container$k, {
+    theme: theme
+  }, attachments.map(function (file) {
     return React__default.createElement(FileItem, {
       key: file.url,
-      hoverBackgroundColor: filePreviewHoverBackgroundColor
+      hoverBackgroundColor: filePreviewHoverBackgroundColor || colors.hoverBackgroundColor
     }, file.metadata && file.metadata.tmb ? React__default.createElement(FileThumb, {
       draggable: false,
       src: "data:image/jpeg;base64," + file.metadata.tmb
@@ -29226,7 +29665,7 @@ var Files = function Files(_ref) {
       color: filePreviewTitleColor
     }, formatLargeText(file.name, 32)), React__default.createElement(FileSizeAndDate, {
       color: filePreviewSizeColor
-    }, file.fileSize ? bytesToSize(file.fileSize) : '')), React__default.createElement(DownloadWrapper, {
+    }, file.size ? bytesToSize(file.size) : '')), React__default.createElement(DownloadWrapper, {
       onClick: function onClick() {
         return handleDownloadFile(file);
       }
@@ -29234,11 +29673,11 @@ var Files = function Files(_ref) {
       width: '12px',
       height: '12px',
       borderWidth: '2px',
-      color: colors.gray10
+      color: colors.textColor2
     }) : filePreviewDownloadIcon || React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$l = styled__default.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$k = styled__default.ul(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DownloadWrapper = styled__default.a(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
 var FileIconCont = styled__default.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileHoverIconCont = styled__default.span(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
@@ -29247,7 +29686,7 @@ var FileItem = styled__default.div(_templateObject6$k || (_templateObject6$k = _
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
 var FileSizeAndDate = styled__default.span(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
-  return props.color || colors.gray6;
+  return props.color || colors.textColor1;
 });
 
 var _rect$2, _rect2$1, _g$3, _defs$1;
@@ -29279,7 +29718,7 @@ function SvgLinkIcon(props) {
     width: 42,
     height: 42,
     rx: 6,
-    fill: "#E3E7FF"
+    fill: "CurrentColor"
   })), _rect2$1 || (_rect2$1 = /*#__PURE__*/React.createElement("rect", {
     x: 0.25,
     y: 0.25,
@@ -29314,24 +29753,32 @@ var LinkItem = function LinkItem(_ref) {
   React.useEffect(function () {}, []);
   return React__default.createElement(FileItem$1, {
     draggable: false,
-    hoverBackgroundColor: linkPreviewHoverBackgroundColor
+    hoverBackgroundColor: linkPreviewHoverBackgroundColor || colors.hoverBackgroundColor
   }, React__default.createElement("a", {
     draggable: false,
     href: link.startsWith('http') ? link : "https://" + link,
     target: '_blank',
     rel: 'noreferrer'
-  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(LinkIconCont, null, linkPreviewIcon || React__default.createElement(SvgLinkIcon, null)), React__default.createElement(LinkHoverIconCont, null, linkPreviewHoverIcon || React__default.createElement(SvgLinkIcon, null))), React__default.createElement(LinkInfoCont, null, React__default.createElement(LinkUrl, {
+  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(LinkIconCont, {
+    color: colors.primaryLight
+  }, linkPreviewIcon || React__default.createElement(SvgLinkIcon, null)), React__default.createElement(LinkHoverIconCont, {
+    color: colors.primaryLight
+  }, linkPreviewHoverIcon || React__default.createElement(SvgLinkIcon, null))), React__default.createElement(LinkInfoCont, null, React__default.createElement(LinkUrl, {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled__default.span(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
-var LinkHoverIconCont = styled__default.span(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var LinkIconCont = styled__default.span(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  color: ", ";\n"])), function (props) {
+  return props.color;
+});
+var LinkHoverIconCont = styled__default.span(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  display: none;\n  color: ", ";\n"])), function (props) {
+  return props.color;
+});
 var LinkInfoCont = styled__default.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
 var FileItem$1 = styled__default.li(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
 var LinkUrl = styled__default.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray6;
+  return props.color || colors.textColor1;
 });
 
 var _templateObject$E;
@@ -29349,7 +29796,7 @@ var Links = function Links(_ref) {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
   console.log('attachments. .. . . ', attachments);
-  return React__default.createElement(Container$m, null, attachments.map(function (file) {
+  return React__default.createElement(Container$l, null, attachments.map(function (file) {
     return React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
@@ -29361,7 +29808,7 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$m = styled__default.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$l = styled__default.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
 var _rect$3, _circle$7, _path$1c;
 
@@ -29646,7 +30093,7 @@ var VoiceItem = function VoiceItem(_ref) {
     onClick: handlePlayPause
   }, voicePreviewPlayHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
     color: voicePreviewTitleColor
-  }, file.user.id === user.id ? 'You' : makeUsername(contactsMap[file.user.id], file.user, getFromContacts)), React__default.createElement(AudioDate, {
+  }, file.user && (file.user.id === user.id ? 'You' : makeUsername(contactsMap[file.user.id], file.user, getFromContacts))), React__default.createElement(AudioDate, {
     color: voicePreviewDateAndTimeColor
   }, moment(file.createdAt).format('DD MMMM, YYYY')), React__default.createElement(AudioSendTime, null, currentTime || (file.metadata.dur ? formatAudioVideoTime(file.metadata.dur, 0) : ''))), React__default.createElement(Audio, {
     controls: true,
@@ -29667,13 +30114,13 @@ var FileItem$2 = styled__default.li(_templateObject3$v || (_templateObject3$v = 
 }, FileIconCont$1, FileHoverIconCont$1);
 var AudioInfo = styled__default.div(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
 var AudioTitle = styled__default.span(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray6;
+  return props.color || colors.textColor1;
 });
 var AudioDate = styled__default.span(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.gray9;
+  return props.color || colors.textColor2;
 });
 var AudioSendTime = styled__default.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
-  return props.color || colors.gray9;
+  return props.color || colors.textColor2;
 });
 var Audio = styled__default.audio(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
@@ -29698,7 +30145,7 @@ var Voices = function Voices(_ref) {
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return React__default.createElement(Container$n, null, attachments.map(function (file) {
+  return React__default.createElement(Container$m, null, attachments.map(function (file) {
     return React__default.createElement(VoiceItem, {
       key: file.id,
       file: _extends({}, file, {
@@ -29718,12 +30165,13 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$n = styled__default.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$m = styled__default.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
 var _templateObject$H, _templateObject2$C;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
+      theme = _ref.theme,
       activeTab = _ref.activeTab,
       checkActionPermission = _ref.checkActionPermission,
       setActiveTab = _ref.setActiveTab,
@@ -29767,7 +30215,9 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return React__default.createElement(Container$o, null, React__default.createElement(DetailsTabHeader, {
+  return React__default.createElement(Container$n, {
+    theme: theme
+  }, React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
@@ -29794,6 +30244,7 @@ var DetailsTab = function DetailsTab(_ref) {
       key: key
     }, channelDetailsTabs[key]);
   })), showMembers && activeTab === channelDetailsTabs.member && React__default.createElement(Members, {
+    theme: theme,
     channel: channel,
     chekActionPermission: checkActionPermission,
     showChangeMemberRole: showChangeMemberRole,
@@ -29804,6 +30255,7 @@ var DetailsTab = function DetailsTab(_ref) {
     channelId: channel.id
   }), activeTab === channelDetailsTabs.file && React__default.createElement(Files, {
     channelId: channel.id,
+    theme: theme,
     filePreviewIcon: filePreviewIcon,
     filePreviewHoverIcon: filePreviewHoverIcon,
     filePreviewTitleColor: filePreviewTitleColor,
@@ -29828,16 +30280,22 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$o = styled__default.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled__default.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  background: #fff;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), colors.gray1, colors.gray9, colors.gray6, function (props) {
+var Container$n = styled__default.div(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled__default.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
+}, colors.textColor2, function (props) {
+  return props.activeTabColor || colors.primary;
+}, function (props) {
   return props.activeTabColor || colors.primary;
 });
 
 var _templateObject$I, _templateObject2$D, _templateObject3$w, _templateObject4$q;
-var Container$p = styled__default.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: #fff;\n  z-index: 25;\n"])), function (props) {
+var Container$o = styled__default.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: ", ";\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
+}, function (props) {
+  return props.backgroundColor || colors.white;
 });
 var AvatarCont = styled__default.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
 var DropDownWrapper = styled__default.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
@@ -29845,6 +30303,7 @@ var EditChannelFooter = styled__default(ButtonBlock)(_templateObject4$q || (_tem
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
+      theme = _ref.theme,
       handleToggleEditMode = _ref.handleToggleEditMode,
       editChannelSaveButtonBackgroundColor = _ref.editChannelSaveButtonBackgroundColor,
       editChannelSaveButtonTextColor = _ref.editChannelSaveButtonTextColor,
@@ -29977,11 +30436,13 @@ var EditChannel = function EditChannel(_ref) {
   React.useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$p, {
+  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$o, {
     ref: editContainer,
     heightOffset: offsetTop,
-    active: isEditMode
+    active: isEditMode,
+    backgroundColor: theme === THEME.DARK ? colors.dark : colors.white
   }, React__default.createElement(AvatarCont, null, React__default.createElement(DropDownWrapper, null, !isDirectChannel && channel.userRole && React__default.createElement(DropDown, {
+    theme: theme,
     position: 'center',
     iconColor: colors.white,
     trigger: getUploadImageIcon() || React__default.createElement(SvgCameraIcon, null)
@@ -30009,12 +30470,16 @@ var EditChannel = function EditChannel(_ref) {
     name: isDirectChannel && directChannelUser ? directChannelUser.id : channel.subject || channel.id,
     textSize: 70
   })), React__default.createElement(Label, null, " Name "), React__default.createElement(CustomInput, {
+    theme: theme,
+    color: colors.textColor1,
     placeholder: 'Channel Subject',
     value: newSubject,
     onChange: function onChange(e) {
       return setNewSubject(e.target.value);
     }
   }), React__default.createElement(Label, null, " Description "), React__default.createElement(CustomInput, {
+    theme: theme,
+    color: colors.textColor1,
     placeholder: 'Channel description',
     value: newDescription,
     onChange: function onChange(e) {
@@ -30023,8 +30488,8 @@ var EditChannel = function EditChannel(_ref) {
   }), React__default.createElement(EditChannelFooter, null, React__default.createElement(Button, {
     type: 'button',
     borderRadius: '8px',
-    color: editChannelCancelButtonTextColor || colors.gray6,
-    backgroundColor: editChannelCancelButtonBackgroundColor || colors.gray5,
+    color: editChannelCancelButtonTextColor || colors.textColor1,
+    backgroundColor: editChannelCancelButtonBackgroundColor || colors.backgroundColor,
     onClick: function onClick() {
       return handleToggleEditMode(false);
     }
@@ -30034,6 +30499,7 @@ var EditChannel = function EditChannel(_ref) {
     backgroundColor: editChannelSaveButtonBackgroundColor || colors.primary,
     onClick: handleSave
   }, "Save"))), cropPopup && React__default.createElement(ImageCrop, {
+    theme: theme,
     image: {
       name: newAvatar.name,
       url: selectedImageUrl
@@ -30051,10 +30517,12 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$J, _templateObject2$E, _templateObject3$x, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i;
+var _templateObject$J, _templateObject2$E, _templateObject3$x, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$g, _templateObject9$d, _templateObject10$9, _templateObject11$7;
 
 var Details = function Details(_ref) {
-  var channelEditIcon = _ref.channelEditIcon,
+  var showAboutChannel = _ref.showAboutChannel,
+      avatarAndNameDirection = _ref.avatarAndNameDirection,
+      channelEditIcon = _ref.channelEditIcon,
       editChannelSaveButtonBackgroundColor = _ref.editChannelSaveButtonBackgroundColor,
       editChannelSaveButtonTextColor = _ref.editChannelSaveButtonTextColor,
       editChannelCancelButtonBackgroundColor = _ref.editChannelCancelButtonBackgroundColor,
@@ -30139,6 +30607,7 @@ var Details = function Details(_ref) {
   var dispatch = reactRedux.useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
+  var theme = reactRedux.useSelector(themeSelector);
   var getFromContacts = getShowOnlyContactUsers();
 
   var _useState = React.useState(false),
@@ -30191,17 +30660,26 @@ var Details = function Details(_ref) {
   React.useEffect(function () {
     setMounted(true);
   }, []);
-  return React__default.createElement(Container$q, {
-    mounted: mounted
-  }, React__default.createElement(ChannelDetailsHeader, null, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
+  return React__default.createElement(Container$p, {
+    mounted: mounted,
+    theme: theme,
+    borderColor: colors.backgroundColor
+  }, React__default.createElement(ChannelDetailsHeader, {
+    borderColor: colors.backgroundColor
+  }, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
     onClick: function onClick() {
       return setEditMode(false);
     }
   }), React__default.createElement(SectionHeader, {
-    margin: '0 0 0 12px'
-  }, " Edit details ")) : React__default.createElement(React__default.Fragment, null, React__default.createElement(SectionHeader, null, "Details"), " ", React__default.createElement(CloseIcon, {
+    margin: '0 0 0 12px',
+    color: colors.textColor1
+  }, ' ', "Edit details", ' ')) : React__default.createElement(React__default.Fragment, null, React__default.createElement(SectionHeader, {
+    color: colors.textColor1
+  }, "Details"), ' ', React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
     onClick: handleDetailsClose
   }))), editMode && React__default.createElement(EditChannel, {
+    theme: theme,
     channel: channel,
     handleToggleEditMode: setEditMode,
     editChannelSaveButtonBackgroundColor: editChannelSaveButtonBackgroundColor,
@@ -30212,19 +30690,28 @@ var Details = function Details(_ref) {
     onScroll: handleMembersListScroll,
     heightOffset: detailsRef && detailsRef.current && detailsRef.current.offsetTop,
     ref: detailsRef
-  }, React__default.createElement(DetailsHeader, null, React__default.createElement(Avatar, {
+  }, React__default.createElement(DetailsHeader, {
+    borderColor: colors.backgroundColor
+  }, React__default.createElement(ChannelAvatarAndName, {
+    direction: avatarAndNameDirection
+  }, React__default.createElement(Avatar, {
     image: channel.avatarUrl || directChannelUser && directChannelUser.avatarUrl,
     name: channel.subject || directChannelUser && (directChannelUser.firstName || directChannelUser.id),
     size: 72,
     textSize: 26,
     setDefaultAvatar: isDirectChannel
-  }), React__default.createElement(ChannelInfo$3, null, React__default.createElement(ChannelName$1, {
+  }), React__default.createElement(ChannelInfo$3, {
+    direction: avatarAndNameDirection
+  }, React__default.createElement(ChannelName$1, {
     isDirect: isDirectChannel
-  }, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence && directChannelUser && hideUserPresence(directChannelUser) ? '' : directChannelUser && directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, " ", displayMemberText)), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
+  }, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence && directChannelUser && hideUserPresence(directChannelUser) ? '' : directChannelUser && directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, " ", displayMemberText), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
     onClick: function onClick() {
       return setEditMode(true);
     }
-  }, channelEditIcon || React__default.createElement(SvgEditIcon, null))), channel.userRole && React__default.createElement(Actions$1, {
+  }, channelEditIcon || React__default.createElement(SvgEditIcon, null)))), showAboutChannel && channel.metadata && channel.metadata.d && React__default.createElement(AboutChannel, null, React__default.createElement(AboutChannelTitle, null, "About"), React__default.createElement(AboutChannelText, {
+    color: colors.textColor1
+  }, channel.metadata && channel.metadata.d ? channel.metadata.d : ''))), channel.userRole && React__default.createElement(Actions$1, {
+    theme: theme,
     showMuteUnmuteNotifications: showMuteUnmuteNotifications,
     muteUnmuteNotificationsOrder: muteUnmuteNotificationsOrder,
     unmuteNotificationIcon: unmuteNotificationIcon,
@@ -30283,6 +30770,7 @@ var Details = function Details(_ref) {
     toggleable: false,
     timeOptionsToMuteNotifications: timeOptionsToMuteNotifications
   }), React__default.createElement(DetailsTab, {
+    theme: theme,
     channel: channel,
     activeTab: activeTab,
     setActiveTab: setActiveTab,
@@ -30311,22 +30799,47 @@ var Details = function Details(_ref) {
     showMakeMemberAdmin: showMakeMemberAdmin
   })));
 };
-var Container$q = styled__default.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), colors.gray1, function (props) {
+var Container$p = styled__default.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
+}, function (props) {
   return props.mounted && ' width: 400px';
 });
-var ChannelDetailsHeader = styled__default.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), colors.gray1);
+var ChannelDetailsHeader = styled__default.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
+});
 var ChatDetails = styled__default.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 400px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 });
-var ChannelInfo$3 = styled__default.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-left: 16px;\n"])));
-var DetailsHeader = styled__default.div(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), colors.gray0);
-var ChannelName$1 = styled__default(SectionHeader)(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
+var AboutChannel = styled__default.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
+var AboutChannelTitle = styled__default.h4(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
+var AboutChannelText = styled__default.h3(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
+  return props.color;
+});
+var ChannelInfo$3 = styled__default.div(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
+  return (!props.direction || props.direction !== 'column') && '16px';
+}, function (props) {
+  return props.direction && props.direction === 'column' && '16px';
+}, function (props) {
+  return props.direction && props.direction === 'column' && 'center';
+});
+var DetailsHeader = styled__default.div(_templateObject8$g || (_templateObject8$g = _taggedTemplateLiteralLoose(["\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
+});
+var ChannelAvatarAndName = styled__default.div(_templateObject9$d || (_templateObject9$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  flex-direction: ", ";\n"])), function (props) {
+  return props.direction;
+});
+var ChannelName$1 = styled__default(SectionHeader)(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
-var EditButton = styled__default.span(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+var EditButton = styled__default.span(_templateObject11$7 || (_templateObject11$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+
+var _templateObject$K;
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var channelEditIcon = _ref.channelEditIcon,
+      showAboutChannel = _ref.showAboutChannel,
+      _ref$avatarAndNameDir = _ref.avatarAndNameDirection,
+      avatarAndNameDirection = _ref$avatarAndNameDir === void 0 ? 'row' : _ref$avatarAndNameDir,
       editChannelSaveButtonBackgroundColor = _ref.editChannelSaveButtonBackgroundColor,
       editChannelSaveButtonTextColor = _ref.editChannelSaveButtonTextColor,
       editChannelCancelButtonBackgroundColor = _ref.editChannelCancelButtonBackgroundColor,
@@ -30401,7 +30914,11 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       showKickMember = _ref.showKickMember,
       showKickAndBlockMember = _ref.showKickAndBlockMember;
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
-  return React__default.createElement(React__default.Fragment, null, channelDetailsIsOpen && React__default.createElement(Details, {
+  return React__default.createElement(DetailsWrapper, {
+    id: 'channel_details_wrapper'
+  }, channelDetailsIsOpen && React__default.createElement(Details, {
+    showAboutChannel: showAboutChannel,
+    avatarAndNameDirection: avatarAndNameDirection,
     channelEditIcon: channelEditIcon,
     editChannelSaveButtonBackgroundColor: editChannelSaveButtonBackgroundColor,
     editChannelSaveButtonTextColor: editChannelSaveButtonTextColor,
@@ -30479,7 +30996,9 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var _path$1g, _path2$a, _path3$5;
+var DetailsWrapper = styled__default.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose([""])));
+
+var _path$1g;
 
 function _extends$1l() {
   _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
@@ -30498,63 +31017,19 @@ function _extends$1l() {
   return _extends$1l.apply(this, arguments);
 }
 
-function SvgChatLogo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1l({
-    viewBox: "0 0 249 41",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
-    d: "M12.507.012a13.357 13.357 0 00-8.978 4.275 13.325 13.325 0 00.355 18.435 13.358 13.358 0 009.136 3.927h10.826a2.536 2.536 0 002.545-2.541V13.336a13.3 13.3 0 00-4.094-9.623 13.333 13.333 0 00-9.79-3.701z",
-    fill: "#e17335"
-  })), _path2$a || (_path2$a = /*#__PURE__*/React.createElement("path", {
-    d: "M27.961 40.988a13.357 13.357 0 008.978-4.275 13.325 13.325 0 00-.355-18.435 13.358 13.358 0 00-9.136-3.927H16.622a2.547 2.547 0 00-2.545 2.541v10.772a13.3 13.3 0 004.095 9.623 13.333 13.333 0 009.79 3.701z",
-    fill: "#FFCA41"
-  })), _path3$5 || (_path3$5 = /*#__PURE__*/React.createElement("path", {
-    d: "M26.391 14.35v9.757a2.54 2.54 0 01-2.545 2.542h-9.769v-9.757a2.54 2.54 0 012.381-2.542l.164-.01h9.77v.01zM63.088 35.561c7.961 0 12.042-5.274 13.122-9.63l-5.16-1.558c-.76 2.637-3.121 5.794-7.962 5.794-4.56 0-8.8-3.316-8.8-9.35 0-6.433 4.48-9.47 8.72-9.47 4.921 0 7.121 2.997 7.801 5.714l5.201-1.638c-1.12-4.595-5.16-9.39-13.002-9.39-7.6 0-14.442 5.754-14.442 14.784 0 9.03 6.601 14.744 14.522 14.744zM84.527 23.414c.12-2.157 1.44-3.836 3.68-3.836 2.561 0 3.641 1.719 3.641 3.916v11.468h5.321V22.575c0-4.315-2.32-7.791-7.32-7.791-1.881 0-4.041.639-5.322 2.157V6.033h-5.32v28.929h5.32V23.414zM100.569 29.608c0 3.076 2.56 5.913 6.761 5.913 2.92 0 4.8-1.358 5.801-2.917 0 .76.08 1.838.2 2.358h4.88c-.12-.68-.24-2.078-.24-3.117v-9.67c0-3.955-2.32-7.471-8.561-7.471-5.281 0-8.121 3.396-8.441 6.473l4.721.999c.16-1.718 1.44-3.197 3.76-3.197 2.24 0 3.321 1.159 3.321 2.557 0 .68-.361 1.24-1.481 1.399l-4.84.72c-3.281.479-5.881 2.436-5.881 5.953zm7.881 1.957c-1.72 0-2.56-1.118-2.56-2.277 0-1.518 1.08-2.277 2.44-2.477l4.441-.68v.88c0 3.476-2.081 4.555-4.321 4.555zM128.978 9.43h-4.801v2.757c0 1.758-.96 3.116-3.04 3.116h-1v4.715h3.56v9.15c0 3.796 2.401 6.074 6.241 6.074 1.56 0 2.52-.28 3-.48v-4.395c-.28.08-1 .16-1.64.16-1.52 0-2.32-.56-2.32-2.278v-8.231h3.96v-4.715h-3.96V9.43zM151.546 29.847v-18.1h4.44c4.641 0 8.481 2.917 8.481 9.07 0 6.154-3.88 9.03-8.521 9.03h-4.4zm4.6 5.115c8.081 0 14.042-5.195 14.042-14.145s-5.921-14.184-14.002-14.184h-10.161v28.329h10.121zM177.772 22.895c.12-1.798 1.64-3.876 4.4-3.876 3.041 0 4.321 1.918 4.401 3.876h-8.801zm9.321 5.114c-.64 1.758-2 2.997-4.481 2.997-2.64 0-4.84-1.878-4.96-4.475h14.081c0-.08.08-.88.08-1.638 0-6.313-3.64-10.19-9.721-10.19-5.041 0-9.681 4.076-9.681 10.35 0 6.632 4.76 10.508 10.161 10.508 4.841 0 7.961-2.837 8.961-6.233l-4.44-1.319zM200.524 34.962V23.454c0-2.157 1.36-3.876 3.68-3.876 2.401 0 3.481 1.599 3.481 3.716v11.668h5.281V23.454c0-2.117 1.36-3.876 3.64-3.876 2.44 0 3.481 1.599 3.481 3.716v11.668h5.16V22.216c0-5.275-3.48-7.472-7.121-7.472-2.6 0-4.68.879-6.241 3.276-1-2.117-3.16-3.276-5.84-3.276-2.161 0-4.681 1.039-5.761 2.957v-2.398h-5.081v19.659h5.321zM238.679 30.726c-2.601 0-5.001-1.918-5.001-5.593 0-3.716 2.4-5.594 5.001-5.594 2.6 0 5 1.877 5 5.593s-2.4 5.594-5 5.594zm0-16.022c-5.881 0-10.322 4.355-10.322 10.428 0 6.034 4.441 10.43 10.322 10.43 5.88 0 10.321-4.396 10.321-10.43 0-6.073-4.441-10.428-10.321-10.428z",
-    fill: "#fff"
-  })));
-}
-
-var _templateObject$K, _templateObject2$F;
-var Container$r = styled__default.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: row;\n  align-items: center;\n  justify-content: space-between;\n  padding: 0 16px;\n  height: 60px;\n  flex: none;\n  background-color: ", ";\n"])), colors.blue10);
-var Logo = styled__default.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  width: 134px;\n  height: 22px;\n"])));
-
-function SceytChatHeader() {
-  return React__default.createElement(Container$r, null, React__default.createElement(Logo, null, React__default.createElement(SvgChatLogo, null)));
-}
-
-var _path$1h;
-
-function _extends$1m() {
-  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1m.apply(this, arguments);
-}
-
 function SvgChevronDown(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1m({
+  return /*#__PURE__*/React.createElement("svg", _extends$1l({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
 }
 
-var _templateObject$L, _templateObject2$G;
+var _templateObject$L, _templateObject2$F;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -30571,6 +31046,7 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
       unreadCountTextColor = _ref.unreadCountTextColor;
   var dispatch = reactRedux.useDispatch();
   var channel = reactRedux.useSelector(activeChannelSelector);
+  var theme = reactRedux.useSelector(themeSelector);
   var sendMessageInputHeight = reactRedux.useSelector(sendMessageInputHeightSelector);
   var showScrollToNewMessageButton = reactRedux.useSelector(showScrollToNewMessageButtonSelector);
 
@@ -30579,11 +31055,12 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   };
 
   return React__default.createElement(React__default.Fragment, null, showScrollToNewMessageButton && React__default.createElement(BottomButton, {
+    theme: theme,
     width: buttonWidth,
     height: buttonHeight,
     border: buttonBorder,
     borderRadius: buttonBorderRadius,
-    backgroundColor: buttonBackgroundColor,
+    backgroundColor: buttonBackgroundColor || colors.backgroundColor,
     hoverBackgroundColor: buttonHoverBackgroundColor,
     shadow: buttonShadow,
     onClick: handleScrollToBottom,
@@ -30599,8 +31076,10 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
 };
 var BottomButton = styled__default.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomPos + 45 + "px";
-}, colors.white);
-var UnreadCount$1 = styled__default.span(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+}, function (props) {
+  return props.backgroundColor || colors.backgroundColor;
+});
+var UnreadCount$1 = styled__default.span(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
   return props.fontSize || '13px';
@@ -30621,9 +31100,9 @@ exports.ChannelSearch = ChannelSearch;
 exports.Chat = Chat$1;
 exports.ChatHeader = ChatHeader;
 exports.CreateChannel = CreateChannel;
+exports.DropDown = DropDown;
 exports.MessageList = MessageList;
 exports.MessagesScrollToBottomButton = MessagesScrollToBottomButton;
 exports.SceytChat = SceytChatContainer;
-exports.SceytChatHeader = SceytChatHeader;
 exports.SendMessage = SendMessageInput;
 //# sourceMappingURL=index.js.map
