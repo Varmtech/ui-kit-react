@@ -9746,7 +9746,7 @@ var ReplyMessageText = styled__default.span(_templateObject34 || (_templateObjec
 }, function (props) {
   return props.lineHeight || '20px';
 }, colors.textColor1);
-var CloseIcon = styled__default(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  color: ", ";\n"])), function (props) {
+var CloseIcon = styled__default(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  box-sizing: content-box;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
 var ClearTypedText = styled__default(CloseIcon)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
@@ -18691,13 +18691,14 @@ var UsersPopup = function UsersPopup(_ref) {
     height: popupHeight,
     padding: '0',
     display: 'flex',
-    backgroundColor: theme === THEME.DARK ? colors.dark : colors.white
+    backgroundColor: theme === THEME.DARK ? colors.dark : colors.white,
+    boxShadow: theme === THEME.DARK ? '0px 0px 30px rgba(255,255,255,0.1)' : ''
   }, React__default.createElement(PopupBody, {
     paddingH: '12px',
     paddingV: '24px',
     withFooter: actionType !== 'createChat'
   }, React__default.createElement(CloseIcon, {
-    color: colors.textColor1,
+    color: colors.textColor2,
     onClick: handleClosePopup
   }), React__default.createElement(PopupName, {
     padding: '0 12px'
