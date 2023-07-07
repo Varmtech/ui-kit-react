@@ -19023,11 +19023,14 @@ var ImageCrop = function ImageCrop(_ref) {
 var CropperWrapper = styled__default.div(_templateObject$9 || (_templateObject$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  height: 300px;\n  margin: 14px 0;\n"])));
 var Controls = styled__default.div(_templateObject2$9 || (_templateObject2$9 = _taggedTemplateLiteralLoose(["\n  & > input {\n    width: 100%;\n    -webkit-appearance: none;\n    background-color: rgba(178, 182, 190, 0.4);\n    border-radius: 3px;\n\n    &::-webkit-slider-runnable-track {\n      height: 6px;\n      -webkit-appearance: none;\n      color: ", ";\n      margin-top: -1px;\n      border-radius: 3px;\n    }\n    &::-webkit-slider-thumb {\n      width: 16px;\n      -webkit-appearance: none;\n      height: 16px;\n      cursor: ew-resize;\n      background: ", ";\n      border-radius: 50%;\n      transform: translate(0, -5px);\n    }\n  }\n"])), colors.primary, colors.primary);
 
+var themeSelector = function themeSelector(store) {
+  return store.ThemeReducer.theme;
+};
+
 var _templateObject$a, _templateObject2$a, _templateObject3$7, _templateObject4$5, _templateObject5$4, _templateObject6$3, _templateObject7$3, _templateObject8$3, _templateObject9$3;
 function CreateChannel(_ref) {
   var handleClose = _ref.handleClose,
       channelType = _ref.channelType,
-      theme = _ref.theme,
       uriPrefixOnCreateChannel = _ref.uriPrefixOnCreateChannel,
       channelTypeRequiredFieldsMap = _ref.channelTypeRequiredFieldsMap,
       uploadPhotoIcon = _ref.uploadPhotoIcon,
@@ -19044,6 +19047,7 @@ function CreateChannel(_ref) {
   var uriRegexp = /^[A-Za-z0-9]*$/;
   var fileUploader = React.useRef(null);
   var uriPrefixRef = React.useRef(null);
+  var theme = reactRedux.useSelector(themeSelector);
 
   var _useState = React.useState(false),
       usersPopupVisible = _useState[0],
@@ -19250,6 +19254,17 @@ function CreateChannel(_ref) {
 
   React.useEffect(function () {
     setUriPrefixWidth(uriPrefixRef.current && uriPrefixRef.current.getBoundingClientRect().width + 15);
+    var body = document.querySelector('body');
+
+    if (body) {
+      body.style.overflow = 'hidden';
+    }
+
+    return function () {
+      if (body) {
+        body.style.overflow = 'auto';
+      }
+    };
   }, []);
   React.useEffect(function () {
     if (requiredFields) {
@@ -19464,7 +19479,6 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
     actionType: 'createChat',
     theme: theme
   }), showCreateChannel && React__default.createElement(CreateChannel, {
-    theme: theme,
     handleClose: function handleClose() {
       return setShowCreateChannel(false);
     },
@@ -19775,10 +19789,6 @@ var ArrowLeftWrapper = styled__default.span(_templateObject3$9 || (_templateObje
 var ProfileInfo = styled__default.div(_templateObject4$6 || (_templateObject4$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  margin: 20px 0 24px;\n"])));
 var Username = styled__default.h3(_templateObject5$5 || (_templateObject5$5 = _taggedTemplateLiteralLoose(["\n  margin: 16px 0 0;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor1);
 var UserNumber = styled__default.h4(_templateObject6$4 || (_templateObject6$4 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
-
-var themeSelector = function themeSelector(store) {
-  return store.ThemeReducer.theme;
-};
 
 var _templateObject$e, _templateObject2$d, _templateObject3$a, _templateObject4$7, _templateObject5$6, _templateObject6$5, _templateObject7$4, _templateObject8$4;
 
@@ -30618,6 +30628,10 @@ var Details = function Details(_ref) {
       activeTab = _useState2[0],
       setActiveTab = _useState2[1];
 
+  var _useState3 = React.useState(0),
+      channelDetailsHeight = _useState3[0],
+      setChannelDetailsHeight = _useState3[1];
+
   var editMode = reactRedux.useSelector(channelEditModeSelector);
   var channel = reactRedux.useSelector(activeChannelSelector, reactRedux.shallowEqual);
 
@@ -30659,6 +30673,13 @@ var Details = function Details(_ref) {
 
   React.useEffect(function () {
     setMounted(true);
+    var detailsContainer = document.getElementById('channel_details_wrapper');
+
+    if (detailsContainer) {
+      console.log('detailsContainer.. . ..  .', detailsContainer);
+      console.log('detailsContainer.offsetHeight. . ..  .', detailsContainer.offsetHeight);
+      setChannelDetailsHeight(detailsContainer.offsetHeight);
+    }
   }, []);
   return React__default.createElement(Container$p, {
     mounted: mounted,
@@ -30689,6 +30710,7 @@ var Details = function Details(_ref) {
   }), React__default.createElement(ChatDetails, {
     onScroll: handleMembersListScroll,
     heightOffset: detailsRef && detailsRef.current && detailsRef.current.offsetTop,
+    height: channelDetailsHeight,
     ref: detailsRef
   }, React__default.createElement(DetailsHeader, {
     borderColor: colors.backgroundColor
@@ -30807,8 +30829,10 @@ var Container$p = styled__default.div(_templateObject$J || (_templateObject$J = 
 var ChannelDetailsHeader = styled__default.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ChatDetails = styled__default.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 400px;\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
-  return props.heightOffset ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
+var ChatDetails = styled__default.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 400px;\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+  return props.height ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
+}, function (props) {
+  return props.height && props.height - (props.heightOffset ? props.heightOffset + 2 : 0) + "px";
 });
 var AboutChannel = styled__default.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
 var AboutChannelTitle = styled__default.h4(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
