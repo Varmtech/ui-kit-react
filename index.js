@@ -17914,7 +17914,7 @@ var Channel = function Channel(_ref) {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
-  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : draftMessageText ? React__default.createElement(DraftMessageText, null, draftMessageText) : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'Created this channel' : lastMessage.body === 'CG' ? 'Created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
+  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : draftMessageText ? React__default.createElement(DraftMessageText, null, draftMessageText) : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'created this channel' : lastMessage.body === 'CG' ? 'created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
@@ -20305,7 +20305,7 @@ function Chat$1(_ref) {
         if (detailsContainer) {
           setChannelDetailsWidth(detailsContainer.offsetWidth);
         }
-      }, 100);
+      }, 1);
     } else {
       clearTimeout(detailsSwitcherTimeout);
       setChannelDetailsWidth(0);
@@ -20316,7 +20316,7 @@ function Chat$1(_ref) {
     channelDetailsWidth: channelDetailsWidth
   }, children);
 }
-var Container$6 = styled__default.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+var Container$6 = styled__default.div(_templateObject$f || (_templateObject$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  display: flex;\n  transition: all 0.1s;\n  flex-direction: column;\n"])), function (props) {
   return props.widthOffset || props.channelDetailsWidth ? "calc(100% - " + (props.widthOffset + (props.channelDetailsWidth ? props.channelDetailsWidth + 1 : 0)) + "px)" : '';
 });
 
@@ -24137,10 +24137,12 @@ var Message = function Message(_ref) {
   };
 
   var handleMouseEnter = function handleMouseEnter() {
-    messageActionsTimeout.current = setTimeout(function () {
-      setMessageActionsShow(true);
-      dispatch(setMessageMenuOpenedAC(message.id || message.tid));
-    }, 450);
+    if (message.state !== MESSAGE_STATUS.DELETE) {
+      messageActionsTimeout.current = setTimeout(function () {
+        setMessageActionsShow(true);
+        dispatch(setMessageMenuOpenedAC(message.id || message.tid));
+      }, 450);
+    }
   };
 
   var closeMessageActions = function closeMessageActions(close) {
@@ -30649,6 +30651,7 @@ var Details = function Details(_ref) {
   var attachmentsHasNex = reactRedux.useSelector(activeTabAttachmentsHasNextSelector);
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var detailsRef = React.useRef(null);
+  var openTimeOut = React.useRef(null);
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var memberDisplayText = getChannelTypesMemberDisplayTextMap();
   var displayMemberText = memberDisplayText && memberDisplayText[channel.type] ? channel.memberCount > 1 ? memberDisplayText[channel.type] + "s" : memberDisplayText[channel.type] : channel.type === CHANNEL_TYPE.BROADCAST ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member';
@@ -30673,6 +30676,7 @@ var Details = function Details(_ref) {
   };
 
   var handleDetailsClose = function handleDetailsClose() {
+    clearTimeout(openTimeOut.current);
     setMounted(false);
     dispatch(switchChannelInfoAC(false));
   };
@@ -30682,8 +30686,6 @@ var Details = function Details(_ref) {
     var detailsContainer = document.getElementById('channel_details_wrapper');
 
     if (detailsContainer) {
-      console.log('detailsContainer.. . ..  .', detailsContainer);
-      console.log('detailsContainer.offsetHeight. . ..  .', detailsContainer.offsetHeight);
       setChannelDetailsHeight(detailsContainer.offsetHeight);
     }
   }, []);
