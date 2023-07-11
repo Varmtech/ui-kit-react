@@ -18505,16 +18505,26 @@ var PopupContainer = function PopupContainer(_ref) {
     var sceytChatContainer = document.getElementById('sceyt_chat_container');
 
     if (sceytChatContainer) {
-      console.log('sceytChatContainer..  ', sceytChatContainer.getBoundingClientRect());
-      console.log('sceytChatContainer.top..  ', sceytChatContainer.offsetTop);
-      console.log('sceytChatContainer.left.. ', sceytChatContainer.offsetLeft);
+      var rect = sceytChatContainer.getBoundingClientRect();
       setPopupContainerDimensions({
-        width: sceytChatContainer.clientWidth,
-        height: sceytChatContainer.clientHeight,
-        top: sceytChatContainer.getBoundingClientRect().top,
-        left: sceytChatContainer.getBoundingClientRect().left
+        width: rect.width,
+        height: rect.height,
+        top: rect.top,
+        left: rect.left
       });
     }
+
+    var body = document.querySelector('body');
+
+    if (body) {
+      body.style.overflow = 'hidden';
+    }
+
+    return function () {
+      if (body) {
+        body.style.overflow = 'auto';
+      }
+    };
   }, []);
   return React__default.createElement(Container$3, {
     width: popupContainerDimensions.width,
