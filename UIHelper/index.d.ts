@@ -52,7 +52,6 @@ export declare const PopupName: import("styled-components").StyledComponent<"h3"
     isDelete?: boolean | undefined;
     color?: string | undefined;
 }, never>;
-export declare const PopupContainer: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const ButtonBlock: import("styled-components").StyledComponent<"div", any, any, never>;
 export declare const Popup: import("styled-components").StyledComponent<"div", any, {
     minWidth?: string | undefined;

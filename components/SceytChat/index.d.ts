@@ -2,3 +2,4 @@
 import { IChatClientProps } from '../ChatContainer';
 declare const SceytChat: ({ client, theme, avatarColors, children, showOnlyContactUsers, logoSrc, CustomUploader, handleNewMessages, sendAttachmentsAsSeparateMessages, membersDisplayTextByChannelTypesMap, defaultRolesByChannelTypesMap, customColors, hideUserPresence, showNotifications }: IChatClientProps) => JSX.Element;
 export default SceytChat;
+export declare const Container: import("styled-components").StyledComponent<"div", any, {}, never>;
