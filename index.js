@@ -18505,11 +18505,14 @@ var PopupContainer = function PopupContainer(_ref) {
     var sceytChatContainer = document.getElementById('sceyt_chat_container');
 
     if (sceytChatContainer) {
+      console.log('sceytChatContainer..  ', sceytChatContainer.getBoundingClientRect());
+      console.log('sceytChatContainer.top..  ', sceytChatContainer.offsetTop);
+      console.log('sceytChatContainer.left.. ', sceytChatContainer.offsetLeft);
       setPopupContainerDimensions({
         width: sceytChatContainer.clientWidth,
         height: sceytChatContainer.clientHeight,
-        top: sceytChatContainer.offsetTop,
-        left: sceytChatContainer.offsetLeft
+        top: sceytChatContainer.getBoundingClientRect().top,
+        left: sceytChatContainer.getBoundingClientRect().left
       });
     }
   }, []);
