@@ -24049,7 +24049,7 @@ var Message = function Message(_ref) {
   var withMediaAttachment = !!mediaAttachment;
   var attachmentMetas = mediaAttachment && (isJSON(mediaAttachment.metadata) ? JSON.parse(mediaAttachment.metadata) : mediaAttachment.metadata);
   var renderAvatar = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar);
-  var borderRadius = !message.incoming && ownMessageOnRightSide ? prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 4px 16px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '16px 4px 16px 16px' : '16px 4px 4px 16px' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 16px 4px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '4px 16px 16px 16px' : '4px 16px 16px 4px';
+  var borderRadius = message.incoming && incomingMessageBackground === 'inherit' ? '0px' : !message.incoming && ownMessageBackground === 'inherit' ? '0px' : !message.incoming && ownMessageOnRightSide ? prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 4px 16px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '16px 4px 16px 16px' : '16px 4px 4px 16px' : prevMessageUserID !== messageUserID || firstMessageInInterval ? '16px 16px 16px 4px' : nextMessageUserID !== messageUserID || lastMessageInInterval ? '4px 16px 16px 16px' : '4px 16px 16px 4px';
   var showMessageSenderName = (isUnreadMessage || prevMessageUserID !== messageUserID || firstMessageInInterval) && (channel.type === CHANNEL_TYPE.DIRECT ? showSenderNameOnDirectChannel : showSenderNameOnGroupChannel) && (message.incoming || showSenderNameOnOwnMessages);
 
   var toggleEditMode = function toggleEditMode() {
@@ -26231,6 +26231,7 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
+    console.log('messages... ', messages);
   }, [messages]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
