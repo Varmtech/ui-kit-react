@@ -18496,24 +18496,7 @@ var _templateObject$8;
 
 var PopupContainer = function PopupContainer(_ref) {
   var children = _ref.children;
-
-  var _useState = React.useState({}),
-      popupContainerDimensions = _useState[0],
-      setPopupContainerDimensions = _useState[1];
-
   React.useEffect(function () {
-    var sceytChatContainer = document.getElementById('sceyt_chat_container');
-
-    if (sceytChatContainer) {
-      var rect = sceytChatContainer.getBoundingClientRect();
-      setPopupContainerDimensions({
-        width: rect.width,
-        height: rect.height,
-        top: rect.top,
-        left: rect.left
-      });
-    }
-
     var body = document.querySelector('body');
 
     if (body) {
@@ -18526,14 +18509,9 @@ var PopupContainer = function PopupContainer(_ref) {
       }
     };
   }, []);
-  return React__default.createElement(Container$3, {
-    width: popupContainerDimensions.width,
-    height: popupContainerDimensions.height,
-    left: popupContainerDimensions.left,
-    top: popupContainerDimensions.top
-  }, children);
+  return React__default.createElement(Container$3, null, children);
 };
-var Container$3 = styled__default.div(_templateObject$8 || (_templateObject$8 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: ", ";\n  left: ", ";\n  z-index: 200;\n  width: ", ";\n  height: ", ";\n  overflow: hidden;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(0, 0, 0, 0.4);\n"])), function (props) {
+var Container$3 = styled__default.div(_templateObject$8 || (_templateObject$8 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: 0;\n  left: 0;\n  //top: ", ";\n  //left: ", ";\n  z-index: 200;\n  //width: ", ";\n  //height: ", ";\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(0, 0, 0, 0.4);\n"])), function (props) {
   return props.top ? props.top + "px" : '0px';
 }, function (props) {
   return props.left ? props.left + "px" : '0px';
@@ -30871,7 +30849,7 @@ var Container$q = styled__default.div(_templateObject$K || (_templateObject$K = 
 var ChannelDetailsHeader = styled__default.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ChatDetails = styled__default.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 400px;\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChatDetails = styled__default.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: 400px;\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.height ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 }, function (props) {
   return props.height && props.height - (props.heightOffset ? props.heightOffset + 2 : 0) + "px";
