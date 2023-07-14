@@ -1,15 +1,10 @@
 import React, { FC } from 'react';
 import { IChannel } from '../../types';
-interface IChannelGroup {
-    groupName: string;
-    channelList: IChannel[];
-}
 interface IChannelListProps {
     List?: FC<{
         channels: IChannel[];
         loadMoreChannels: (count?: number) => void;
         searchValue: string;
-        handleSetChannelListWithGroups: (channelGroupList: IChannelGroup[]) => void;
         children: React.ReactNode;
         activeChannel?: IChannel;
         setActiveChannel?: (channel: IChannel) => void;

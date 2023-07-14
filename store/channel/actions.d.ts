@@ -1,5 +1,5 @@
 import { ChannelQueryParams } from '../../components/Channel/types';
-import { IChannel, ICreateChannel, IMessage, IUser } from '../../types';
+import { IChannel, IContactsMap, ICreateChannel, IMessage, IUser } from '../../types';
 export declare function createChannelAC(channelData: ICreateChannel): {
     type: string;
     payload: {
@@ -17,6 +17,25 @@ export declare function loadMoreChannels(limit?: number): {
     type: string;
     payload: {
         limit: number | undefined;
+    };
+};
+export declare function searchChannelsAC(params: ChannelQueryParams, contactsMap: IContactsMap): {
+    type: string;
+    payload: {
+        params: ChannelQueryParams;
+        contactsMap: IContactsMap;
+    };
+};
+export declare function setSearchedChannelsAC(searchedChannels: {
+    groups: IChannel[];
+    directs: IChannel[];
+}): {
+    type: string;
+    payload: {
+        searchedChannels: {
+            groups: IChannel[];
+            directs: IChannel[];
+        };
     };
 };
 export declare function getChannelsForForwardAC(searchValue?: string): {
@@ -153,6 +172,14 @@ export declare function updateChannelDataAC(channelId: string, config: any): {
     payload: {
         channelId: string;
         config: any;
+    };
+};
+export declare function updateSearchedChannelDataAC(channelId: string, config: any, groupName: 'groups' | 'directs'): {
+    type: string;
+    payload: {
+        channelId: string;
+        updateData: any;
+        groupName: "groups" | "directs";
     };
 };
 export declare function updateChannelLastMessageAC(message: IMessage | {}, channel: IChannel): {

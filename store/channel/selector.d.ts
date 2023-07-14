@@ -1,4 +1,5 @@
 export declare const channelsSelector: (store: any) => any;
+export declare const searchedChannelsSelector: (store: any) => any;
 export declare const channelsForForwardSelector: (store: any) => any;
 export declare const deletedChannelSelector: (store: any) => any;
 export declare const addedChannelSelector: (store: any) => any;

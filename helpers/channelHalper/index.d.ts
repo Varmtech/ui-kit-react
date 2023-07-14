@@ -31,4 +31,10 @@ export declare function getDefaultRolesByChannelTypesMap(): defaultRolesByChanne
 export declare function setDefaultRolesByChannelTypesMap(map: channelTypesMemberDisplayTextMap): void;
 export declare let handleNewMessages: (message: IMessage, channel: IChannel) => IMessage | null;
 export declare function setHandleNewMessages(callback: (message: IMessage, channel: IChannel) => IMessage | null): void;
+export declare function addChannelsToAllChannels(channels: IChannel[]): void;
+export declare function addChannelToAllChannels(channel: IChannel): void;
+export declare function getAllChannels(): IChannel[];
+export declare function getChannelFromAllChannels(channelId: string): IChannel | undefined;
+export declare function deleteChannelFromAllChannels(channelId: string): void;
+export declare function updateChannelOnAllChannels(channelId: string, config: any, messageUpdateData?: any): void;
 export {};

@@ -6,6 +6,10 @@ declare const _default: (state?: {
     channelsHasNext: boolean;
     channelsForForwardHasNext: boolean;
     channels: IChannel[];
+    searchedChannels: {
+        groups: IChannel[];
+        directs: IChannel[];
+    };
     channelsForForward: IChannel[];
     activeChannel: {} | IChannel;
     roles: [];
@@ -42,6 +46,10 @@ declare const _default: (state?: {
     channelsHasNext: boolean;
     channelsForForwardHasNext: boolean;
     channels: IChannel[];
+    searchedChannels: {
+        groups: IChannel[];
+        directs: IChannel[];
+    };
     channelsForForward: IChannel[];
     activeChannel: {} | IChannel;
     roles: [];
