@@ -17561,6 +17561,8 @@ var SceytChat = function SceytChat(_ref) {
   };
 
   React.useEffect(function () {
+    console.log('client is changed.... ', client.connectionState);
+
     if (client) {
       setClient(client);
       setSceytChatClient(client);
@@ -29885,7 +29887,6 @@ var Media = function Media(_ref) {
     setMediaFile(file);
   };
 
-  console.log('attachments. .. . . . . ', attachments);
   React.useEffect(function () {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
@@ -30678,7 +30679,7 @@ var DetailsTab = function DetailsTab(_ref) {
   }));
 };
 var Container$o = styled__default.div(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled__default.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
+var DetailsTabHeader = styled__default.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  overflow: auto;\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    min-width: 70px;\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
   return props.backgroundColor || colors.white;
@@ -30919,7 +30920,8 @@ var EditChannel = function EditChannel(_ref) {
 var _templateObject$K, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$g, _templateObject9$d, _templateObject10$9, _templateObject11$7;
 
 var Details = function Details(_ref) {
-  var showAboutChannel = _ref.showAboutChannel,
+  var size = _ref.size,
+      showAboutChannel = _ref.showAboutChannel,
       avatarAndNameDirection = _ref.avatarAndNameDirection,
       channelEditIcon = _ref.channelEditIcon,
       editChannelSaveButtonBackgroundColor = _ref.editChannelSaveButtonBackgroundColor,
@@ -31072,6 +31074,7 @@ var Details = function Details(_ref) {
   }, []);
   return React__default.createElement(Container$q, {
     mounted: mounted,
+    size: size,
     theme: theme,
     borderColor: colors.backgroundColor
   }, React__default.createElement(ChannelDetailsHeader, {
@@ -31097,6 +31100,7 @@ var Details = function Details(_ref) {
     editChannelCancelButtonBackgroundColor: editChannelCancelButtonBackgroundColor,
     editChannelCancelButtonTextColor: editChannelCancelButtonTextColor
   }), React__default.createElement(ChatDetails, {
+    size: size,
     onScroll: handleMembersListScroll,
     heightOffset: detailsRef && detailsRef.current && detailsRef.current.offsetTop,
     height: channelDetailsHeight,
@@ -31213,12 +31217,14 @@ var Details = function Details(_ref) {
 var Container$q = styled__default.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
-  return props.mounted && ' width: 400px';
+  return props.mounted && " width: " + (props.size === 'small' ? '300px' : props.size === 'medium' ? '350px' : '400px') + ";";
 });
 var ChannelDetailsHeader = styled__default.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ChatDetails = styled__default.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: 400px;\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChatDetails = styled__default.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: ", ";\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+  return props.size === 'small' ? '300px' : props.size === 'medium' ? '350px' : '400px';
+}, function (props) {
   return props.height ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 }, function (props) {
   return props.height && props.height - (props.heightOffset ? props.heightOffset + 2 : 0) + "px";
@@ -31249,7 +31255,9 @@ var EditButton = styled__default.span(_templateObject11$7 || (_templateObject11$
 var _templateObject$L;
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
-  var channelEditIcon = _ref.channelEditIcon,
+  var _ref$size = _ref.size,
+      size = _ref$size === void 0 ? 'large' : _ref$size,
+      channelEditIcon = _ref.channelEditIcon,
       showAboutChannel = _ref.showAboutChannel,
       _ref$avatarAndNameDir = _ref.avatarAndNameDirection,
       avatarAndNameDirection = _ref$avatarAndNameDir === void 0 ? 'row' : _ref$avatarAndNameDir,
@@ -31330,6 +31338,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   return React__default.createElement(DetailsWrapper, {
     id: 'channel_details_wrapper'
   }, channelDetailsIsOpen && React__default.createElement(Details, {
+    size: size,
     showAboutChannel: showAboutChannel,
     avatarAndNameDirection: avatarAndNameDirection,
     channelEditIcon: channelEditIcon,
