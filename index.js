@@ -28155,7 +28155,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setAttachments([]);
       handleCloseEditMode();
       clearTimeout(typingTimout);
-    } else if (activeChannel.id) {
+      messageInputRef.current.focus();
+    }
+
+    if (activeChannel.id) {
       prevActiveChannelId = activeChannel.id;
     }
 
