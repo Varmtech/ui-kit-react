@@ -28365,6 +28365,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     document.addEventListener('mousedown', handleClick);
     return function () {
+      prevActiveChannelId = undefined;
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
