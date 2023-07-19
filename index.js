@@ -10143,6 +10143,10 @@ function checkChannelExists(channelId) {
 }
 function destroyChannelsMap() {
   channelsMap = {};
+  activeChannelId = '';
+  allChannels = [];
+  defaultRolesByChannelTypesMap = {};
+  channelTypesMemberDisplayTextMap = {};
 }
 var query = {
   channelQuery: null,
@@ -17561,7 +17565,7 @@ var SceytChat = function SceytChat(_ref) {
   };
 
   React.useEffect(function () {
-    console.log('client is changed.... ', client.connectionState);
+    console.log('client is changed.... ', client);
 
     if (client) {
       setClient(client);
@@ -17583,6 +17587,14 @@ var SceytChat = function SceytChat(_ref) {
 
     window.onfocus = function () {
       setTabIsActive(true);
+    };
+
+    return function () {
+      clearMessagesMap();
+      removeAllMessages();
+      setActiveChannelId('');
+      destroyChannelsMap();
+      dispatch(destroySession());
     };
   }, [client]);
   React.useEffect(function () {
@@ -28293,7 +28305,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setInputContainerHeight(inputWrapperRef.current.getBoundingClientRect().height);
     }
   });
-  React.useEffect(function () {
+  useDidUpdate(function () {
     if (messageForReply && messageToEdit) {
       handleCloseEditMode();
     }
@@ -28306,7 +28318,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       messageInputRef.current.focus();
     }
   }, [messageForReply]);
-  React.useEffect(function () {
+  useDidUpdate(function () {
     if (messageToEdit && messageInputRef.current) {
       if (messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length) {
         var formattedText = MessageTextFormat({
