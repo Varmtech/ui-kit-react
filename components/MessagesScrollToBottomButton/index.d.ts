@@ -3,6 +3,8 @@ interface MessagesScrollToBottomButtonProps {
     buttonIcon?: JSX.Element;
     buttonWidth?: string;
     buttonHeight?: string;
+    bottomPosition?: number;
+    rightPosition?: number;
     buttonBorder?: string;
     buttonBackgroundColor?: string;
     buttonHoverBackgroundColor?: string;

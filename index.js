@@ -7361,7 +7361,7 @@ var colors = {
   darkModeBackgroundColor: '#1e1f28',
   lightModeBackgroundColor: '#f1f2f6',
   hoverBackgroundColor: '#f1f2f6',
-  darkModeHoverBackgroundColor: '#34353d',
+  darkModeHoverBackgroundColor: '#16161c',
   lightModeHoverBackgroundColor: '#f1f2f6',
   textColor1: '#111539',
   darkModeTextColor1: '#ffffffcc',
@@ -29739,8 +29739,8 @@ var Members = function Members(_ref) {
     key: 1,
     onClick: handleAddMemberPopup,
     color: colors.textColor1,
-    hoverBackground: colors.primaryLight,
-    addMemberBackground: colors.backgroundColor,
+    hoverBackground: theme === THEME.DARK ? colors.hoverBackgroundColor : colors.primaryLight,
+    addMemberBackground: theme === THEME.DARK ? colors.dark : colors.backgroundColor,
     addMemberIconColor: colors.primary
   }, React__default.createElement(SvgAddMember, null), "Add " + displayMemberText), !!members.length && members.map(function (member, index) {
     return React__default.createElement(MemberItem$1, {
@@ -30616,7 +30616,7 @@ var DetailsTab = function DetailsTab(_ref) {
     theme: theme
   }, React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary,
-    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white
+    backgroundColor: theme === THEME.DARK ? colors.dark : colors.white
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
       if (showMembers) {
@@ -31457,6 +31457,8 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
       buttonWidth = _ref.buttonWidth,
       buttonHeight = _ref.buttonHeight,
+      bottomPosition = _ref.bottomPosition,
+      rightPosition = _ref.rightPosition,
       buttonBorder = _ref.buttonBorder,
       buttonBackgroundColor = _ref.buttonBackgroundColor,
       buttonHoverBackgroundColor = _ref.buttonHoverBackgroundColor,
@@ -31486,7 +31488,9 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     hoverBackgroundColor: buttonHoverBackgroundColor,
     shadow: buttonShadow,
     onClick: handleScrollToBottom,
-    bottomPos: sendMessageInputHeight
+    bottomOffset: sendMessageInputHeight,
+    bottomPosition: bottomPosition,
+    rightPosition: rightPosition
   }, !!(channel.newMessageCount && channel.newMessageCount > 0) && React__default.createElement(UnreadCount$1, {
     width: unreadCountWidth,
     height: unreadCountHeight,
@@ -31496,8 +31500,10 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled__default.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
-  return props.bottomPos + 45 + "px";
+var BottomButton = styled__default.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: ", ";\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+  return props.bottomOffset + (props.bottomPosition || 45) + "px";
+}, function (props) {
+  return (props.rightPosition || 16) + "px";
 }, function (props) {
   return props.backgroundColor || colors.backgroundColor;
 });
