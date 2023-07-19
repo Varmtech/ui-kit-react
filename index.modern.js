@@ -27215,6 +27215,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
       inputBorderRadius = _ref.inputBorderRadius,
       backgroundColor = _ref.backgroundColor,
       inputBackgroundColor = _ref.inputBackgroundColor,
+      inputCustomClassname = _ref.inputCustomClassname,
+      _ref$inputAutofocus = _ref.inputAutofocus,
+      inputAutofocus = _ref$inputAutofocus === void 0 ? true : _ref$inputAutofocus,
       inputPaddings = _ref.inputPaddings,
       selectedAttachmentsBorderRadius = _ref.selectedAttachmentsBorderRadius,
       selectedFileAttachmentsIcon = _ref.selectedFileAttachmentsIcon,
@@ -28121,7 +28124,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       prevActiveChannelId = activeChannel.id;
     }
 
-    if (messageInputRef.current) {
+    if (messageInputRef.current && inputAutofocus) {
       messageInputRef.current.focus();
     }
 
@@ -28169,7 +28172,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
         mentionedMembers: [].concat(mentionedMembersPositions)
       });
       setCursorPosition(messageInputRef.current, draftMessage.text.length);
-      messageInputRef.current.focus();
+
+      if (inputAutofocus) {
+        messageInputRef.current.focus();
+      }
     }
   }, [activeChannel.id]);
   useEffect(function () {
@@ -28472,7 +28478,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     backgroundColor: inputBackgroundColor,
     paddings: inputPaddings,
     ref: messageInputRef,
-    mentionColor: colors.primary
+    mentionColor: colors.primary,
+    className: inputCustomClassname
   })), React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
