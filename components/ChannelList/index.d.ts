@@ -3,6 +3,10 @@ import { IChannel } from '../../types';
 interface IChannelListProps {
     List?: FC<{
         channels: IChannel[];
+        searchedChannels: {
+            groups: [];
+            directs: [];
+        };
         loadMoreChannels: (count?: number) => void;
         searchValue: string;
         children: React.ReactNode;

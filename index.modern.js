@@ -18374,12 +18374,14 @@ var UnreadCount = styled.span(_templateObject19$1 || (_templateObject19$1 = _tag
 });
 
 var _templateObject$5, _templateObject2$5;
-var SearchInputContainer = styled.div(_templateObject$5 || (_templateObject$5 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  box-sizing: border-box;\n  padding: ", ";\n  border-right: ", ";\n"])), function (props) {
+var SearchInputContainer = styled.div(_templateObject$5 || (_templateObject$5 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n  max-width: ", ";\n  box-sizing: border-box;\n  padding: ", ";\n  border-right: ", ";\n\n  & ", " {\n    ", ";\n  }\n"])), function (props) {
   return props.inline && 'calc(100% - 24px)';
 }, function (props) {
   return !props.inline && '0 12px 16px';
 }, function (props) {
   return !props.inline && "1px solid " + props.borderColor;
+}, ClearTypedText, function (props) {
+  return !props.inline && 'right: 20px';
 });
 var SearchInput = styled.input(_templateObject2$5 || (_templateObject2$5 = _taggedTemplateLiteralLoose(["\n  padding: 0 34px;\n  background: ", ";\n  color: ", ";\n  border-radius: ", ";\n  width: 100%;\n  border: none;\n  height: 36px;\n  outline: none;\n  box-sizing: border-box;\n  font-size: 15px;\n\n  &::placeholder {\n    font-style: normal;\n    font-weight: normal;\n    font-size: 15px;\n    //line-height: 22px;\n    color: ", ";\n    opacity: 1;\n  }\n"])), function (props) {
   return props.backgroundColor;
@@ -20477,6 +20479,7 @@ var ChannelList = function ChannelList(_ref) {
     searchInputTextColor: searchInputTextColor
   }), List ? React__default.createElement(List, {
     channels: channels,
+    searchedChannels: searchedChannels,
     activeChannel: activeChannel,
     setActiveChannel: handleChangeActiveChannel,
     loadMoreChannels: handleLoadMoreChannels,
@@ -28378,6 +28381,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: handleJoinToChannel,
     color: colors.primary
   }, "Join") : (activeChannel.type === CHANNEL_TYPE.BROADCAST ? !(activeChannel.userRole === 'admin' || activeChannel.userRole === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
+    color: colors.textColor1,
     iconColor: colors.primary
   }, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, typingIndicator && typingIndicator.typingState && (CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
@@ -28586,7 +28590,9 @@ var BlockedUserInfo = styled.div(_templateObject24$1 || (_templateObject24$1 = _
 var JoinChannelCont = styled.div(_templateObject25$1 || (_templateObject25$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
 }, colors.backgroundColor);
-var ReadOnlyCont = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), colors.textColor1, function (props) {
+var ReadOnlyCont = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
   return props.iconColor || colors.primary;
 });
 var ReplyMessageCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
