@@ -26324,9 +26324,9 @@ var MessageList = function MessageList(_ref2) {
           dispatch(showScrollToNewMessageButtonAC(false));
         }
 
-        var scrollHeightQuarter = target.scrollHeight * 20 / 100;
+        var scrollHeightTarget = target.scrollHeight * 10 / 100;
 
-        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && !scrollToRepliedMessage && -target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightQuarter && !loading && !scrollToNewMessage.scrollToBottom && messages.length) {
+        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && !scrollToRepliedMessage && -target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightTarget && !loading && !scrollToNewMessage.scrollToBottom && messages.length) {
           loadDirection = 'prev';
           prevMessageId = messages[0].id;
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.PREV, LOAD_MAX_MESSAGE_COUNT);
@@ -26335,14 +26335,11 @@ var MessageList = function MessageList(_ref2) {
             loadFromServer = true;
           }
 
-          nextDisable = false;
           nextDisable = true;
         }
 
         if (lastVisibleMessagePos > 0) {
           nextDisable = false;
-        } else {
-          prevDisable = false;
         }
 
         if (!nextDisable && connectionStatus === CONNECTION_STATUS.CONNECTED && messagesLoading !== LOADING_STATE.LOADING && (hasNextMessages || getHasNextCached()) && -target.scrollTop <= 400 && !loading && !scrollToNewMessage.scrollToBottom) {
@@ -26588,29 +26585,10 @@ var MessageList = function MessageList(_ref2) {
         var lastVisibleMessage = document.getElementById(lastVisibleMessageId);
 
         if (prevMessageId) {
-          var i = 0;
-          var messagesHeight = 0;
-
-          while (i !== prevMessageId) {
-            if (messages[i]) {
-              if (messages[i].id === prevMessageId) {
-                i = prevMessageId;
-              } else {
-                var currentMessage = document.getElementById(messages[i].id);
-                currentMessage ? messagesHeight += currentMessage.getBoundingClientRect().height : messagesHeight;
-                i++;
-              }
-            } else {
-              break;
-            }
-          }
-
           scrollRef.current.style.scrollBehavior = 'inherit';
 
-          if (lastVisibleMessage && -lastVisibleMessage.offsetTop > messagesHeight) {
+          if (lastVisibleMessage) {
             scrollRef.current.scrollTop = lastVisibleMessage.offsetTop;
-          } else {
-            scrollRef.current.scrollTop = -messagesHeight;
           }
 
           scrollRef.current.style.scrollBehavior = 'smooth';
@@ -26620,6 +26598,7 @@ var MessageList = function MessageList(_ref2) {
           setTimeout(function () {
             loading = false;
             loadFromServer = false;
+            nextDisable = false;
           }, 50);
         } else {
           loading = false;
@@ -26630,6 +26609,9 @@ var MessageList = function MessageList(_ref2) {
         }
 
         loading = false;
+        setTimeout(function () {
+          prevDisable = false;
+        }, 100);
       }
     }
 
@@ -26640,7 +26622,6 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages... ', messages);
   }, [messages]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
