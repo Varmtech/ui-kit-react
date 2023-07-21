@@ -20488,6 +20488,7 @@ var ChannelList = function ChannelList(_ref) {
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
     }) : React__default.createElement(Channel, {
+      theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
       selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -20507,6 +20508,7 @@ var ChannelList = function ChannelList(_ref) {
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
     }) : React__default.createElement(Channel, {
+      theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
       selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -20526,6 +20528,7 @@ var ChannelList = function ChannelList(_ref) {
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
     }) : React__default.createElement(Channel, {
+      theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
       selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -20568,6 +20571,7 @@ var ChannelList = function ChannelList(_ref) {
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
     }) : React__default.createElement(Channel, {
+      theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
       selectedChannelBorderRadius: selectedChannelBorderRadius,
@@ -20587,6 +20591,7 @@ var ChannelList = function ChannelList(_ref) {
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
     }) : React__default.createElement(Channel, {
+      theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
       selectedChannelBorderRadius: selectedChannelBorderRadius,
