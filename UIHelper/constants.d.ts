@@ -5,6 +5,7 @@ export declare const colors: {
     blue: string;
     backgroundColor: string;
     darkModeBackgroundColor: string;
+    darkModeSecondaryBackgroundColor: string;
     lightModeBackgroundColor: string;
     hoverBackgroundColor: string;
     darkModeHoverBackgroundColor: string;

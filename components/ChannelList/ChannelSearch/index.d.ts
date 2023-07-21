@@ -1,6 +1,7 @@
 import React from 'react';
 interface IChannelSearchProps {
     searchValue: string;
+    theme?: string;
     handleSearchValueChange: (e: any) => void;
     getMyChannels: () => void;
     inline?: boolean;
