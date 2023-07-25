@@ -7661,7 +7661,6 @@ var getCaretPosition = function getCaretPosition(element) {
     }
 
     if (element.childNodes[i + 1] && element.childNodes[i + 1].nodeName === 'BR') {
-      console.log('add line. ...   1 .. ', 1);
       caretOffset += 1;
     }
   }
@@ -7720,7 +7719,7 @@ var setCursorPosition = function setCursorPosition(element, position, isAddMenti
         } else {}
       }
 
-      if (element.childNodes[index + 1] && element.childNodes[index + 1].nodeName === 'BR') {
+      if (element.childNodes[index + 1] && !currentNodeIsFind && element.childNodes[index + 1].nodeName === 'BR') {
         caretOffset += 1;
       }
 
@@ -7997,7 +7996,11 @@ function updateMessageOnMap(channelId, updatedMessage) {
   if (messagesMap[channelId]) {
     messagesMap[channelId] = messagesMap[channelId].map(function (mes) {
       if (mes.tid === updatedMessage.messageId || mes.id === updatedMessage.messageId) {
-        return _extends({}, mes, updatedMessage.params);
+        if (updatedMessage.params.state === MESSAGE_STATUS.DELETE) {
+          return _extends({}, updatedMessage.params);
+        } else {
+          return _extends({}, mes, updatedMessage.params);
+        }
       }
 
       return mes;
@@ -10212,6 +10215,42 @@ function deleteChannelFromAllChannels(channelId) {
   allChannels = allChannels.filter(function (channel) {
     return channel.id !== channelId;
   });
+}
+function updateChannelLastMessageOnAllChannels(channelId, message) {
+  var updateChannel = allChannels.find(function (chan) {
+    return chan.id === channelId;
+  });
+
+  if (message.state === 'Deleted' || message.state === 'Edited') {
+    var _updateChannel;
+
+    if (((_updateChannel = updateChannel) === null || _updateChannel === void 0 ? void 0 : _updateChannel.lastMessage.id) === message.id) {
+      allChannels = allChannels.map(function (chan) {
+        if (chan.id === channelId) {
+          channelsMap[channelId] = _extends({}, chan, {
+            lastMessage: message
+          });
+          return _extends({}, chan, {
+            lastMessage: message
+          });
+        }
+
+        return chan;
+      });
+    }
+  } else {
+    var updatedChannels = allChannels.filter(function (chan) {
+      return chan.id !== channelId;
+    });
+
+    if (updateChannel) {
+      updateChannel = _extends({}, updateChannel, {
+        lastMessage: message
+      });
+      channelsMap[channelId] = updateChannel;
+      allChannels = [updateChannel].concat(updatedChannels);
+    }
+  }
 }
 function updateChannelOnAllChannels(channelId, config, messageUpdateData) {
   allChannels = allChannels.map(function (channel) {
@@ -14222,7 +14261,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, messageToUpdate;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -14253,7 +14292,7 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 175;
+            _context.next = 177;
             break;
           }
 
@@ -14573,7 +14612,7 @@ function sendMessage(action) {
           }));
 
         case 130:
-          _context.next = 175;
+          _context.next = 177;
           break;
 
         case 132:
@@ -14764,7 +14803,7 @@ function sendMessage(action) {
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 175;
+            _context.next = 177;
             break;
           }
 
@@ -14791,34 +14830,36 @@ function sendMessage(action) {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
           });
-          _context.next = 175;
-          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse2)), {
+          messageToUpdate = JSON.parse(JSON.stringify(_messageResponse2));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context.next = 177;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 175:
-          _context.next = 177;
+        case 177:
+          _context.next = 179;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 177:
-          _context.next = 182;
+        case 179:
+          _context.next = 184;
           break;
 
-        case 179:
-          _context.prev = 179;
+        case 181:
+          _context.prev = 181;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 182:
+        case 184:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 179], [60, 98]]);
+  }, _marked$2, null, [[0, 181], [60, 98]]);
 }
 
 function sendTextMessage(action) {
-  var payload, message, connectionState, channelId, channel, sendMessageTid, mentionedUserIds, attachments, attachmentBuilder, att, messageBuilder, messageToSend, pendingMessage, hasNextMessages, messageResponse, messageUpdateData;
+  var payload, message, connectionState, channelId, channel, sendMessageTid, mentionedUserIds, attachments, attachmentBuilder, att, messageBuilder, messageToSend, pendingMessage, hasNextMessages, messageResponse, messageUpdateData, messageToUpdate;
   return _regeneratorRuntime().wrap(function sendTextMessage$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
@@ -14909,7 +14950,7 @@ function sendTextMessage(action) {
 
         case 35:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 54;
+            _context2.next = 56;
             break;
           }
 
@@ -14953,24 +14994,26 @@ function sendTextMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context2.next = 52;
-          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
+          messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context2.next = 54;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 52:
-          _context2.next = 55;
+        case 54:
+          _context2.next = 57;
           break;
 
-        case 54:
+        case 56:
           throw new Error('Connection required to send message');
 
-        case 55:
-          _context2.next = 64;
+        case 57:
+          _context2.next = 66;
           break;
 
-        case 57:
-          _context2.prev = 57;
+        case 59:
+          _context2.prev = 59;
           _context2.t0 = _context2["catch"](8);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
@@ -14982,21 +15025,21 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 64;
+          _context2.next = 66;
           return effects.put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 64:
+        case 66:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[8, 57]]);
+  }, _marked2$1, null, [[8, 59]]);
 }
 
 function forwardMessage(action) {
-  var payload, _message, channelId, connectionState, channel, mentionedUserIds, attachments, attachmentBuilder, att, messageBuilder, messageToSend, pendingMessage, activeChannelId, isCachedChannel, hasNextMessages, messageResponse, messageUpdateData;
+  var payload, _message, channelId, connectionState, channel, mentionedUserIds, attachments, attachmentBuilder, att, messageBuilder, messageToSend, pendingMessage, activeChannelId, isCachedChannel, hasNextMessages, messageResponse, messageUpdateData, messageToUpdate;
 
   return _regeneratorRuntime().wrap(function forwardMessage$(_context3) {
     while (1) {
@@ -15026,7 +15069,7 @@ function forwardMessage(action) {
           attachments = _message.attachments;
 
           if (channel.type === CHANNEL_TYPE.BROADCAST && !(channel.userRole === 'admin' || channel.userRole === 'owner')) {
-            _context3.next = 58;
+            _context3.next = 60;
             break;
           }
 
@@ -15097,7 +15140,7 @@ function forwardMessage(action) {
 
         case 41:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context3.next = 58;
+            _context3.next = 60;
             break;
           }
 
@@ -15147,30 +15190,32 @@ function forwardMessage(action) {
           return effects.put(addChannelAC(channel));
 
         case 56:
-          _context3.next = 58;
-          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
+          messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context3.next = 60;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 58:
-          _context3.next = 63;
+        case 60:
+          _context3.next = 65;
           break;
 
-        case 60:
-          _context3.prev = 60;
+        case 62:
+          _context3.prev = 62;
           _context3.t0 = _context3["catch"](0);
           console.log('error on forward message ... ', _context3.t0);
 
-        case 63:
+        case 65:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3$1, null, [[0, 60]]);
+  }, _marked3$1, null, [[0, 62]]);
 }
 
 function resendMessage(action) {
-  var payload, _message2, connectionState, channelId, channel, customUploader, attachmentCompilation, _messageAttachment, _messageCopy3, pendingAttachment, fileType, handleUploadProgress, uri, _filePath, handleUpdateLocalPath, _thumbnailMetas, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _messageCopy4, _messageResponse3, _messageUpdateData3;
+  var payload, _message2, connectionState, channelId, channel, customUploader, attachmentCompilation, _messageAttachment, _messageCopy3, pendingAttachment, fileType, handleUploadProgress, uri, _filePath, handleUpdateLocalPath, _thumbnailMetas, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, _messageCopy4, _messageResponse3, _messageUpdateData3;
 
   return _regeneratorRuntime().wrap(function resendMessage$(_context4) {
     while (1) {
@@ -15198,7 +15243,7 @@ function resendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(_message2.attachments && _message2.attachments.length)) {
-            _context4.next = 78;
+            _context4.next = 80;
             break;
           }
 
@@ -15214,7 +15259,7 @@ function resendMessage(action) {
           console.log('attachmentCompilation. .. . .', attachmentCompilation);
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED && attachmentCompilation[_messageAttachment.attachmentId] && attachmentCompilation[_messageAttachment.attachmentId] === UPLOAD_STATE.FAIL)) {
-            _context4.next = 76;
+            _context4.next = 78;
             break;
           }
 
@@ -15227,7 +15272,7 @@ function resendMessage(action) {
 
         case 25:
           if (!customUploader) {
-            _context4.next = 76;
+            _context4.next = 78;
             break;
           }
 
@@ -15306,7 +15351,7 @@ function resendMessage(action) {
           _messageCopy3.attachments = [attachmentToSend];
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 65;
+            _context4.next = 67;
             break;
           }
 
@@ -15342,23 +15387,25 @@ function resendMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(_messageCopy3.tid, messageUpdateData);
-          _context4.next = 65;
-          return effects.put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
+          messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context4.next = 67;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 65:
-          _context4.next = 76;
+        case 67:
+          _context4.next = 78;
           break;
 
-        case 67:
-          _context4.prev = 67;
+        case 69:
+          _context4.prev = 69;
           _context4.t0 = _context4["catch"](27);
           console.log('fail upload attachment on resend message ... ');
-          _context4.next = 72;
+          _context4.next = 74;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, _messageAttachment.attachmentId));
 
-        case 72:
+        case 74:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy3.tid,
             params: {
@@ -15368,28 +15415,28 @@ function resendMessage(action) {
           updateMessageOnAllMessages(_messageCopy3.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context4.next = 76;
+          _context4.next = 78;
           return effects.put(updateMessageAC(_messageCopy3.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 76:
-          _context4.next = 88;
+        case 78:
+          _context4.next = 90;
           break;
 
-        case 78:
+        case 80:
           _messageCopy4 = _extends({}, _message2);
           delete _messageCopy4.createdAt;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 88;
+            _context4.next = 90;
             break;
           }
 
-          _context4.next = 83;
+          _context4.next = 85;
           return effects.call(channel.sendMessage, _messageCopy4);
 
-        case 83:
+        case 85:
           _messageResponse3 = _context4.sent;
           _messageUpdateData3 = {
             id: _messageResponse3.id,
@@ -15401,38 +15448,38 @@ function resendMessage(action) {
             repliedInThread: _messageResponse3.repliedInThread,
             createdAt: _messageResponse3.createdAt
           };
-          _context4.next = 87;
+          _context4.next = 89;
           return effects.put(updateMessageAC(_messageCopy4.tid, _messageUpdateData3));
 
-        case 87:
+        case 89:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
           });
 
-        case 88:
-          _context4.next = 90;
+        case 90:
+          _context4.next = 92;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 90:
-          _context4.next = 95;
+        case 92:
+          _context4.next = 97;
           break;
 
-        case 92:
-          _context4.prev = 92;
+        case 94:
+          _context4.prev = 94;
           _context4.t1 = _context4["catch"](0);
           console.log('ERROR in resend message', _context4.t1.message);
 
-        case 95:
+        case 97:
         case "end":
           return _context4.stop();
       }
     }
-  }, _marked4$1, null, [[0, 92], [27, 67]]);
+  }, _marked4$1, null, [[0, 94], [27, 69]]);
 }
 
 function deleteMessage(action) {
-  var payload, messageId, channelId, deleteOption, channel, deletedMessage;
+  var payload, messageId, channelId, deleteOption, channel, deletedMessage, messageToUpdate;
   return _regeneratorRuntime().wrap(function deleteMessage$(_context5) {
     while (1) {
       switch (_context5.prev = _context5.next) {
@@ -15456,43 +15503,46 @@ function deleteMessage(action) {
 
         case 9:
           deletedMessage = _context5.sent;
-          _context5.next = 12;
+          console.log('deletedMessage . .. . .', deletedMessage);
+          _context5.next = 13;
           return effects.put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 12:
+        case 13:
           updateMessageOnMap(channel.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
           updateMessageOnAllMessages(messageId, deletedMessage);
+          messageToUpdate = JSON.parse(JSON.stringify(deletedMessage));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
 
           if (!(channel.lastMessage.id === messageId)) {
-            _context5.next = 17;
+            _context5.next = 20;
             break;
           }
 
-          _context5.next = 17;
-          return effects.put(updateChannelLastMessageAC(deletedMessage, channel));
+          _context5.next = 20;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, channel));
 
-        case 17:
-          _context5.next = 22;
+        case 20:
+          _context5.next = 25;
           break;
 
-        case 19:
-          _context5.prev = 19;
+        case 22:
+          _context5.prev = 22;
           _context5.t0 = _context5["catch"](0);
           console.log('ERROR in delete message', _context5.t0.message);
 
-        case 22:
+        case 25:
         case "end":
           return _context5.stop();
       }
     }
-  }, _marked5$1, null, [[0, 19]]);
+  }, _marked5$1, null, [[0, 22]]);
 }
 
 function editMessage(action) {
-  var payload, _message3, channelId, channel, editedMessage;
+  var payload, _message3, channelId, channel, editedMessage, messageToUpdate;
 
   return _regeneratorRuntime().wrap(function editMessage$(_context6) {
     while (1) {
@@ -15532,31 +15582,33 @@ function editMessage(action) {
             messageId: editedMessage.id,
             params: editedMessage
           });
+          updateMessageOnAllMessages(_message3.id, editedMessage);
 
           if (!(channel.lastMessage.id === _message3.id)) {
-            _context6.next = 17;
+            _context6.next = 19;
             break;
           }
 
-          updateMessageOnAllMessages(_message3.id, editedMessage);
-          _context6.next = 17;
-          return effects.put(updateChannelLastMessageAC(editedMessage, channel));
-
-        case 17:
-          _context6.next = 22;
-          break;
+          messageToUpdate = JSON.parse(JSON.stringify(editedMessage));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context6.next = 19;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, channel));
 
         case 19:
-          _context6.prev = 19;
+          _context6.next = 24;
+          break;
+
+        case 21:
+          _context6.prev = 21;
           _context6.t0 = _context6["catch"](0);
           console.log('ERROR in edit message', _context6.t0.message);
 
-        case 22:
+        case 24:
         case "end":
           return _context6.stop();
       }
     }
-  }, _marked6$1, null, [[0, 19]]);
+  }, _marked6$1, null, [[0, 21]]);
 }
 
 function getMessagesQuery(action) {
@@ -17493,6 +17545,73 @@ function setThemeAC(theme) {
   };
 }
 
+var useDidUpdate = function useDidUpdate(callback, deps) {
+  var hasMount = React.useRef(false);
+  React.useEffect(function () {
+    if (hasMount.current) {
+      callback();
+    } else {
+      hasMount.current = true;
+    }
+  }, deps);
+};
+
+var useEventListener = function useEventListener(eventName, handler, element, options) {
+  if (options === void 0) {
+    options = {};
+  }
+
+  var isBrowser = typeof window !== 'undefined';
+
+  if (isBrowser && !element) {
+    element = window;
+  } else {
+    element = global;
+  }
+
+  var savedHandler = React.useRef();
+  var _options = options,
+      capture = _options.capture,
+      passive = _options.passive,
+      once = _options.once;
+  React.useLayoutEffect(function () {
+    savedHandler.current = handler;
+  }, [handler]);
+  React.useLayoutEffect(function () {
+    var isSupported = element && element.addEventListener;
+
+    if (!isSupported) {
+      return;
+    }
+
+    var eventListener = function eventListener(event) {
+      return savedHandler.current(event);
+    };
+
+    var opts = {
+      capture: capture,
+      passive: passive,
+      once: once
+    };
+    element.addEventListener(eventName, eventListener, opts);
+    return function () {
+      return element.removeEventListener(eventName, eventListener, opts);
+    };
+  }, [eventName, element, capture, passive, once]);
+};
+
+var useStateComplex = function useStateComplex(initialState) {
+  var _useState = React.useState(initialState),
+      state = _useState[0],
+      setState = _useState[1];
+
+  return [state, function (value) {
+    setState(function (prevState) {
+      return _extends({}, prevState, value);
+    });
+  }];
+};
+
 var _templateObject$2, _templateObject2$2;
 
 var SceytChat = function SceytChat(_ref) {
@@ -17692,7 +17811,7 @@ var SceytChat = function SceytChat(_ref) {
       }
     }
   }, [tabIsActive]);
-  React.useEffect(function () {
+  useDidUpdate(function () {
     if (theme === THEME.DARK) {
       dispatch(setThemeAC(THEME.DARK));
       colors.primary = colors.darkModePrimary;
@@ -18437,73 +18556,6 @@ var ChannelSearch = function ChannelSearch(_ref) {
   }), searchValue && React__default.createElement(ClearTypedText, {
     onClick: getMyChannels
   }));
-};
-
-var useDidUpdate = function useDidUpdate(callback, deps) {
-  var hasMount = React.useRef(false);
-  React.useEffect(function () {
-    if (hasMount.current) {
-      callback();
-    } else {
-      hasMount.current = true;
-    }
-  }, deps);
-};
-
-var useEventListener = function useEventListener(eventName, handler, element, options) {
-  if (options === void 0) {
-    options = {};
-  }
-
-  var isBrowser = typeof window !== 'undefined';
-
-  if (isBrowser && !element) {
-    element = window;
-  } else {
-    element = global;
-  }
-
-  var savedHandler = React.useRef();
-  var _options = options,
-      capture = _options.capture,
-      passive = _options.passive,
-      once = _options.once;
-  React.useLayoutEffect(function () {
-    savedHandler.current = handler;
-  }, [handler]);
-  React.useLayoutEffect(function () {
-    var isSupported = element && element.addEventListener;
-
-    if (!isSupported) {
-      return;
-    }
-
-    var eventListener = function eventListener(event) {
-      return savedHandler.current(event);
-    };
-
-    var opts = {
-      capture: capture,
-      passive: passive,
-      once: once
-    };
-    element.addEventListener(eventName, eventListener, opts);
-    return function () {
-      return element.removeEventListener(eventName, eventListener, opts);
-    };
-  }, [eventName, element, capture, passive, once]);
-};
-
-var useStateComplex = function useStateComplex(initialState) {
-  var _useState = React.useState(initialState),
-      state = _useState[0],
-      setState = _useState[1];
-
-  return [state, function (value) {
-    setState(function (prevState) {
-      return _extends({}, prevState, value);
-    });
-  }];
 };
 
 var _templateObject$6, _templateObject2$6, _templateObject3$4;
@@ -20463,6 +20515,9 @@ var ChannelList = function ChannelList(_ref) {
 
     dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
   }, []);
+  React.useEffect(function () {
+    console.log('channels. ...........................', channels);
+  }, [channels]);
   return React__default.createElement(Container$6, {
     withCustomList: !!List,
     ref: channelListRef,
@@ -26605,6 +26660,7 @@ var MessageList = function MessageList(_ref2) {
         }
       } else {
         if (scrollRef.current.scrollTop > -5 && (hasNextMessages || getHasNextCached())) {
+          console.log('set scroll top ... ', -scrollRef.current.scrollHeight + scrollRef.current.offsetHeight + 200);
           scrollRef.current.scrollTop = -200;
         }
 
@@ -27575,8 +27631,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var shouldClose = false;
 
     if (e.key === 'Backspace' || e.key === 'Delete') {
-      var selPos2 = getCaretPosition(e.currentTarget);
-      console.log('selPos 2 pos .. . ', selPos2);
       var mentionedMembersPositions = [];
       var currentText = messageInputRef.current.innerText;
 
@@ -27584,14 +27638,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
         var lastFoundIndex = 0;
         var starts = {};
         var updatedMentionedMembers = [];
-        console.log('mentionedMembers . . . . .  92133', mentionedMembers);
         mentionedMembers.forEach(function (menMem) {
           var mentionDisplayName = menMem.displayName || mentionedMembersDisplayName[menMem.id].displayName;
-          console.log('find index of mentionDisplayName. .. .  .', mentionDisplayName);
-          console.log('find index on text . .. .  .', currentText);
-          console.log('find index from . .. .  .', lastFoundIndex);
           var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
-          console.log('found in index .. ', menIndex);
           lastFoundIndex = menIndex + mentionDisplayName.length;
 
           if (menIndex >= 0 && !starts[menMem.start]) {
@@ -27608,7 +27657,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
           starts[menMem.start] = true;
         });
-        console.log('set mentioned members,,., ', updatedMentionedMembers);
         setMentionedMembers(updatedMentionedMembers);
         var currentTextCont = typingTextFormat({
           text: currentText,
@@ -27622,8 +27670,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
       } else {
         setMessageText(currentText);
       }
-
-      console.log('set pos .. . ', selPos);
 
       if (selPos > 0) {
         setCursorPosition(messageInputRef.current, selPos);

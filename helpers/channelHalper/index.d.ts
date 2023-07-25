@@ -36,5 +36,6 @@ export declare function addChannelToAllChannels(channel: IChannel): void;
 export declare function getAllChannels(): IChannel[];
 export declare function getChannelFromAllChannels(channelId: string): IChannel | undefined;
 export declare function deleteChannelFromAllChannels(channelId: string): void;
+export declare function updateChannelLastMessageOnAllChannels(channelId: string, message: IMessage): void;
 export declare function updateChannelOnAllChannels(channelId: string, config: any, messageUpdateData?: any): void;
 export {};
