@@ -11833,12 +11833,12 @@ function watchForEvents() {
                     });
 
                     if (!channel) {
-                      _context.next = 23;
+                      _context.next = 22;
                       break;
                     }
 
                     if (!updateLastMessage) {
-                      _context.next = 18;
+                      _context.next = 17;
                       break;
                     }
 
@@ -11846,32 +11846,31 @@ function watchForEvents() {
                       deliveryStatus: markerList.name
                     });
                     updateChannelLastMessageOnAllChannels(channel.id, lastMessage);
-                    console.log('update last message .... ');
-                    _context.next = 18;
+                    _context.next = 17;
                     return put(updateChannelLastMessageStatusAC(lastMessage, JSON.parse(JSON.stringify(channel))));
 
-                  case 18:
+                  case 17:
                     if (!(activeChannelId === channelId)) {
-                      _context.next = 22;
+                      _context.next = 21;
                       break;
                     }
 
-                    _context.next = 21;
+                    _context.next = 20;
                     return put(updateMessagesStatusAC(markerList.name, markersMap));
 
-                  case 21:
+                  case 20:
                     updateMarkersOnAllMessages(markersMap, markerList.name);
 
-                  case 22:
+                  case 21:
                     updateMessageStatusOnMap(channel.id, {
                       name: markerList.name,
                       markersMap: markersMap
                     });
 
-                  case 23:
+                  case 22:
                     return _context.abrupt("return", "break");
 
-                  case 24:
+                  case 23:
                   case "end":
                     return _context.stop();
                 }
@@ -12465,24 +12464,25 @@ function createChannel(action) {
           return put(switchChannelActionAC(JSON.parse(JSON.stringify(createdChannel))));
 
         case 30:
-          _context.next = 32;
+          addChannelsToAllChannels(createdChannel);
+          _context.next = 33;
           return call(setActiveChannelId, createdChannel.id);
 
-        case 32:
-          _context.next = 37;
+        case 33:
+          _context.next = 38;
           break;
 
-        case 34:
-          _context.prev = 34;
+        case 35:
+          _context.prev = 35;
           _context.t0 = _context["catch"](0);
           console.log(_context.t0, 'Error on create channel');
 
-        case 37:
+        case 38:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$1, null, [[0, 34]]);
+  }, _marked$1, null, [[0, 35]]);
 }
 
 function getChannels(action) {
@@ -14270,7 +14270,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, messageToUpdate;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, _messageToUpdate2;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -14301,14 +14301,14 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 177;
+            _context.next = 181;
             break;
           }
 
           console.log('saga sendAttachmentsAsSeparateMessage. .... ', sendAttachmentsAsSeparateMessage);
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 132;
+            _context.next = 136;
             break;
           }
 
@@ -14417,7 +14417,7 @@ function sendMessage(action) {
 
         case 57:
           if (!customUploader) {
-            _context.next = 109;
+            _context.next = 111;
             break;
           }
 
@@ -14449,7 +14449,7 @@ function sendMessage(action) {
           _context.prev = 60;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 95;
+            _context.next = 97;
             break;
           }
 
@@ -14520,30 +14520,32 @@ function sendMessage(action) {
             params: messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
-          _context.next = 93;
-          return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(messageResponse)), {
+          messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
+          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context.next = 95;
+          return put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 93:
-          _context.next = 96;
+        case 95:
+          _context.next = 98;
           break;
 
-        case 95:
+        case 97:
           throw Error('Network error');
 
-        case 96:
-          _context.next = 107;
+        case 98:
+          _context.next = 109;
           break;
 
-        case 98:
-          _context.prev = 98;
+        case 100:
+          _context.prev = 100;
           _context.t0 = _context["catch"](60);
           console.log('Error on uploading attachment', messageAttachment.attachmentId);
-          _context.next = 103;
+          _context.next = 105;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 103:
+        case 105:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -14553,16 +14555,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 107;
+          _context.next = 109;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 107:
-          _context.next = 130;
+        case 109:
+          _context.next = 134;
           break;
 
-        case 109:
+        case 111:
           console.log('messageAttachment. . . .. . .  .', messageAttachment);
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
@@ -14585,10 +14587,10 @@ function sendMessage(action) {
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
           console.log('messageToSend, , , ,  ', messageToSend);
-          _context.next = 119;
+          _context.next = 121;
           return call(channel.sendMessage, messageToSend);
 
-        case 119:
+        case 121:
           _messageResponse = _context.sent;
           console.log('message response ... ', _messageResponse);
           deletePendingAttachment(messageAttachment.attachmentId);
@@ -14602,10 +14604,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 125;
+          _context.next = 127;
           return put(updateMessageAC(messageToSend.tid, _messageUpdateData));
 
-        case 125:
+        case 127:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -14615,16 +14617,18 @@ function sendMessage(action) {
             params: _messageUpdateData
           });
           updateMessageOnAllMessages(messageToSend.tid, _messageUpdateData);
-          _context.next = 130;
-          return put(updateChannelLastMessageAC(JSON.parse(JSON.stringify(_messageResponse)), {
+          _messageToUpdate = JSON.parse(JSON.stringify(_messageResponse));
+          updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate);
+          _context.next = 134;
+          return put(updateChannelLastMessageAC(_messageToUpdate, {
             id: channel.id
           }));
 
-        case 130:
-          _context.next = 177;
+        case 134:
+          _context.next = 181;
           break;
 
-        case 132:
+        case 136:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -14662,7 +14666,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 150;
+            _context.next = 154;
             break;
           }
 
@@ -14712,12 +14716,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 144;
+          _context.next = 148;
           return call(uploadAllAttachments);
 
-        case 144:
+        case 148:
           uploadedAttachments = _context.sent;
-          _context.next = 147;
+          _context.next = 151;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -14760,12 +14764,12 @@ function sendMessage(action) {
             }
           });
 
-        case 147:
+        case 151:
           attachmentsToSend = _context.sent;
-          _context.next = 164;
+          _context.next = 168;
           break;
 
-        case 150:
+        case 154:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -14777,49 +14781,49 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 153;
+          _context.next = 157;
           return select(messagesHasNextSelector);
 
-        case 153:
+        case 157:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 162;
+            _context.next = 166;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 160;
+            _context.next = 164;
             break;
           }
 
-          _context.next = 158;
+          _context.next = 162;
           return put(getMessagesAC(channel));
 
-        case 158:
-          _context.next = 162;
+        case 162:
+          _context.next = 166;
           break;
 
-        case 160:
-          _context.next = 162;
+        case 164:
+          _context.next = 166;
           return put(addMessageAC(_extends({}, _messageCopy2)));
 
-        case 162:
+        case 166:
           addMessageToMap(channelId, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 164:
+        case 168:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 177;
+            _context.next = 181;
             break;
           }
 
-          _context.next = 168;
+          _context.next = 172;
           return call(channel.sendMessage, _messageToSend);
 
-        case 168:
+        case 172:
           _messageResponse2 = _context.sent;
           _messageUpdateData2 = {
             id: _messageResponse2.id,
@@ -14831,40 +14835,40 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 172;
+          _context.next = 176;
           return put(updateMessageAC(_messageToSend.tid, _messageUpdateData2));
 
-        case 172:
+        case 176:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
           });
-          messageToUpdate = JSON.parse(JSON.stringify(_messageResponse2));
-          updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
-          _context.next = 177;
-          return put(updateChannelLastMessageAC(messageToUpdate, {
+          _messageToUpdate2 = JSON.parse(JSON.stringify(_messageResponse2));
+          updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate2);
+          _context.next = 181;
+          return put(updateChannelLastMessageAC(_messageToUpdate2, {
             id: channel.id
           }));
 
-        case 177:
-          _context.next = 179;
+        case 181:
+          _context.next = 183;
           return put(scrollToNewMessageAC(true));
 
-        case 179:
-          _context.next = 184;
+        case 183:
+          _context.next = 188;
           break;
 
-        case 181:
-          _context.prev = 181;
+        case 185:
+          _context.prev = 185;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 184:
+        case 188:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 181], [60, 98]]);
+  }, _marked$2, null, [[0, 185], [60, 100]]);
 }
 
 function sendTextMessage(action) {
@@ -19581,7 +19585,7 @@ function CreateChannel(_ref) {
       setNewAvatar = _useStateComplex[1];
 
   var channelTypeRoleMap = getDefaultRolesByChannelTypesMap();
-  var createGroupChannel = channelType === CHANNEL_TYPE.GROUP;
+  var createGroupChannel = channelType === CHANNEL_TYPE.GROUP || channelType === CHANNEL_TYPE.PRIVATE;
   var requiredFields = channelTypeRequiredFieldsMap && channelTypeRequiredFieldsMap[channelType];
 
   var toggleCreatePopup = function toggleCreatePopup() {
@@ -19616,6 +19620,8 @@ function CreateChannel(_ref) {
     handleClose();
     setCreateGroupChannelPopupVisible(!createGroupChannelPopupVisible);
   };
+
+  console.log('channelType ..  .. ', channelType);
 
   var GoToAddMember = function GoToAddMember() {
     if (requiredFields) {
@@ -20395,6 +20401,7 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (deletedChannel) {
       if (onChannelDeleted) {
+        console.log('onChannelDeleted .... ', deletedChannel);
         onChannelDeleted(channels, deletedChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
         });
@@ -20425,10 +20432,12 @@ var ChannelList = function ChannelList(_ref) {
   useDidUpdate(function () {
     if (addedChannel) {
       if (onChannelCreated) {
+        console.log('onChannelCreated .... ', addedChannel);
         onChannelCreated(channels, addedChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, false);
         });
       } else {
+        console.log('dispatch addChannelAC 1 .... ', addedChannel);
         dispatch(addChannelAC(addedChannel));
       }
 
@@ -20438,10 +20447,12 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (addedToChannel) {
       if (onAddedToChannel) {
+        console.log('onAddedToChannel .... ', addedToChannel);
         onAddedToChannel(channels, addedToChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, false);
         });
       } else {
+        console.log('dispatch addChannelAC 2 .... ', addedToChannel);
         dispatch(addChannelAC(addedToChannel));
       }
 
@@ -20451,6 +20462,7 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (hiddenChannel) {
       if (onChannelHidden) {
+        console.log('onChannelHidden .... ', hiddenChannel);
         onChannelHidden(channels, hiddenChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
         });
@@ -20464,10 +20476,12 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     if (visibleChannel) {
       if (onChannelVisible) {
+        console.log('onChannelVisible .... ', visibleChannel);
         onChannelVisible(channels, visibleChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
         });
       } else {
+        console.log('dispatch addChannelAC 3 .... ', visibleChannel);
         dispatch(addChannelAC(hiddenChannel));
       }
 
@@ -25647,7 +25661,7 @@ var VideoPlayer = function VideoPlayer(_ref) {
     onClick: function onClick() {
       return videoHandler(playing ? 'pause' : 'play');
     },
-    id: 'my_video',
+    id: 'video1',
     ref: videoRef,
     className: 'video',
     src: src
@@ -26120,6 +26134,7 @@ var loadDirection = '';
 var nextDisable = false;
 var prevDisable = false;
 var prevMessageId = '';
+var messagesIndexMap = {};
 
 var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
   var lastIndex = _ref.lastIndex,
@@ -26373,10 +26388,8 @@ var MessageList = function MessageList(_ref2) {
       hideTopDateTimeout.current = setTimeout(function () {
         setShowTopDate(false);
       }, 1000);
-      var lastVisibleMessage = document.getElementById(lastVisibleMessageId);
       renderTopDate();
       var target = event.target;
-      var lastVisibleMessagePos = lastVisibleMessage && lastVisibleMessage.offsetTop;
 
       if (scrollToReply) {
         target.scrollTop = scrollToReply;
@@ -26387,9 +26400,7 @@ var MessageList = function MessageList(_ref2) {
           dispatch(showScrollToNewMessageButtonAC(false));
         }
 
-        var scrollHeightTarget = target.scrollHeight * 10 / 100;
-
-        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && !scrollToRepliedMessage && -target.scrollTop >= target.scrollHeight - target.offsetHeight - scrollHeightTarget && !loading && !scrollToNewMessage.scrollToBottom && messages.length) {
+        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && messagesIndexMap[lastVisibleMessageId] < 15) {
           loadDirection = 'prev';
           prevMessageId = messages[0].id;
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.PREV, LOAD_MAX_MESSAGE_COUNT);
@@ -26401,14 +26412,14 @@ var MessageList = function MessageList(_ref2) {
           nextDisable = true;
         }
 
-        if (lastVisibleMessagePos > 0) {
-          nextDisable = false;
-        }
-
-        if (!nextDisable && connectionStatus === CONNECTION_STATUS.CONNECTED && messagesLoading !== LOADING_STATE.LOADING && (hasNextMessages || getHasNextCached()) && -target.scrollTop <= 400 && !loading && !scrollToNewMessage.scrollToBottom) {
+        if (!nextDisable && connectionStatus === CONNECTION_STATUS.CONNECTED && messagesLoading !== LOADING_STATE.LOADING && (hasNextMessages || getHasNextCached()) && messagesIndexMap[lastVisibleMessageId] > messages.length - 15) {
           loadDirection = 'next';
           prevDisable = true;
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.NEXT, LOAD_MAX_MESSAGE_COUNT);
+        }
+
+        if (messagesIndexMap[lastVisibleMessageId] > messages.length - 10) {
+          nextDisable = false;
         }
       }
 
@@ -26648,6 +26659,7 @@ var MessageList = function MessageList(_ref2) {
         var lastVisibleMessage = document.getElementById(lastVisibleMessageId);
 
         if (prevMessageId) {
+          console.log('set scroll position to a last visibla message ,,,,,,,,,,,,,,,,,,,,,');
           scrollRef.current.style.scrollBehavior = 'inherit';
 
           if (lastVisibleMessage) {
@@ -26667,11 +26679,11 @@ var MessageList = function MessageList(_ref2) {
           loading = false;
         }
       } else {
-        if (scrollRef.current.scrollTop > -5 && (hasNextMessages || getHasNextCached())) {
-          console.log('set scroll top ... ', -scrollRef.current.scrollHeight + scrollRef.current.offsetHeight + 200);
-          scrollRef.current.scrollTop = -200;
-        }
+        var _lastVisibleMessage = document.getElementById(lastVisibleMessageId);
 
+        scrollRef.current.style.scrollBehavior = 'inherit';
+        scrollRef.current.scrollTop = _lastVisibleMessage.offsetTop - scrollRef.current.offsetHeight + _lastVisibleMessage.offsetHeight;
+        scrollRef.current.style.scrollBehavior = 'smooth';
         loading = false;
         setTimeout(function () {
           prevDisable = false;
@@ -26764,6 +26776,7 @@ var MessageList = function MessageList(_ref2) {
     var nextMessage = messages[index + 1];
     var isUnreadMessage = !!(unreadMessageId && unreadMessageId === message.id);
     var messageMetas = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
+    messagesIndexMap[message.id] = index;
     return React__default.createElement(React__default.Fragment, {
       key: message.id || message.tid
     }, React__default.createElement(CreateMessageDateDivider, {
