@@ -10,6 +10,7 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
             groups: import("../types").IChannel[];
             directs: import("../types").IChannel[];
         };
+        closeSearchChannel: boolean;
         channelsForForward: import("../types").IChannel[];
         activeChannel: {} | import("../types").IChannel;
         roles: [];

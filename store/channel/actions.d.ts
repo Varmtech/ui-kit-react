@@ -38,6 +38,12 @@ export declare function setSearchedChannelsAC(searchedChannels: {
         };
     };
 };
+export declare function setCloseSearchChannelsAC(close: boolean): {
+    type: string;
+    payload: {
+        close: boolean;
+    };
+};
 export declare function getChannelsForForwardAC(searchValue?: string): {
     type: string;
     payload: {

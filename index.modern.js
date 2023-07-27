@@ -853,6 +853,7 @@ var CREATE_CHANNEL = 'CREATE_CHANNEL';
 var GET_CHANNELS = 'GET_CHANNELS';
 var SEARCH_CHANNELS = 'SEARCH_CHANNELS';
 var SET_SEARCHED_CHANNELS = 'SET_SEARCHED_CHANNELS';
+var SET_CLOSE_SEARCH_CHANNELS = 'SET_CLOSE_SEARCH_CHANNELS';
 var GET_CHANNELS_FOR_FORWARD = 'GET_CHANNELS_FOR_FORWARD';
 var LOAD_MORE_CHANNEL = 'LOAD_MORE_CHANNEL';
 var LOAD_MORE_CHANNELS_FOR_FORWARD = 'LOAD_MORE_CHANNELS_FOR_FORWARD';
@@ -1007,6 +1008,7 @@ var initialState = {
     groups: [],
     directs: []
   },
+  closeSearchChannel: false,
   channelsForForward: [],
   activeChannel: {},
   roles: [],
@@ -1063,6 +1065,12 @@ var ChannelReducer = (function (state, _temp) {
     case SET_SEARCHED_CHANNELS:
       {
         newState.searchedChannels = payload.searchedChannels;
+        return newState;
+      }
+
+    case SET_CLOSE_SEARCH_CHANNELS:
+      {
+        newState.closeSearchChannel = payload.close;
         return newState;
       }
 
@@ -8946,6 +8954,14 @@ function setSearchedChannelsAC(searchedChannels) {
     type: SET_SEARCHED_CHANNELS,
     payload: {
       searchedChannels: searchedChannels
+    }
+  };
+}
+function setCloseSearchChannelsAC(close) {
+  return {
+    type: SET_CLOSE_SEARCH_CHANNELS,
+    payload: {
+      close: close
     }
   };
 }
@@ -17053,28 +17069,29 @@ function getContacts() {
 
         case 4:
           contactsData = _context.sent;
-          _context.next = 7;
+          console.log('contactsData from server. .. .. .. .', contactsData);
+          _context.next = 8;
           return put(setContactsAC(JSON.parse(JSON.stringify(contactsData))));
 
-        case 7:
-          _context.next = 9;
+        case 8:
+          _context.next = 10;
           return put(setContactsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 9:
-          _context.next = 15;
+        case 10:
+          _context.next = 16;
           break;
 
-        case 11:
-          _context.prev = 11;
+        case 12:
+          _context.prev = 12;
           _context.t0 = _context["catch"](0);
           console.log('ERROR in get contacts - :', _context.t0.message);
 
-        case 15:
+        case 16:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$4, null, [[0, 11]]);
+  }, _marked$4, null, [[0, 12]]);
 }
 
 function blockUser(action) {
@@ -17489,6 +17506,9 @@ var channelsSelector = function channelsSelector(store) {
 var searchedChannelsSelector = function searchedChannelsSelector(store) {
   return store.ChannelReducer.searchedChannels;
 };
+var closeSearchChannelSelector = function closeSearchChannelSelector(store) {
+  return store.ChannelReducer.closeSearchChannel;
+};
 var channelsForForwardSelector = function channelsForForwardSelector(store) {
   return store.ChannelReducer.channelsForForward;
 };
@@ -17706,6 +17726,12 @@ var SceytChat = function SceytChat(_ref) {
       dispatch(setUserAC(client.user));
       dispatch(watchForEventsAC());
       dispatch(setConnectionStatusAC(client.connectionState));
+
+      if (showOnlyContactUsers) {
+        dispatch(getContactsAC());
+      }
+
+      dispatch(getRolesAC());
     } else {
       clearMessagesMap();
       removeAllMessages();
@@ -20322,6 +20348,7 @@ var ChannelList = function ChannelList(_ref) {
   var channels = useSelector(channelsSelector, shallowEqual) || [];
   var contactsMap = useSelector(contactsMapSelector);
   var addedChannel = useSelector(addedChannelSelector);
+  var closeSearchChannels = useSelector(closeSearchChannelSelector);
   var addedToChannel = useSelector(addedToChannelSelector);
   var deletedChannel = useSelector(deletedChannelSelector);
   var hiddenChannel = useSelector(hiddenChannelSelector);
@@ -20519,6 +20546,14 @@ var ChannelList = function ChannelList(_ref) {
       getMyChannels();
     }
   }, [activeChannel.id]);
+  useDidUpdate(function () {
+    console.log('close search channels. ... ', closeSearchChannels);
+
+    if (closeSearchChannels) {
+      getMyChannels();
+      dispatch(setCloseSearchChannelsAC(false));
+    }
+  }, [closeSearchChannels]);
   useEffect(function () {
     if (uploadPhotoIcon) {
       setUploadImageIcon(uploadPhotoIcon);
@@ -20540,6 +20575,9 @@ var ChannelList = function ChannelList(_ref) {
   useEffect(function () {
     console.log('channels. ...........................', channels);
   }, [channels]);
+  useEffect(function () {
+    console.log('contactsMap. ...........................', contactsMap);
+  }, [contactsMap]);
   return React__default.createElement(Container$6, {
     withCustomList: !!List,
     ref: channelListRef,
@@ -27195,6 +27233,16 @@ function MentionMembersPopup(_ref) {
   };
 
   useEventListener('click', handleClicks);
+
+  var handleSearchMembers = function handleSearchMembers() {
+    var searchedMembers = [].concat(members).filter(function (member) {
+      var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
+      return displayName && member.id !== user.id && displayName.toLowerCase().includes(searchMention.toLowerCase());
+    });
+    filteredMembersLength.current = searchedMembers.length;
+    setFilteredMembers(sortMembers(searchedMembers));
+  };
+
   useEffect(function () {
     dispatch(getMembersAC(channelId));
   }, [channelId]);
@@ -27205,29 +27253,27 @@ function MentionMembersPopup(_ref) {
     };
   }, [filteredMembers, activeIndex]);
   useEffect(function () {
-    if (members && members.length && !searchMention) {
-      var sortedMembers = sortMembers(members.filter(function (member) {
-        return member.id !== user.id;
-      }));
-      filteredMembersLength.current = sortedMembers.length;
-      setFilteredMembers(sortedMembers);
+    if (members && members.length) {
+      if (searchMention) {
+        handleSearchMembers();
+      } else {
+        var sortedMembers = sortMembers(members.filter(function (member) {
+          return member.id !== user.id;
+        }));
+        filteredMembersLength.current = sortedMembers.length;
+        setFilteredMembers(sortedMembers);
+      }
     }
   }, [members]);
   useDidUpdate(function () {
     if (searchMention) {
-      var searchedMembers = [].concat(members).filter(function (member) {
-        var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
-        return displayName && member.id !== user.id && displayName.toLowerCase().includes(searchMention.toLowerCase());
-      });
-      filteredMembersLength.current = searchedMembers.length;
-      setFilteredMembers(sortMembers(searchedMembers));
+      handleSearchMembers();
     } else {
-      var _searchedMembers = [].concat(members).filter(function (member) {
+      var searchedMembers = [].concat(members).filter(function (member) {
         return member.id !== user.id;
       });
-
-      filteredMembersLength.current = _searchedMembers.length || 0;
-      setFilteredMembers(sortMembers(_searchedMembers || []));
+      filteredMembersLength.current = searchedMembers.length || 0;
+      setFilteredMembers(sortMembers(searchedMembers || []));
     }
   }, [searchMention]);
   useDidUpdate(function () {
@@ -27395,41 +27441,45 @@ var SendMessageInput = function SendMessageInput(_ref) {
       currentMentions = _useState11[0],
       setCurrentMentions = _useState11[1];
 
-  var _useState12 = useState(false),
-      mentionTyping = _useState12[0],
-      setMentionTyping = _useState12[1];
+  var _useState12 = useState([]),
+      pendingMentions = _useState12[0],
+      setPendingMentions = _useState12[1];
 
-  var _useState13 = useState(),
-      selectionPos = _useState13[0],
-      setSelectionPos = _useState13[1];
+  var _useState13 = useState(false),
+      mentionTyping = _useState13[0],
+      setMentionTyping = _useState13[1];
 
   var _useState14 = useState(),
-      inputContainerHeight = _useState14[0],
-      setInputContainerHeight = _useState14[1];
+      selectionPos = _useState14[0],
+      setSelectionPos = _useState14[1];
 
   var _useState15 = useState(),
-      typingTimout = _useState15[0],
-      setTypingTimout = _useState15[1];
+      inputContainerHeight = _useState15[0],
+      setInputContainerHeight = _useState15[1];
 
   var _useState16 = useState(),
-      inTypingStateTimout = _useState16[0],
-      setInTypingStateTimout = _useState16[1];
+      typingTimout = _useState16[0],
+      setTypingTimout = _useState16[1];
 
-  var _useState17 = useState(false),
-      inTypingState = _useState17[0],
-      setInTypingState = _useState17[1];
+  var _useState17 = useState(),
+      inTypingStateTimout = _useState17[0],
+      setInTypingStateTimout = _useState17[1];
 
   var _useState18 = useState(false),
-      sendMessageIsActive = _useState18[0],
-      setSendMessageIsActive = _useState18[1];
+      inTypingState = _useState18[0],
+      setInTypingState = _useState18[1];
 
   var _useState19 = useState(false),
-      openMention = _useState19[0],
-      setOpenMention = _useState19[1];
+      sendMessageIsActive = _useState19[0],
+      setSendMessageIsActive = _useState19[1];
 
-  var _useState20 = useState([]),
-      attachments = _useState20[0],
-      setAttachments = _useState20[1];
+  var _useState20 = useState(false),
+      openMention = _useState20[0],
+      setOpenMention = _useState20[1];
+
+  var _useState21 = useState([]),
+      attachments = _useState21[0],
+      setAttachments = _useState21[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
@@ -27582,12 +27632,25 @@ var SendMessageInput = function SendMessageInput(_ref) {
     updateCurrentMentions.id = member.id;
     updateCurrentMentions.end = updateCurrentMentions.start + mentionDisplayName.length;
     setCurrentMentions(updateCurrentMentions);
+    setPendingMentions(pendingMentions.filter(function (mention) {
+      return mention.start !== updateCurrentMentions.start;
+    }));
     messageInputRef.current.focus();
   };
 
-  var handleCloseMentionsPopup = function handleCloseMentionsPopup() {
+  var handleCloseMentionsPopup = function handleCloseMentionsPopup(setPending) {
     setOpenMention(false);
     setMentionTyping(false);
+
+    if (setPending) {
+      setPendingMentions([].concat(pendingMentions, [_extends({}, currentMentions, {
+        end: currentMentions.start + 1 + currentMentions.typed.length
+      })]));
+      console.log('set pending mentions... .', [].concat(pendingMentions, [_extends({}, currentMentions, {
+        end: currentMentions.start + 1 + currentMentions.typed.length
+      })]));
+    }
+
     setCurrentMentions(undefined);
   };
 
@@ -27713,12 +27776,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     if (mentionTyping) {
       if (e.key === ' ') {
-        handleCloseMentionsPopup();
+        console.log('should close mentions ............................... ****** ');
+        handleCloseMentionsPopup(true);
       } else if (!currentMentions.end && !shouldClose) {
         var typedMessage = e.currentTarget.innerText;
 
         var updateCurrentMentions = _extends({}, currentMentions);
 
+        console.log('set current mention typed... .. .', typedMessage.slice(updateCurrentMentions.start + 1, selPos));
         updateCurrentMentions.typed = typedMessage.slice(updateCurrentMentions.start + 1, selPos);
         setCurrentMentions(updateCurrentMentions);
       }
@@ -27855,6 +27920,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setOpenMention(false);
       setMentionTyping(false);
       setCurrentMentions(undefined);
+      dispatch(setCloseSearchChannelsAC(true));
     }
   };
 
@@ -28000,8 +28066,22 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   useEffect(function () {
     if (mentionTyping) {
-      if (selectionPos <= currentMentions.start) {
-        handleCloseMentionsPopup();
+      if (selectionPos <= currentMentions.start || selectionPos > currentMentions.start + 1 + currentMentions.typed.length) {
+        handleCloseMentionsPopup(true);
+      }
+    } else if (pendingMentions && pendingMentions.length) {
+      var currentPendingMention = pendingMentions.find(function (mention) {
+        return selectionPos <= mention.end && selectionPos > mention.start;
+      });
+
+      if (currentPendingMention) {
+        delete currentPendingMention.end;
+        setCurrentMentions(currentPendingMention);
+        setMentionTyping(true);
+        setOpenMention(true);
+        setPendingMentions(pendingMentions.filter(function (mention) {
+          return mention.start !== currentPendingMention.start;
+        }));
       }
     }
   }, [selectionPos]);

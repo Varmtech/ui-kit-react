@@ -10,6 +10,7 @@ declare const _default: (state?: {
         groups: IChannel[];
         directs: IChannel[];
     };
+    closeSearchChannel: boolean;
     channelsForForward: IChannel[];
     activeChannel: {} | IChannel;
     roles: [];
@@ -50,6 +51,7 @@ declare const _default: (state?: {
         groups: IChannel[];
         directs: IChannel[];
     };
+    closeSearchChannel: boolean;
     channelsForForward: IChannel[];
     activeChannel: {} | IChannel;
     roles: [];

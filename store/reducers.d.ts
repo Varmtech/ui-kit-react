@@ -10,6 +10,7 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
             groups: import("../types").IChannel[];
             directs: import("../types").IChannel[];
         };
+        closeSearchChannel: boolean;
         channelsForForward: import("../types").IChannel[];
         activeChannel: {} | import("../types").IChannel;
         roles: [];
