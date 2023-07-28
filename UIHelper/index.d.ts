@@ -130,6 +130,7 @@ export declare const UploadPercent: import("styled-components").StyledComponent<
     isRepliedMessage?: boolean | undefined;
     borderRadius?: string | undefined;
 }, never>;
+export declare const UploadProgressT: import("styled-components").StyledComponent<"div", any, {}, never>;
 export declare const UploadProgress: import("styled-components").StyledComponent<"div", any, {
     positionStatic?: boolean | undefined;
     isFailedAttachment?: boolean | undefined;
