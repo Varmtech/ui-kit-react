@@ -17,7 +17,7 @@ export interface IUploadTask {
 }
 export interface ICustomUploader {
     upload: (attachment: IAttachment, uploadTask: IUploadTask) => void;
-    download: (uri: string, progressCallback?: (progress: any) => void) => Promise<string>;
+    cancelRequest: (requestPromise: any) => void;
 }
 export interface IChatClientProps {
     client: SceytChatClient;

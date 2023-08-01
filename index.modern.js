@@ -943,10 +943,10 @@ var MESSAGE_DELIVERY_STATUS = {
   READ: 'displayed'
 };
 var MESSAGE_STATUS = {
-  NONE: 'None',
-  EDIT: 'Edited',
-  DELETE: 'Deleted',
-  FAILED: 'Failed'
+  NONE: 'none',
+  EDIT: 'edited',
+  DELETE: 'deleted',
+  FAILED: 'failed'
 };
 var UPLOAD_STATE = {
   UPLOADING: 'uploading',
@@ -9430,7 +9430,7 @@ function SvgSearch(props) {
   })));
 }
 
-var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44;
+var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43;
 function md5(inputString) {
   var hc = '0123456789abcdef';
 
@@ -9850,8 +9850,7 @@ var UploadPercent = styled.span(_templateObject41 || (_templateObject41 = _tagge
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
-var UploadProgressT = styled.div(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  z-index: 12;\n"])));
-var UploadProgress = styled.div(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
+var UploadProgress = styled.div(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
   return props.fileAttachment ? '8px' : '0';
@@ -9880,7 +9879,7 @@ var UploadProgress = styled.div(_templateObject43 || (_templateObject43 = _tagge
 }, function (props) {
   return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
 });
-var AttachmentPreviewTitle = styled.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
+var AttachmentPreviewTitle = styled.span(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
@@ -19654,8 +19653,6 @@ function CreateChannel(_ref) {
     setCreateGroupChannelPopupVisible(!createGroupChannelPopupVisible);
   };
 
-  console.log('channelType ..  .. ', channelType);
-
   var GoToAddMember = function GoToAddMember() {
     if (requiredFields) {
       if (!(requiredFields.subject && !subjectValue || requiredFields.description && !metadataValue || requiredFields.uri && !URIValue)) {
@@ -26747,6 +26744,7 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
+    console.log('messages... ', messages);
   }, [messages]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
@@ -28757,7 +28755,7 @@ var SendMessageIcon = styled.span(_templateObject13$4 || (_templateObject13$4 = 
 }, function (props) {
   return props.isActive ? colors.primary : props.color;
 });
-var ChosenAttachments = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 6px 12px;\n    height: 48px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
+var ChosenAttachments = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
 var TypingIndicator$1 = styled.div(_templateObject15$3 || (_templateObject15$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
 var TypingIndicatorCont = styled.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
 var TypingFrom = styled.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
