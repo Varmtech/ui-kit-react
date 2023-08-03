@@ -37,6 +37,13 @@ export interface IMessageStore {
     reactionsHasNext: boolean;
     reactionsLoadingState: number | null;
     openedMessageMenu: string;
+    attachmentsUploadingProgress: {
+        [key: string]: {
+            uploaded: number;
+            total: number;
+            progress?: number;
+        };
+    };
 }
 declare const _default: (state?: IMessageStore, { type, payload }?: IAction) => IMessageStore;
 export default _default;

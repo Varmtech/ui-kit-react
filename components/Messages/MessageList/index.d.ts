@@ -1,5 +1,7 @@
 import React from 'react';
+import { IMessage } from '../../../types';
 interface MessagesProps {
+    messages: IMessage[];
     fontFamily?: string;
     ownMessageOnRightSide?: boolean;
     messageWidthPercent?: string | number;
@@ -105,5 +107,24 @@ interface MessagesProps {
     sameUserMessageSpacing?: string;
     differentUserMessageSpacing?: string;
 }
-declare const MessagesContainer: React.FC<MessagesProps>;
-export default MessagesContainer;
+declare const MessageList: React.FC<MessagesProps>;
+export default MessageList;
+export declare const Container: import("styled-components").StyledComponent<"div", any, {
+    stopScrolling?: boolean | undefined;
+}, never>;
+export declare const EmptyDiv: import("styled-components").StyledComponent<"div", any, {}, never>;
+export declare const MessageTopDate: import("styled-components").StyledComponent<"div", any, any, never>;
+export declare const DragAndDropContainer: import("styled-components").StyledComponent<"div", any, {
+    topOffset?: number | undefined;
+    height?: number | undefined;
+}, never>;
+export declare const IconWrapper: import("styled-components").StyledComponent<"span", any, {
+    iconColor?: string | undefined;
+}, never>;
+export declare const DropAttachmentArea: import("styled-components").StyledComponent<"div", any, {
+    margin?: string | undefined;
+}, never>;
+export declare const MessageWrapper: import("styled-components").StyledComponent<"div", any, {}, never>;
+export declare const NoMessagesContainer: import("styled-components").StyledComponent<"div", any, {
+    color?: string | undefined;
+}, never>;

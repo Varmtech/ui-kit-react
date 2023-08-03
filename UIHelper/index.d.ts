@@ -115,7 +115,9 @@ export declare const SubTitle: import("styled-components").StyledComponent<"span
     color?: string | undefined;
     margin?: string | undefined;
 }, never>;
-export declare const AttachmentIconCont: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const AttachmentIconCont: import("styled-components").StyledComponent<"span", any, {
+    backgroundColor?: string | undefined;
+}, never>;
 export declare const UploadingIcon: import("styled-components").StyledComponent<"span", any, {
     width?: string | undefined;
     height?: string | undefined;
@@ -125,16 +127,22 @@ export declare const UploadingIcon: import("styled-components").StyledComponent<
     isRepliedMessage?: boolean | undefined;
 }, never>;
 export declare const TextInOneLine: import("styled-components").StyledComponent<"span", any, {}, never>;
+export declare const CancelResumeWrapper: import("styled-components").StyledComponent<"span", any, {
+    isRepliedMessage?: boolean | undefined;
+    onClick?: any;
+}, never>;
 export declare const UploadPercent: import("styled-components").StyledComponent<"span", any, {
     fileAttachment?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
     borderRadius?: string | undefined;
+    backgroundColor?: string | undefined;
 }, never>;
 export declare const UploadProgress: import("styled-components").StyledComponent<"div", any, {
     positionStatic?: boolean | undefined;
     isFailedAttachment?: boolean | undefined;
     whiteBackground?: boolean | undefined;
     fileAttachment?: boolean | undefined;
+    withPrefix?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
     onClick?: any;
     backgroundImage?: string | undefined;
@@ -145,6 +153,7 @@ export declare const UploadProgress: import("styled-components").StyledComponent
     isDetailsView?: boolean | undefined;
     backgroundColor?: string | undefined;
     imageMinWidth?: string | undefined;
+    zIndex?: number | undefined;
 }, never>;
 export declare const AttachmentPreviewTitle: import("styled-components").StyledComponent<"span", any, {
     color?: string | undefined;

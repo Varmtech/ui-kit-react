@@ -183,6 +183,20 @@ export declare function updateAttachmentUploadingStateAC(attachmentUploadingStat
         attachmentId: any;
     };
 };
+export declare function updateAttachmentUploadingProgressAC(uploaded: number, total: number, attachmentId: any): {
+    type: string;
+    payload: {
+        uploaded: number;
+        total: number;
+        attachmentId: any;
+    };
+};
+export declare function removeAttachmentProgressAC(attachmentId: any): {
+    type: string;
+    payload: {
+        attachmentId: any;
+    };
+};
 export declare function emptyChannelAttachmentsAC(): {
     type: string;
 };

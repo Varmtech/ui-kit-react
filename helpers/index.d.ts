@@ -4,7 +4,11 @@ export declare const messageStatusIcon: (messageStatus: string, messageStatusDis
 export declare const urlRegex: RegExp;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
 export declare const systemMessageUserName: (contact: IContact, userId: string) => string;
-export declare const downloadFile: (attachment: IAttachment, done?: ((attachmentId: string, failed?: boolean | undefined) => void) | undefined) => Promise<void>;
+export declare const downloadFile: (attachment: IAttachment, download: boolean, done?: ((attachmentId: string, failed?: boolean | undefined) => void) | undefined, progressCallback?: ((progress: {
+    loaded: number;
+    total: number;
+}) => void) | undefined) => Promise<void>;
+export declare const cancelDownloadFile: (attachmentId: string) => void;
 export declare const calculateRenderedImageWidth: (width: number, height: number, maxWidth?: number | undefined, maxHeight?: number | undefined) => number[];
 export declare const userLastActiveDateFormat: (date: Date) => string;
 export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;

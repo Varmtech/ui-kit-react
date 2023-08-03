@@ -1,4 +1,4 @@
-/// <reference types="react" />
+import React from 'react';
 import { IAttachment } from '../../types';
 interface IVideoPreviewProps {
     maxWidth?: string;
@@ -7,6 +7,7 @@ interface IVideoPreviewProps {
     file: IAttachment;
     borderRadius?: string;
     isPreview?: boolean;
+    isCachedFile?: boolean;
     isRepliedMessage?: boolean;
     backgroundColor: string;
     src: string;
@@ -14,7 +15,7 @@ interface IVideoPreviewProps {
     isDetailsView?: boolean;
     setVideoIsReadyToSend?: (attachmentId: string) => void;
 }
-declare const VideoPreview: ({ maxWidth, maxHeight, src, file, borderRadius, isPreview, uploading, isRepliedMessage, backgroundColor, isDetailsView, setVideoIsReadyToSend }: IVideoPreviewProps) => JSX.Element;
+declare const VideoPreview: React.NamedExoticComponent<IVideoPreviewProps>;
 export default VideoPreview;
 export declare const AttachmentFile: import("styled-components").StyledComponent<"div", any, {
     isPrevious?: boolean | undefined;

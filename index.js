@@ -30,8 +30,10 @@ var styled__default = _interopDefault(styled);
 var FileSaver = _interopDefault(require('file-saver'));
 var effects = require('redux-saga/effects');
 var LinkifyIt = _interopDefault(require('linkify-it'));
+var ThumbHash = require('thumbhash');
 var Cropper = _interopDefault(require('react-easy-crop'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
+var reactCircularProgressbar = require('react-circular-progressbar');
 var uuid = require('uuid');
 
 /** A function that accepts a potential "extra argument" value to be injected later,
@@ -1494,6 +1496,8 @@ var SET_MESSAGE_FOR_REPLY = 'SET_MESSAGE_FOR_REPLY';
 var DELETE_MESSAGE = 'DELETE_MESSAGE';
 var DELETE_MESSAGE_FROM_LIST = 'DELETE_MESSAGE_FROM_LIST';
 var RESEND_MESSAGE = 'RESEND_MESSAGE';
+var UPDATE_UPLOAD_PROGRESS = 'UPDATE_UPLOAD_PROGRESS';
+var REMOVE_UPLOAD_PROGRESS = 'REMOVE_UPLOAD_PROGRESS';
 var UPLOAD_ATTACHMENT_COMPILATION = 'UPLOAD_ATTACHMENT_COMPILATION';
 var GET_MESSAGES_ATTACHMENTS = 'GET_MESSAGES_ATTACHMENTS';
 var SET_ATTACHMENTS = 'SET_ATTACHMENTS';
@@ -7498,22 +7502,22 @@ var PendingIconWrapper = styled__default(SvgPendingIcon)(_templateObject5 || (_t
 var messageStatusIcon = function messageStatusIcon(messageStatus, messageStatusDisplayingType, iconColor, readIconColor) {
   switch (messageStatus) {
     case MESSAGE_DELIVERY_STATUS.READ:
-      return messageStatusDisplayingType === 'ticks' ? React__default.createElement(ReadIconWrapper, {
+      return messageStatusDisplayingType === 'ticks' ? /*#__PURE__*/React__default.createElement(ReadIconWrapper, {
         color: readIconColor
-      }) : React__default.createElement(StatusText, null, "\u2022 Seen");
+      }) : /*#__PURE__*/React__default.createElement(StatusText, null, "\u2022 Seen");
 
     case MESSAGE_DELIVERY_STATUS.DELIVERED:
-      return messageStatusDisplayingType === 'ticks' ? React__default.createElement(DeliveredIconWrapper, {
+      return messageStatusDisplayingType === 'ticks' ? /*#__PURE__*/React__default.createElement(DeliveredIconWrapper, {
         color: iconColor
-      }) : React__default.createElement(StatusText, null, "\u2022 Not seen yet");
+      }) : /*#__PURE__*/React__default.createElement(StatusText, null, "\u2022 Not seen yet");
 
     case MESSAGE_DELIVERY_STATUS.SENT:
-      return messageStatusDisplayingType === 'ticks' ? React__default.createElement(SentIconWrapper, {
+      return messageStatusDisplayingType === 'ticks' ? /*#__PURE__*/React__default.createElement(SentIconWrapper, {
         color: iconColor
-      }) : React__default.createElement(StatusText, null, "\u2022 Not seen yet");
+      }) : /*#__PURE__*/React__default.createElement(StatusText, null, "\u2022 Not seen yet");
 
     default:
-      return React__default.createElement(PendingIconWrapper, {
+      return /*#__PURE__*/React__default.createElement(PendingIconWrapper, {
         color: iconColor
       });
   }
@@ -7533,7 +7537,8 @@ var bytesToSize = function bytesToSize(bytes, decimals) {
 var systemMessageUserName = function systemMessageUserName(contact, userId) {
   return contact ? contact.firstName ? contact.firstName.split(' ')[0] : contact.id : userId || 'Deleted user';
 };
-var downloadFile = function downloadFile(attachment, done) {
+var filesPromisesOnDownload = {};
+var downloadFile = function downloadFile(attachment, download, done, progressCallback) {
   try {
     return Promise.resolve(_catch(function () {
       var customDownloader = getCustomDownloader();
@@ -7541,21 +7546,20 @@ var downloadFile = function downloadFile(attachment, done) {
 
       var _temp = function () {
         if (customDownloader) {
-          customDownloader(attachment.url).then(function (url) {
-            try {
-              return Promise.resolve(fetch(url)).then(function (_fetch2) {
-                response = _fetch2;
-                return Promise.resolve(response.blob()).then(function (data) {
-                  if (done) {
-                    done(attachment.id || '');
-                  }
-
-                  FileSaver.saveAs(data, attachment.name);
-                });
-              });
-            } catch (e) {
-              return Promise.reject(e);
+          var urlPromise = customDownloader(attachment.url, download, function (progress) {
+            if (progressCallback) {
+              progressCallback(progress);
             }
+          });
+          filesPromisesOnDownload[attachment.id] = urlPromise;
+          return Promise.resolve(urlPromise).then(function (result) {
+            FileSaver.saveAs(result.Body, attachment.name);
+
+            if (done) {
+              done(attachment.id || '');
+            }
+
+            delete filesPromisesOnDownload[attachment.id];
           });
         } else {
           return Promise.resolve(fetch(attachment.url)).then(function (_fetch) {
@@ -7581,6 +7585,19 @@ var downloadFile = function downloadFile(attachment, done) {
     }));
   } catch (e) {
     return Promise.reject(e);
+  }
+};
+var cancelDownloadFile = function cancelDownloadFile(attachmentId) {
+  console.log('cancelDownloadFile... ', attachmentId);
+  var promise = filesPromisesOnDownload[attachmentId];
+
+  if (promise) {
+    console.log('cancelDownloadFile... promise exist - --');
+    var customUploader = getCustomUploader();
+
+    if (customUploader) {
+      customUploader.cancelRequest(promise);
+    }
   }
 };
 var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, height, maxWidth, maxHeight) {
@@ -8216,7 +8233,8 @@ var initialState$1 = {
   reactionsList: [],
   reactionsHasNext: true,
   reactionsLoadingState: null,
-  openedMessageMenu: ''
+  openedMessageMenu: '',
+  attachmentsUploadingProgress: {}
 };
 var MessageReducer = (function (state, _temp) {
   if (state === void 0) {
@@ -8520,6 +8538,36 @@ var MessageReducer = (function (state, _temp) {
         return newState;
       }
 
+    case UPDATE_UPLOAD_PROGRESS:
+      {
+        var uploaded = payload.uploaded,
+            total = payload.total,
+            attachmentId = payload.attachmentId,
+            progress = payload.progress;
+
+        var attachmentsUploadingProgressCopy = _extends({}, newState.attachmentsUploadingProgress);
+
+        var updateData = {
+          uploaded: uploaded,
+          total: total,
+          progress: progress
+        };
+        attachmentsUploadingProgressCopy[attachmentId] = _extends({}, attachmentsUploadingProgressCopy[attachmentId], updateData);
+        newState.attachmentsUploadingProgress = attachmentsUploadingProgressCopy;
+        return newState;
+      }
+
+    case REMOVE_UPLOAD_PROGRESS:
+      {
+        var _attachmentId = payload.attachmentId;
+
+        var _attachmentsUploadingProgressCopy = _extends({}, newState.attachmentsUploadingProgress);
+
+        delete _attachmentsUploadingProgressCopy[_attachmentId];
+        newState.attachmentsUploadingProgress = _attachmentsUploadingProgressCopy;
+        return newState;
+      }
+
     case SET_MESSAGE_TO_EDIT:
       {
         newState.messageToEdit = payload.message;
@@ -8550,8 +8598,8 @@ var MessageReducer = (function (state, _temp) {
         var _extends2;
 
         var attachmentUploadingState = payload.attachmentUploadingState,
-            attachmentId = payload.attachmentId;
-        newState.attachmentsUploadingState = _extends({}, newState.attachmentsUploadingState, (_extends2 = {}, _extends2[attachmentId] = attachmentUploadingState, _extends2));
+            _attachmentId2 = payload.attachmentId;
+        newState.attachmentsUploadingState = _extends({}, newState.attachmentsUploadingState, (_extends2 = {}, _extends2[_attachmentId2] = attachmentUploadingState, _extends2));
         return newState;
       }
 
@@ -9453,7 +9501,7 @@ function SvgSearch(props) {
   })));
 }
 
-var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43;
+var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44;
 function md5(inputString) {
   var hc = '0123456789abcdef';
 
@@ -9851,7 +9899,9 @@ var SubTitle = styled__default.span(_templateObject37 || (_templateObject37 = _t
 }, function (props) {
   return props.margin;
 });
-var AttachmentIconCont = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n"])));
+var AttachmentIconCont = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n"])), function (props) {
+  return props.backgroundColor || colors.primary;
+});
 var UploadingIcon = styled__default.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border-style: solid;\n  border-color: ", ";\n  border-width: ", ";\n  border-top-width: ", ";\n  border-top-color: rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
   return props.color || 'rgba(255, 255, 255, 0.8)';
 }, function (props) {
@@ -9864,16 +9914,19 @@ var UploadingIcon = styled__default.span(_templateObject39 || (_templateObject39
   return props.height || (props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px');
 });
 var TextInOneLine = styled__default.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var UploadPercent = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  background-color: rgba(0,0,0,0.4);\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
+var CancelResumeWrapper = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px;\n  z-index: 3;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])));
+var UploadPercent = styled__default.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  //background-color: rgba(0,0,0,0.4);\n  background-color: ", ";\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
   return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
 }, function (props) {
   return props.fileAttachment || props.isRepliedMessage ? '40px' : '56px';
+}, function (props) {
+  return props.backgroundColor;
 }, function (props) {
   return props.borderRadius ? props.borderRadius : props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
-var UploadProgress = styled__default.div(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  border-radius: ", ";\n  z-index: 5;\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
+var UploadProgress = styled__default.div(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  background-position: center;\n  border-radius: ", ";\n  z-index: ", ";\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
   return props.fileAttachment ? '8px' : '0';
@@ -9890,9 +9943,11 @@ var UploadProgress = styled__default.div(_templateObject42 || (_templateObject42
 }, function (props) {
   return props.fileAttachment ? '8px' : props.isRepliedMessage ? '4px' : ' 50%';
 }, function (props) {
-  return 'data:image/jpeg;base64,' + props.backgroundImage;
+  return "" + (props.withPrefix ? 'data:image/jpeg;base64,' : '') + props.backgroundImage;
 }, function (props) {
   return props.fileAttachment ? '8px' : props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
+}, function (props) {
+  return props.zIndex || 5;
 }, function (props) {
   return props.isRepliedMessage ? '0.5px solid rgba(0, 0, 0, 0.1)' : props.withBorder && "2px solid " + props.backgroundColor;
 }, function (props) {
@@ -9902,7 +9957,7 @@ var UploadProgress = styled__default.div(_templateObject42 || (_templateObject42
 }, function (props) {
   return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
 });
-var AttachmentPreviewTitle = styled__default.span(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
+var AttachmentPreviewTitle = styled__default.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
@@ -10014,7 +10069,7 @@ var linkifyTextPart = function linkifyTextPart(textPart, match) {
     lastFoundIndex = matchIndex + matchItem.text.length;
 
     if (index === 0) {
-      newMessageText = [textPart.substring(0, matchIndex), React__default.createElement("a", {
+      newMessageText = [textPart.substring(0, matchIndex), /*#__PURE__*/React__default.createElement("a", {
         draggable: false,
         key: index,
         href: matchItem.url,
@@ -10022,7 +10077,7 @@ var linkifyTextPart = function linkifyTextPart(textPart, match) {
         rel: 'noreferrer'
       }, matchItem.text + " ")];
     } else {
-      newMessageText.push(textPart.substring(prevMatchEnd, matchIndex), React__default.createElement("a", {
+      newMessageText.push(textPart.substring(prevMatchEnd, matchIndex), /*#__PURE__*/React__default.createElement("a", {
         draggable: false,
         key: index,
         href: matchItem.url,
@@ -10079,7 +10134,7 @@ var MessageTextFormat = function MessageTextFormat(_ref2) {
 
         if (mentionDisplay) {
           var user = getClient().user;
-          messageText.push(firstPart, asSampleText ? "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : React__default.createElement(MentionedUser, {
+          messageText.push(firstPart, asSampleText ? "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : /*#__PURE__*/React__default.createElement(MentionedUser, {
             isLastMessage: isLastMessage,
             color: colors.primary,
             key: "" + mention.loc
@@ -10541,6 +10596,24 @@ function updateAttachmentUploadingStateAC(attachmentUploadingState, attachmentId
     type: UPLOAD_ATTACHMENT_COMPILATION,
     payload: {
       attachmentUploadingState: attachmentUploadingState,
+      attachmentId: attachmentId
+    }
+  };
+}
+function updateAttachmentUploadingProgressAC(uploaded, total, attachmentId) {
+  return {
+    type: UPDATE_UPLOAD_PROGRESS,
+    payload: {
+      uploaded: uploaded,
+      total: total,
+      attachmentId: attachmentId
+    }
+  };
+}
+function removeAttachmentProgressAC(attachmentId) {
+  return {
+    type: REMOVE_UPLOAD_PROGRESS,
+    payload: {
       attachmentId: attachmentId
     }
   };
@@ -14138,8 +14211,6 @@ var MIME_TYPE = 'image/jpeg';
 var QUALITY = 0.9;
 var THUMBNAIL_MAX_WIDTH = 6;
 var THUMBNAIL_MAX_HEIGHT = 6;
-var THUMBNAIL_MIME_TYPE = 'image/jpeg';
-var THUMBNAIL_QUALITY = 0.7;
 function resizeImage(file, maxWidth, maxHeight, quality) {
   return new Promise(function (resolve) {
     var blobURL = URL.createObjectURL(file);
@@ -14174,6 +14245,23 @@ function resizeImage(file, maxWidth, maxHeight, quality) {
     };
   });
 }
+var binaryToBase64 = function binaryToBase64(binary) {
+  return btoa(String.fromCharCode.apply(String, binary));
+};
+var base64ToBinary = function base64ToBinary(base64) {
+  return new Uint8Array(atob(base64).split('').map(function (x) {
+    return x.charCodeAt(0);
+  }));
+};
+
+var binaryThumbHashToDataURL = function binaryThumbHashToDataURL(binaryThumbHash) {
+  return ThumbHash.thumbHashToDataURL(binaryThumbHash);
+};
+
+var base64ToToDataURL = function base64ToToDataURL(base64) {
+  var thumbHashFromBase64 = base64ToBinary(base64);
+  return binaryThumbHashToDataURL(thumbHashFromBase64);
+};
 function createImageThumbnail(file, path, maxWidth, maxHeight) {
   return new Promise(function (resolve) {
     var blobURL;
@@ -14204,9 +14292,11 @@ function createImageThumbnail(file, path, maxWidth, maxHeight) {
       canvas.height = newHeight;
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, newWidth, newHeight);
-      var base64String = canvas.toDataURL(THUMBNAIL_MIME_TYPE, THUMBNAIL_QUALITY);
+      var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var binaryThumbHash = ThumbHash.rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
+      var thumbHashToBase64 = binaryToBase64(binaryThumbHash);
       resolve({
-        thumbnail: base64String.replace('data:image/jpeg;base64,', ''),
+        thumbnail: thumbHashToBase64,
         imageWidth: img.width,
         imageHeight: img.height
       });
@@ -14256,6 +14346,9 @@ var messagesHasPrevSelector = function messagesHasPrevSelector(store) {
 };
 var attachmentCompilationStateSelector = function attachmentCompilationStateSelector(store) {
   return store.MessageReducer.attachmentsUploadingState;
+};
+var attachmentsUploadProgressSelector = function attachmentsUploadProgressSelector(store) {
+  return store.MessageReducer.attachmentsUploadingProgress;
 };
 var activeTabAttachmentsSelector = function activeTabAttachmentsSelector(store) {
   return store.MessageReducer.activeTabAttachments;
@@ -14316,7 +14409,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, handleUpdateLocalPath, uri, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, _messageToUpdate2;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, fileSize, handleUpdateLocalPath, uri, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, _messageToUpdate2;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -14347,14 +14440,14 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 181;
+            _context.next = 189;
             break;
           }
 
           console.log('saga sendAttachmentsAsSeparateMessage. .... ', sendAttachmentsAsSeparateMessage);
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 136;
+            _context.next = 144;
             break;
           }
 
@@ -14362,32 +14455,33 @@ function sendMessage(action) {
           messageAttachment = _extends({}, message.attachments[0], {
             url: message.attachments[0].data
           });
-          fileType = messageAttachment.type;
+          fileType = messageAttachment.url.type.split('/')[0];
 
           if (!(fileType === 'video')) {
-            _context.next = 22;
+            _context.next = 23;
             break;
           }
 
           thumbnailMetas = getVideoThumb(messageAttachment.attachmentId);
-          _context.next = 29;
+          console.log('thumbnailMetas ... ', thumbnailMetas);
+          _context.next = 30;
           break;
 
-        case 22:
+        case 23:
           if (!(fileType === 'image')) {
-            _context.next = 28;
+            _context.next = 29;
             break;
           }
 
-          _context.next = 25;
+          _context.next = 26;
           return effects.call(createImageThumbnail, message.attachments[0].data, undefined, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 25:
+        case 26:
           thumbnailMetas = _context.sent;
-          _context.next = 29;
+          _context.next = 30;
           break;
 
-        case 28:
+        case 29:
           if (fileType === attachmentTypes.voice) {
             thumbnailMetas = {
               duration: 3,
@@ -14395,8 +14489,8 @@ function sendMessage(action) {
             };
           }
 
-        case 29:
-          messageAttachment.metadata = _extends({}, messageAttachment.metadata, {
+        case 30:
+          messageAttachment.metadata = _extends({}, messageAttachment.metadata, thumbnailMetas && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
             szh: thumbnailMetas.imageHeight,
@@ -14423,110 +14517,139 @@ function sendMessage(action) {
             createdAt: new Date(Date.now()),
             parentMessage: message.parentMessage
           })));
-          _context.next = 41;
+          _context.next = 42;
           return effects.select(messagesHasNextSelector);
 
-        case 41:
+        case 42:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 50;
+            _context.next = 51;
             break;
           }
 
           if (!hasNextMessages) {
-            _context.next = 48;
+            _context.next = 49;
             break;
           }
 
-          _context.next = 46;
+          _context.next = 47;
           return effects.put(getMessagesAC(channel));
 
-        case 46:
-          _context.next = 50;
+        case 47:
+          _context.next = 51;
           break;
 
-        case 48:
-          _context.next = 50;
+        case 49:
+          _context.next = 51;
           return effects.put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 50:
+        case 51:
           console.log('add pending message .. ', pendingMessage);
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context.next = 55;
+          _context.next = 56;
           return effects.put(scrollToNewMessageAC(true, true));
 
-        case 55:
-          _context.next = 57;
+        case 56:
+          _context.next = 58;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.attachmentId));
 
-        case 57:
+        case 58:
           if (!customUploader) {
-            _context.next = 111;
+            _context.next = 119;
             break;
           }
 
+          console.log('set uploading progress to 0 ... for attachment ... ', messageAttachment.attachmentId);
+
+          if (!(messageAttachment.type !== attachmentTypes.image)) {
+            _context.next = 63;
+            break;
+          }
+
+          _context.next = 63;
+          return effects.put(updateAttachmentUploadingProgressAC(0, messageAttachment.data.size, messageAttachment.attachmentId));
+
+        case 63:
           handleUploadProgress = function handleUploadProgress(_ref) {
             var loaded = _ref.loaded,
                 total = _ref.total;
-            console.log('progress  ... ', loaded / total);
-          };
-
-          handleUpdateLocalPath = function handleUpdateLocalPath(updatedLink) {
-            filePath = updatedLink;
-            thumbnailMetas = getVideoThumb(messageAttachment.attachmentId);
-            messageCopy.attachments[0] = _extends({}, messageCopy.attachments[0], {
-              attachmentUrl: updatedLink
-            });
-            var updateAttachmentPath = {
-              attachments: [_extends({}, messageCopy.attachments[0], {
-                attachmentUrl: updatedLink
-              })]
-            };
             store.dispatch({
-              type: UPDATE_MESSAGE,
+              type: UPDATE_UPLOAD_PROGRESS,
               payload: {
-                message: JSON.parse(JSON.stringify(_extends({}, updateAttachmentPath)))
+                uploaded: loaded,
+                total: total,
+                progress: loaded / total,
+                attachmentId: messageAttachment.attachmentId
               }
             });
           };
 
-          _context.prev = 60;
-
-          if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 97;
-            break;
-          }
-
-          _context.next = 64;
-          return effects.call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
-
-        case 64:
-          uri = _context.sent;
-          _context.next = 67;
-          return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
-
-        case 67:
           fileSize = messageAttachment.size;
 
-          if (!(messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 75;
+          handleUpdateLocalPath = function handleUpdateLocalPath(updatedLink) {
+            if (fileType === 'image') {
+              fileSize = getImageSize(updatedLink).then(function (size) {
+                store.dispatch({
+                  type: UPDATE_UPLOAD_PROGRESS,
+                  payload: {
+                    total: size,
+                    attachmentId: messageAttachment.attachmentId
+                  }
+                });
+              });
+              filePath = updatedLink;
+              messageCopy.attachments[0] = _extends({}, messageCopy.attachments[0], {
+                attachmentUrl: updatedLink
+              });
+              var updateAttachmentPath = {
+                attachments: [_extends({}, messageCopy.attachments[0], {
+                  attachmentUrl: updatedLink
+                })]
+              };
+              store.dispatch({
+                type: UPDATE_MESSAGE,
+                payload: {
+                  message: JSON.parse(JSON.stringify(_extends({}, updateAttachmentPath)))
+                }
+              });
+            }
+          };
+
+          _context.prev = 66;
+
+          if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
+            _context.next = 105;
             break;
           }
 
-          _context.next = 71;
+          _context.next = 70;
+          return effects.call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
+
+        case 70:
+          uri = _context.sent;
+          _context.next = 73;
+          return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
+
+        case 73:
+          if (!(messageAttachment.url.type.split('/')[0] === 'image')) {
+            _context.next = 80;
+            break;
+          }
+
+          _context.next = 76;
           return effects.call(getImageSize, filePath);
 
-        case 71:
+        case 76:
           fileSize = _context.sent;
-          _context.next = 74;
+          _context.next = 79;
           return effects.call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 74:
+        case 79:
           thumbnailMetas = _context.sent;
 
-        case 75:
+        case 80:
           attachmentMeta = JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -14534,14 +14657,21 @@ function sendMessage(action) {
           }));
           attachmentBuilder = channel.createAttachmentBuilder(uri, messageAttachment.type);
           attachmentToSend = attachmentBuilder.setName(messageAttachment.name).setMetadata(attachmentMeta).setFileSize(fileSize).setUpload(false).create();
-          attachmentToSend.attachmentId = messageAttachment.attachmentId;
-          attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [attachmentToSend];
-          _context.next = 83;
+          console.log('send message .................. ', messageToSend);
+          _context.next = 87;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 83:
+        case 87:
           messageResponse = _context.sent;
+          messageResponse.attachments[0] = _extends({}, messageResponse.attachments[0], {
+            attachmentId: messageAttachment.attachmentId,
+            attachmentUrl: messageAttachment.attachmentUrl
+          });
+          _context.next = 91;
+          return effects.put(removeAttachmentProgressAC(messageAttachment.attachmentId));
+
+        case 91:
           deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
             id: messageResponse.id,
@@ -14553,10 +14683,11 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 88;
+          console.log('messageUpdateData. .  . . . . .  . ', messageUpdateData);
+          _context.next = 96;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 88:
+        case 96:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -14568,30 +14699,30 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
           messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
           updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
-          _context.next = 95;
+          _context.next = 103;
           return effects.put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 95:
-          _context.next = 98;
+        case 103:
+          _context.next = 106;
           break;
-
-        case 97:
-          throw Error('Network error');
-
-        case 98:
-          _context.next = 109;
-          break;
-
-        case 100:
-          _context.prev = 100;
-          _context.t0 = _context["catch"](60);
-          console.log('Error on uploading attachment', messageAttachment.attachmentId);
-          _context.next = 105;
-          return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
         case 105:
+          throw Error('Network error');
+
+        case 106:
+          _context.next = 117;
+          break;
+
+        case 108:
+          _context.prev = 108;
+          _context.t0 = _context["catch"](66);
+          console.log('Error on uploading attachment', messageAttachment.attachmentId);
+          _context.next = 113;
+          return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
+
+        case 113:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -14601,16 +14732,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 109;
+          _context.next = 117;
           return effects.put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 109:
-          _context.next = 134;
+        case 117:
+          _context.next = 142;
           break;
 
-        case 111:
+        case 119:
           console.log('messageAttachment. . . .. . .  .', messageAttachment);
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
@@ -14633,10 +14764,10 @@ function sendMessage(action) {
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
           console.log('messageToSend, , , ,  ', messageToSend);
-          _context.next = 121;
+          _context.next = 129;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 121:
+        case 129:
           _messageResponse = _context.sent;
           console.log('message response ... ', _messageResponse);
           deletePendingAttachment(messageAttachment.attachmentId);
@@ -14650,10 +14781,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 127;
+          _context.next = 135;
           return effects.put(updateMessageAC(messageToSend.tid, _messageUpdateData));
 
-        case 127:
+        case 135:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -14665,16 +14796,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, _messageUpdateData);
           _messageToUpdate = JSON.parse(JSON.stringify(_messageResponse));
           updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate);
-          _context.next = 134;
+          _context.next = 142;
           return effects.put(updateChannelLastMessageAC(_messageToUpdate, {
             id: channel.id
           }));
 
-        case 134:
-          _context.next = 181;
+        case 142:
+          _context.next = 189;
           break;
 
-        case 136:
+        case 144:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -14712,7 +14843,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 154;
+            _context.next = 162;
             break;
           }
 
@@ -14762,12 +14893,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 148;
+          _context.next = 156;
           return effects.call(uploadAllAttachments);
 
-        case 148:
+        case 156:
           uploadedAttachments = _context.sent;
-          _context.next = 151;
+          _context.next = 159;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -14810,12 +14941,12 @@ function sendMessage(action) {
             }
           });
 
-        case 151:
+        case 159:
           attachmentsToSend = _context.sent;
-          _context.next = 168;
+          _context.next = 176;
           break;
 
-        case 154:
+        case 162:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -14827,49 +14958,49 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 157;
+          _context.next = 165;
           return effects.select(messagesHasNextSelector);
 
-        case 157:
+        case 165:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 166;
+            _context.next = 174;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 164;
+            _context.next = 172;
             break;
           }
 
-          _context.next = 162;
+          _context.next = 170;
           return effects.put(getMessagesAC(channel));
 
-        case 162:
-          _context.next = 166;
+        case 170:
+          _context.next = 174;
           break;
 
-        case 164:
-          _context.next = 166;
+        case 172:
+          _context.next = 174;
           return effects.put(addMessageAC(_extends({}, _messageCopy2)));
 
-        case 166:
+        case 174:
           addMessageToMap(channelId, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 168:
+        case 176:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 181;
+            _context.next = 189;
             break;
           }
 
-          _context.next = 172;
+          _context.next = 180;
           return effects.call(channel.sendMessage, _messageToSend);
 
-        case 172:
+        case 180:
           _messageResponse2 = _context.sent;
           _messageUpdateData2 = {
             id: _messageResponse2.id,
@@ -14881,40 +15012,40 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 176;
+          _context.next = 184;
           return effects.put(updateMessageAC(_messageToSend.tid, _messageUpdateData2));
 
-        case 176:
+        case 184:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
           });
           _messageToUpdate2 = JSON.parse(JSON.stringify(_messageResponse2));
           updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate2);
-          _context.next = 181;
+          _context.next = 189;
           return effects.put(updateChannelLastMessageAC(_messageToUpdate2, {
             id: channel.id
           }));
 
-        case 181:
-          _context.next = 183;
+        case 189:
+          _context.next = 191;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 183:
-          _context.next = 188;
+        case 191:
+          _context.next = 196;
           break;
 
-        case 185:
-          _context.prev = 185;
+        case 193:
+          _context.prev = 193;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 188:
+        case 196:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 185], [60, 100]]);
+  }, _marked$2, null, [[0, 193], [66, 108]]);
 }
 
 function sendTextMessage(action) {
@@ -15274,7 +15405,7 @@ function forwardMessage(action) {
 }
 
 function resendMessage(action) {
-  var payload, _message2, connectionState, channelId, channel, customUploader, attachmentCompilation, _messageAttachment, _messageCopy3, pendingAttachment, fileType, handleUploadProgress, uri, _filePath, handleUpdateLocalPath, _thumbnailMetas, fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, _messageCopy4, _messageResponse3, _messageUpdateData3;
+  var payload, _message2, connectionState, channelId, channel, customUploader, attachmentCompilation, _messageAttachment, _messageCopy3, pendingAttachment, _fileType, handleUploadProgress, uri, _filePath, handleUpdateLocalPath, thumbnailMetas, _fileSize, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, _messageCopy4, _messageResponse3, _messageUpdateData3;
 
   return _regeneratorRuntime().wrap(function resendMessage$(_context4) {
     while (1) {
@@ -15325,7 +15456,7 @@ function resendMessage(action) {
           pendingAttachment = getPendingAttachment(_message2.attachments[0].attachmentId);
           _messageAttachment.data = pendingAttachment;
           _messageAttachment.url = pendingAttachment;
-          fileType = _messageAttachment.data.type.split('/')[0];
+          _fileType = _messageAttachment.data.type.split('/')[0];
           _context4.next = 25;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, _messageAttachment.attachmentId));
 
@@ -15345,7 +15476,7 @@ function resendMessage(action) {
 
           handleUpdateLocalPath = function handleUpdateLocalPath(updatedLink) {
             _filePath = updatedLink;
-            _thumbnailMetas = getVideoThumb(_messageAttachment.attachmentId);
+            thumbnailMetas = getVideoThumb(_messageAttachment.attachmentId);
             _messageCopy3.attachments[0] = _extends({}, _messageCopy3.attachments[0], {
               attachmentUrl: updatedLink
             });
@@ -15372,8 +15503,8 @@ function resendMessage(action) {
 
         case 34:
           delete _messageCopy3.createdAt;
-          _thumbnailMetas = {};
-          fileSize = pendingAttachment.size;
+          thumbnailMetas = {};
+          _fileSize = pendingAttachment.size;
 
           if (!(_messageAttachment.url.type.split('/')[0] === 'image')) {
             _context4.next = 44;
@@ -15384,21 +15515,21 @@ function resendMessage(action) {
           return effects.call(getImageSize, _filePath);
 
         case 40:
-          fileSize = _context4.sent;
+          _fileSize = _context4.sent;
           _context4.next = 43;
           return effects.call(createImageThumbnail, null, _filePath, _messageAttachment.type === 'file' ? 50 : undefined, _messageAttachment.type === 'file' ? 50 : undefined);
 
         case 43:
-          _thumbnailMetas = _context4.sent;
+          thumbnailMetas = _context4.sent;
 
         case 44:
-          attachmentMeta = JSON.stringify(_extends({}, _messageAttachment.metadata, _thumbnailMetas && _thumbnailMetas.thumbnail && {
-            tmb: _thumbnailMetas.thumbnail,
-            szw: _thumbnailMetas.imageWidth,
-            szh: _thumbnailMetas.imageHeight
+          attachmentMeta = JSON.stringify(_extends({}, _messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
+            tmb: thumbnailMetas.thumbnail,
+            szw: thumbnailMetas.imageWidth,
+            szh: thumbnailMetas.imageHeight
           }));
           attachmentBuilder = channel.createAttachmentBuilder(uri, _messageAttachment.type);
-          attachmentToSend = attachmentBuilder.setName(_messageAttachment.name).setMetadata(attachmentMeta).setFileSize(fileSize).setUpload(false).create();
+          attachmentToSend = attachmentBuilder.setName(_messageAttachment.name).setMetadata(attachmentMeta).setFileSize(_fileSize).setUpload(false).create();
           attachmentToSend.attachmentId = _messageAttachment.attachmentId;
           attachmentToSend.attachmentUrl = _messageAttachment.attachmentUrl;
           _context4.next = 51;
@@ -15437,7 +15568,7 @@ function resendMessage(action) {
           return effects.put(updateMessageAC(_messageCopy3.tid, messageUpdateData));
 
         case 60:
-          if (fileType === 'video') {
+          if (_fileType === 'video') {
             deleteVideoThumb(_messageAttachment.attachmentId);
           }
 
@@ -17907,7 +18038,7 @@ var SceytChat = function SceytChat(_ref) {
       setContactsMap(contactsMap);
     }
   }, [contactsMap]);
-  return React__default.createElement(React__default.Fragment, null, SceytChatClient ? React__default.createElement(ChatContainer, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, SceytChatClient ? /*#__PURE__*/React__default.createElement(ChatContainer, {
     onDrop: handleDropFile,
     onDragOver: handleDragOver,
     withChannelsList: channelsListWidth && channelsListWidth > 0,
@@ -17938,9 +18069,9 @@ var SceytChatContainer = function SceytChatContainer(_ref) {
       _ref$showNotification = _ref.showNotifications,
       showNotifications = _ref$showNotification === void 0 ? true : _ref$showNotification,
       hideUserPresence = _ref.hideUserPresence;
-  return React__default.createElement(reactRedux.Provider, {
+  return /*#__PURE__*/React__default.createElement(reactRedux.Provider, {
     store: store
-  }, React__default.createElement(SceytChat, {
+  }, /*#__PURE__*/React__default.createElement(SceytChat, {
     client: client,
     theme: theme,
     avatarColors: avatarColors,
@@ -18237,18 +18368,18 @@ var Avatar = function Avatar(_ref) {
     }
   }
 
-  return React__default.createElement(Container$1, {
+  return /*#__PURE__*/React__default.createElement(Container$1, {
     border: border,
     marginAuto: marginAuto,
     size: size,
     isImage: !!(image || setDefaultAvatar),
     avatarName: name,
     textSize: textSize
-  }, isDeletedUserAvatar ? DeletedIcon || React__default.createElement(DeletedAvatarWrapper, {
+  }, isDeletedUserAvatar ? DeletedIcon || /*#__PURE__*/React__default.createElement(DeletedAvatarWrapper, {
     color: colors.deleteUserIconBackground
-  }) : !image ? setDefaultAvatar ? React__default.createElement(DefaultAvatarWrapper, {
+  }) : !image ? setDefaultAvatar ? /*#__PURE__*/React__default.createElement(DefaultAvatarWrapper, {
     color: colors.defaultAvatarBackground
-  }) : React__default.createElement("span", null, avatarText) : React__default.createElement(AvatarImage, {
+  }) : /*#__PURE__*/React__default.createElement("span", null, avatarText) : /*#__PURE__*/React__default.createElement(AvatarImage, {
     draggable: false,
     showImage: true,
     src: image,
@@ -18441,7 +18572,7 @@ var Channel = function Channel(_ref) {
       dispatch(setChannelDraftMessageIsRemovedAC());
     }
   }, [channelDraftIsRemoved]);
-  return React__default.createElement(Container$2, {
+  return /*#__PURE__*/React__default.createElement(Container$2, {
     theme: theme,
     selectedChannel: channel.id === activeChannel.id,
     selectedChannelLeftBorder: selectedChannelLeftBorder,
@@ -18453,59 +18584,59 @@ var Channel = function Channel(_ref) {
     onClick: function onClick() {
       return handleChangeActiveChannel(channel);
     }
-  }, withAvatar && React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+  }, withAvatar && /*#__PURE__*/React__default.createElement(AvatarWrapper, null, /*#__PURE__*/React__default.createElement(Avatar, {
     name: channel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
     image: channel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
     size: 50,
     textSize: 16,
     setDefaultAvatar: isDirectChannel
-  }), isDirectChannel && directChannelUser && hideUserPresence && (hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) && React__default.createElement(UserStatus, {
+  }), isDirectChannel && directChannelUser && hideUserPresence && (hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) && /*#__PURE__*/React__default.createElement(UserStatus, {
     backgroundColor: colors.primary
-  })), React__default.createElement(ChannelInfo, {
+  })), /*#__PURE__*/React__default.createElement(ChannelInfo, {
     theme: theme,
     avatar: withAvatar,
     isMuted: channel.muted,
     statusWidth: statusWidth
-  }, React__default.createElement("h3", null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), channel.muted && React__default.createElement(MutedIcon, {
+  }, /*#__PURE__*/React__default.createElement("h3", null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), channel.muted && /*#__PURE__*/React__default.createElement(MutedIcon, {
     color: notificationsIsMutedIconColor
-  }, notificationsIsMutedIcon || React__default.createElement(SvgUnmuteNotifications, null)), (lastMessage || !!typingIndicator) && React__default.createElement(LastMessage, {
+  }, notificationsIsMutedIcon || /*#__PURE__*/React__default.createElement(SvgUnmuteNotifications, null)), (lastMessage || !!typingIndicator) && /*#__PURE__*/React__default.createElement(LastMessage, {
     markedAsUnread: !!(channel.unread || channel.newMessageCount && channel.newMessageCount > 0),
     unreadMentions: !!(channel.newMentionCount && channel.newMentionCount > 0)
-  }, typingIndicator ? !isDirectChannel ? React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? !isDirectChannel ? /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
     theme: theme,
     typing: typingIndicator
-  }, React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : draftMessageText ? React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : draftMessageText ? /*#__PURE__*/React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
     theme: theme
-  }, React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
-  }, channel.newReactions[0].user.id === user.id ? 'You' : contactsMap[channel.newReactions[0].user.id] ? contactsMap[channel.newReactions[0].user.id].firstName : channel.newReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && React__default.createElement(LastMessageAuthor, {
+  }, channel.newReactions[0].user.id === user.id ? 'You' : contactsMap[channel.newReactions[0].user.id] ? contactsMap[channel.newReactions[0].user.id].firstName : channel.newReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
     theme: theme
-  }, React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage && lastMessage.state !== MESSAGE_STATUS.DELETE : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && React__default.createElement(Points, {
+  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && lastMessage.user && lastMessage.user.id === user.id && !channel.lastReactedMessage && lastMessage.state !== MESSAGE_STATUS.DELETE : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && /*#__PURE__*/React__default.createElement(Points, {
     color: draftMessageText && colors.red1
-  }, ": "), React__default.createElement(LastMessageText, {
+  }, ": "), /*#__PURE__*/React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
     noBody: lastMessage && !lastMessage.body,
     deletedMessage: lastMessage && lastMessage.state === MESSAGE_STATUS.DELETE
-  }, typingIndicator ? React__default.createElement(TypingIndicator, null, "typing...") : draftMessageText ? React__default.createElement(DraftMessageText, null, draftMessageText) : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'created this channel' : lastMessage.body === 'CG' ? 'created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
+  }, typingIndicator ? /*#__PURE__*/React__default.createElement(TypingIndicator, null, "typing...") : draftMessageText ? /*#__PURE__*/React__default.createElement(DraftMessageText, null, draftMessageText) : lastMessage.state === MESSAGE_STATUS.DELETE ? 'Message was deleted.' : lastMessage.type === 'system' ? (lastMessage.user && (lastMessage.user.id === user.id ? 'You ' : contactsMap[lastMessage.user.id] ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id)) + " " + (lastMessage.body === 'CC' ? 'created this channel' : lastMessage.body === 'CG' ? 'created this group' : lastMessage.body === 'AM' ? " added " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
   })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'RM' ? " removed " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.slice(0, 5).map(function (mem) {
     return mem === user.id ? ' You' : " " + systemMessageUserName(contactsMap[mem], mem);
-  })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && React__default.createElement(React__default.Fragment, null, "Reacted", React__default.createElement(ReactionItem, null, channel.newReactions && channel.newReactions[0] && channel.newReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
+  })) + " " + (lastMessageMetas && lastMessageMetas.m && lastMessageMetas.m.length > 5 ? "and " + (lastMessageMetas.m.length - 5) + " more" : '') : lastMessage.body === 'LG' ? 'Left this group' : '') : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, channel.lastReactedMessage && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, "Reacted", /*#__PURE__*/React__default.createElement(ReactionItem, null, channel.newReactions && channel.newReactions[0] && channel.newReactions[0].key), "to", ' "'), !!(lastMessage.attachments && lastMessage.attachments.length) && (lastMessage.attachments[0].type === attachmentTypes.image ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(SvgPicture, null), lastMessage.body ? '' : 'Photo') : lastMessage.attachments[0].type === attachmentTypes.video ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(SvgVideoCall, null), lastMessage.body ? '' : 'Video') : lastMessage.attachments[0].type === attachmentTypes.file ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(SvgChoseFile, null), lastMessage.body ? '' : 'File') : lastMessage.attachments[0].type === attachmentTypes.voice ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(SvgVoiceIcon, null), lastMessage.body ? '' : 'Voice') : null), !!(lastMessage && lastMessage.id) && MessageTextFormat({
     text: lastMessage.body,
     message: lastMessage,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts,
     isLastMessage: true
-  }), channel.lastReactedMessage && '"')))), React__default.createElement(ChannelStatus, {
+  }), channel.lastReactedMessage && '"')))), /*#__PURE__*/React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
-  }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, 'ticks', undefined, colors.primary)), React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), React__default.createElement(UnreadInfo, null, !!(channel.newMentionCount && channel.newMentionCount > 0) && React__default.createElement(UnreadMentionIconWrapper, {
+  }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && /*#__PURE__*/React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, 'ticks', undefined, colors.primary)), /*#__PURE__*/React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), /*#__PURE__*/React__default.createElement(UnreadInfo, null, !!(channel.newMentionCount && channel.newMentionCount > 0) && /*#__PURE__*/React__default.createElement(UnreadMentionIconWrapper, {
     iconColor: colors.primary,
     rightMargin: !!(channel.newMessageCount || channel.unread)
-  }, React__default.createElement(SvgUnreadMention, null)), !!(channel.newMessageCount || channel.unread) && React__default.createElement(UnreadCount, {
+  }, /*#__PURE__*/React__default.createElement(SvgUnreadMention, null)), !!(channel.newMessageCount || channel.unread) && /*#__PURE__*/React__default.createElement(UnreadCount, {
     backgroundColor: colors.primary,
     isMuted: channel.muted
   }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : '')));
@@ -18607,12 +18738,12 @@ var ChannelSearch = function ChannelSearch(_ref) {
       borderRadius = _ref.borderRadius,
       searchInputBackgroundColor = _ref.searchInputBackgroundColor,
       searchInputTextColor = _ref.searchInputTextColor;
-  return React__default.createElement(SearchInputContainer, {
+  return /*#__PURE__*/React__default.createElement(SearchInputContainer, {
     inline: inline,
     borderColor: colors.backgroundColor
-  }, React__default.createElement(StyledSearchSvg, {
+  }, /*#__PURE__*/React__default.createElement(StyledSearchSvg, {
     left: !inline ? '22px' : ''
-  }), React__default.createElement(SearchInput, {
+  }), /*#__PURE__*/React__default.createElement(SearchInput, {
     backgroundColor: searchInputBackgroundColor || (theme === THEME.DARK ? colors.hoverBackgroundColor : colors.primaryLight),
     color: searchInputTextColor || colors.textColor1,
     borderRadius: borderRadius,
@@ -18620,7 +18751,7 @@ var ChannelSearch = function ChannelSearch(_ref) {
     onChange: handleSearchValueChange,
     value: searchValue,
     placeholder: 'Search for channels'
-  }), searchValue && React__default.createElement(ClearTypedText, {
+  }), searchValue && /*#__PURE__*/React__default.createElement(ClearTypedText, {
     onClick: getMyChannels
   }));
 };
@@ -18723,7 +18854,7 @@ var DropDown = function DropDown(_ref) {
       setIsOpen(dropDownState);
     }
   }, [dropDownState]);
-  return React__default.createElement(DropDownContainer, {
+  return /*#__PURE__*/React__default.createElement(DropDownContainer, {
     theme: theme,
     order: order,
     margin: margin,
@@ -18731,16 +18862,16 @@ var DropDown = function DropDown(_ref) {
     center: position === 'center',
     ref: dropDownRef,
     height: height
-  }, React__default.createElement(DropDownTriggerContainer, {
+  }, /*#__PURE__*/React__default.createElement(DropDownTriggerContainer, {
     onClick: function onClick(e) {
       e.stopPropagation();
       toggleDropdown();
     },
-    withIcon: React__default.isValidElement(trigger) ? withIcon : true,
+    withIcon: /*#__PURE__*/React__default.isValidElement(trigger) ? withIcon : true,
     isOpen: isOpen,
     className: "dropdown-trigger " + (isOpen ? 'open' : ''),
     iconColor: iconColor || (theme === THEME.DARK ? colors.white : '')
-  }, React__default.isValidElement(trigger) ? trigger : React__default.createElement("span", null, trigger)), isOpen && React__default.createElement(DropDownBody, {
+  }, /*#__PURE__*/React__default.isValidElement(trigger) ? trigger : /*#__PURE__*/React__default.createElement("span", null, trigger)), isOpen && /*#__PURE__*/React__default.createElement(DropDownBody, {
     backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     onScroll: handleScrolling,
     className: 'dropdown-body',
@@ -18965,7 +19096,7 @@ var CustomCheckbox = function CustomCheckbox(_ref) {
       borderRadius = _ref.borderRadius,
       disabled = _ref.disabled,
       size = _ref.size;
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(CustomLabel, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(CustomLabel, {
     isChecked: state,
     size: size,
     checkedBackgroundColor: checkedBackgroundColor,
@@ -18974,7 +19105,7 @@ var CustomCheckbox = function CustomCheckbox(_ref) {
     borderRadius: borderRadius,
     htmlFor: "checkbox-" + index,
     disabled: disabled
-  }, state && React__default.createElement(SvgTick, null)), React__default.createElement(Checkbox, {
+  }, state && /*#__PURE__*/React__default.createElement(SvgTick, null)), /*#__PURE__*/React__default.createElement(Checkbox, {
     type: 'checkbox',
     disabled: disabled,
     id: "checkbox-" + index,
@@ -19024,7 +19155,7 @@ var PopupContainer = function PopupContainer(_ref) {
       }
     };
   }, []);
-  return React__default.createElement(Container$3, null, children);
+  return /*#__PURE__*/React__default.createElement(Container$3, null, children);
 };
 var Container$3 = styled__default.div(_templateObject$8 || (_templateObject$8 = _taggedTemplateLiteralLoose(["\n  direction: initial;\n  position: fixed;\n  top: 0;\n  left: 0;\n  //top: ", ";\n  //left: ", ";\n  z-index: 200;\n  //width: ", ";\n  //height: ", ";\n  width: 100%;\n  height: 100%;\n  overflow: auto;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  background: rgba(0, 0, 0, 0.4);\n"])), function (props) {
   return props.top ? props.top + "px" : '0px';
@@ -19222,9 +19353,9 @@ var UsersPopup = function UsersPopup(_ref) {
       }));
     }
   }, []);
-  return React__default.createElement(PopupContainer, {
+  return /*#__PURE__*/React__default.createElement(PopupContainer, {
     theme: theme
-  }, React__default.createElement(Popup, {
+  }, /*#__PURE__*/React__default.createElement(Popup, {
     maxHeight: popupHeight || '721px',
     width: popupWidth || '433px',
     maxWidth: popupWidth || '433px',
@@ -19233,18 +19364,18 @@ var UsersPopup = function UsersPopup(_ref) {
     display: 'flex',
     backgroundColor: theme === THEME.DARK ? colors.dark : colors.white,
     boxShadow: theme === THEME.DARK ? '0px 0px 30px rgba(255,255,255,0.1)' : ''
-  }, React__default.createElement(PopupBody, {
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
     paddingH: '12px',
     paddingV: '24px',
     withFooter: actionType !== 'createChat'
-  }, React__default.createElement(CloseIcon, {
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
     color: colors.textColor2,
     onClick: handleClosePopup
-  }), React__default.createElement(PopupName, {
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
     padding: '0 12px'
-  }, actionType === 'createChat' ? 'Creat a new chat' : popupTitleText), React__default.createElement(SearchUserCont, {
+  }, actionType === 'createChat' ? 'Creat a new chat' : popupTitleText), /*#__PURE__*/React__default.createElement(SearchUserCont, {
     className: 'p-relative'
-  }, React__default.createElement(StyledSearchSvg, null), React__default.createElement(SearchUsersInput, {
+  }, /*#__PURE__*/React__default.createElement(StyledSearchSvg, null), /*#__PURE__*/React__default.createElement(SearchUsersInput, {
     height: '40px',
     onChange: handleTypeSearchUser,
     value: userSearchValue,
@@ -19253,32 +19384,32 @@ var UsersPopup = function UsersPopup(_ref) {
     widthBorder: theme !== THEME.DARK,
     backgroundColor: colors.backgroundColor,
     color: colors.textColor1
-  }), userSearchValue && React__default.createElement(ClearTypedText, {
+  }), userSearchValue && /*#__PURE__*/React__default.createElement(ClearTypedText, {
     color: colors.textColor1,
     onClick: function onClick() {
       return setUserSearchValue('');
     }
-  })), actionType !== 'createChat' && selectedMembers.length !== 0 && React__default.createElement(SelectedMembersContainer, {
+  })), actionType !== 'createChat' && selectedMembers.length !== 0 && /*#__PURE__*/React__default.createElement(SelectedMembersContainer, {
     ref: selectedMembersCont
   }, selectedMembers.map(function (member) {
-    return React__default.createElement(SelectedMemberBubble, {
+    return /*#__PURE__*/React__default.createElement(SelectedMemberBubble, {
       backgroundColor: colors.backgroundColor,
       key: "selected-" + member.id
-    }, React__default.createElement(Avatar, {
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
       image: member.avatarUrl,
       name: member.displayName || member.id,
       size: 28,
       textSize: 12,
       setDefaultAvatar: true,
       border: '0.5px solid rgba(0, 0, 0, 0.1)'
-    }), React__default.createElement(SelectedMemberName, {
+    }), /*#__PURE__*/React__default.createElement(SelectedMemberName, {
       color: colors.textColor1
-    }, member.displayName), React__default.createElement(StyledSubtractSvg, {
+    }, member.displayName), /*#__PURE__*/React__default.createElement(StyledSubtractSvg, {
       onClick: function onClick() {
         return removeMember(member);
       }
     }));
-  })), React__default.createElement(MembersContainer, {
+  })), /*#__PURE__*/React__default.createElement(MembersContainer, {
     isAdd: actionType !== 'createChat',
     selectedMembersHeight: usersContHeight,
     onScroll: handleMembersListScroll
@@ -19291,22 +19422,22 @@ var UsersPopup = function UsersPopup(_ref) {
       return member.id === user.id;
     }) >= 0;
     var memberDisplayName = makeUsername(contactsMap[user.id], user, getFromContacts);
-    return React__default.createElement(ListRow, {
+    return /*#__PURE__*/React__default.createElement(ListRow, {
       isAdd: actionType !== 'createChat',
       hoverBackground: colors.hoverBackgroundColor,
       key: user.id,
       onClick: function onClick() {
         return actionType === 'createChat' && handleAddMember(user);
       }
-    }, React__default.createElement(Avatar, {
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
       image: user.avatarUrl,
       name: user.firstName || user.id,
       size: 40,
       textSize: 16,
       setDefaultAvatar: true
-    }), React__default.createElement(UserNamePresence, null, React__default.createElement(MemberName, {
+    }), /*#__PURE__*/React__default.createElement(UserNamePresence, null, /*#__PURE__*/React__default.createElement(MemberName, {
       color: colors.textColor1
-    }, memberDisplayName), React__default.createElement(SubTitle, null, user.presence && user.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : user.presence && user.presence.lastActiveAt && userLastActiveDateFormat(user.presence.lastActiveAt))), actionType !== 'createChat' && React__default.createElement(CustomCheckbox, {
+    }, memberDisplayName), /*#__PURE__*/React__default.createElement(SubTitle, null, user.presence && user.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : user.presence && user.presence.lastActiveAt && userLastActiveDateFormat(user.presence.lastActiveAt))), actionType !== 'createChat' && /*#__PURE__*/React__default.createElement(CustomCheckbox, {
       index: user.id,
       state: isSelected,
       backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
@@ -19320,20 +19451,20 @@ var UsersPopup = function UsersPopup(_ref) {
       },
       size: '18px'
     }));
-  }))), actionType !== 'createChat' && React__default.createElement(PopupFooter, {
+  }))), actionType !== 'createChat' && /*#__PURE__*/React__default.createElement(PopupFooter, {
     backgroundColor: colors.backgroundColor,
     marginTop: 'auto'
-  }, actionType === 'selectUsers' ? React__default.createElement(Button, {
+  }, actionType === 'selectUsers' ? /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: handleGoBack
-  }, "Back") : React__default.createElement(Button, {
+  }, "Back") : /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: toggleCreatePopup
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.white,
     backgroundColor: colors.primary,
@@ -19513,22 +19644,22 @@ var ImageCrop = function ImageCrop(_ref) {
       return Promise.reject(e);
     }
   }, [area]);
-  return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
     theme: theme,
     backgroundColor: colors.backgroundColor,
     minWidth: '500px',
     maxWidth: '600px',
     padding: '0'
-  }, React__default.createElement(PopupBody, {
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
     paddingH: '24px',
     paddingV: '24px'
-  }, React__default.createElement(CloseIcon, {
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
     onClick: handleClosePopup
-  }), React__default.createElement(Row, {
+  }), /*#__PURE__*/React__default.createElement(Row, {
     align: 'center'
-  }, React__default.createElement(PopupName, null, "Crop image")), React__default.createElement("div", {
+  }, /*#__PURE__*/React__default.createElement(PopupName, null, "Crop image")), /*#__PURE__*/React__default.createElement("div", {
     className: 'crop-container'
-  }, React__default.createElement(CropperWrapper, null, React__default.createElement(Cropper, {
+  }, /*#__PURE__*/React__default.createElement(CropperWrapper, null, /*#__PURE__*/React__default.createElement(Cropper, {
     image: state.image,
     crop: state.crop,
     zoom: state.zoom,
@@ -19538,9 +19669,9 @@ var ImageCrop = function ImageCrop(_ref) {
     onCropComplete: onCropComplete,
     cropShape: 'round',
     showGrid: false
-  })), React__default.createElement(Controls, {
+  })), /*#__PURE__*/React__default.createElement(Controls, {
     className: 'controls'
-  }, React__default.createElement("input", {
+  }, /*#__PURE__*/React__default.createElement("input", {
     type: 'range',
     value: state.zoom,
     min: 1,
@@ -19551,16 +19682,16 @@ var ImageCrop = function ImageCrop(_ref) {
       onZoomChange(e.target.value);
     },
     className: 'zoom-range'
-  })))), React__default.createElement(PopupFooter, {
+  })))), /*#__PURE__*/React__default.createElement(PopupFooter, {
     backgroundColor: colors.backgroundColor
-  }, React__default.createElement(Button, {
+  }, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return handleClosePopup();
     }
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     backgroundColor: colors.primary,
     borderRadius: '8px',
@@ -19809,12 +19940,12 @@ function CreateChannel(_ref) {
       setNextButtonDisable(false);
     }
   }, [subjectValue, createGroupChannel, URIValue]);
-  return React__default.createElement(React__default.Fragment, null, withoutConfig ? React__default.createElement(UsersPopup, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, withoutConfig ? /*#__PURE__*/React__default.createElement(UsersPopup, {
     popupHeight: '540px',
     popupWidth: '520px',
     toggleCreatePopup: handleClose,
     actionType: 'createChat'
-  }) : React__default.createElement(React__default.Fragment, null, usersPopupVisible && React__default.createElement(UsersPopup, {
+  }) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, usersPopupVisible && /*#__PURE__*/React__default.createElement(UsersPopup, {
     toggleCreatePopup: toggleCreatePopup,
     getSelectedUsers: handleAddMembersForCreateChannel,
     creatChannelSelectedMembers: selectedMembers,
@@ -19825,68 +19956,68 @@ function CreateChannel(_ref) {
     },
     popupHeight: '540px',
     popupWidth: '520px'
-  }), createGroupChannelPopupVisible && React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+  }), createGroupChannelPopupVisible && /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
     backgroundColor: theme === THEME.DARK ? colors.dark : colors.white,
     boxShadow: theme === THEME.DARK ? '0px 0px 30px rgba(255,255,255,0.1)' : '',
     maxHeight: '600px',
     width: '520px',
     maxWidth: '520px',
     padding: '0'
-  }, React__default.createElement(PopupBody, {
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
     paddingH: '24px',
     paddingV: '24px'
-  }, React__default.createElement(CloseIcon, {
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
     color: colors.textColor1,
     onClick: toggleCreateGroupChannelPopup
-  }), React__default.createElement(PopupName, {
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
     color: colors.textColor1,
     marginBottom: '20px'
-  }, "Create ", createGroupChannel ? 'Group' : 'Channel'), !createGroupChannel && React__default.createElement(CrateChannelTitle, null, "Create a Channel to post your content to a large audience."), showUploadAvatar && React__default.createElement(UploadChannelAvatar, null, newAvatar.url ? React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+  }, "Create ", createGroupChannel ? 'Group' : 'Channel'), !createGroupChannel && /*#__PURE__*/React__default.createElement(CrateChannelTitle, null, "Create a Channel to post your content to a large audience."), showUploadAvatar && /*#__PURE__*/React__default.createElement(UploadChannelAvatar, null, newAvatar.url ? /*#__PURE__*/React__default.createElement(AvatarWrapper, null, /*#__PURE__*/React__default.createElement(Avatar, {
     image: newAvatar.url,
     size: 90,
     name: subjectValue
-  }), React__default.createElement(RemoveSelectedAvatar, {
+  }), /*#__PURE__*/React__default.createElement(RemoveSelectedAvatar, {
     onClick: function onClick() {
       return setNewAvatar({
         src: {},
         url: ''
       });
     }
-  }, "Remove")) : React__default.createElement(UploadAvatarLabel, {
+  }, "Remove")) : /*#__PURE__*/React__default.createElement(UploadAvatarLabel, {
     iconColor: colors.primary,
     backgroundColor: colors.primaryLight,
     htmlFor: 'uploadImage'
-  }, uploadPhotoIcon || React__default.createElement(SvgCameraIcon, null)), React__default.createElement(FileUploaderInput, {
+  }, uploadPhotoIcon || /*#__PURE__*/React__default.createElement(SvgCameraIcon, null)), /*#__PURE__*/React__default.createElement(FileUploaderInput, {
     ref: fileUploader,
     type: 'file',
     accept: '.png,.jpeg,.jpg',
     id: 'uploadImage',
     onChange: handleSelectImage
-  })), showSubject && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, {
+  })), showSubject && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Label, {
     color: colors.textColor1
-  }, " ", createGroupChannel ? 'Group' : 'Channel', " name"), React__default.createElement(CustomInput, {
+  }, " ", createGroupChannel ? 'Group' : 'Channel', " name"), /*#__PURE__*/React__default.createElement(CustomInput, {
     type: 'text',
     value: subjectValue,
     onChange: handleTypeSubject,
     placeholder: "Enter " + (createGroupChannel ? 'group' : 'channel') + " name",
     theme: theme,
     color: colors.textColor1
-  })), showDescription && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, {
+  })), showDescription && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Label, {
     color: colors.textColor1
-  }, "Description"), React__default.createElement(CustomInput, {
+  }, "Description"), /*#__PURE__*/React__default.createElement(CustomInput, {
     type: 'text',
     value: metadataValue,
     onChange: handleTypeMetadata,
     placeholder: "Enter " + (createGroupChannel ? 'group' : 'channel') + " description",
     theme: theme,
     color: colors.textColor1
-  })), showUri && React__default.createElement(React__default.Fragment, null, React__default.createElement(Label, {
+  })), showUri && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Label, {
     color: colors.textColor1
-  }, "URL"), React__default.createElement(UriInputWrapper, {
+  }, "URL"), /*#__PURE__*/React__default.createElement(UriInputWrapper, {
     uriPrefixWidth: uriPrefixWidth
-  }, uriPrefixOnCreateChannel && React__default.createElement(UriPrefix, {
+  }, uriPrefixOnCreateChannel && /*#__PURE__*/React__default.createElement(UriPrefix, {
     ref: uriPrefixRef
-  }, uriPrefixOnCreateChannel), React__default.createElement(CustomInput, {
+  }, uriPrefixOnCreateChannel), /*#__PURE__*/React__default.createElement(CustomInput, {
     type: 'text',
     value: URIValue,
     onChange: handleTypeURI,
@@ -19895,16 +20026,16 @@ function CreateChannel(_ref) {
     error: !!wrongUri,
     theme: theme,
     color: colors.textColor1
-  }), !!wrongUri && React__default.createElement(InputErrorMessage, null, wrongUri === 'short' ? 'The name should be 5-50 characters long' : 'The name is invalid. Please provide na name from the allowed range of characters')), React__default.createElement(ChannelUriDescription, null, "Give a URL to your channel so you can share it with others inviting them to join. Choose a name from the allowed range: a-z, 0-9, and _(underscores) between 5-50 characters."))), React__default.createElement(PopupFooter, {
+  }), !!wrongUri && /*#__PURE__*/React__default.createElement(InputErrorMessage, null, wrongUri === 'short' ? 'The name should be 5-50 characters long' : 'The name is invalid. Please provide na name from the allowed range of characters')), /*#__PURE__*/React__default.createElement(ChannelUriDescription, null, "Give a URL to your channel so you can share it with others inviting them to join. Choose a name from the allowed range: a-z, 0-9, and _(underscores) between 5-50 characters."))), /*#__PURE__*/React__default.createElement(PopupFooter, {
     backgroundColor: colors.backgroundColor
-  }, React__default.createElement(Button, {
+  }, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return handleClose();
     }
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     backgroundColor: colors.primary,
     borderRadius: '8px',
@@ -19912,7 +20043,7 @@ function CreateChannel(_ref) {
       return GoToAddMember();
     },
     disabled: nextButtonDisable
-  }, "Next"))), cropPopup && React__default.createElement(ImageCrop, {
+  }, "Next"))), cropPopup && /*#__PURE__*/React__default.createElement(ImageCrop, {
     image: newAvatar,
     onAccept: handleImageCrop,
     handleClosePopup: function handleClosePopup(cropped) {
@@ -19970,15 +20101,15 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
     }
   };
 
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(DropDown, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(DropDown, {
     forceClose: showAddMemberPopup || !!showCreateChannel,
     position: 'center',
     theme: theme,
-    trigger: React__default.createElement(CreateDropdownButton, {
+    trigger: /*#__PURE__*/React__default.createElement(CreateDropdownButton, {
       hoverBackground: colors.primaryLight,
       leftAuto: !showSearch
-    }, createChannelIcon || React__default.createElement(SvgAddChat, null))
-  }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
+    }, createChannelIcon || /*#__PURE__*/React__default.createElement(SvgAddChat, null))
+  }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 1,
     textColor: colors.textColor1,
     hoverBackground: colors.hoverBackgroundColor,
@@ -19986,7 +20117,7 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
       return handleOpenCreateChannel('broadcast');
     },
     iconWidth: '20px'
-  }, newChannelIcon || React__default.createElement(SvgCreateChannel, null), "New channel"), React__default.createElement(DropdownOptionLi, {
+  }, newChannelIcon || /*#__PURE__*/React__default.createElement(SvgCreateChannel, null), "New channel"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 2,
     textColor: colors.textColor1,
     hoverBackground: colors.hoverBackgroundColor,
@@ -19994,7 +20125,7 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
       return handleOpenCreateChannel('group');
     },
     iconWidth: '20px'
-  }, newGroupIcon || React__default.createElement(SvgCreateGroup, null), "New group"), React__default.createElement(DropdownOptionLi, {
+  }, newGroupIcon || /*#__PURE__*/React__default.createElement(SvgCreateGroup, null), "New group"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 3,
     textColor: colors.textColor1,
     hoverBackground: colors.hoverBackgroundColor,
@@ -20002,14 +20133,14 @@ var CreateChannelButton = function CreateChannelButton(_ref) {
       return handleOpenCreateChannel('direct');
     },
     iconWidth: '20px'
-  }, newChatIcon || React__default.createElement(SvgCreateChat, null), "New chat"))), showAddMemberPopup && React__default.createElement(UsersPopup, {
+  }, newChatIcon || /*#__PURE__*/React__default.createElement(SvgCreateChat, null), "New chat"))), showAddMemberPopup && /*#__PURE__*/React__default.createElement(UsersPopup, {
     popupHeight: '540px',
     popupWidth: '520px',
     toggleCreatePopup: function toggleCreatePopup() {
       return setShowAddMemberPopup(false);
     },
     actionType: 'createChat'
-  }), showCreateChannel && React__default.createElement(CreateChannel, {
+  }), showCreateChannel && /*#__PURE__*/React__default.createElement(CreateChannel, {
     handleClose: function handleClose() {
       return setShowCreateChannel(false);
     },
@@ -20219,27 +20350,27 @@ var EditProfile = function EditProfile(_ref) {
     handleCloseEditProfile();
   };
 
-  return React__default.createElement(Container$4, null, React__default.createElement(EditAvatarCont, null, React__default.createElement(Avatar, {
+  return /*#__PURE__*/React__default.createElement(Container$4, null, /*#__PURE__*/React__default.createElement(EditAvatarCont, null, /*#__PURE__*/React__default.createElement(Avatar, {
     name: user.firstName || user.id,
     size: 144,
     image: user.avatarUrl,
     setDefaultAvatar: true
-  })), React__default.createElement(EditProfileBody, null, React__default.createElement(Label, null, "Firstname"), React__default.createElement(CustomInput, {
+  })), /*#__PURE__*/React__default.createElement(EditProfileBody, null, /*#__PURE__*/React__default.createElement(Label, null, "Firstname"), /*#__PURE__*/React__default.createElement(CustomInput, {
     type: 'text',
     value: firstName,
     onChange: handleTypeFirstName,
     placeholder: 'Firstname'
-  }), React__default.createElement(Label, null, "Lastname"), React__default.createElement(CustomInput, {
+  }), /*#__PURE__*/React__default.createElement(Label, null, "Lastname"), /*#__PURE__*/React__default.createElement(CustomInput, {
     type: 'text',
     value: lastName,
     onChange: handleTypeLastName,
     placeholder: 'Lastname'
-  })), React__default.createElement(PopupFooter, null, React__default.createElement(Button, {
+  })), /*#__PURE__*/React__default.createElement(PopupFooter, null, /*#__PURE__*/React__default.createElement(Button, {
     onClick: handleCloseEditProfile,
     backgroundColor: colors.gray0,
     color: colors.textColor1,
     borderRadius: '8px'
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     onClick: handleEditProfile,
     backgroundColor: colors.primary,
     borderRadius: '8px',
@@ -20275,39 +20406,39 @@ var ProfileSettings = function ProfileSettings(_ref) {
     setEditProfileIsOpen(!editProfileIsOpen);
   };
 
-  return React__default.createElement(Container$5, null, React__default.createElement(SettingsHeader, null, React__default.createElement(ArrowLeftWrapper, {
+  return /*#__PURE__*/React__default.createElement(Container$5, null, /*#__PURE__*/React__default.createElement(SettingsHeader, null, /*#__PURE__*/React__default.createElement(ArrowLeftWrapper, {
     onClick: activeSettingPage === settingsPages.profile ? handleOpenEditProfile : handleCloseProfile
-  }, React__default.createElement(SvgArrowLeft, null)), React__default.createElement(SectionHeader, null, activeSettingPage === settingsPages.profile ? 'Edit profile' : 'Settings')), React__default.createElement(ProfileInfo, null, React__default.createElement(Avatar, {
+  }, /*#__PURE__*/React__default.createElement(SvgArrowLeft, null)), /*#__PURE__*/React__default.createElement(SectionHeader, null, activeSettingPage === settingsPages.profile ? 'Edit profile' : 'Settings')), /*#__PURE__*/React__default.createElement(ProfileInfo, null, /*#__PURE__*/React__default.createElement(Avatar, {
     name: user.firstName || user.id,
     size: 144,
     image: user.avatarUrl,
     setDefaultAvatar: true
-  }), React__default.createElement(Username, null, user.firstName + " " + user.lastName), React__default.createElement(UserNumber, null, "+" + user.id)), React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
+  }), /*#__PURE__*/React__default.createElement(Username, null, user.firstName + " " + user.lastName), /*#__PURE__*/React__default.createElement(UserNumber, null, "+" + user.id)), /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
     textColor: colors.textColor1,
     iconColor: colors.textColor2,
     margin: '0 0 24px',
     onClick: handleOpenEditProfile
-  }, React__default.createElement(SvgDevaultAvatar50, null), " Profile"), React__default.createElement(DropdownOptionLi, {
+  }, /*#__PURE__*/React__default.createElement(SvgDevaultAvatar50, null), " Profile"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
     textColor: colors.textColor1,
     iconColor: colors.textColor2,
     margin: '0 0 24px'
-  }, React__default.createElement(SvgNotifications, null), " Notifications"), React__default.createElement(DropdownOptionLi, {
+  }, /*#__PURE__*/React__default.createElement(SvgNotifications, null), " Notifications"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
     textColor: colors.textColor1,
     iconColor: colors.textColor2,
     margin: '0 0 24px'
-  }, React__default.createElement(SvgLock, null), " About"), React__default.createElement(DropdownOptionLi, {
+  }, /*#__PURE__*/React__default.createElement(SvgLock, null), " About"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     hoverBackground: 'none',
     iconWidth: '20px',
     textColor: colors.red1,
     iconColor: colors.red1,
     margin: '0 0 24px'
-  }, React__default.createElement(SvgLeave, null), " Log Out")), editProfileIsOpen && React__default.createElement(EditProfile, {
+  }, /*#__PURE__*/React__default.createElement(SvgLeave, null), " Log Out")), editProfileIsOpen && /*#__PURE__*/React__default.createElement(EditProfile, {
     user: user,
     handleCloseEditProfile: handleOpenEditProfile
   }));
@@ -20599,18 +20730,15 @@ var ChannelList = function ChannelList(_ref) {
 
     dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
   }, []);
-  React.useEffect(function () {
-    console.log('channels. ...........................', channels);
-  }, [channels]);
-  return React__default.createElement(Container$6, {
+  return /*#__PURE__*/React__default.createElement(Container$6, {
     withCustomList: !!List,
     ref: channelListRef,
     backgroundColor: backgroundColor || (theme === THEME.DARK ? colors.darkModeSecondaryBackgroundColor : '')
-  }, React__default.createElement(ChannelListHeader, {
+  }, /*#__PURE__*/React__default.createElement(ChannelListHeader, {
     withCustomList: !!List,
     maxWidth: channelListRef.current && channelListRef.current.clientWidth || 0,
     borderColor: colors.backgroundColor
-  }, Profile, showSearch && searchChannelsPosition === 'inline' ? React__default.createElement(ChannelSearch, {
+  }, Profile, showSearch && searchChannelsPosition === 'inline' ? /*#__PURE__*/React__default.createElement(ChannelSearch, {
     inline: true,
     borderRadius: searchInputBorderRadius,
     searchValue: searchValue,
@@ -20618,9 +20746,9 @@ var ChannelList = function ChannelList(_ref) {
     getMyChannels: getMyChannels,
     searchInputBackgroundColor: searchInputBackgroundColor,
     searchInputTextColor: searchInputTextColor
-  }) : ChannelsTitle || React__default.createElement(ChatsTitle, {
+  }) : ChannelsTitle || /*#__PURE__*/React__default.createElement(ChatsTitle, {
     theme: theme
-  }, "Chats"), showCreateChannelIcon && (CreateChannel || React__default.createElement(CreateChannelButton, {
+  }, "Chats"), showCreateChannelIcon && (CreateChannel || /*#__PURE__*/React__default.createElement(CreateChannelButton, {
     theme: theme,
     newChannelIcon: newChannelIcon,
     newGroupIcon: newGroupIcon,
@@ -20629,7 +20757,7 @@ var ChannelList = function ChannelList(_ref) {
     createChannelIcon: createChannelIcon,
     showSearch: showSearch,
     uriPrefixOnCreateChannel: uriPrefixOnCreateChannel
-  }))), showSearch && searchChannelsPosition === 'bottom' && React__default.createElement(ChannelSearch, {
+  }))), showSearch && searchChannelsPosition === 'bottom' && /*#__PURE__*/React__default.createElement(ChannelSearch, {
     searchValue: searchValue,
     theme: theme,
     borderRadius: searchInputBorderRadius,
@@ -20637,19 +20765,19 @@ var ChannelList = function ChannelList(_ref) {
     getMyChannels: getMyChannels,
     searchInputBackgroundColor: searchInputBackgroundColor,
     searchInputTextColor: searchInputTextColor
-  }), List ? React__default.createElement(List, {
+  }), List ? /*#__PURE__*/React__default.createElement(List, {
     channels: channels,
     searchedChannels: searchedChannels,
     activeChannel: activeChannel,
     setActiveChannel: handleChangeActiveChannel,
     loadMoreChannels: handleLoadMoreChannels,
     searchValue: searchValue
-  }, !searchValue ? React__default.createElement(React__default.Fragment, null, channels.map(function (channel) {
-    return ListItem ? React__default.createElement(ListItem, {
+  }, !searchValue ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, channels.map(function (channel) {
+    return ListItem ? /*#__PURE__*/React__default.createElement(ListItem, {
       channel: channel,
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
-    }) : React__default.createElement(Channel, {
+    }) : /*#__PURE__*/React__default.createElement(Channel, {
       theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
@@ -20664,12 +20792,12 @@ var ChannelList = function ChannelList(_ref) {
       key: channel.id,
       contactsMap: contactsMap
     });
-  })) : channelsLoading === LOADING_STATE.LOADED && searchValue && React__default.createElement(React__default.Fragment, null, !!searchedChannels.directs.length && React__default.createElement(DirectChannels, null, React__default.createElement(SearchedChannelsHeader, null, "DIRECT"), searchedChannels.directs.map(function (channel) {
-    return ListItem ? React__default.createElement(ListItem, {
+  })) : channelsLoading === LOADING_STATE.LOADED && searchValue && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !!searchedChannels.directs.length && /*#__PURE__*/React__default.createElement(DirectChannels, null, /*#__PURE__*/React__default.createElement(SearchedChannelsHeader, null, "DIRECT"), searchedChannels.directs.map(function (channel) {
+    return ListItem ? /*#__PURE__*/React__default.createElement(ListItem, {
       channel: channel,
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
-    }) : React__default.createElement(Channel, {
+    }) : /*#__PURE__*/React__default.createElement(Channel, {
       theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
@@ -20684,12 +20812,12 @@ var ChannelList = function ChannelList(_ref) {
       key: channel.id,
       contactsMap: contactsMap
     });
-  })), !!searchedChannels.groups.length && React__default.createElement(GroupChannels, null, React__default.createElement(SearchedChannelsHeader, null, "GROUP"), searchedChannels.groups.map(function (channel) {
-    return ListItem ? React__default.createElement(ListItem, {
+  })), !!searchedChannels.groups.length && /*#__PURE__*/React__default.createElement(GroupChannels, null, /*#__PURE__*/React__default.createElement(SearchedChannelsHeader, null, "GROUP"), searchedChannels.groups.map(function (channel) {
+    return ListItem ? /*#__PURE__*/React__default.createElement(ListItem, {
       channel: channel,
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
-    }) : React__default.createElement(Channel, {
+    }) : /*#__PURE__*/React__default.createElement(Channel, {
       theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
@@ -20704,15 +20832,15 @@ var ChannelList = function ChannelList(_ref) {
       key: channel.id,
       contactsMap: contactsMap
     });
-  })))) : React__default.createElement(React__default.Fragment, null, !searchValue && React__default.createElement(ChannelsList, {
+  })))) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !searchValue && /*#__PURE__*/React__default.createElement(ChannelsList, {
     ref: channelsScrollRef,
     onScroll: handleAllChannelsListScroll
   }, channels.map(function (channel) {
-    return ListItem ? React__default.createElement(ListItem, {
+    return ListItem ? /*#__PURE__*/React__default.createElement(ListItem, {
       channel: channel,
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
-    }) : React__default.createElement(Channel, {
+    }) : /*#__PURE__*/React__default.createElement(Channel, {
       theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
@@ -20727,12 +20855,12 @@ var ChannelList = function ChannelList(_ref) {
       key: channel.id,
       contactsMap: contactsMap
     });
-  })), channelsLoading === LOADING_STATE.LOADED && searchValue && React__default.createElement(SearchedChannels, null, !!searchedChannels.directs.length && React__default.createElement(DirectChannels, null, React__default.createElement(SearchedChannelsHeader, null, "DIRECT"), searchedChannels.directs.map(function (channel) {
-    return ListItem ? React__default.createElement(ListItem, {
+  })), channelsLoading === LOADING_STATE.LOADED && searchValue && /*#__PURE__*/React__default.createElement(SearchedChannels, null, !!searchedChannels.directs.length && /*#__PURE__*/React__default.createElement(DirectChannels, null, /*#__PURE__*/React__default.createElement(SearchedChannelsHeader, null, "DIRECT"), searchedChannels.directs.map(function (channel) {
+    return ListItem ? /*#__PURE__*/React__default.createElement(ListItem, {
       channel: channel,
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
-    }) : React__default.createElement(Channel, {
+    }) : /*#__PURE__*/React__default.createElement(Channel, {
       theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
@@ -20747,12 +20875,12 @@ var ChannelList = function ChannelList(_ref) {
       contactsMap: contactsMap,
       key: channel.id
     });
-  })), !!searchedChannels.groups.length && React__default.createElement(GroupChannels, null, React__default.createElement(SearchedChannelsHeader, null, "GROUP"), searchedChannels.groups.map(function (channel) {
-    return ListItem ? React__default.createElement(ListItem, {
+  })), !!searchedChannels.groups.length && /*#__PURE__*/React__default.createElement(GroupChannels, null, /*#__PURE__*/React__default.createElement(SearchedChannelsHeader, null, "GROUP"), searchedChannels.groups.map(function (channel) {
+    return ListItem ? /*#__PURE__*/React__default.createElement(ListItem, {
       channel: channel,
       setActiveChannel: handleChangeActiveChannel,
       key: channel.id
-    }) : React__default.createElement(Channel, {
+    }) : /*#__PURE__*/React__default.createElement(Channel, {
       theme: theme,
       selectedChannelLeftBorder: selectedChannelLeftBorder,
       selectedChannelBackground: selectedChannelBackground,
@@ -20767,7 +20895,7 @@ var ChannelList = function ChannelList(_ref) {
       key: channel.id,
       contactsMap: contactsMap
     });
-  })))), profileIsOpen && React__default.createElement(ProfileSettings, {
+  })))), profileIsOpen && /*#__PURE__*/React__default.createElement(ProfileSettings, {
     handleCloseProfile: handleOpenProfile
   }));
 };
@@ -20849,7 +20977,7 @@ function Chat(_ref) {
       setChannelDetailsWidth(0);
     }
   }, [channelDetailsIsOpen]);
-  return React__default.createElement(Container$7, {
+  return /*#__PURE__*/React__default.createElement(Container$7, {
     widthOffset: channelListWidth,
     channelDetailsWidth: channelDetailsWidth
   }, children);
@@ -20945,31 +21073,31 @@ function ChatHeader(_ref) {
       }, 90);
     }
   }, [channelDetailsOpen]);
-  return React__default.createElement(Container$8, {
+  return /*#__PURE__*/React__default.createElement(Container$8, {
     background: backgroundColor,
     borderColor: colors.backgroundColor
-  }, React__default.createElement(ChannelInfo$1, {
+  }, /*#__PURE__*/React__default.createElement(ChannelInfo$1, {
     onClick: !channelListHidden && channelDetailsOnOpen,
     clickable: !channelListHidden
-  }, React__default.createElement(AvatarWrapper, null, (activeChannel.subject || isDirectChannel && directChannelUser) && React__default.createElement(Avatar, {
+  }, /*#__PURE__*/React__default.createElement(AvatarWrapper, null, (activeChannel.subject || isDirectChannel && directChannelUser) && /*#__PURE__*/React__default.createElement(Avatar, {
     name: activeChannel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
     image: activeChannel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
     size: 36,
     textSize: 13,
     setDefaultAvatar: isDirectChannel
-  })), React__default.createElement(ChannelName, null, React__default.createElement(SectionHeader, {
+  })), /*#__PURE__*/React__default.createElement(ChannelName, null, /*#__PURE__*/React__default.createElement(SectionHeader, {
     color: titleColor || colors.textColor1,
     theme: theme
-  }, activeChannel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), showMemberInfo && (isDirectChannel && directChannelUser ? React__default.createElement(SubTitle, {
+  }, activeChannel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), showMemberInfo && (isDirectChannel && directChannelUser ? /*#__PURE__*/React__default.createElement(SubTitle, {
     color: memberInfoTextColor
-  }, hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, {
+  }, hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : /*#__PURE__*/React__default.createElement(SubTitle, {
     color: memberInfoTextColor
-  }, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + displayMemberText + " ")))), !channelListHidden && React__default.createElement(ChanelInfo, {
+  }, !activeChannel.subject && !isDirectChannel ? '' : activeChannel.memberCount + " " + displayMemberText + " ")))), !channelListHidden && /*#__PURE__*/React__default.createElement(ChanelInfo, {
     onClick: function onClick() {
       return channelDetailsOnOpen();
     },
     infoIconColor: channelDetailsIsOpen ? colors.primary : colors.textColor2
-  }, infoButtonVisible && (infoIcon || React__default.createElement(SvgInfo, null))));
+  }, infoButtonVisible && (infoIcon || /*#__PURE__*/React__default.createElement(SvgInfo, null))));
 }
 
 var _templateObject$i;
@@ -21027,7 +21155,7 @@ function MessageDivider(_ref) {
       marginTop = _ref.marginTop,
       theme = _ref.theme,
       marginBottom = _ref.marginBottom;
-  return React__default.createElement(Container$9, {
+  return /*#__PURE__*/React__default.createElement(Container$9, {
     className: unread ? 'unread' : 'divider',
     theme: theme,
     systemMessage: systemMessage,
@@ -21042,10 +21170,10 @@ function MessageDivider(_ref) {
     newMessagesSeparatorLeftRightSpaceWidth: newMessagesSeparatorLeftRightSpaceWidth,
     noMargin: noMargin,
     marginBottom: marginBottom
-  }, React__default.createElement("div", null, React__default.createElement("span", null, dividerText)));
+  }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("span", null, dividerText)));
 }
 
-var _path$r, _path2$3;
+var _path$r;
 
 function _extends$s() {
   _extends$s = Object.assign ? Object.assign.bind() : function (target) {
@@ -21064,27 +21192,20 @@ function _extends$s() {
   return _extends$s.apply(this, arguments);
 }
 
-function SvgForward(props) {
+function SvgDownload(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$s({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$r || (_path$r = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
-    fill: "CurrentColor"
-  })), _path2$3 || (_path2$3 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
-    fill: "CurrentColor"
+    d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
+    fill: "#fff"
   })));
 }
 
-var _circle, _path$s;
+var _path$s;
 
 function _extends$t() {
   _extends$t = Object.assign ? Object.assign.bind() : function (target) {
@@ -21103,24 +21224,18 @@ function _extends$t() {
   return _extends$t.apply(this, arguments);
 }
 
-function SvgErrorIcon(props) {
+function SvgSliderButtonRight(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$t({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle || (_circle = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 12,
-    stroke: "#FA4C56",
-    strokeWidth: 2
-  })), _path$s || (_path$s = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$s || (_path$s = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
-    fill: "#ED4D60"
+    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
+    fill: "#fff"
   })));
 }
 
@@ -21143,17 +21258,69 @@ function _extends$u() {
   return _extends$u.apply(this, arguments);
 }
 
-function SvgDeleteIcon(props) {
+function SvgSliderButtonLeft(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$u({
-    width: 20,
-    height: 20,
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$t || (_path$t = /*#__PURE__*/React.createElement("path", {
-    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
-    fill: "#FA4C56"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
+    fill: "#fff"
   })));
 }
+
+var ATTACHMENTS_CACHE = 'attachments-cache';
+var isBrowser = typeof window !== 'undefined';
+var cacheAvailable;
+
+if (isBrowser) {
+  cacheAvailable = 'caches' in window;
+} else {
+  cacheAvailable = 'caches' in global;
+}
+
+var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmentResponse) {
+  if (cacheAvailable) {
+    caches.open(ATTACHMENTS_CACHE).then(function (cache) {
+      try {
+        cache.put(attachmentId, attachmentResponse).then(function () {
+          console.log('Cache success');
+        })["catch"](function (e) {
+          console.log('Error on cache attachment ... ', e);
+          caches["delete"](attachmentId);
+        });
+        return Promise.resolve();
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    });
+  }
+};
+var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentId) {
+  if (cacheAvailable) {
+    return caches.match(attachmentId).then(function (response) {
+      try {
+        if (response) {
+          return Promise.resolve(response.blob()).then(URL.createObjectURL);
+        } else {
+          console.log('The image or video is not cached', attachmentId);
+          return Promise.resolve(false);
+        }
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    });
+  } else {
+    console.error('Cache is not available');
+    return new Promise(function (_resolve, reject) {
+      return reject(new Error('Cache not available'));
+    });
+  }
+};
 
 var _path$u;
 
@@ -21174,17 +21341,16 @@ function _extends$v() {
   return _extends$v.apply(this, arguments);
 }
 
-function SvgReportIcon(props) {
+function SvgVideoPlayerPlay(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$v({
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$u || (_path$u = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.623 1.5h4.754c.51-.001.908.16 1.274.528l3.321 3.32c.362.361.53.756.528 1.275v4.754c.001.519-.166.914-.528 1.274l-3.32 3.321c-.36.362-.756.53-1.275.528H6.623a1.675 1.675 0 01-1.274-.528l-3.321-3.32a1.675 1.675 0 01-.528-1.275V6.623a1.675 1.675 0 01.528-1.274l3.32-3.321A1.675 1.675 0 016.624 1.5zm-.337 1.52L3.02 6.285c-.136.136-.155.183-.155.375v4.678c0 .19.019.239.155.375l3.267 3.267c.136.136.183.155.375.155h4.678c.192 0 .239-.019.375-.155l3.267-3.267c.136-.136.155-.186.155-.375V6.66c0-.192-.02-.24-.155-.375L11.714 3.02c-.137-.136-.184-.155-.375-.155H6.66c-.192 0-.241.021-.375.155zm3.472 9.01a.758.758 0 11-1.516 0 .758.758 0 011.516 0zm-.076-6.136a.682.682 0 00-1.364 0v3.94a.682.682 0 001.364 0v-3.94z",
-    fill: "currentColor"
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
+    fill: "#fff"
   })));
 }
 
@@ -21207,7 +21373,7 @@ function _extends$w() {
   return _extends$w.apply(this, arguments);
 }
 
-function SvgEditIcon(props) {
+function SvgVideoPlayerPause(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$w({
     width: 20,
     height: 20,
@@ -21215,10 +21381,8 @@ function SvgEditIcon(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$v || (_path$v = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
-    fill: "CurrentColor"
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    fill: "#fff"
   })));
 }
 
@@ -21241,20 +21405,20 @@ function _extends$x() {
   return _extends$x.apply(this, arguments);
 }
 
-function SvgResend(props) {
+function SvgVolume(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$x({
-    width: 17,
-    height: 15,
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$w || (_path$w = /*#__PURE__*/React.createElement("path", {
-    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
-    stroke: "currentColor",
-    strokeWidth: 1.4
+    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
+    fill: "#fff"
   })));
 }
 
-var _path$x, _path2$4;
+var _path$x;
 
 function _extends$y() {
   _extends$y = Object.assign ? Object.assign.bind() : function (target) {
@@ -21273,7 +21437,7 @@ function _extends$y() {
   return _extends$y.apply(this, arguments);
 }
 
-function SvgEmojiSmileIcon(props) {
+function SvgVolumeMute(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$y({
     width: 20,
     height: 20,
@@ -21281,15 +21445,8 @@ function SvgEmojiSmileIcon(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$x || (_path$x = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
-    fill: "CurrentColor"
-  })), _path2$4 || (_path2$4 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
-    fill: "CurrentColor"
+    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
+    fill: "#fff"
   })));
 }
 
@@ -21312,7 +21469,7 @@ function _extends$z() {
   return _extends$z.apply(this, arguments);
 }
 
-function SvgReplyIcon(props) {
+function SvgFullscreen(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$z({
     width: 20,
     height: 20,
@@ -21322,8 +21479,8 @@ function SvgReplyIcon(props) {
   }, props), _path$y || (_path$y = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
-    fill: "CurrentColor"
+    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
+    fill: "#fff"
   })));
 }
 
@@ -21346,7 +21503,7 @@ function _extends$A() {
   return _extends$A.apply(this, arguments);
 }
 
-function SvgCopyIcon(props) {
+function SvgFullscreenExit(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$A({
     width: 20,
     height: 20,
@@ -21356,10 +21513,646 @@ function SvgCopyIcon(props) {
   }, props), _path$z || (_path$z = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
-    fill: "CurrentColor"
+    d: "M3.438 11.781c0-.466.377-.844.843-.844H8.22c.466 0 .844.378.844.844v3.938a.844.844 0 01-1.688 0v-1.9L3.94 17.252a.844.844 0 11-1.193-1.193l3.435-3.435h-1.9a.844.844 0 01-.844-.844zM17.253 2.747c.33.33.33.864 0 1.193l-3.435 3.435h1.899a.844.844 0 110 1.688h-3.936a.844.844 0 01-.844-.844V4.28a.844.844 0 011.688 0v1.9l3.435-3.434a.844.844 0 011.193 0z",
+    fill: "#fff"
   })));
 }
+
+var _templateObject$j, _templateObject2$f, _templateObject3$b, _templateObject4$9, _templateObject5$7, _templateObject6$6, _templateObject7$5, _templateObject8$5, _templateObject9$4, _templateObject10$3, _templateObject11$3;
+var timerInterval;
+
+var VideoPlayer = function VideoPlayer(_ref) {
+  var src = _ref.src,
+      videoFileId = _ref.videoFileId,
+      activeFileId = _ref.activeFileId;
+  var containerRef = React.useRef(null);
+  var videoRef = React.useRef(null);
+  var progressRef = React.useRef(null);
+  var volumeRef = React.useRef(null);
+
+  var _useState = React.useState(false),
+      playing = _useState[0],
+      setPlaying = _useState[1];
+
+  var _useState2 = React.useState(0),
+      currentTime = _useState2[0],
+      setCurrentTime = _useState2[1];
+
+  var _useState3 = React.useState(0),
+      videoTime = _useState3[0],
+      setVideoTime = _useState3[1];
+
+  var _useState4 = React.useState(false),
+      isLoaded = _useState4[0],
+      setIsLoaded = _useState4[1];
+
+  var _useState5 = React.useState(0),
+      progress = _useState5[0],
+      setProgress = _useState5[1];
+
+  var _useState6 = React.useState(0),
+      volume = _useState6[0],
+      setVolume = _useState6[1];
+
+  var _useState7 = React.useState(0),
+      volumePrevValue = _useState7[0],
+      setVolumePrevValue = _useState7[1];
+
+  var _useState8 = React.useState(false),
+      isMuted = _useState8[0],
+      setIsMuted = _useState8[1];
+
+  var _useState9 = React.useState(false),
+      isFullScreen = _useState9[0],
+      setIsFullScreen = _useState9[1];
+
+  var videoHandler = function videoHandler(control) {
+    if (control === 'play') {
+      videoRef.current && videoRef.current.play();
+      setPlaying(true);
+    } else if (control === 'pause') {
+      videoRef.current && videoRef.current.pause();
+      setPlaying(false);
+    }
+  };
+
+  var handleProgressInputChange = function handleProgressInputChange(e) {
+    var target = e.target;
+    var val = target.value;
+    setProgress(val);
+
+    if (videoRef.current) {
+      videoRef.current.currentTime = val / 100 * videoTime;
+    }
+  };
+
+  var handleMuteUnmute = function handleMuteUnmute() {
+    if (videoRef.current) {
+      if (!isMuted) {
+        setVolumePrevValue(volume);
+        videoRef.current.volume = 0;
+        setVolume(0);
+      } else {
+        videoRef.current.volume = volumePrevValue;
+        setVolume(volumePrevValue);
+      }
+
+      setIsMuted(!isMuted);
+    }
+  };
+
+  var handleVolumeInputChange = function handleVolumeInputChange(e) {
+    var target = e.target;
+    var val = target.value;
+
+    if (val === '0') {
+      setIsMuted(true);
+    } else {
+      setIsMuted(false);
+    }
+
+    setVolume(val);
+
+    if (videoRef.current) {
+      videoRef.current.volume = parseFloat(val);
+    }
+  };
+
+  var handleOpenFullScreen = function handleOpenFullScreen() {
+    if (containerRef.current) {
+      if (isFullScreen) {
+        document.exitFullscreen().then(function () {
+          setIsFullScreen(false);
+        });
+      } else {
+        containerRef.current.requestFullscreen().then(function () {
+          setIsFullScreen(true);
+        });
+      }
+    }
+  };
+
+  var handleVideoProgress = function handleVideoProgress(e) {
+    if (e.currentTarget.readyState >= 2) {
+      setIsLoaded(true);
+    }
+  };
+
+  React.useEffect(function () {
+    if (progressRef.current) {
+      progressRef.current.style.backgroundSize = progress + "%";
+    }
+  }, [progress]);
+  React.useEffect(function () {
+    if (volumeRef.current) {
+      volumeRef.current.style.backgroundSize = volume * 100 + "%";
+    }
+  }, [volume]);
+  React.useEffect(function () {
+    if (playing) {
+      var videoDuration = videoRef.current ? videoRef.current.duration : '';
+      timerInterval = setInterval(function () {
+        if (videoRef.current && videoDuration) {
+          var _videoRef$current, _videoRef$current2;
+
+          setCurrentTime((_videoRef$current = videoRef.current) === null || _videoRef$current === void 0 ? void 0 : _videoRef$current.currentTime);
+          setProgress(((_videoRef$current2 = videoRef.current) === null || _videoRef$current2 === void 0 ? void 0 : _videoRef$current2.currentTime) / videoDuration * 100);
+
+          if (videoRef.current.paused) {
+            videoRef.current.currentTime = 0;
+            setProgress(0);
+            setCurrentTime(videoRef.current.currentTime);
+            setPlaying(false);
+            clearInterval(timerInterval);
+          }
+        }
+      }, 100);
+    } else {
+      clearInterval(timerInterval);
+    }
+  }, [playing]);
+  React.useEffect(function () {
+    if (videoFileId !== activeFileId) {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        setPlaying(false);
+      }
+    }
+  }, [activeFileId]);
+  React.useEffect(function () {
+    var checkVideoInterval;
+
+    if (videoRef.current) {
+      checkVideoInterval = setInterval(function () {
+        if (videoRef.current && videoRef.current.readyState > 0) {
+          setVideoTime(videoRef.current.duration);
+          setVolume(videoRef.current.volume);
+          setPlaying(true);
+          videoRef.current.play();
+          clearInterval(checkVideoInterval);
+        }
+      }, 500);
+    }
+
+    return function () {
+      clearInterval(timerInterval);
+      clearInterval(checkVideoInterval);
+    };
+  }, []);
+  return /*#__PURE__*/React__default.createElement(Component, {
+    ref: containerRef,
+    loaded: isLoaded,
+    fullScreen: isFullScreen,
+    className: 'custom_video_player'
+  }, /*#__PURE__*/React__default.createElement("video", {
+    onClick: function onClick() {
+      return videoHandler(playing ? 'pause' : 'play');
+    },
+    id: 'video1',
+    ref: videoRef,
+    className: 'video',
+    src: src,
+    onLoadedData: handleVideoProgress
+  }), isLoaded ? /*#__PURE__*/React__default.createElement(ControlsContainer, null, /*#__PURE__*/React__default.createElement(ProgressBlock, null, /*#__PURE__*/React__default.createElement(Progress, {
+    ref: progressRef,
+    onMouseDown: function onMouseDown(e) {
+      return e.stopPropagation();
+    },
+    onChange: handleProgressInputChange,
+    type: 'range',
+    value: progress,
+    min: '0',
+    max: '100'
+  })), playing ? /*#__PURE__*/React__default.createElement(PlayPauseWrapper, {
+    onClick: function onClick() {
+      return videoHandler('pause');
+    }
+  }, /*#__PURE__*/React__default.createElement(SvgVideoPlayerPause, null)) : /*#__PURE__*/React__default.createElement(PlayPauseWrapper, {
+    onClick: function onClick() {
+      return videoHandler('play');
+    }
+  }, /*#__PURE__*/React__default.createElement(SvgVideoPlayerPlay, null)), /*#__PURE__*/React__default.createElement(ControlTime, null, Math.floor(currentTime / 60) + ':' + ('0' + Math.floor(currentTime % 60)).slice(-2), " /", ' ', Math.floor(videoTime / 60) + ':' + ('0' + Math.floor(videoTime % 60)).slice(-2)), /*#__PURE__*/React__default.createElement(VolumeController, null, /*#__PURE__*/React__default.createElement(VolumeIconWrapper, {
+    onClick: handleMuteUnmute
+  }, isMuted ? /*#__PURE__*/React__default.createElement(SvgVolumeMute, null) : /*#__PURE__*/React__default.createElement(SvgVolume, null)), /*#__PURE__*/React__default.createElement(VolumeSlide, {
+    ref: volumeRef,
+    onMouseDown: function onMouseDown(e) {
+      return e.stopPropagation();
+    },
+    onChange: handleVolumeInputChange,
+    type: 'range',
+    value: volume,
+    min: '0',
+    max: '1',
+    step: 'any'
+  })), /*#__PURE__*/React__default.createElement(FullScreenWrapper, {
+    onClick: handleOpenFullScreen
+  }, isFullScreen ? /*#__PURE__*/React__default.createElement(SvgFullscreenExit, null) : /*#__PURE__*/React__default.createElement(SvgFullscreen, null))) : /*#__PURE__*/React__default.createElement(UploadCont, null, /*#__PURE__*/React__default.createElement(UploadingIcon, null)));
+};
+var Component = styled__default.div(_templateObject$j || (_templateObject$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: ", ";\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
+  return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
+}, function (props) {
+  return props.loaded && '';
+});
+var UploadCont = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var PlayPauseWrapper = styled__default.span(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var ControlsContainer = styled__default.div(_templateObject4$9 || (_templateObject4$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
+var ControlTime = styled__default.span(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
+var ProgressBlock = styled__default.div(_templateObject6$6 || (_templateObject6$6 = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
+var VolumeController = styled__default.div(_templateObject7$5 || (_templateObject7$5 = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
+var VolumeIconWrapper = styled__default.span(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var VolumeSlide = styled__default.input(_templateObject9$4 || (_templateObject9$4 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
+var Progress = styled__default.input(_templateObject10$3 || (_templateObject10$3 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
+var FullScreenWrapper = styled__default.div(_templateObject11$3 || (_templateObject11$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+
+var _templateObject$k, _templateObject2$g, _templateObject3$c, _templateObject4$a, _templateObject5$8, _templateObject6$7, _templateObject7$6, _templateObject8$6, _templateObject9$5, _templateObject10$4, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2;
+
+var SliderPopup = function SliderPopup(_ref) {
+  var channelId = _ref.channelId,
+      setIsSliderOpen = _ref.setIsSliderOpen,
+      mediaFiles = _ref.mediaFiles,
+      currentMediaFile = _ref.currentMediaFile;
+  var dispatch = reactRedux.useDispatch();
+  var getFromContacts = getShowOnlyContactUsers();
+  var ChatClient = getClient();
+  var user = ChatClient.user;
+
+  var _useState = React.useState(_extends({}, currentMediaFile)),
+      currentFile = _useState[0],
+      setCurrentFile = _useState[1];
+
+  var _useState2 = React.useState({}),
+      downloadingFilesMap = _useState2[0],
+      setDownloadingFilesMap = _useState2[1];
+
+  var _useState3 = React.useState([]),
+      attachmentsList = _useState3[0],
+      setAttachmentsList = _useState3[1];
+
+  var _useState4 = React.useState(true),
+      imageLoading = _useState4[0],
+      setImageLoading = _useState4[1];
+
+  var _useState5 = React.useState({}),
+      downloadedFiles = _useState5[0],
+      setDownloadedFiles = _useState5[1];
+
+  var _useState6 = React.useState(),
+      playedVideo = _useState6[0],
+      setPlayedVideo = _useState6[1];
+
+  var _useState7 = React.useState(true),
+      nextButtonDisabled = _useState7[0],
+      setNextButtonDisabled = _useState7[1];
+
+  var _useState8 = React.useState(true),
+      prevButtonDisabled = _useState8[0],
+      setPrevButtonDisabled = _useState8[1];
+
+  var _useState9 = React.useState(false),
+      visibleSlide = _useState9[0],
+      setVisibleSlide = _useState9[1];
+
+  var customDownloader = getCustomDownloader();
+  var contactsMap = reactRedux.useSelector(contactsMapSelector);
+  var attachments = reactRedux.useSelector(attachmentsForPopupSelector, reactRedux.shallowEqual) || [];
+  var visibilityTimeout = React.useRef();
+  var attachmentUserName = currentFile ? currentFile.user && makeUsername(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
+
+  var handleClosePopup = function handleClosePopup() {
+    setAttachmentsList([]);
+    setIsSliderOpen(false);
+  };
+
+  var downloadImage = function downloadImage(src, setToDownloadedFiles) {
+    clearTimeout(visibilityTimeout.current);
+    var image = new Image();
+    image.src = src;
+
+    image.onload = function () {
+      if (setToDownloadedFiles) {
+        var _extends2;
+
+        setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.id] = src, _extends2)));
+        visibilityTimeout.current = setTimeout(function () {
+          setVisibleSlide(true);
+        }, 100);
+      }
+
+      setImageLoading(false);
+    };
+  };
+
+  var handleCompleteDownload = function handleCompleteDownload(attachmentId, failed) {
+    if (failed) {
+      console.log('file download failed!');
+    }
+
+    var stateCopy = _extends({}, downloadingFilesMap);
+
+    delete stateCopy[attachmentId];
+    setDownloadingFilesMap(stateCopy);
+  };
+
+  var handleDownloadFile = function handleDownloadFile(attachment) {
+    if (attachment.id) {
+      setDownloadingFilesMap(function (prevState) {
+        var _extends3;
+
+        return _extends({}, prevState, (_extends3 = {}, _extends3[attachment.id] = true, _extends3));
+      });
+    }
+
+    downloadFile(attachment, false, handleCompleteDownload);
+  };
+
+  var handleClicks = function handleClicks(e) {
+    if (!e.target.closest('.custom_carousel_item') && !e.target.closest('.custom_carousel_arrow')) {
+      handleClosePopup();
+    }
+  };
+
+  useDidUpdate(function () {
+    if (playedVideo) {
+      var videoElem = document.getElementById(playedVideo);
+
+      if (videoElem) {
+        videoElem.pause();
+      }
+    }
+
+    getAttachmentUrlFromCache(currentFile.id).then(function (cachedUrl) {
+      if (currentFile) {
+        if (cachedUrl) {
+          if (!downloadedFiles[currentFile.id]) {
+            setVisibleSlide(false);
+
+            if (currentFile.type === 'image') {
+              downloadImage(cachedUrl, true);
+            } else {
+              var _extends4;
+
+              clearTimeout(visibilityTimeout.current);
+              setDownloadedFiles(_extends({}, downloadedFiles, (_extends4 = {}, _extends4[currentFile.id] = cachedUrl, _extends4)));
+              setPlayedVideo(currentFile.id);
+              visibilityTimeout.current = setTimeout(function () {
+                setVisibleSlide(true);
+              }, 100);
+            }
+          } else {
+            if (currentFile.type === 'image') {
+              downloadImage(cachedUrl);
+            } else {
+              setVisibleSlide(true);
+            }
+          }
+        } else {
+          if (customDownloader) {
+            customDownloader(currentFile.url, false).then(function (url) {
+              try {
+                return Promise.resolve(fetch(url)).then(function (response) {
+                  setAttachmentToCache(currentFile.id, response);
+
+                  if (currentFile.type === 'image') {
+                    downloadImage(url, true);
+                  } else {
+                    var _extends5;
+
+                    clearTimeout(visibilityTimeout.current);
+                    setDownloadedFiles(_extends({}, downloadedFiles, (_extends5 = {}, _extends5[currentFile.id] = url, _extends5)));
+                    setPlayedVideo(currentFile.id);
+                    visibilityTimeout.current = setTimeout(function () {
+                      setVisibleSlide(true);
+                    }, 100);
+                  }
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            })["catch"](function (e) {
+              console.log('fail to download image...... ', e);
+            });
+          } else {
+            if (!downloadedFiles[currentFile.id]) {
+              setVisibleSlide(false);
+
+              if (currentFile.type === 'image') {
+                downloadImage(currentFile.url, true);
+              } else {
+                var _extends6;
+
+                clearTimeout(visibilityTimeout.current);
+                setDownloadedFiles(_extends({}, downloadedFiles, (_extends6 = {}, _extends6[currentFile.id] = currentFile.url, _extends6)));
+                setPlayedVideo(currentFile.id);
+                visibilityTimeout.current = setTimeout(function () {
+                  setVisibleSlide(true);
+                }, 100);
+              }
+            } else {
+              if (currentFile.type === 'image') {
+                downloadImage(cachedUrl);
+              } else {
+                setVisibleSlide(true);
+              }
+            }
+          }
+        }
+      }
+    });
+  }, [currentFile]);
+  useDidUpdate(function () {
+    var currentMedia = attachmentsList.find(function (att) {
+      return att.id === currentMediaFile.id;
+    });
+    setCurrentFile(currentMedia);
+
+    if (currentMedia) {
+      var indexOnList = attachmentsList.findIndex(function (item) {
+        return item.id === currentMedia.id;
+      });
+
+      if (!attachmentsList[indexOnList + 1]) {
+        setNextButtonDisabled(true);
+      } else {
+        setNextButtonDisabled(false);
+      }
+
+      if (!attachmentsList[indexOnList - 1]) {
+        setPrevButtonDisabled(true);
+      } else {
+        setPrevButtonDisabled(false);
+      }
+    }
+  }, [attachmentsList]);
+  useDidUpdate(function () {
+    setAttachmentsList(attachments || []);
+  }, [attachments]);
+  React.useEffect(function () {
+    setImageLoading(true);
+
+    if (customDownloader && currentMediaFile) {
+      getAttachmentUrlFromCache(currentMediaFile.id).then(function (cachedUrl) {
+        if (cachedUrl) {
+          if (currentMediaFile.type === 'image') {
+            downloadImage(cachedUrl);
+          } else {
+            var _extends7;
+
+            setDownloadedFiles(_extends({}, downloadedFiles, (_extends7 = {}, _extends7[currentMediaFile.id] = cachedUrl, _extends7)));
+            setPlayedVideo(currentMediaFile.id);
+          }
+        } else {
+          if (customDownloader) {
+            customDownloader(currentMediaFile.url, false).then(function (url) {
+              try {
+                return Promise.resolve(fetch(url)).then(function (response) {
+                  setAttachmentToCache(currentMediaFile.id, response);
+
+                  if (currentMediaFile.type === 'image') {
+                    downloadImage(url);
+                  } else {
+                    var _extends8;
+
+                    setDownloadedFiles(_extends({}, downloadedFiles, (_extends8 = {}, _extends8[currentMediaFile.id] = url, _extends8)));
+                    setPlayedVideo(currentMediaFile.id);
+                  }
+                });
+              } catch (e) {
+                return Promise.reject(e);
+              }
+            });
+          } else {
+            downloadImage(currentMediaFile.url);
+          }
+        }
+      });
+    }
+
+    if (currentMediaFile) {
+      if (mediaFiles) {
+        setAttachmentsList(mediaFiles);
+      } else {
+        dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media, 35, queryDirection.NEAR, currentMediaFile.id, true));
+      }
+    }
+
+    return function () {
+      setAttachmentsList([]);
+    };
+  }, []);
+  return /*#__PURE__*/React__default.createElement(Container$a, null, /*#__PURE__*/React__default.createElement(SliderHeader, {
+    backgroundColor: colors.textColor1
+  }, /*#__PURE__*/React__default.createElement(FileInfo, null, /*#__PURE__*/React__default.createElement(Avatar, {
+    name: attachmentUserName,
+    setDefaultAvatar: true,
+    size: 36,
+    image: currentFile && currentFile.user && currentFile.user.avatarUrl
+  }), /*#__PURE__*/React__default.createElement(Info, null, /*#__PURE__*/React__default.createElement(UserName, null, attachmentUserName), /*#__PURE__*/React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.createdAt).format('DD.MM.YYYY HH:mm'), ' ', /*#__PURE__*/React__default.createElement(FileSize, null, currentFile && currentFile.size && currentFile.size > 0 ? bytesToSize(currentFile.size, 1) : '')))), /*#__PURE__*/React__default.createElement(ActionDownload, {
+    onClick: function onClick() {
+      return handleDownloadFile(currentFile);
+    }
+  }, downloadingFilesMap[currentFile.id] ? /*#__PURE__*/React__default.createElement(UploadingIcon, {
+    width: '24px',
+    height: '24px',
+    borderWidth: '3px',
+    color: colors.textColor2
+  }) : /*#__PURE__*/React__default.createElement(SvgDownload, null)), /*#__PURE__*/React__default.createElement(Actions, null, /*#__PURE__*/React__default.createElement(ActionItem, {
+    onClick: handleClosePopup
+  }, /*#__PURE__*/React__default.createElement(SvgClose, null)))), /*#__PURE__*/React__default.createElement(SliderBody, {
+    onClick: handleClicks
+  }, attachmentsList && attachmentsList.length ?
+  /*#__PURE__*/
+  React__default.createElement(Carousel, {
+    draggable: false,
+    pagination: false,
+    className: 'custom_carousel',
+    initialActiveIndex: currentFile && attachmentsList.findIndex(function (item) {
+      return item.id === currentFile.id;
+    }),
+    onChange: function onChange(_currentItem, pageIndex) {
+      setImageLoading(true);
+      setCurrentFile(attachmentsList[pageIndex]);
+
+      if (!attachmentsList[pageIndex + 1]) {
+        setNextButtonDisabled(true);
+      } else {
+        setNextButtonDisabled(false);
+      }
+
+      if (!attachmentsList[pageIndex - 1]) {
+        setPrevButtonDisabled(true);
+      } else {
+        setPrevButtonDisabled(false);
+      }
+    },
+    renderArrow: function renderArrow(_ref2) {
+      var type = _ref2.type,
+          _onClick = _ref2.onClick,
+          isEdge = _ref2.isEdge;
+      var pointer = type === 'PREV' ? /*#__PURE__*/React__default.createElement(SvgSliderButtonLeft, null) : /*#__PURE__*/React__default.createElement(SvgSliderButtonRight, null);
+      var disabled = type === 'PREV' ? prevButtonDisabled : nextButtonDisabled;
+      return /*#__PURE__*/React__default.createElement(ArrowButton, {
+        className: 'custom_carousel_arrow',
+        leftButton: type === 'PREV',
+        type: 'button',
+        backgroundColor: colors.textColor1,
+        onClick: function onClick(e) {
+          setImageLoading(true);
+          e.preventDefault();
+
+          _onClick();
+        },
+        disabled: isEdge,
+        hide: disabled
+      }, pointer);
+    },
+    isRTL: false
+  }, attachmentsList.map(function (file) {
+    return /*#__PURE__*/React__default.createElement(CarouselItem, {
+      className: 'custom_carousel_item',
+      key: file.id,
+      draggable: false,
+      visibleSlide: visibleSlide
+    }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, file.type === 'image' ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !downloadedFiles[file.id] && imageLoading ? /*#__PURE__*/React__default.createElement(UploadCont$1, null, /*#__PURE__*/React__default.createElement(UploadingIcon, null)) : /*#__PURE__*/React__default.createElement("img", {
+      draggable: false,
+      src: downloadedFiles[file.id],
+      alt: file.name
+    })) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(VideoPlayer, {
+      activeFileId: currentFile.id,
+      videoFileId: file.id,
+      src: downloadedFiles[file.id]
+    }))));
+  })) : /*#__PURE__*/React__default.createElement(UploadingIcon, null)));
+};
+var Container$a = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
+var SliderHeader = styled__default.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), function (props) {
+  return props.backgroundColor || colors.textColor1;
+});
+var SliderBody = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.4);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var FileInfo = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
+var Info = styled__default.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
+var Actions = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
+var FileDateAndSize = styled__default.span(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
+var FileSize = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
+var UserName = styled__default.h4(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
+var ActionItem = styled__default.span(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
+var ActionDownload = styled__default.div(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
+var CarouselItem = styled__default.div(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
+  return props.visibleSlide ? 1 : 0;
+});
+var UploadCont$1 = styled__default.div(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  //position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var ArrowButton = styled__default.button(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n  visibility: ", ";\n  @media (max-width: 768px) {\n    min-width: 36px;\n    max-width: 36px;\n    height: 36px;\n    margin-right: ", ";\n    margin-left: ", ";\n\n    & > svg {\n      width: 22px;\n      height: 22px;\n    }\n  }\n  @media (max-width: 450px) {\n    min-width: 32px;\n    max-width: 32px;\n    height: 32px;\n\n    & > svg {\n      width: 20px;\n      height: 20px;\n    }\n  }\n"])), function (props) {
+  return !props.leftButton && '24px';
+}, function (props) {
+  return props.leftButton && '24px';
+}, function (props) {
+  return props.backgroundColor || colors.textColor1;
+}, function (props) {
+  return props.hide && 'hidden';
+}, function (props) {
+  return !props.leftButton && '4px';
+}, function (props) {
+  return props.leftButton && '4px';
+});
 
 var _path$A;
 
@@ -21380,14 +22173,364 @@ function _extends$B() {
   return _extends$B.apply(this, arguments);
 }
 
-function SvgReplyInThreadIcon(props) {
+function SvgChoseMedia(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$B({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 19 19",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$A || (_path$A = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$B, _path2$3;
+
+function _extends$C() {
+  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$C.apply(this, arguments);
+}
+
+function SvgForward(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$C({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$B || (_path$B = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
+    fill: "CurrentColor"
+  })), _path2$3 || (_path2$3 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _circle, _path$C;
+
+function _extends$D() {
+  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$D.apply(this, arguments);
+}
+
+function SvgErrorIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$D({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle || (_circle = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 12,
+    stroke: "#FA4C56",
+    strokeWidth: 2
+  })), _path$C || (_path$C = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
+    fill: "#ED4D60"
+  })));
+}
+
+var _path$D;
+
+function _extends$E() {
+  _extends$E = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$E.apply(this, arguments);
+}
+
+function SvgDeleteIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$E({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$D || (_path$D = /*#__PURE__*/React.createElement("path", {
+    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
+    fill: "#FA4C56"
+  })));
+}
+
+var _path$E;
+
+function _extends$F() {
+  _extends$F = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$F.apply(this, arguments);
+}
+
+function SvgReportIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$F({
+    width: 18,
+    height: 18,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$E || (_path$E = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.623 1.5h4.754c.51-.001.908.16 1.274.528l3.321 3.32c.362.361.53.756.528 1.275v4.754c.001.519-.166.914-.528 1.274l-3.32 3.321c-.36.362-.756.53-1.275.528H6.623a1.675 1.675 0 01-1.274-.528l-3.321-3.32a1.675 1.675 0 01-.528-1.275V6.623a1.675 1.675 0 01.528-1.274l3.32-3.321A1.675 1.675 0 016.624 1.5zm-.337 1.52L3.02 6.285c-.136.136-.155.183-.155.375v4.678c0 .19.019.239.155.375l3.267 3.267c.136.136.183.155.375.155h4.678c.192 0 .239-.019.375-.155l3.267-3.267c.136-.136.155-.186.155-.375V6.66c0-.192-.02-.24-.155-.375L11.714 3.02c-.137-.136-.184-.155-.375-.155H6.66c-.192 0-.241.021-.375.155zm3.472 9.01a.758.758 0 11-1.516 0 .758.758 0 011.516 0zm-.076-6.136a.682.682 0 00-1.364 0v3.94a.682.682 0 001.364 0v-3.94z",
+    fill: "currentColor"
+  })));
+}
+
+var _path$F;
+
+function _extends$G() {
+  _extends$G = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$G.apply(this, arguments);
+}
+
+function SvgEditIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$G({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$A || (_path$A = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$F || (_path$F = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$G;
+
+function _extends$H() {
+  _extends$H = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$H.apply(this, arguments);
+}
+
+function SvgResend(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$H({
+    width: 17,
+    height: 15,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$G || (_path$G = /*#__PURE__*/React.createElement("path", {
+    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
+    stroke: "currentColor",
+    strokeWidth: 1.4
+  })));
+}
+
+var _path$H, _path2$4;
+
+function _extends$I() {
+  _extends$I = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$I.apply(this, arguments);
+}
+
+function SvgEmojiSmileIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$I({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$H || (_path$H = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
+    fill: "CurrentColor"
+  })), _path2$4 || (_path2$4 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$I;
+
+function _extends$J() {
+  _extends$J = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$J.apply(this, arguments);
+}
+
+function SvgReplyIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$J({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$I || (_path$I = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$J;
+
+function _extends$K() {
+  _extends$K = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$K.apply(this, arguments);
+}
+
+function SvgCopyIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$K({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$J || (_path$J = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$K;
+
+function _extends$L() {
+  _extends$L = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$L.apply(this, arguments);
+}
+
+function SvgReplyInThreadIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$L({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$K || (_path$K = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
@@ -21423,7 +22566,7 @@ function usePermissions(myRole) {
   return [checkActionPermission, myPermissions];
 }
 
-var _templateObject$j, _templateObject2$f, _templateObject3$b;
+var _templateObject$l, _templateObject2$h, _templateObject3$d;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
       channel = _ref.channel,
@@ -21495,21 +22638,21 @@ function MessageActions(_ref) {
     handleOpenEmojis();
   };
 
-  return React__default.createElement(MessageActionsWrapper, {
+  return /*#__PURE__*/React__default.createElement(MessageActionsWrapper, {
     isThreadMessage: isThreadMessage,
     rtlDirection: rtlDirection
-  }, React__default.createElement(EditMessageContainer, {
+  }, /*#__PURE__*/React__default.createElement(EditMessageContainer, {
     backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     className: 'message_actions_cont '
-  }, showMessageReaction && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && checkActionPermission('addMessageReaction') && React__default.createElement(Action, {
+  }, showMessageReaction && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && checkActionPermission('addMessageReaction') && /*#__PURE__*/React__default.createElement(Action, {
     order: reactionIconOrder || 0,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: handleOpenReaction
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, reactionIconTooltipText || 'React'), reactionIcon || React__default.createElement(SvgEmojiSmileIcon, null)), showEditMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && (isIncoming ? allowEditDeleteIncomingMessage : true) && editMessagePermitted && (isDirectChannel && directChannelUser ? !isIncoming && directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
+  }, reactionIconTooltipText || 'React'), reactionIcon || /*#__PURE__*/React__default.createElement(SvgEmojiSmileIcon, null)), showEditMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && (isIncoming ? allowEditDeleteIncomingMessage : true) && editMessagePermitted && (isDirectChannel && directChannelUser ? !isIncoming && directChannelUser.activityState !== 'Deleted' : true) && /*#__PURE__*/React__default.createElement(Action, {
     order: editIconOrder || 1,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21517,18 +22660,18 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return editModeToggle();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, editIconTooltipText || 'Edit Message'), editIcon || React__default.createElement(SvgEditIcon, null)), messageStatus === MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+  }, editIconTooltipText || 'Edit Message'), editIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null)), messageStatus === MESSAGE_DELIVERY_STATUS.PENDING && /*#__PURE__*/React__default.createElement(Action, {
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
       return handleResendMessage();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, " Resend Message "), React__default.createElement(SvgResend, null)), !isThreadMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(Action, {
+  }, " Resend Message "), /*#__PURE__*/React__default.createElement(SvgResend, null)), !isThreadMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showReplyMessage && replyMessagePermitted && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && /*#__PURE__*/React__default.createElement(Action, {
     order: replyIconOrder || 2,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21536,9 +22679,9 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return handleReplyMessage();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, replyIconTooltipText || 'Reply'), replyIcon || React__default.createElement(SvgReplyIcon, null)), showReplyMessageInThread && replyMessagePermitted && React__default.createElement(Action, {
+  }, replyIconTooltipText || 'Reply'), replyIcon || /*#__PURE__*/React__default.createElement(SvgReplyIcon, null)), showReplyMessageInThread && replyMessagePermitted && /*#__PURE__*/React__default.createElement(Action, {
     order: replyInThreadIconOrder || 3,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21546,9 +22689,9 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return handleReplyMessage(true);
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, replyInThreadIconTooltipText || 'Reply in thread'), replyInThreadIcon || React__default.createElement(SvgReplyInThreadIcon, null))), showCopyMessage && React__default.createElement(Action, {
+  }, replyInThreadIconTooltipText || 'Reply in thread'), replyInThreadIcon || /*#__PURE__*/React__default.createElement(SvgReplyInThreadIcon, null))), showCopyMessage && /*#__PURE__*/React__default.createElement(Action, {
     order: copyIconOrder || 4,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21556,9 +22699,9 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return handleCopyMessage();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, copyIconTooltipText || 'Copy'), copyIcon || React__default.createElement(SvgCopyIcon, null)), showForwardMessage && forwardMessagePermitted && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+  }, copyIconTooltipText || 'Copy'), copyIcon || /*#__PURE__*/React__default.createElement(SvgCopyIcon, null)), showForwardMessage && forwardMessagePermitted && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && /*#__PURE__*/React__default.createElement(Action, {
     order: forwardIconOrder || 5,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21566,9 +22709,9 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return handleOpenForwardMessage();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || React__default.createElement(SvgForward, null)), showDeleteMessage && (channel.type === CHANNEL_TYPE.BROADCAST ? myRole === 'owner' || myRole === 'admin' : true) && React__default.createElement(Action, {
+  }, forwardIconTooltipText || 'Forward Message'), forwardIcon || /*#__PURE__*/React__default.createElement(SvgForward, null)), showDeleteMessage && (channel.type === CHANNEL_TYPE.BROADCAST ? myRole === 'owner' || myRole === 'admin' : true) && /*#__PURE__*/React__default.createElement(Action, {
     order: deleteIconOrder || 6,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21576,9 +22719,9 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return messageStatus === MESSAGE_DELIVERY_STATUS.PENDING ? handleDeletePendingMessage() : handleOpenDeleteMessage();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, deleteIconTooltipText || 'Delete Message'), deleteIcon || React__default.createElement(SvgDeleteIcon, null)), showReportMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(Action, {
+  }, deleteIconTooltipText || 'Delete Message'), deleteIcon || /*#__PURE__*/React__default.createElement(SvgDeleteIcon, null)), showReportMessage && messageStatus !== MESSAGE_DELIVERY_STATUS.PENDING && /*#__PURE__*/React__default.createElement(Action, {
     order: reportIconOrder || 7,
     iconColor: messageActionIconsColor || (theme === THEME.DARK ? colors.textColor3 : colors.textColor2),
     hoverBackgroundColor: colors.hoverBackgroundColor,
@@ -21586,11 +22729,11 @@ function MessageActions(_ref) {
     onClick: function onClick() {
       return handleReportMessage();
     }
-  }, React__default.createElement(ItemNote, {
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
-  }, reportIconTooltipText || 'Report'), reportIcon || React__default.createElement(SvgReportIcon, null))));
+  }, reportIconTooltipText || 'Report'), reportIcon || /*#__PURE__*/React__default.createElement(SvgReportIcon, null))));
 }
-var MessageActionsWrapper = styled__default.div(_templateObject$j || (_templateObject$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 200;\n"])), function (_ref2) {
+var MessageActionsWrapper = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 200;\n"])), function (_ref2) {
   var isThreadMessage = _ref2.isThreadMessage,
       rtlDirection = _ref2.rtlDirection;
   return !rtlDirection && (isThreadMessage ? '8px' : '0');
@@ -21600,12 +22743,12 @@ var MessageActionsWrapper = styled__default.div(_templateObject$j || (_templateO
 }, function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var EditMessageContainer = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  padding: 8px 2px;\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled__default.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  padding: 8px 2px;\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, function (props) {
   return props.backgroundColor;
 });
-var Action = styled__default.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 0 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+var Action = styled__default.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 0 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.order || 1;
 }, function (props) {
   return props.iconColor || colors.textColor2;
@@ -21615,10 +22758,10 @@ var Action = styled__default.div(_templateObject3$b || (_templateObject3$b = _ta
   return props.hoverBackgroundColor || colors.backgroundColor;
 }, ItemNote);
 
-var _path$B;
+var _path$L;
 
-function _extends$C() {
-  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$M() {
+  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -21631,26 +22774,26 @@ function _extends$C() {
 
     return target;
   };
-  return _extends$C.apply(this, arguments);
+  return _extends$M.apply(this, arguments);
 }
 
 function SvgCancel(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$C({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 25 25",
+  return /*#__PURE__*/React.createElement("svg", _extends$M({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$B || (_path$B = /*#__PURE__*/React.createElement("path", {
-    d: "M7.536 6.264a.9.9 0 00-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 001.272 1.272L12 13.273l4.464 4.463a.9.9 0 101.272-1.272L13.273 12l4.463-4.464a.9.9 0 10-1.272-1.272L12 10.727 7.536 6.264z",
+  }, props), _path$L || (_path$L = /*#__PURE__*/React.createElement("path", {
+    d: "M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z",
     fill: "#fff"
   })));
 }
 
-var _path$C, _path2$5, _path3$2;
+var _path$M, _path2$5, _path3$2;
 
-function _extends$D() {
-  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$N() {
+  _extends$N = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -21663,16 +22806,16 @@ function _extends$D() {
 
     return target;
   };
-  return _extends$D.apply(this, arguments);
+  return _extends$N.apply(this, arguments);
 }
 
 function SvgFileIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$D({
+  return /*#__PURE__*/React.createElement("svg", _extends$N({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$C || (_path$C = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$M || (_path$M = /*#__PURE__*/React.createElement("path", {
     d: "M19.5 3H9a3 3 0 00-3 3v24a3 3 0 003 3h18a3 3 0 003-3V13.5L19.5 3z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -21692,10 +22835,10 @@ function SvgFileIcon(props) {
   })));
 }
 
-var _circle$1, _path$D;
+var _circle$1, _path$N;
 
-function _extends$E() {
-  _extends$E = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$O() {
+  _extends$O = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -21708,11 +22851,11 @@ function _extends$E() {
 
     return target;
   };
-  return _extends$E.apply(this, arguments);
+  return _extends$O.apply(this, arguments);
 }
 
 function SvgDeleteUpload(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$E({
+  return /*#__PURE__*/React.createElement("svg", _extends$O({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
@@ -21725,7 +22868,7 @@ function SvgDeleteUpload(props) {
     fill: "CurrentColor",
     stroke: "#fff",
     strokeWidth: 1.4
-  })), _path$D || (_path$D = /*#__PURE__*/React.createElement("path", {
+  })), _path$N || (_path$N = /*#__PURE__*/React.createElement("path", {
     d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
     stroke: "#fff",
     strokeWidth: 1.4,
@@ -21734,10 +22877,10 @@ function SvgDeleteUpload(props) {
   })));
 }
 
-var _path$E;
+var _path$O;
 
-function _extends$F() {
-  _extends$F = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$P() {
+  _extends$P = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -21750,17 +22893,17 @@ function _extends$F() {
 
     return target;
   };
-  return _extends$F.apply(this, arguments);
+  return _extends$P.apply(this, arguments);
 }
 
 function SvgUpload(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$F({
+  return /*#__PURE__*/React.createElement("svg", _extends$P({
     width: 32,
     height: 32,
     viewBox: "0 0 32.01 32.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$E || (_path$E = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$O || (_path$O = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
@@ -21768,10 +22911,10 @@ function SvgUpload(props) {
   })));
 }
 
-var _path$F;
+var _circle$2, _path$P;
 
-function _extends$G() {
-  _extends$G = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$Q() {
+  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -21784,43 +22927,11 @@ function _extends$G() {
 
     return target;
   };
-  return _extends$G.apply(this, arguments);
-}
-
-function SvgDownload(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$G({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$F || (_path$F = /*#__PURE__*/React.createElement("path", {
-    d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
-    fill: "#fff"
-  })));
-}
-
-var _circle$2, _path$G;
-
-function _extends$H() {
-  _extends$H = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$H.apply(this, arguments);
+  return _extends$Q.apply(this, arguments);
 }
 
 function SvgPlayVideo(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$H({
+  return /*#__PURE__*/React.createElement("svg", _extends$Q({
     width: 56,
     height: 56,
     fill: "none",
@@ -21831,7 +22942,7 @@ function SvgPlayVideo(props) {
     r: 28,
     fill: "#17191C",
     fillOpacity: 0.4
-  })), _path$G || (_path$G = /*#__PURE__*/React.createElement("path", {
+  })), _path$P || (_path$P = /*#__PURE__*/React.createElement("path", {
     d: "M38.048 26.262c1.27.767 1.27 2.706 0 3.473l-13.224 7.996c-1.258.76-2.824-.202-2.824-1.737V20.003c0-1.535 1.566-2.498 2.824-1.737l13.224 7.996z",
     fill: "#fff"
   })));
@@ -21891,58 +23002,8 @@ var getFrame = function getFrame(videoSrc, time) {
   }
 };
 
-var ATTACHMENTS_CACHE = 'attachments-cache';
-var isBrowser = typeof window !== 'undefined';
-var cacheAvailable;
-
-if (isBrowser) {
-  cacheAvailable = 'caches' in window;
-} else {
-  cacheAvailable = 'caches' in global;
-}
-
-var setAttachmentToCache = function setAttachmentToCache(attachmentId, attachmentResponse) {
-  if (cacheAvailable) {
-    caches.open(ATTACHMENTS_CACHE).then(function (cache) {
-      try {
-        cache.put(attachmentId, attachmentResponse).then(function () {
-          console.log('Cache success');
-        })["catch"](function (e) {
-          console.log('Error on cache attachment ... ', e);
-          caches["delete"](attachmentId);
-        });
-        return Promise.resolve();
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    });
-  }
-};
-var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentId) {
-  if (cacheAvailable) {
-    return caches.match(attachmentId).then(function (response) {
-      try {
-        if (response) {
-          return Promise.resolve(response.blob()).then(URL.createObjectURL);
-        } else {
-          console.log('The image or video is not cached', attachmentId);
-          return Promise.resolve(false);
-        }
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    });
-  } else {
-    console.error('Cache is not available');
-    return new Promise(function (_resolve, reject) {
-      return reject(new Error('Cache not available'));
-    });
-  }
-};
-
-var _templateObject$k, _templateObject2$g, _templateObject3$c, _templateObject4$9, _templateObject5$7, _templateObject6$6, _templateObject7$5;
-
-var VideoPreview = function VideoPreview(_ref) {
+var _templateObject$m, _templateObject2$i, _templateObject3$e, _templateObject4$b, _templateObject5$9, _templateObject6$8, _templateObject7$7;
+var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
   var maxWidth = _ref.maxWidth,
       maxHeight = _ref.maxHeight,
       src = _ref.src,
@@ -21950,6 +23011,8 @@ var VideoPreview = function VideoPreview(_ref) {
       borderRadius = _ref.borderRadius,
       isPreview = _ref.isPreview,
       uploading = _ref.uploading,
+      _ref$isCachedFile = _ref.isCachedFile,
+      isCachedFile = _ref$isCachedFile === void 0 ? true : _ref$isCachedFile,
       isRepliedMessage = _ref.isRepliedMessage,
       backgroundColor = _ref.backgroundColor,
       isDetailsView = _ref.isDetailsView,
@@ -21971,15 +23034,42 @@ var VideoPreview = function VideoPreview(_ref) {
       loading = _useState4[0],
       setLoading = _useState4[1];
 
-  var _useState5 = React.useState(src),
-      videoUrl = _useState5[0],
-      setVideoUrl = _useState5[1];
+  var _useState5 = React.useState(3),
+      progress = _useState5[0],
+      setProgress = _useState5[1];
 
   var _useState6 = React.useState(false),
-      downloadIsCancelled = _useState6[0],
-      setDownloadIsCancelled = _useState6[1];
+      showProgress = _useState6[0],
+      setShowProgress = _useState6[1];
+
+  var _useState7 = React.useState(''),
+      videoUrl = _useState7[0],
+      setVideoUrl = _useState7[1];
+
+  var _useState8 = React.useState(false),
+      downloadIsCancelled = _useState8[0],
+      setDownloadIsCancelled = _useState8[1];
 
   var videoRef = React.useRef(null);
+  var attachmentThumb;
+  var withPrefix = true;
+
+  if (file.metadata && file.metadata.tmb) {
+    if (file.metadata.tmb.length < 70) {
+      attachmentThumb = base64ToToDataURL(file.metadata.tmb);
+      withPrefix = false;
+    } else {
+      attachmentThumb = file.metadata && file.metadata.tmb;
+    }
+  }
+
+  var handleVideoProgress = function handleVideoProgress(e) {
+    var loadedPercentage = e.currentTarget.buffered.end(0) / e.currentTarget.duration;
+
+    if (loadedPercentage > 0.03) {
+      setProgress(loadedPercentage * 100);
+    }
+  };
 
   var handlePauseResumeDownload = function handlePauseResumeDownload(e) {
     e.stopPropagation();
@@ -21987,7 +23077,7 @@ var VideoPreview = function VideoPreview(_ref) {
     if (downloadIsCancelled) {
       setDownloadIsCancelled(false);
 
-      if (videoRef.current) {
+      if (videoRef.current && videoUrl) {
         videoRef.current.src = videoUrl;
       }
     } else {
@@ -22044,7 +23134,6 @@ var VideoPreview = function VideoPreview(_ref) {
                 clearInterval(checkVideoInterval);
               };
 
-              videoRef.current.currentTime = 2;
               setLoading(false);
               setVideoDuration(videoRef.current.duration);
               var minutes = Math.floor(videoRef.current.duration / 60);
@@ -22087,15 +23176,24 @@ var VideoPreview = function VideoPreview(_ref) {
     };
   }, [downloadIsCancelled]);
   React.useEffect(function () {
-    getAttachmentUrlFromCache(file.id).then(function (cachedUrl) {
-      if (!cachedUrl) {
-        setVideoUrl(src);
-      } else if (!videoUrl) {
-        setVideoUrl(src);
-      }
-    });
+    if (file.id) {
+      getAttachmentUrlFromCache(file.id).then(function (cachedUrl) {
+        if (!videoUrl) {
+          if (!cachedUrl && src) {
+            setVideoUrl(src);
+          } else if (cachedUrl) {
+            setVideoUrl(cachedUrl);
+          }
+        }
+      });
+    }
   }, [src]);
-  return React__default.createElement(Component, {
+  React.useEffect(function () {
+    if (!isCachedFile && !file.attachmentUrl) {
+      setShowProgress(true);
+    }
+  }, [isCachedFile]);
+  return /*#__PURE__*/React__default.createElement(Component$1, {
     maxWidth: maxWidth,
     maxHeight: maxHeight,
     borderRadius: borderRadius,
@@ -22103,44 +23201,67 @@ var VideoPreview = function VideoPreview(_ref) {
     isPreview: isPreview,
     backgroundColor: backgroundColor,
     isDetailsView: isDetailsView
-  }, !isPreview && loading && !uploading && React__default.createElement(UploadProgress, {
+  }, !isPreview && loading && !uploading && /*#__PURE__*/React__default.createElement(UploadProgress, {
     isDetailsView: isDetailsView,
-    onClick: handlePauseResumeDownload,
     isRepliedMessage: isRepliedMessage,
     borderRadius: borderRadius,
-    backgroundImage: file.metadata && file.metadata.tmb ? file.metadata.tmb : ''
-  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
-    isRepliedMessage: isRepliedMessage
-  }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
+    backgroundImage: attachmentThumb,
+    withPrefix: withPrefix
+  }, showProgress && /*#__PURE__*/React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage,
-    className: 'rotate_cont'
-  }))), React__default.createElement("video", {
+    backgroundColor: 'rgba(23, 25, 28, 0.40)'
+  }, /*#__PURE__*/React__default.createElement(CancelResumeWrapper, {
+    onClick: handlePauseResumeDownload
+  }, downloadIsCancelled ? /*#__PURE__*/React__default.createElement(SvgDownload, null) : /*#__PURE__*/React__default.createElement(SvgCancel, null)), /*#__PURE__*/React__default.createElement(ProgressWrapper, null, /*#__PURE__*/React__default.createElement(reactCircularProgressbar.CircularProgressbar, {
+    minValue: 0,
+    maxValue: 100,
+    value: progress,
+    backgroundPadding: 3,
+    background: true,
+    text: '',
+    styles: {
+      background: {
+        fill: 'rgba(23, 25, 28, 0)'
+      },
+      path: {
+        stroke: "#fff",
+        strokeLinecap: 'butt',
+        strokeWidth: '4px',
+        transition: 'stroke-dashoffset 0.5s ease 0s',
+        transform: 'rotate(0turn)',
+        transformOrigin: 'center center'
+      }
+    }
+  })))), /*#__PURE__*/React__default.createElement("video", {
     draggable: false,
     ref: videoRef,
     preload: 'auto',
     id: 'video',
-    src: videoUrl,
+    src: file.attachmentUrl || videoUrl,
     onPause: function onPause() {
       return setVideoPlaying(false);
     },
     onPlay: function onPlay() {
       return setVideoPlaying(true);
-    }
-  }, React__default.createElement("source", {
-    src: videoUrl || file.url,
+    },
+    onProgress: handleVideoProgress
+  }, /*#__PURE__*/React__default.createElement("source", {
+    src: file.attachmentUrl || videoUrl || file.url,
     type: "video/" + getFileExtension(file.name || file.data.name)
-  }), React__default.createElement("source", {
-    src: videoUrl || file.url,
+  }), /*#__PURE__*/React__default.createElement("source", {
+    src: file.attachmentUrl || videoUrl || file.url,
     type: 'video/ogg'
-  }), "Your browser does not support the video tag."), videoCurrentTime && React__default.createElement(VideoControls, null, !isPreview && !!videoDuration && !isRepliedMessage && !uploading && !isDetailsView && React__default.createElement(VideoPlayButton, {
+  }), "Your browser does not support the video tag."), videoCurrentTime && /*#__PURE__*/React__default.createElement(VideoControls, null, !isPreview && !!videoDuration && !isRepliedMessage && !uploading && !isDetailsView &&
+  /*#__PURE__*/
+  React__default.createElement(VideoPlayButton, {
     showOnHover: videoPlaying
-  }, React__default.createElement(SvgPlayVideo, null)), React__default.createElement(VideoTime, {
+  }, /*#__PURE__*/React__default.createElement(SvgPlayVideo, null)), /*#__PURE__*/React__default.createElement(VideoTime, {
     isDetailsView: isDetailsView,
     isRepliedMessage: isPreview || isRepliedMessage
-  }, !isRepliedMessage && !isPreview && React__default.createElement(SvgVideoCall, null), videoCurrentTime)));
-};
-var VideoControls = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var VideoTime = styled__default.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
+  }, !isRepliedMessage && !isPreview && /*#__PURE__*/React__default.createElement(SvgVideoCall, null), videoCurrentTime)));
+});
+var VideoControls = styled__default.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var VideoTime = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
   return props.isRepliedMessage ? '3px' : props.isDetailsView ? undefined : '8px';
 }, function (props) {
   return props.isDetailsView ? '8px' : undefined;
@@ -22151,10 +23272,10 @@ var VideoTime = styled__default.div(_templateObject2$g || (_templateObject2$g = 
 }, function (props) {
   return props.isRepliedMessage ? '0 3px' : '4px 6px';
 }, colors.white, colors.white);
-var VideoPlayButton = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
+var VideoPlayButton = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
   return props.showOnHover && 'hidden';
 });
-var Component = styled__default.div(_templateObject4$9 || (_templateObject4$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: ", ";\n    max-height: ", ";\n    width: ", ";\n    height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
+var Component$1 = styled__default.div(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: ", ";\n    max-height: ", ";\n    width: ", ";\n    height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
   return props.maxWidth || '100%';
 }, function (props) {
   return props.maxHeight || '100%';
@@ -22177,8 +23298,8 @@ var Component = styled__default.div(_templateObject4$9 || (_templateObject4$9 = 
 }, function (props) {
   return props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
 }, VideoPlayButton);
-var DownloadFile = styled__default.a(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
-var AttachmentFile = styled__default.div(_templateObject6$6 || (_templateObject6$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
+var DownloadFile = styled__default.a(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
+var AttachmentFile = styled__default.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
   return props.background || '#ffffff';
 }, function (props) {
   return props.border || "1px solid " + colors.gray1;
@@ -22189,14 +23310,14 @@ var AttachmentFile = styled__default.div(_templateObject6$6 || (_templateObject6
 }, function (props) {
   return props.borderRadius || '6px';
 }, DownloadFile, AttachmentIconCont);
-var AttachmentImg = styled__default.img(_templateObject7$5 || (_templateObject7$5 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
+var AttachmentImg = styled__default.img(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
   return props.borderRadius || '6px';
 });
 
-var _circle$3, _path$H;
+var _circle$3, _path$Q;
 
-function _extends$I() {
-  _extends$I = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$R() {
+  _extends$R = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -22209,11 +23330,11 @@ function _extends$I() {
 
     return target;
   };
-  return _extends$I.apply(this, arguments);
+  return _extends$R.apply(this, arguments);
 }
 
 function SvgPlay(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$I({
+  return /*#__PURE__*/React.createElement("svg", _extends$R({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -22224,16 +23345,16 @@ function SvgPlay(props) {
     cy: 16,
     r: 16,
     fill: "#0DBD8B"
-  })), _path$H || (_path$H = /*#__PURE__*/React.createElement("path", {
+  })), _path$Q || (_path$Q = /*#__PURE__*/React.createElement("path", {
     d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
     fill: "#fff"
   })));
 }
 
-var _circle$4, _path$I;
+var _circle$4, _path$R;
 
-function _extends$J() {
-  _extends$J = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$S() {
+  _extends$S = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -22246,11 +23367,11 @@ function _extends$J() {
 
     return target;
   };
-  return _extends$J.apply(this, arguments);
+  return _extends$S.apply(this, arguments);
 }
 
 function SvgPause(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$J({
+  return /*#__PURE__*/React.createElement("svg", _extends$S({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -22261,7 +23382,7 @@ function SvgPause(props) {
     cy: 16,
     r: 16,
     fill: "#0DBD8B"
-  })), _path$I || (_path$I = /*#__PURE__*/React.createElement("path", {
+  })), _path$R || (_path$R = /*#__PURE__*/React.createElement("path", {
     d: "M13.721 10.375c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12h-1.067c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067zm5.625 0c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12H18.28c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067z",
     fill: "#fff"
   })));
@@ -22275,7 +23396,7 @@ var getPlayingAudioId = function getPlayingAudioId() {
   return playingAudioId;
 };
 
-var _templateObject$l, _templateObject2$h, _templateObject3$d, _templateObject4$a, _templateObject5$8, _templateObject6$7;
+var _templateObject$n, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$a, _templateObject6$9;
 
 var AudioPlayer = function AudioPlayer(_ref) {
   var url = _ref.url,
@@ -22478,22 +23599,22 @@ var AudioPlayer = function AudioPlayer(_ref) {
       wavesurfer.current.pause();
     }
   }, [payingAudioId]);
-  return React__default.createElement(Container$a, null, React__default.createElement(PlayPause, {
+  return /*#__PURE__*/React__default.createElement(Container$b, null, /*#__PURE__*/React__default.createElement(PlayPause, {
     onClick: handlePlayPause
-  }, playAudio ? React__default.createElement(SvgPause, null) : React__default.createElement(SvgPlay, null)), React__default.createElement(WaveContainer, null, React__default.createElement(AudioVisualization, {
+  }, playAudio ? /*#__PURE__*/React__default.createElement(SvgPause, null) : /*#__PURE__*/React__default.createElement(SvgPlay, null)), /*#__PURE__*/React__default.createElement(WaveContainer, null, /*#__PURE__*/React__default.createElement(AudioVisualization, {
     ref: wavesurferContainer
-  }), React__default.createElement(AudioRate, {
+  }), /*#__PURE__*/React__default.createElement(AudioRate, {
     onClick: handleSetAudioRate
-  }, audioRate, React__default.createElement("span", null, "X"))), React__default.createElement(Timer, null, currentTime));
+  }, audioRate, /*#__PURE__*/React__default.createElement("span", null, "X"))), /*#__PURE__*/React__default.createElement(Timer, null, currentTime));
 };
-var Container$a = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause = styled__default.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var AudioVisualization = styled__default.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
-var WaveContainer = styled__default.div(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
+var Container$b = styled__default.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause = styled__default.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var AudioVisualization = styled__default.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var AudioRate = styled__default.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
+var WaveContainer = styled__default.div(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
 
-var _templateObject$m, _templateObject2$i, _templateObject3$e, _templateObject4$b, _templateObject5$9, _templateObject6$8, _templateObject7$6, _templateObject8$5, _templateObject9$4, _templateObject10$3, _templateObject11$3;
+var _templateObject$o, _templateObject2$k, _templateObject3$g, _templateObject4$d, _templateObject5$b, _templateObject6$a, _templateObject7$8, _templateObject8$7, _templateObject9$6, _templateObject10$5, _templateObject11$5, _templateObject12$3, _templateObject13$3;
 
 var Attachment = function Attachment(_ref) {
   var attachment = _ref.attachment,
@@ -22519,32 +23640,63 @@ var Attachment = function Attachment(_ref) {
       videoAttachmentMaxHeight = _ref.videoAttachmentMaxHeight;
   var dispatch = reactRedux.useDispatch();
   var attachmentCompilationState = reactRedux.useSelector(attachmentCompilationStateSelector) || {};
+  var attachmentsUploadProgress = reactRedux.useSelector(attachmentsUploadProgressSelector) || {};
   var connectionStatus = reactRedux.useSelector(connectionStatusSelector);
   var theme = reactRedux.useSelector(themeSelector);
   var imageContRef = React.useRef(null);
 
-  var _useState = React.useState(false),
-      downloadingFile = _useState[0],
-      setDownloadingFile = _useState[1];
+  var _useState = React.useState(true),
+      imageLoading = _useState[0],
+      setImageLoading = _useState[1];
 
-  var _useState2 = React.useState(''),
-      attachmentUrl = _useState2[0],
-      setAttachmentUrl = _useState2[1];
+  var _useState2 = React.useState(false),
+      downloadingFile = _useState2[0],
+      setDownloadingFile = _useState2[1];
 
-  var _useState3 = React.useState(true),
-      isCached = _useState3[0],
-      setIsCached = _useState3[1];
+  var _useState3 = React.useState(''),
+      attachmentUrl = _useState3[0],
+      setAttachmentUrl = _useState3[1];
 
-  var _useState4 = React.useState(false),
-      downloadIsCancelled = _useState4[0],
-      setDownloadIsCancelled = _useState4[1];
+  var _useState4 = React.useState(3),
+      progress = _useState4[0],
+      setProgress = _useState4[1];
+
+  var _useState5 = React.useState(),
+      sizeProgress = _useState5[0],
+      setSizeProgress = _useState5[1];
+
+  var _useState6 = React.useState(true),
+      isCached = _useState6[0],
+      setIsCached = _useState6[1];
+
+  var _useState7 = React.useState(false),
+      downloadIsCancelled = _useState7[0],
+      setDownloadIsCancelled = _useState7[1];
 
   var fileNameRef = React.useRef(null);
   var customDownloader = getCustomDownloader();
+  var previewFileType = isPreview && attachment.data.type.split('/')[0];
 
   var _ref2 = attachment.metadata && attachment.metadata.szw && attachment.metadata.szh ? calculateRenderedImageWidth(attachment.metadata.szw, attachment.metadata.szh, imageAttachmentMaxWidth, imageAttachmentMaxHeight) : [],
       renderWidth = _ref2[0],
       renderHeight = _ref2[1];
+
+  var isInUploadingState = attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED);
+  var attachmentThumb;
+  var withPrefix = true;
+
+  if (attachment.type !== attachmentTypes.voice && attachment.type !== attachmentTypes.link && attachment.metadata && attachment.metadata.tmb) {
+    try {
+      if (attachment.metadata.tmb.length < 70) {
+        attachmentThumb = base64ToToDataURL(attachment.metadata.tmb);
+        withPrefix = false;
+      } else {
+        attachmentThumb = attachment.metadata && attachment.metadata.tmb;
+      }
+    } catch (e) {
+      console.log('error on get attachmentThumb', e);
+    }
+  }
 
   var downloadImage = function downloadImage(url) {
     var image = new Image();
@@ -22566,7 +23718,7 @@ var Attachment = function Attachment(_ref) {
       setDownloadIsCancelled(false);
 
       if (customDownloader) {
-        customDownloader(attachment.url).then(function (url) {
+        customDownloader(attachment.url, false).then(function (url) {
           downloadImage(url);
         });
       } else {
@@ -22581,11 +23733,15 @@ var Attachment = function Attachment(_ref) {
   var handlePauseResumeUpload = function handlePauseResumeUpload(e) {
     e.stopPropagation();
 
-    if (attachmentCompilationState[attachment.attachmentId]) {
-      if (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING) {
-        dispatch(pauseAttachmentUploadingAC(attachment.attachmentId));
-      } else {
-        dispatch(resumeAttachmentUploadingAC(attachment.attachmentId));
+    if (downloadingFile) {
+      handleStopStartDownloadFile(attachment);
+    } else {
+      if (attachmentCompilationState[attachment.attachmentId]) {
+        if (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING) {
+          dispatch(pauseAttachmentUploadingAC(attachment.attachmentId));
+        } else {
+          dispatch(resumeAttachmentUploadingAC(attachment.attachmentId));
+        }
       }
     }
   };
@@ -22597,14 +23753,33 @@ var Attachment = function Attachment(_ref) {
   };
 
   var handleCompleteDownload = function handleCompleteDownload(attachmentId) {
+    console.log('handle complete download .... ', attachmentId);
+    console.log('attachment.id .... ', attachment.id);
+
     if (attachmentId === attachment.id) {
       setDownloadingFile(false);
     }
   };
 
+  var handleStopStartDownloadFile = function handleStopStartDownloadFile(attachment) {
+    if (downloadingFile) {
+      cancelDownloadFile(attachment.id || '');
+    } else {
+      handleDownloadFile(attachment);
+    }
+  };
+
   var handleDownloadFile = function handleDownloadFile(attachment) {
     setDownloadingFile(true);
-    downloadFile(attachment, handleCompleteDownload);
+    downloadFile(attachment, true, handleCompleteDownload, function (progress) {
+      var loadedRes = progress.loaded && progress.loaded / progress.total;
+      var uploadPercent = loadedRes && loadedRes * 100;
+      setProgress(uploadPercent > 3 ? uploadPercent : 3);
+      setSizeProgress({
+        loaded: progress.loaded || 0,
+        total: progress.total || 0
+      });
+    });
   };
 
   React.useEffect(function () {
@@ -22613,6 +23788,10 @@ var Attachment = function Attachment(_ref) {
     }
   }, [attachmentUrl]);
   React.useEffect(function () {
+    if (isPreview) {
+      console.log('attachment - - - - -', attachment);
+    }
+
     if (connectionStatus === CONNECTION_STATUS.CONNECTED && !(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
         if (attachment.type === 'image' && !isPreview) {
@@ -22620,12 +23799,15 @@ var Attachment = function Attachment(_ref) {
             setAttachmentUrl(cachedUrl);
             setIsCached(true);
           } else {
+            setIsCached(false);
+
             if (customDownloader) {
-              customDownloader(attachment.url).then(function (url) {
+              customDownloader(attachment.url, false).then(function (url) {
                 try {
                   downloadImage(url);
                   return Promise.resolve(fetch(url)).then(function (response) {
                     setAttachmentToCache(attachment.id, response);
+                    setIsCached(true);
                   });
                 } catch (e) {
                   return Promise.reject(e);
@@ -22633,6 +23815,15 @@ var Attachment = function Attachment(_ref) {
               });
             } else {
               downloadImage(attachment.url);
+              fetch(attachment.url).then(function (response) {
+                try {
+                  setAttachmentToCache(attachment.id, response);
+                  setIsCached(true);
+                  return Promise.resolve();
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              });
             }
           }
         } else {
@@ -22640,11 +23831,20 @@ var Attachment = function Attachment(_ref) {
             setAttachmentUrl(cachedUrl);
             setIsCached(true);
           } else {
+            setIsCached(false);
+            console.log('should download the video .............................');
+
             if (customDownloader) {
-              customDownloader(attachment.url).then(function (url) {
+              customDownloader(attachment.url, false, function (progress) {
+                var loadedRes = progress.loaded && progress.loaded / progress.total;
+                var uploadPercent = loadedRes && loadedRes * 100;
+                console.log('download progress. ..... .. ', uploadPercent);
+                setProgress(uploadPercent);
+              }).then(function (url) {
                 try {
                   return Promise.resolve(fetch(url)).then(function (response) {
                     setAttachmentToCache(attachment.id, response);
+                    setIsCached(true);
                     setAttachmentUrl(url);
                   });
                 } catch (e) {
@@ -22653,6 +23853,15 @@ var Attachment = function Attachment(_ref) {
               });
             } else {
               setAttachmentUrl(attachment.url);
+              fetch(attachment.url).then(function (response) {
+                try {
+                  setAttachmentToCache(attachment.id, response);
+                  setIsCached(true);
+                  return Promise.resolve();
+                } catch (e) {
+                  return Promise.reject(e);
+                }
+              });
             }
           }
         }
@@ -22660,7 +23869,7 @@ var Attachment = function Attachment(_ref) {
         console.log('error on get attachment url from cache. .. ', e);
 
         if (customDownloader) {
-          customDownloader(attachment.url).then(function (url) {
+          customDownloader(attachment.url, false).then(function (url) {
             try {
               return Promise.resolve(fetch(url)).then(function (response) {
                 setAttachmentToCache(attachment.id, response);
@@ -22676,7 +23885,22 @@ var Attachment = function Attachment(_ref) {
       });
     }
   }, [attachment.id]);
-  return React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? React__default.createElement(AttachmentImgCont, {
+  React.useEffect(function () {
+    var attachmentIndex = attachment.attachmentId || attachment.id;
+
+    if (attachmentIndex && (attachmentsUploadProgress[attachmentIndex] || attachmentsUploadProgress[attachmentIndex])) {
+      var uploadProgress = attachmentsUploadProgress[attachmentIndex];
+      var uploadPercent = uploadProgress.progress && uploadProgress.progress * 100 > 3 ? uploadProgress.progress * 100 : 3;
+      console.log('set uploadPercent ------- ', uploadPercent);
+      setProgress(uploadPercent);
+      console.log('set uploadPercent ------- ', uploadPercent);
+      setSizeProgress({
+        loaded: uploadProgress.uploaded || 0,
+        total: uploadProgress.total || 0
+      });
+    }
+  }, [attachmentsUploadProgress]);
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, attachment.type === 'image' ? /*#__PURE__*/React__default.createElement(AttachmentImgCont, {
     draggable: false,
     onClick: function onClick() {
       return handleMediaItemClick && handleMediaItemClick(attachment);
@@ -22684,12 +23908,13 @@ var Attachment = function Attachment(_ref) {
     isPreview: isPreview,
     ref: imageContRef,
     borderRadius: borderRadius,
-    backgroundImage: attachment.metadata && attachment.metadata.tmb,
+    backgroundImage: attachmentThumb,
+    withPrefix: withPrefix,
     isRepliedMessage: isRepliedMessage,
     fitTheContainer: isDetailsView,
     width: !isPreview && !isRepliedMessage ? renderWidth : undefined,
     height: !isPreview && !isRepliedMessage ? renderHeight : undefined
-  }, (attachment.attachmentUrl || attachmentUrl) && React__default.createElement(AttachmentImg$1, {
+  }, /*#__PURE__*/React__default.createElement(AttachmentImg$1, {
     draggable: false,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
     src: attachment.attachmentUrl || attachmentUrl,
@@ -22699,61 +23924,102 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     withBorder: !isPreview && !isDetailsView,
     fitTheContainer: isDetailsView,
-    imageMaxHeight: attachment.metadata && (attachment.metadata.szh > 400 ? '400px' : attachment.metadata.szh + "px")
-  }), !isPreview && !(attachment.attachmentUrl || attachmentUrl) && React__default.createElement(UploadProgress, {
-    backgroundImage: attachment.metadata && attachment.metadata.tmb,
+    imageMaxHeight: attachment.metadata && (attachment.metadata.szh > 400 ? '400px' : attachment.metadata.szh + "px"),
+    onLoad: function onLoad() {
+      return setImageLoading(false);
+    }
+  }), !isPreview && (isInUploadingState || imageLoading) ? /*#__PURE__*/React__default.createElement(UploadProgress, {
+    backgroundImage: attachmentThumb,
     isRepliedMessage: isRepliedMessage,
-    onClick: handlePauseResumeDownload,
     width: renderWidth,
     height: renderHeight,
     withBorder: !isPreview && !isDetailsView,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
     isDetailsView: isDetailsView,
     imageMinWidth: imageMinWidth
-  }, !isCached && React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
+  }, /*#__PURE__*/React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
-  }, downloadIsCancelled ? React__default.createElement(SvgDownload, null) : React__default.createElement(SvgCancel, null)), !downloadIsCancelled && React__default.createElement(UploadingIcon, {
-    isRepliedMessage: isRepliedMessage,
-    className: 'rotate_cont'
-  }))), !isPreview && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
+  }, isInUploadingState ? /*#__PURE__*/React__default.createElement(CancelResumeWrapper, {
     onClick: handlePauseResumeUpload
-  }, React__default.createElement(UploadPercent, null, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(SvgCancel, null) : React__default.createElement(SvgUpload, null)), attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING && React__default.createElement(UploadingIcon, {
-    className: 'rotate_cont'
-  })) : null, isPreview && React__default.createElement(RemoveChosenFile, {
+  }, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? /*#__PURE__*/React__default.createElement(SvgCancel, null) : /*#__PURE__*/React__default.createElement(SvgUpload, null)) : !isCached && /*#__PURE__*/React__default.createElement(CancelResumeWrapper, {
+    onClick: handlePauseResumeDownload
+  }, downloadIsCancelled ? /*#__PURE__*/React__default.createElement(SvgDownload, null) : /*#__PURE__*/React__default.createElement(SvgCancel, null)), (!isCached || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ProgressWrapper, null, /*#__PURE__*/React__default.createElement(reactCircularProgressbar.CircularProgressbar, {
+    minValue: 0,
+    maxValue: 100,
+    value: progress,
+    backgroundPadding: 3,
+    background: true,
+    text: '',
+    styles: {
+      background: {
+        fill: 'rgba(23, 25, 28, 0.40)'
+      },
+      path: {
+        stroke: "#fff",
+        strokeLinecap: 'butt',
+        strokeWidth: '4px',
+        transition: 'stroke-dashoffset 0.5s ease 0s',
+        transform: 'rotate(0turn)',
+        transformOrigin: 'center center'
+      }
+    }
+  })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, isPreview && /*#__PURE__*/React__default.createElement(RemoveChosenFile, {
     color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
-  })) : attachment.type === 'video' ? React__default.createElement(React__default.Fragment, null, !isPreview ? React__default.createElement(VideoCont, {
+  })) : attachment.type === 'video' ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !isPreview ? /*#__PURE__*/React__default.createElement(VideoCont, {
     onClick: function onClick() {
       return handleMediaItemClick && (attachmentCompilationState[attachment.attachmentId] ? attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.FAIL || attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.UPLOADING : true) && handleMediaItemClick(attachment);
     },
     isDetailsView: isDetailsView
-  }, attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
+  }, isInUploadingState ? /*#__PURE__*/React__default.createElement(UploadProgress, {
     isDetailsView: isDetailsView,
     isRepliedMessage: isRepliedMessage,
-    onClick: handlePauseResumeUpload,
-    backgroundImage: attachment.metadata && attachment.metadata.tmb ? attachment.metadata.tmb : ''
-  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(UploadPercent, {
-    isRepliedMessage: isRepliedMessage
-  }, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(SvgCancel, null) : React__default.createElement(SvgUpload, null)), attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING && React__default.createElement(UploadingIcon, {
+    withPrefix: withPrefix,
+    backgroundImage: attachmentThumb ? attachment.metadata.tmb : '',
+    zIndex: 9
+  }, /*#__PURE__*/React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage,
-    className: 'rotate_cont'
-  }))) : null, React__default.createElement(VideoPreview, {
+    backgroundColor: 'rgba(23, 25, 28, 0.40)'
+  }, /*#__PURE__*/React__default.createElement(CancelResumeWrapper, {
+    onClick: handlePauseResumeUpload
+  }, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? /*#__PURE__*/React__default.createElement(SvgCancel, null) : /*#__PURE__*/React__default.createElement(SvgUpload, null)), attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ProgressWrapper, null, /*#__PURE__*/React__default.createElement(reactCircularProgressbar.CircularProgressbar, {
+    minValue: 0,
+    maxValue: 100,
+    value: progress,
+    backgroundPadding: 3,
+    background: true,
+    text: '',
+    styles: {
+      background: {
+        fill: 'rgba(23, 25, 28, 0)'
+      },
+      path: {
+        stroke: "#fff",
+        strokeLinecap: 'butt',
+        strokeWidth: '4px',
+        transition: 'stroke-dashoffset 0.5s ease 0s',
+        transform: 'rotate(0turn)',
+        transformOrigin: 'center center'
+      }
+    }
+  })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, /*#__PURE__*/React__default.createElement(VideoPreview, {
     theme: theme,
     maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : videoAttachmentMaxWidth ? videoAttachmentMaxWidth + "px" : '320px',
     maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : videoAttachmentMaxHeight ? videoAttachmentMaxHeight + "px" : '240px',
     file: attachment,
     src: attachmentUrl,
+    isCachedFile: isCached,
     uploading: attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED),
     borderRadius: isRepliedMessage ? '4px' : borderRadius,
     isRepliedMessage: isRepliedMessage,
     isDetailsView: isDetailsView,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight
-  })) : React__default.createElement(AttachmentImgCont, {
+  })) : /*#__PURE__*/React__default.createElement(AttachmentImgCont, {
     isPreview: isPreview,
     backgroundColor: colors.defaultAvatarBackground
-  }, React__default.createElement(VideoPreview, {
+  }, /*#__PURE__*/React__default.createElement(VideoPreview, {
     maxWidth: '48px',
     maxHeight: '48px',
     file: attachment,
@@ -22762,15 +24028,17 @@ var Attachment = function Attachment(_ref) {
     setVideoIsReadyToSend: setVideoIsReadyToSend,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
     isPreview: true
-  }), React__default.createElement(RemoveChosenFile, {
+  }), /*#__PURE__*/React__default.createElement(RemoveChosenFile, {
     color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
-  }))) : attachment.type === attachmentTypes.voice ? React__default.createElement(AudioPlayer, {
+  }))) : attachment.type === attachmentTypes.voice ? /*#__PURE__*/React__default.createElement(AudioPlayer, {
     url: attachment.attachmentUrl || attachmentUrl,
     file: attachment
-  }) : attachment.type === attachmentTypes.link ? null : React__default.createElement(AttachmentFile$1, {
+  }) : attachment.type === attachmentTypes.link ? null :
+  /*#__PURE__*/
+  React__default.createElement(AttachmentFile$1, {
     draggable: false,
     isPreview: isPreview,
     isUploading: attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED,
@@ -22779,14 +24047,28 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     border: selectedFileAttachmentsBoxBorder || (theme === THEME.DARK ? 'none' : ''),
     width: fileAttachmentWidth
-  }, attachment.metadata && attachment.metadata.tmb ? React__default.createElement(FileThumbnail, {
-    src: "data:image/jpeg;base64," + attachment.metadata.tmb
-  }) : React__default.createElement(AttachmentIconCont, {
-    className: 'icon-warpper'
-  }, selectedFileAttachmentsIcon || React__default.createElement(SvgFileIcon, null)), !isRepliedMessage && !isPreview && React__default.createElement(DownloadFile$1, {
+  }, attachmentThumb ? /*#__PURE__*/React__default.createElement(FileThumbnail, {
+    src: withPrefix ? "data:image/jpeg;base64," + attachmentThumb : attachmentThumb
+  }) :
+  /*#__PURE__*/
+  React__default.createElement(AttachmentIconCont, {
     backgroundColor: colors.primary,
+    className: 'icon-warpper'
+  }, previewFileType && previewFileType === 'video' ? /*#__PURE__*/React__default.createElement(VideoPreview, {
+    file: attachment,
+    backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
+    maxWidth: '40px',
+    maxHeight: '40px',
+    src: attachment.attachmentUrl,
+    setVideoIsReadyToSend: setVideoIsReadyToSend,
+    isPreview: true
+  }) : isPreview && attachment.attachmentUrl ? /*#__PURE__*/React__default.createElement(FileThumbnail, {
+    src: attachment.attachmentUrl
+  }) : attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.UPLOADING && attachmentCompilationState[attachment.attachmentId] !== UPLOAD_STATE.PAUSED && (selectedFileAttachmentsIcon || /*#__PURE__*/React__default.createElement(SvgFileIcon, null))), !isRepliedMessage && !isPreview && /*#__PURE__*/React__default.createElement(DownloadFile$1, {
+    widthThumb: !!attachmentThumb,
+    backgroundColor: attachmentThumb ? 'rgba(0,0,0,0.4)' : colors.primary,
     onClick: function onClick() {
-      return handleDownloadFile(attachment);
+      return handleStopStartDownloadFile(attachment);
     },
     onMouseEnter: function onMouseEnter() {
       return handleMouseEvent(true);
@@ -22794,33 +24076,54 @@ var Attachment = function Attachment(_ref) {
     onMouseLeave: function onMouseLeave() {
       return handleMouseEvent(false);
     }
-  }, downloadingFile ? React__default.createElement(UploadingIcon, {
+  }, downloadingFile ? /*#__PURE__*/React__default.createElement(SvgCancel, null) : /*#__PURE__*/React__default.createElement(SvgDownload, null)), !isRepliedMessage && !isPreview && (isInUploadingState || downloadingFile) ? /*#__PURE__*/React__default.createElement(UploadProgress, {
     fileAttachment: true
-  }) : React__default.createElement(SvgDownload, null)), !isPreview && attachmentCompilationState[attachment.attachmentId] && (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.PAUSED) ? React__default.createElement(UploadProgress, {
+  }, /*#__PURE__*/React__default.createElement(UploadPercent, {
     fileAttachment: true,
+    borderRadius: !(attachmentThumb || attachment.attachmentUrl && isPreview) ? '50%' : undefined,
+    backgroundColor: downloadingFile ? '' : attachment.attachmentUrl || attachmentThumb ? 'rgba(0,0,0,0.4)' : colors.primary
+  }, (isInUploadingState || downloadingFile) && /*#__PURE__*/React__default.createElement(CancelResumeWrapper, {
     onClick: handlePauseResumeUpload
-  }, React__default.createElement(UploadPercent, {
-    fileAttachment: true,
-    borderRadius: attachment.metadata && attachment.metadata.tmb ? undefined : '50%'
-  }, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING ? React__default.createElement(SvgCancel, null) : React__default.createElement(SvgUpload, null)), React__default.createElement(UploadingIcon, {
-    fileAttachment: true,
-    className: 'rotate_cont'
-  })) : null, !isRepliedMessage && React__default.createElement(AttachmentFileInfo, {
+  }, attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || downloadingFile ? /*#__PURE__*/React__default.createElement(SvgCancel, null) : isInUploadingState && /*#__PURE__*/React__default.createElement(SvgUpload, null)), (attachmentCompilationState[attachment.attachmentId] === UPLOAD_STATE.UPLOADING || downloadingFile) && /*#__PURE__*/React__default.createElement(ProgressWrapper, null, /*#__PURE__*/React__default.createElement(reactCircularProgressbar.CircularProgressbar, {
+    minValue: 0,
+    maxValue: 100,
+    value: progress,
+    backgroundPadding: 6,
+    background: true,
+    text: '',
+    styles: {
+      background: {
+        fill: 'transparent'
+      },
+      path: {
+        stroke: "#fff",
+        strokeLinecap: 'butt',
+        strokeWidth: '4px',
+        transition: 'stroke-dashoffset 0.5s ease 0s',
+        transform: 'rotate(0turn)',
+        transformOrigin: 'center center'
+      }
+    }
+  })))) : null, !isRepliedMessage && /*#__PURE__*/React__default.createElement(AttachmentFileInfo, {
     isPreview: isPreview
-  }, React__default.createElement(AttachmentName, {
+  }, /*#__PURE__*/React__default.createElement(AttachmentName, {
     color: selectedFileAttachmentsTitleColor,
     ref: fileNameRef
-  }, formatLargeText(isPreview ? attachment.data.name : attachment.name, fileAttachmentWidth ? fileAttachmentWidth / 12.5 : isPreview ? 18 : 30)), React__default.createElement(AttachmentSize, {
+  }, formatLargeText(isPreview ? attachment.data.name : attachment.name, fileAttachmentWidth ? fileAttachmentWidth / 12.5 : isPreview ? 18 : 30)), /*#__PURE__*/React__default.createElement(AttachmentSize, {
     color: selectedFileAttachmentsSizeColor
-  }, (attachment.data && attachment.data.size || attachment.size) && bytesToSize(isPreview ? attachment.data.size : +attachment.size))), isPreview && React__default.createElement(RemoveChosenFile, {
+  }, (isInUploadingState || downloadingFile) && sizeProgress ? bytesToSize(sizeProgress.loaded, 1) + " \u2022 " + bytesToSize(sizeProgress.total, 1) : (attachment.data && attachment.data.size || attachment.size) && bytesToSize(isPreview ? attachment.data.size : +attachment.size))), isPreview && /*#__PURE__*/React__default.createElement(RemoveChosenFile, {
     color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
       return removeSelected && removeSelected(attachment.attachmentId);
     }
   })));
 };
-var DownloadImage = styled__default.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+
+var Attachment$1 = /*#__PURE__*/React__default.memo(Attachment, function (prevProps, nextProps) {
+  return prevProps.attachment.url === nextProps.attachment.url && prevProps.attachment.id === nextProps.attachment.id;
+});
+var DownloadImage = styled__default.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
+var AttachmentImgCont = styled__default.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPreview ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
@@ -22837,11 +24140,17 @@ var AttachmentImgCont = styled__default.div(_templateObject2$i || (_templateObje
 }, DownloadImage, function (props) {
   return props.isPreview && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
 });
-var FileThumbnail = styled__default.img(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
-var DownloadFile$1 = styled__default.span(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
+var FileThumbnail = styled__default.img(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
+var DownloadFile$1 = styled__default.span(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  position: ", ";\n  border-radius: ", ";\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
+}, function (props) {
+  return props.widthThumb && 'absolute';
+}, function (props) {
+  return props.widthThumb ? '8px' : '50%';
 });
-var AttachmentFile$1 = styled__default.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var ProgressWrapper = styled__default.span(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var SizeProgress = styled__default.span(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: -26px;\n  background-color: rgba(0, 0, 0, 0.4);\n  color: ", ";\n  font-size: 12px;\n  border-radius: 12px;\n  padding: 3px 6px;\n  white-space: nowrap;\n"])), colors.white);
+var AttachmentFile$1 = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
   return !props.isRepliedMessage && (props.width ? props.width + "px" : '350px');
@@ -22854,21 +24163,21 @@ var AttachmentFile$1 = styled__default.div(_templateObject5$9 || (_templateObjec
 }, function (props) {
   return props.borderRadius || '6px';
 }, function (props) {
-  return !props.isRepliedMessage && !props.isPreview && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n        display: none;\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
+  return !props.isRepliedMessage && !props.isPreview && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
-var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
+var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
   return props.color || colors.textColor3;
 });
-var AttachmentName = styled__default.h3(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
+var AttachmentName = styled__default.h3(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
   return props.color || colors.textColor1;
 });
-var AttachmentSize = styled__default.span(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
+var AttachmentSize = styled__default.span(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, colors.red1);
-var AttachmentFileInfo = styled__default.div(_templateObject9$4 || (_templateObject9$4 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  ", "\n"])), function (props) {
+var AttachmentFileInfo = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  ", "\n"])), function (props) {
   return props.isPreview && "line-height: 14px;\n      max-width: calc(100% - 44px);\n  ";
 });
-var AttachmentImg$1 = styled__default.img(_templateObject10$3 || (_templateObject10$3 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  border-radius: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  max-width: 100%;\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  min-width: ", ";\n  object-fit: cover;\n  visibility: ", ";\n  z-index: 2;\n"])), function (props) {
+var AttachmentImg$1 = styled__default.img(_templateObject12$3 || (_templateObject12$3 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  border-radius: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  max-width: 100%;\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n  min-width: ", ";\n  object-fit: cover;\n  visibility: ", ";\n  z-index: 2;\n"])), function (props) {
   return props.absolute && 'absolute';
 }, function (props) {
   return props.isRepliedMessage ? '4px' : props.borderRadius || '6px';
@@ -22887,11 +24196,11 @@ var AttachmentImg$1 = styled__default.img(_templateObject10$3 || (_templateObjec
 }, function (props) {
   return props.hidden && 'hidden';
 });
-var VideoCont = styled__default.div(_templateObject11$3 || (_templateObject11$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  cursor: pointer;\n  height: ", ";\n"])), function (props) {
+var VideoCont = styled__default.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  cursor: pointer;\n  height: ", ";\n"])), function (props) {
   return props.isDetailsView && '100%';
 });
 
-var _templateObject$n, _templateObject2$j;
+var _templateObject$p, _templateObject2$l;
 
 var CustomRadio$1 = function CustomRadio(_ref) {
   var index = _ref.index,
@@ -22902,14 +24211,14 @@ var CustomRadio$1 = function CustomRadio(_ref) {
       borderRadius = _ref.borderRadius,
       size = _ref.size,
       disabled = _ref.disabled;
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(CustomLabel$1, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(CustomLabel$1, {
     isChecked: state,
     size: size,
     checkedBorder: checkedBorder,
     border: border,
     borderRadius: borderRadius,
     htmlFor: "radio-" + index
-  }), React__default.createElement(Radio, {
+  }), /*#__PURE__*/React__default.createElement(Radio, {
     disabled: disabled,
     type: 'radio',
     id: "radio-" + index,
@@ -22919,7 +24228,7 @@ var CustomRadio$1 = function CustomRadio(_ref) {
     }
   }));
 };
-var CustomLabel$1 = styled__default.label(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
+var CustomLabel$1 = styled__default.label(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
   return props.size || '12px';
 }, function (props) {
   return props.size || '12px';
@@ -22928,9 +24237,9 @@ var CustomLabel$1 = styled__default.label(_templateObject$n || (_templateObject$
 }, function (props) {
   return props.borderRadius || '50%';
 });
-var Radio = styled__default.input(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var Radio = styled__default.input(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$o, _templateObject2$k;
+var _templateObject$q, _templateObject2$m;
 
 function ConfirmPopup(_ref) {
   var title = _ref.title,
@@ -22976,57 +24285,57 @@ function ConfirmPopup(_ref) {
   React.useEffect(function () {
     setInitialRender(false);
   }, []);
-  return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
     theme: theme,
     backgroundColor: colors.backgroundColor,
     maxWidth: '520px',
     minWidth: '520px',
     isLoading: loading,
     padding: '0'
-  }, React__default.createElement(PopupBody, {
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
     paddingH: '24px',
     paddingV: '24px'
-  }, React__default.createElement(CloseIcon, {
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
     color: colors.textColor1,
     onClick: function onClick() {
       return togglePopup();
     }
-  }), React__default.createElement(PopupName, {
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
     color: colors.textColor1,
     isDelete: true,
     marginBottom: '20px'
-  }, title), React__default.createElement(PopupDescription, null, description), isDeleteMessage && React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && React__default.createElement(DeleteOptionItem, {
+  }, title), /*#__PURE__*/React__default.createElement(PopupDescription, null, description), isDeleteMessage && /*#__PURE__*/React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
     onClick: function onClick() {
       return setDeleteMessageOption('forEveryone');
     }
-  }, React__default.createElement(CustomRadio$1, {
+  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
     index: '1',
     size: '18px',
     state: deleteMessageOption === 'forEveryone',
     onChange: function onChange(e) {
       return handleChoseDeleteOption(e, 'forEveryone');
     }
-  }), "Delete for everyone"), React__default.createElement(DeleteOptionItem, {
+  }), "Delete for everyone"), /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
     onClick: function onClick() {
       return setDeleteMessageOption('forMe');
     }
-  }, React__default.createElement(CustomRadio$1, {
+  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
     index: '2',
     size: '18px',
     state: deleteMessageOption === 'forMe',
     onChange: function onChange(e) {
       return handleChoseDeleteOption(e, 'forMe');
     }
-  }), "Delete for me"))), React__default.createElement(PopupFooter, {
+  }), "Delete for me"))), /*#__PURE__*/React__default.createElement(PopupFooter, {
     backgroundColor: colors.backgroundColor
-  }, React__default.createElement(Button, {
+  }, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return togglePopup();
     }
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     backgroundColor: buttonBackground || colors.red1,
     color: buttonTextColor,
@@ -23035,8 +24344,8 @@ function ConfirmPopup(_ref) {
     disabled: initialRender
   }, buttonText || 'Delete'))));
 }
-var DeleteMessageOptions = styled__default.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
-var DeleteOptionItem = styled__default.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
+var DeleteMessageOptions = styled__default.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
+var DeleteOptionItem = styled__default.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
 
 function useOnScreen(ref) {
   var _useState = React.useState(false),
@@ -23056,7 +24365,7 @@ function useOnScreen(ref) {
   return isIntersecting;
 }
 
-var _templateObject$p, _templateObject2$l, _templateObject3$f, _templateObject4$c, _templateObject5$a, _templateObject6$9, _templateObject7$7, _templateObject8$6, _templateObject9$5;
+var _templateObject$r, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$b, _templateObject7$9, _templateObject8$8, _templateObject9$7;
 
 function ForwardMessagePopup(_ref) {
   var title = _ref.title,
@@ -23173,38 +24482,38 @@ function ForwardMessagePopup(_ref) {
   React.useEffect(function () {
     dispatch(getChannelsForForwardAC(searchValue));
   }, [searchValue]);
-  return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
     maxWidth: '522px',
     minWidth: '522px',
     height: '540px',
     isLoading: loading,
     padding: '0'
-  }, React__default.createElement(PopupBody, {
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
     paddingH: '24px',
     paddingV: '24px',
     withFooter: true
-  }, React__default.createElement(CloseIcon, {
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
     onClick: function onClick() {
       return togglePopup();
     }
-  }), React__default.createElement(PopupName, {
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
     isDelete: true,
     marginBottom: '20px'
-  }, title), React__default.createElement(ChannelSearch, {
+  }, title), /*#__PURE__*/React__default.createElement(ChannelSearch, {
     searchValue: searchValue,
     handleSearchValueChange: handleSearchValueChange,
     getMyChannels: getMyChannels
-  }), React__default.createElement(SelectedChannelsContainer, {
+  }), /*#__PURE__*/React__default.createElement(SelectedChannelsContainer, {
     ref: selectedChannelsContRef
   }, selectedChannels.map(function (channel) {
-    return React__default.createElement(SelectedChannelBuble, {
+    return /*#__PURE__*/React__default.createElement(SelectedChannelBuble, {
       key: "selected-" + channel.id
-    }, React__default.createElement(SelectedChannelName, null, channel.displayName), React__default.createElement(StyledSubtractSvg$1, {
+    }, /*#__PURE__*/React__default.createElement(SelectedChannelName, null, channel.displayName), /*#__PURE__*/React__default.createElement(StyledSubtractSvg$1, {
       onClick: function onClick() {
         return removeChannel(channel);
       }
     }));
-  })), React__default.createElement(ForwardChannelsCont, {
+  })), /*#__PURE__*/React__default.createElement(ForwardChannelsCont, {
     onScroll: handleChannelListScroll,
     selectedChannelsHeight: selectedChannelsContHeight
   }, channels.map(function (channel) {
@@ -23215,18 +24524,18 @@ function ForwardMessagePopup(_ref) {
     var isSelected = selectedChannels.findIndex(function (chan) {
       return chan.id === channel.id;
     }) >= 0;
-    return React__default.createElement(ChannelItem, {
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
       key: channel.id,
       onClick: function onClick(e) {
         return handleChoseChannel(e, channel.id);
       }
-    }, React__default.createElement(Avatar, {
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
       name: channel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
       image: channel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
       size: 40,
       textSize: 12,
       setDefaultAvatar: isDirectChannel
-    }), React__default.createElement(ChannelInfo$2, null, React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), React__default.createElement(CustomCheckbox, {
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
       index: channel.id,
       disabled: selectedChannels.length >= 5 && !isSelected,
       state: isSelected,
@@ -23235,33 +24544,33 @@ function ForwardMessagePopup(_ref) {
       },
       size: '18px'
     }));
-  }))), React__default.createElement(PopupFooter, {
+  }))), /*#__PURE__*/React__default.createElement(PopupFooter, {
     backgroundColor: colors.backgroundColor
-  }, React__default.createElement(Button, {
+  }, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return togglePopup();
     }
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     backgroundColor: colors.primary,
     borderRadius: '8px',
     onClick: handleForwardMessage
   }, buttonText || 'Forward'))));
 }
-var ForwardChannelsCont = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 14px;\n"])), function (props) {
+var ForwardChannelsCont = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 14px;\n"])), function (props) {
   return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
 });
-var ChannelItem = styled__default.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
-var ChannelInfo$2 = styled__default.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
-var ChannelTitle = styled__default.h3(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
-var ChannelMembers = styled__default.h4(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
-var SelectedChannelsContainer = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedChannelBuble = styled__default.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
-var SelectedChannelName = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
-var StyledSubtractSvg$1 = styled__default(SvgCross)(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
+var ChannelItem = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
+var ChannelInfo$2 = styled__default.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
+var ChannelTitle = styled__default.h3(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
+var ChannelMembers = styled__default.h4(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
+var SelectedChannelsContainer = styled__default.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
+var SelectedChannelBuble = styled__default.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
+var SelectedChannelName = styled__default.span(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
+var StyledSubtractSvg$1 = styled__default(SvgCross)(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
 var LOADING_STATE$1 = {
   LOADING: 1,
@@ -23276,7 +24585,7 @@ var THEME$1 = {
   LIGHT: 'light'
 };
 
-var _templateObject$q, _templateObject2$m, _templateObject3$g, _templateObject4$d, _templateObject5$b, _templateObject6$a, _templateObject7$8, _templateObject8$7, _templateObject9$6, _templateObject10$4;
+var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$8, _templateObject10$6;
 var reactionsPrevLength = 0;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
@@ -23389,7 +24698,7 @@ function ReactionsPopup(_ref) {
       }
     }
   }, [reactions]);
-  return React__default.createElement(Container$b, {
+  return /*#__PURE__*/React__default.createElement(Container$c, {
     ref: popupRef,
     popupVerticalPosition: popupVerticalPosition,
     className: 'reactions_popup',
@@ -23397,17 +24706,17 @@ function ReactionsPopup(_ref) {
     visible: !calculateSizes,
     rtlDirection: rtlDirection,
     borderRadius: reactionsDetailsPopupBorderRadius
-  }, React__default.createElement(ReactionScoresCont, null, React__default.createElement(ReactionScoresList, {
+  }, /*#__PURE__*/React__default.createElement(ReactionScoresCont, null, /*#__PURE__*/React__default.createElement(ReactionScoresList, {
     borderBottom: reactionsDetailsPopupHeaderItemsStyle !== 'bubbles'
-  }, React__default.createElement(ReactionScoreItem, {
+  }, /*#__PURE__*/React__default.createElement(ReactionScoreItem, {
     bubbleStyle: reactionsDetailsPopupHeaderItemsStyle === 'bubbles',
     active: activeTabKey === 'all',
     activeColor: colors.primary,
     onClick: function onClick() {
       return handleGetReactions();
     }
-  }, React__default.createElement("span", null, "All " + totalReactions)), reactionTotals.map(function (reaction) {
-    return React__default.createElement(ReactionScoreItem, {
+  }, /*#__PURE__*/React__default.createElement("span", null, "All " + totalReactions)), reactionTotals.map(function (reaction) {
+    return /*#__PURE__*/React__default.createElement(ReactionScoreItem, {
       bubbleStyle: reactionsDetailsPopupHeaderItemsStyle === 'bubbles',
       key: reaction.key,
       onClick: function onClick() {
@@ -23415,27 +24724,27 @@ function ReactionsPopup(_ref) {
       },
       active: activeTabKey === reaction.key,
       activeColor: colors.primary
-    }, React__default.createElement("span", null, React__default.createElement(TabKey, null, reaction.key), reaction.count));
-  }))), React__default.createElement(ReactionsList, {
+    }, /*#__PURE__*/React__default.createElement("span", null, /*#__PURE__*/React__default.createElement(TabKey, null, reaction.key), reaction.count));
+  }))), /*#__PURE__*/React__default.createElement(ReactionsList, {
     onScroll: handleReactionsListScroll,
     popupHeight: popupHeight
   }, reactions.map(function (reaction) {
-    return React__default.createElement(ReactionItem$1, {
+    return /*#__PURE__*/React__default.createElement(ReactionItem$1, {
       key: reaction.id
-    }, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+    }, /*#__PURE__*/React__default.createElement(AvatarWrapper, null, /*#__PURE__*/React__default.createElement(Avatar, {
       name: reaction.user.firstName || reaction.user.id,
       image: reaction.user.avatarUrl,
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$1, null, React__default.createElement(MemberName$1, null, makeUsername(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), React__default.createElement(ReactionKey, {
+    })), /*#__PURE__*/React__default.createElement(UserNamePresence$1, null, /*#__PURE__*/React__default.createElement(MemberName$1, null, makeUsername(reaction.user.id === user.id ? reaction.user : contactsMap[reaction.user.id], reaction.user, getFromContacts)), /*#__PURE__*/React__default.createElement(SubTitle, null, reaction.user.presence && reaction.user.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : reaction.user.presence && reaction.user.presence.lastActiveAt && userLastActiveDateFormat(reaction.user.presence.lastActiveAt))), /*#__PURE__*/React__default.createElement(ReactionKey, {
       onClick: function onClick() {
         return handleAddDeleteEmoji(reaction.key);
       }
     }, reaction.key));
   })));
 }
-var Container$b = styled__default.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  /*right: ", ";*/\n  right: ", ";\n  /*left: ", ";*/\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
+var Container$c = styled__default.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  /*right: ", ";*/\n  right: ", ";\n  /*left: ", ";*/\n  left: ", ";\n  top: ", ";\n  bottom: ", ";\n  width: 340px;\n  height: ", "px;\n  //overflow: ", ";\n  overflow: hidden;\n  max-height: 320px;\n  background: #ffffff;\n  //border: 1px solid #dfe0eb;\n  box-shadow: 0 6px 24px -6px rgba(15, 34, 67, 0.12), 0px 1px 3px rgba(24, 23, 37, 0.14);\n  box-sizing: border-box;\n  //box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  visibility: ", ";\n  transition: all 0.2s;\n\n  direction: initial;\n  z-index: 12;\n  &::after {\n    content: '';\n    position: absolute;\n    width: 12px;\n    height: 12px;\n\n    right: ", ";\n    left: ", ";\n    top: ", ";\n    bottom: ", ";\n    transform: rotate(45deg);\n    box-shadow: ", ";\n    border-radius: 2px;\n    visibility: ", ";\n    transition-delay: 150ms;\n    transition-property: visibility;\n\n    background: ", ";\n  }\n"])), function (props) {
   return props.popupHorizontalPosition === 'left' && (props.rtlDirection ? 'calc(100% - 80px)' : 0);
 }, function (props) {
   return props.rtlDirection && 0;
@@ -23468,17 +24777,17 @@ var Container$b = styled__default.div(_templateObject$q || (_templateObject$q = 
 }, function (props) {
   return props.visible ? 'visible' : 'hidden';
 }, colors.white);
-var UserNamePresence$1 = styled__default.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
-var MemberName$1 = styled__default.h3(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var ReactionsList = styled__default.ul(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])), function (props) {
+var UserNamePresence$1 = styled__default.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$1 = styled__default.h3(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
+var ReactionsList = styled__default.ul(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])), function (props) {
   return !props.popupHeight && 'hidden';
 });
-var ReactionScoresCont = styled__default.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
-var ReactionScoresList = styled__default.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: ", ";\n  padding: 2px 8px 0;\n"])), function (props) {
+var ReactionScoresCont = styled__default.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
+var ReactionScoresList = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: ", ";\n  padding: 2px 8px 0;\n"])), function (props) {
   return props.borderBottom && "1px solid " + colors.gray1;
 });
-var TabKey = styled__default.span(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose([""])));
-var ReactionScoreItem = styled__default.div(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  border-bottom: ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    border: ", ";\n    padding: ", ";\n    border-radius: 16px;\n    height: 30px;\n    box-sizing: border-box;\n    font-family: Inter, sans-serif;\n    font-style: normal;\n    font-weight: 600;\n    font-size: 14px;\n    line-height: ", ";\n    background-color: ", ";\n    color: ", ";\n    ", "\n\n    & ", " {\n      font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n        twemoji mozilla, segoe ui symbol;\n      margin-right: 4px;\n      font-size: 15px;\n    }\n  }\n"])), function (props) {
+var TabKey = styled__default.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose([""])));
+var ReactionScoreItem = styled__default.div(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  border-bottom: ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    border: ", ";\n    padding: ", ";\n    border-radius: 16px;\n    height: 30px;\n    box-sizing: border-box;\n    font-family: Inter, sans-serif;\n    font-style: normal;\n    font-weight: 600;\n    font-size: 14px;\n    line-height: ", ";\n    background-color: ", ";\n    color: ", ";\n    ", "\n\n    & ", " {\n      font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n        twemoji mozilla, segoe ui symbol;\n      margin-right: 4px;\n      font-size: 15px;\n    }\n  }\n"])), function (props) {
   return props.bubbleStyle ? '12px 4px' : '12px';
 }, function (props) {
   return !props.bubbleStyle && "1px solid " + colors.gray1;
@@ -23497,13 +24806,13 @@ var ReactionScoreItem = styled__default.div(_templateObject8$7 || (_templateObje
 }, function (props) {
   return props.active && !props.bubbleStyle && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n    }\n  ";
 }, TabKey);
-var ReactionKey = styled__default.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
-var ReactionItem$1 = styled__default.li(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+var ReactionKey = styled__default.span(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
+var ReactionItem$1 = styled__default.li(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
-var _path$J;
+var _path$S;
 
-function _extends$K() {
-  _extends$K = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$T() {
+  _extends$T = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23516,17 +24825,17 @@ function _extends$K() {
 
     return target;
   };
-  return _extends$K.apply(this, arguments);
+  return _extends$T.apply(this, arguments);
 }
 
 function SvgEmojiAnimalIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$K({
+  return /*#__PURE__*/React.createElement("svg", _extends$T({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$J || (_path$J = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$S || (_path$S = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M7.188 3.875a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm7.938-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zM3.437 7.624a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.312.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm15.438-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm-6.393-.359a3.563 3.563 0 015.567 1.862c.193.672.643 1.24 1.252 1.582a3.25 3.25 0 01-1.548 6.102h-.002c-.435 0-.864-.086-1.265-.253a4.859 4.859 0 00-3.722 0h.001a3.28 3.28 0 01-1.265.253h-.003a3.25 3.25 0 01-1.548-6.101A2.657 2.657 0 006.576 9.94a3.563 3.563 0 011.28-1.862zM10 8.863a2.062 2.062 0 00-1.982 1.493 4.156 4.156 0 01-1.964 2.478l-.008.004a1.75 1.75 0 001.517 3.15l.001-.001a6.358 6.358 0 014.872 0h.001a1.75 1.75 0 001.516-3.15l-.007-.003a4.156 4.156 0 01-1.964-2.478A2.062 2.062 0 0010 8.863z",
@@ -23534,10 +24843,10 @@ function SvgEmojiAnimalIcon(props) {
   })));
 }
 
-var _path$K, _path2$6, _path3$3;
+var _path$T, _path2$6, _path3$3;
 
-function _extends$L() {
-  _extends$L = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$U() {
+  _extends$U = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23550,17 +24859,17 @@ function _extends$L() {
 
     return target;
   };
-  return _extends$L.apply(this, arguments);
+  return _extends$U.apply(this, arguments);
 }
 
 function SvgEmojiFoodIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$L({
+  return /*#__PURE__*/React.createElement("svg", _extends$U({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$K || (_path$K = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
@@ -23578,10 +24887,10 @@ function SvgEmojiFoodIcon(props) {
   })));
 }
 
-var _path$L;
+var _path$U;
 
-function _extends$M() {
-  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$V() {
+  _extends$V = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23594,17 +24903,17 @@ function _extends$M() {
 
     return target;
   };
-  return _extends$M.apply(this, arguments);
+  return _extends$V.apply(this, arguments);
 }
 
 function SvgEmojiTravelIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$M({
+  return /*#__PURE__*/React.createElement("svg", _extends$V({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$L || (_path$L = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M13.763 2.458a2.6 2.6 0 013.748 3.604l-2.135 2.236a5.065 5.065 0 00-.188.204.076.076 0 00-.004.017l.004.03c.008.05.024.116.053.241l1.327 5.754.012.05c.044.189.096.412.079.639-.015.197-.07.39-.162.564-.106.202-.268.364-.406.5l-.036.037-.306.306c-.215.215-.409.408-.58.55-.175.147-.406.309-.705.362a1.46 1.46 0 01-1.124-.266c-.244-.18-.378-.429-.47-.638-.089-.204-.175-.464-.272-.752l-1.2-3.6-1.779 1.78a4.815 4.815 0 00-.172.178.076.076 0 00-.005.015l.001.027c.003.045.01.105.022.22l.141 1.27.005.045c.02.168.042.368.01.567a1.46 1.46 0 01-.172.49c-.1.176-.242.317-.362.437l-.032.032-.152.151-.018.019c-.166.166-.32.32-.46.438-.15.125-.338.258-.583.322a1.46 1.46 0 01-1.007-.1 1.49 1.49 0 01-.508-.43c-.114-.142-.236-.325-.366-.52l-1.22-1.83a4.929 4.929 0 00-.063-.09l-.009-.006a4.655 4.655 0 00-.077-.052l-1.829-1.22a7.783 7.783 0 01-.52-.365 1.492 1.492 0 01-.43-.509 1.46 1.46 0 01-.1-1.006c.065-.245.197-.434.323-.584.117-.14.272-.294.438-.46l.018-.018.152-.152.031-.032c.12-.12.262-.262.437-.362.152-.086.318-.145.49-.172a2.09 2.09 0 01.568.01l.044.005 1.27.141a4.747 4.747 0 00.247.023.075.075 0 00.015-.005 4.867 4.867 0 00.178-.172l1.78-1.78-3.6-1.199a9.48 9.48 0 01-.752-.272c-.209-.092-.457-.226-.638-.47a1.46 1.46 0 01-.265-1.124c.053-.298.215-.53.36-.705.143-.171.337-.365.552-.58l.02-.02.285-.285.037-.037c.136-.137.298-.3.5-.406a1.46 1.46 0 01.564-.161c.228-.018.45.034.64.078l.05.012 5.731 1.323a5.096 5.096 0 00.275.057.075.075 0 00.019-.005 5.146 5.146 0 00.199-.197l2.082-2.152zm2.728.948a1.216 1.216 0 00-1.734.014l-2.082 2.151-.036.037c-.132.137-.288.3-.483.407a1.46 1.46 0 01-.602.178c-.223.016-.442-.036-.627-.079l-.05-.011L5.146 4.78a5.06 5.06 0 00-.279-.059.077.077 0 00-.017.005 5.065 5.065 0 00-.205.197l-.285.285c-.243.243-.39.392-.487.508a.915.915 0 00-.063.083c0 .006.002.012.004.018.016.01.045.025.094.046.138.06.337.128.662.236l4.633 1.544a.692.692 0 01.27 1.146l-2.57 2.57-.032.032c-.12.12-.261.262-.436.362a1.459 1.459 0 01-.492.172 2.09 2.09 0 01-.567-.01l-.044-.005-1.27-.141a4.747 4.747 0 00-.247-.023.075.075 0 00-.015.005 4.867 4.867 0 00-.178.172l-.152.152c-.19.19-.301.302-.375.39a.735.735 0 00-.045.058c0 .008 0 .015.002.023.01.009.027.025.056.048.09.072.22.16.444.309l1.808 1.205.015.01a1.466 1.466 0 01.507.507l.01.016 1.206 1.807c.15.225.237.355.308.444.024.03.04.047.049.056a.076.076 0 00.022.002.723.723 0 00.059-.045c.087-.073.199-.184.39-.375l.151-.151a4.89 4.89 0 00.172-.178.077.077 0 00.005-.016v-.026a4.94 4.94 0 00-.023-.22l-.14-1.27-.006-.045a2.091 2.091 0 01-.01-.567 1.46 1.46 0 01.172-.491c.1-.175.242-.317.363-.437l.031-.031 2.57-2.57a.692.692 0 011.146.27L13.9 15.43c.109.325.175.523.236.662a.9.9 0 00.046.093.073.073 0 00.019.004.917.917 0 00.083-.063c.116-.096.264-.244.507-.486l.285-.285a5.078 5.078 0 00.197-.206.073.073 0 00.005-.017 5.042 5.042 0 00-.058-.279l-1.328-5.753-.011-.049c-.044-.184-.095-.401-.079-.624a1.46 1.46 0 01.152-.553c.1-.199.255-.36.386-.496l.034-.037 2.136-2.236a1.216 1.216 0 00-.02-1.7z",
@@ -23614,8 +24923,8 @@ function SvgEmojiTravelIcon(props) {
 
 var _g, _defs;
 
-function _extends$N() {
-  _extends$N = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$W() {
+  _extends$W = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23628,11 +24937,11 @@ function _extends$N() {
 
     return target;
   };
-  return _extends$N.apply(this, arguments);
+  return _extends$W.apply(this, arguments);
 }
 
 function SvgEmojiObjectIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$N({
+  return /*#__PURE__*/React.createElement("svg", _extends$W({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
@@ -23653,10 +24962,10 @@ function SvgEmojiObjectIcon(props) {
   })))));
 }
 
-var _path$M;
+var _path$V;
 
-function _extends$O() {
-  _extends$O = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$X() {
+  _extends$X = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23669,17 +24978,17 @@ function _extends$O() {
 
     return target;
   };
-  return _extends$O.apply(this, arguments);
+  return _extends$X.apply(this, arguments);
 }
 
 function SvgEmojiSymbolsIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$O({
+  return /*#__PURE__*/React.createElement("svg", _extends$X({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$M || (_path$M = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$V || (_path$V = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M8.04 1.76a.75.75 0 01.616.863l-.548 3.294h5.146l.59-3.54a.75.75 0 111.48.246l-.55 3.294h2.31a.75.75 0 010 1.5h-2.56l-.86 5.167h2.586a.75.75 0 110 1.5h-2.837l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H6.745l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H2.083a.75.75 0 010-1.5h3.393l.86-5.167h-3.42a.75.75 0 110-1.5h3.67l.59-3.54a.75.75 0 01.864-.617zm-.182 5.657l-.862 5.167h5.146l.862-5.167H7.858z",
@@ -23687,10 +24996,10 @@ function SvgEmojiSymbolsIcon(props) {
   })));
 }
 
-var _path$N;
+var _path$W;
 
-function _extends$P() {
-  _extends$P = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$Y() {
+  _extends$Y = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -23703,17 +25012,17 @@ function _extends$P() {
 
     return target;
   };
-  return _extends$P.apply(this, arguments);
+  return _extends$Y.apply(this, arguments);
 }
 
 function SvgEmojiFlagicon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$P({
+  return /*#__PURE__*/React.createElement("svg", _extends$Y({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$N || (_path$N = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$W || (_path$W = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M4.167 3.25a.917.917 0 00-.917.917v7.764c.288-.118.6-.181.917-.181h5.416a.75.75 0 01.53.22l.614.613h5.56L14.329 8.67a.75.75 0 010-.671l1.957-3.915H10.75V7.5a.75.75 0 01-1.5 0V3.25H4.167zm6.56-.667l-.613-.613a.75.75 0 00-.53-.22H4.166A2.417 2.417 0 001.75 4.167V17.5a.75.75 0 001.5 0v-3.333a.917.917 0 01.917-.917h5.106l.613.614c.141.14.332.22.53.22H17.5a.75.75 0 00.67-1.086l-2.332-4.665 2.333-4.664a.75.75 0 00-.671-1.086h-6.773z",
@@ -23993,32 +25302,32 @@ var EMOJIS = [{
   }]
 }];
 
-var _templateObject$r, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$b, _templateObject7$9, _templateObject8$8;
+var _templateObject$t, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$e, _templateObject6$d, _templateObject7$b, _templateObject8$a;
 
 var EmojiIcon = function EmojiIcon(_ref) {
   var collectionName = _ref.collectionName;
 
   switch (collectionName) {
     case 'People':
-      return React__default.createElement(SvgEmojiSmileIcon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiSmileIcon, null);
 
     case 'Animals':
-      return React__default.createElement(SvgEmojiAnimalIcon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiAnimalIcon, null);
 
     case 'Food':
-      return React__default.createElement(SvgEmojiFoodIcon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiFoodIcon, null);
 
     case 'Travel':
-      return React__default.createElement(SvgEmojiTravelIcon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiTravelIcon, null);
 
     case 'Objects':
-      return React__default.createElement(SvgEmojiObjectIcon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiObjectIcon, null);
 
     case 'Flags':
-      return React__default.createElement(SvgEmojiFlagicon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiFlagicon, null);
 
     case 'Symbols':
-      return React__default.createElement(SvgEmojiSymbolsIcon, null);
+      return /*#__PURE__*/React__default.createElement(SvgEmojiSymbolsIcon, null);
 
     default:
       return null;
@@ -24055,7 +25364,7 @@ function EmojisPopup(_ref2) {
   var collectionsRef = React.useRef(EMOJIS.map(function (col) {
     return {
       collectionName: col.key,
-      elem: React.createRef()
+      elem: /*#__PURE__*/React.createRef()
     };
   }));
 
@@ -24107,7 +25416,7 @@ function EmojisPopup(_ref2) {
       }
     }, 300);
   }, []);
-  return React__default.createElement(Container$c, {
+  return /*#__PURE__*/React__default.createElement(Container$d, {
     backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     noBorder: theme === THEME.DARK,
     relativePosition: relativePosition,
@@ -24118,45 +25427,45 @@ function EmojisPopup(_ref2) {
     bottomPosition: bottomPosition,
     rendered: rendered,
     emojisPopupPosition: emojisPopupPosition
-  }, emojisCategoryIconsPosition === 'top' && React__default.createElement(EmojiFooter, {
+  }, emojisCategoryIconsPosition === 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter, {
     borderColor: colors.hoverBackgroundColor,
     emojisCategoryIconsPosition: emojisCategoryIconsPosition
   }, EMOJIS.map(function (emoji) {
-    return React__default.createElement(EmojiCollection, {
+    return /*#__PURE__*/React__default.createElement(EmojiCollection, {
       activeCollection: activeCollection === emoji.key,
       key: "" + emoji.key,
       onClick: function onClick() {
         return handleEmojiCollectionClick(emoji.key);
       }
-    }, React__default.createElement(EmojiIcon, {
+    }, /*#__PURE__*/React__default.createElement(EmojiIcon, {
       collectionName: emoji.key
     }));
-  })), fixEmojiCategoriesTitleOnTop && React__default.createElement(EmojiHeader, {
+  })), fixEmojiCategoriesTitleOnTop && /*#__PURE__*/React__default.createElement(EmojiHeader, {
     padding: emojisCategoryIconsPosition !== 'top' ? '10px 18px 6px' : ''
-  }, getEmojisCategoryTitle(activeCollection)), React__default.createElement(EmojiSection, {
+  }, getEmojisCategoryTitle(activeCollection)), /*#__PURE__*/React__default.createElement(EmojiSection, {
     ref: emojiContainerRef,
     onScroll: handleEmojiListScroll
-  }, React__default.createElement(AllEmojis, null, EMOJIS.map(function (emojiBigCollection, bigColIndex) {
+  }, /*#__PURE__*/React__default.createElement(AllEmojis, null, EMOJIS.map(function (emojiBigCollection, bigColIndex) {
     var mainCollectionKey = emojiBigCollection.key;
-    return React__default.createElement(React__default.Fragment, {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
       key: mainCollectionKey
-    }, !fixEmojiCategoriesTitleOnTop && React__default.createElement(EmojiHeader, {
+    }, !fixEmojiCategoriesTitleOnTop && /*#__PURE__*/React__default.createElement(EmojiHeader, {
       padding: '6px 8px 0'
     }, getEmojisCategoryTitle(mainCollectionKey)), emojiBigCollection.array.map(function (emojiSmallCollection, bigIndex) {
       var label = emojiSmallCollection.key;
       var array = emojiSmallCollection.array;
       return array.map(function (emoji, i) {
-        return React__default.createElement(Emoji, {
+        return /*#__PURE__*/React__default.createElement(Emoji, {
           hoverBackgroundColor: colors.hoverBackgroundColor,
           key: "" + emoji,
           className: 'emoji-cont',
           onClick: function onClick() {
             return chooseEmoji(emoji);
           }
-        }, bigIndex === 0 && i === 0 && React__default.createElement(CollectionPointer, {
+        }, bigIndex === 0 && i === 0 && /*#__PURE__*/React__default.createElement(CollectionPointer, {
           ref: collectionsRef.current[bigColIndex].elem,
           "data-emoji-sec": mainCollectionKey
-        }), React__default.createElement("span", {
+        }), /*#__PURE__*/React__default.createElement("span", {
           className: 'emoji',
           role: 'img',
           "aria-label": label || '',
@@ -24164,19 +25473,19 @@ function EmojisPopup(_ref2) {
         }, emoji));
       });
     }));
-  }))), emojisCategoryIconsPosition !== 'top' && React__default.createElement(EmojiFooter, null, EMOJIS.map(function (emoji) {
-    return React__default.createElement(EmojiCollection, {
+  }))), emojisCategoryIconsPosition !== 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter, null, EMOJIS.map(function (emoji) {
+    return /*#__PURE__*/React__default.createElement(EmojiCollection, {
       activeCollection: activeCollection === emoji.key,
       key: "" + emoji.key,
       onClick: function onClick() {
         return handleEmojiCollectionClick(emoji.key);
       }
-    }, React__default.createElement(EmojiIcon, {
+    }, /*#__PURE__*/React__default.createElement(EmojiIcon, {
       collectionName: emoji.key
     }));
   })));
 }
-var Container$c = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  transform: scaleY(0);\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
+var Container$d = styled__default.div(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  transform: scaleY(0);\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
   return props.relativePosition ? 'relative' : 'absolute';
 }, function (props) {
   return props.rtlDirection ? '' : props.rightSide ? '' : '5px';
@@ -24197,28 +25506,28 @@ var Container$c = styled__default.div(_templateObject$r || (_templateObject$r = 
 }, function (props) {
   return props.rendered && "\n    transform: scaleY(1);\n  ";
 });
-var EmojiHeader = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.textColor2, function (props) {
+var EmojiHeader = styled__default.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.textColor2, function (props) {
   return props.padding || '6px 18px';
 });
-var EmojiSection = styled__default.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  height: 180px;\n  overflow-x: hidden;\n"])));
-var EmojiCollection = styled__default.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
+var EmojiSection = styled__default.div(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  height: 180px;\n  overflow-x: hidden;\n"])));
+var EmojiCollection = styled__default.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
   return props.activeCollection ? colors.primary : colors.textColor3;
 });
-var CollectionPointer = styled__default.span(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose([""])));
-var AllEmojis = styled__default.ul(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
-var EmojiFooter = styled__default.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
+var CollectionPointer = styled__default.span(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose([""])));
+var AllEmojis = styled__default.ul(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
+var EmojiFooter = styled__default.div(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
   return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + (props.borderColor || colors.gray1);
 }, function (props) {
   return props.emojisCategoryIconsPosition === 'top' && "1px solid " + (props.borderColor || colors.gray1);
 });
-var Emoji = styled__default.li(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: ", ";\n  }\n"])), function (props) {
+var Emoji = styled__default.li(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: ", ";\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.backgroundColor;
 });
 
-var _path$O;
+var _path$X;
 
-function _extends$Q() {
-  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$Z() {
+  _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -24231,23 +25540,23 @@ function _extends$Q() {
 
     return target;
   };
-  return _extends$Q.apply(this, arguments);
+  return _extends$Z.apply(this, arguments);
 }
 
 function SvgPlus(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$Q({
+  return /*#__PURE__*/React.createElement("svg", _extends$Z({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$O || (_path$O = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$X || (_path$X = /*#__PURE__*/React.createElement("path", {
     d: "M10 3.778c.43 0 .778.348.778.778v4.666h4.666a.778.778 0 110 1.556h-4.666v4.666a.778.778 0 11-1.556 0v-4.666H4.556a.778.778 0 110-1.556h4.666V4.556c0-.43.348-.778.778-.778z",
     fill: "#818C99"
   })));
 }
 
-var _templateObject$s, _templateObject2$o, _templateObject3$i;
+var _templateObject$u, _templateObject2$q, _templateObject3$k;
 
 function FrequentlyEmojis(_ref) {
   var handleAddEmoji = _ref.handleAddEmoji,
@@ -24353,13 +25662,13 @@ function FrequentlyEmojis(_ref) {
 
     setRendered(true);
   }, []);
-  return React__default.createElement(Container$d, {
+  return /*#__PURE__*/React__default.createElement(Container$e, {
     id: 'emojisContainer',
     backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     rendered: rendered,
     rightSide: rtlDirection
   }, emojis.map(function (emoji) {
-    return React__default.createElement(EmojiItem, {
+    return /*#__PURE__*/React__default.createElement(EmojiItem, {
       hoverBackground: colors.hoverBackgroundColor,
       active: emoji.reacted,
       key: emoji.key,
@@ -24367,33 +25676,33 @@ function FrequentlyEmojis(_ref) {
         return chooseEmoji(emoji.key);
       }
     }, emoji.key);
-  }), React__default.createElement(OpenMoreEmojis, {
+  }), /*#__PURE__*/React__default.createElement(OpenMoreEmojis, {
     onClick: function onClick() {
       return handleEmojiPopupToggle(true);
     },
     iconBackgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
     hoverBackground: colors.hoverBackgroundColor
-  }, React__default.createElement(SvgPlus, null)));
+  }, /*#__PURE__*/React__default.createElement(SvgPlus, null)));
 }
-var Container$d = styled__default.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  transform: scale(0, 0);\n  transform-origin: ", ";\n  display: flex;\n  align-items: center;\n  padding: 6px;\n  background-color: ", ";\n  box-shadow: 0 3px 10px -4px rgba(0, 0, 0, 0.2);\n  border-radius: 24px;\n  overflow: hidden;\n  box-sizing: border-box;\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
+var Container$e = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  transform: scale(0, 0);\n  transform-origin: ", ";\n  display: flex;\n  align-items: center;\n  padding: 6px;\n  background-color: ", ";\n  box-shadow: 0 3px 10px -4px rgba(0, 0, 0, 0.2);\n  border-radius: 24px;\n  overflow: hidden;\n  box-sizing: border-box;\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
   return props.rightSide ? '100% 100%' : '0 100%';
 }, function (props) {
   return props.backgroundColor || colors.white;
 }, function (props) {
   return props.rendered && "\n    transform: scale(1, 1);\n  ";
 });
-var EmojiItem = styled__default.span(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 8px;\n  font-size: 28px;\n  line-height: 32px;\n  cursor: pointer;\n  border-radius: 50%;\n  width: 36px;\n  height: 36px;\n  background-color: ", ";\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
+var EmojiItem = styled__default.span(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 8px;\n  font-size: 28px;\n  line-height: 32px;\n  cursor: pointer;\n  border-radius: 50%;\n  width: 36px;\n  height: 36px;\n  background-color: ", ";\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
   return props.active && colors.backgroundColor;
 }, function (props) {
   return props.hoverBackground || colors.backgroundColor;
 });
-var OpenMoreEmojis = styled__default.span(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  &:hover {\n    background-color: ", ";\n  }\n  border-radius: 50%;\n"])), function (props) {
+var OpenMoreEmojis = styled__default.span(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  width: 28px;\n  height: 28px;\n  background-color: ", ";\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    height: 18px;\n    width: 18px;\n  }\n  &:hover {\n    background-color: ", ";\n  }\n  border-radius: 50%;\n"])), function (props) {
   return props.iconBackgroundColor || colors.backgroundColor;
 }, colors.textColor2, function (props) {
   return props.hoverBackground || colors.hoverBackgroundColor;
 });
 
-var _templateObject$t, _templateObject2$p, _templateObject3$j, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$7, _templateObject10$5, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
+var _templateObject$v, _templateObject2$r, _templateObject3$l, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$9, _templateObject10$7, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$3, _templateObject15$2, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -24732,7 +26041,7 @@ var Message = function Message(_ref) {
     if (isVisible && message.incoming && !(message.userMarkers && message.userMarkers.length && message.userMarkers.find(function (marker) {
       return marker.name === MESSAGE_DELIVERY_STATUS.READ;
     }))) {
-      console.log('send marker for message ... ', message);
+      console.log('send received marker for message ... ', message);
       dispatch(markMessagesAsReadAC(channel.id, [message.id]));
     }
   };
@@ -24746,12 +26055,12 @@ var Message = function Message(_ref) {
   };
 
   var MessageHeader = function MessageHeader() {
-    return React__default.createElement(MessageHeaderCont, {
+    return /*#__PURE__*/React__default.createElement(MessageHeaderCont, {
       isReplied: !!message.parentMessage,
       isForwarded: !!message.forwardingDetails,
       messageBody: !!message.body,
       withPadding: withAttachments && notLinkAttachment && (message.incoming ? incomingMessageBackground !== 'inherit' : ownMessageBackground !== 'inherit')
-    }, showMessageSenderName && React__default.createElement(MessageOwner, {
+    }, showMessageSenderName && /*#__PURE__*/React__default.createElement(MessageOwner, {
       className: 'message-owner',
       color: colors.primary,
       rtlDirection: ownMessageOnRightSide && !message.incoming
@@ -24780,7 +26089,7 @@ var Message = function Message(_ref) {
   };
 
   React.useEffect(function () {
-    if (isVisible && tabIsActive) {
+    if (isVisible && tabIsActive && setLastVisibleMessageId) {
       setLastVisibleMessageId(message.id);
       handleSendReadMarker();
     }
@@ -24812,7 +26121,7 @@ var Message = function Message(_ref) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(MessageItem, {
+  return /*#__PURE__*/React__default.createElement(MessageItem, {
     key: message.id || message.tid,
     rtl: ownMessageOnRightSide && !message.incoming,
     withAvatar: renderAvatar,
@@ -24821,20 +26130,20 @@ var Message = function Message(_ref) {
     bottomMargin: message.reactionTotals && message.reactionTotals.length ? reactionsContainerTopPosition : '',
     ref: messageItemRef,
     className: 'MessageItem'
-  }, renderAvatar && React__default.createElement(Avatar, {
+  }, renderAvatar && /*#__PURE__*/React__default.createElement(Avatar, {
     name: message.user && (message.user.firstName || messageUserID),
     image: message.user && message.user.avatarUrl,
     size: 32,
     textSize: 14,
     setDefaultAvatar: true
-  }), React__default.createElement(MessageContent, {
+  }), /*#__PURE__*/React__default.createElement(MessageContent, {
     messageWidthPercent: messageWidthPercent,
     rtl: ownMessageOnRightSide && !message.incoming,
     withAvatar: !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar),
     className: 'messageContent'
-  }, message.state === MESSAGE_STATUS.FAILED && React__default.createElement(FailedMessageIcon, {
+  }, message.state === MESSAGE_STATUS.FAILED && /*#__PURE__*/React__default.createElement(FailedMessageIcon, {
     rtl: ownMessageOnRightSide && !message.incoming
-  }, React__default.createElement(ErrorIconWrapper, null)), React__default.createElement(MessageBody, {
+  }, /*#__PURE__*/React__default.createElement(ErrorIconWrapper, null)), /*#__PURE__*/React__default.createElement(MessageBody, {
     className: 'messageBody',
     isSelfMessage: !message.incoming,
     isReplyMessage: !!(message.parentMessage && message.parentMessage.id && !isThreadMessage),
@@ -24848,7 +26157,7 @@ var Message = function Message(_ref) {
     noBody: !message.body && !withAttachments,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave
-  }, showMessageSenderName && React__default.createElement(MessageHeader, null), !isThreadMessage && messageActionsShow && !emojisPopupOpen && !frequentlyEmojisOpen && React__default.createElement(MessageActions, {
+  }, showMessageSenderName && /*#__PURE__*/React__default.createElement(MessageHeader, null), !isThreadMessage && messageActionsShow && !emojisPopupOpen && !frequentlyEmojisOpen && /*#__PURE__*/React__default.createElement(MessageActions, {
     messageFrom: message.user,
     channel: channel,
     editModeToggle: toggleEditMode,
@@ -24905,7 +26214,7 @@ var Message = function Message(_ref) {
     myRole: channel.userRole,
     isIncoming: message.incoming,
     handleOpenEmojis: handleOpenEmojis
-  }), message.parentMessage && message.parentMessage.id && !isThreadMessage && React__default.createElement(ReplyMessageContainer, {
+  }), message.parentMessage && message.parentMessage.id && !isThreadMessage && /*#__PURE__*/React__default.createElement(ReplyMessageContainer, {
     withSenderName: showMessageSenderName,
     withBody: !!message.body,
     withAttachments: withAttachments && notLinkAttachment,
@@ -24914,7 +26223,7 @@ var Message = function Message(_ref) {
       return handleScrollToRepliedMessage && handleScrollToRepliedMessage(message.parentMessage.id);
     }
   }, message.parentMessage.attachments && !!message.parentMessage.attachments.length && message.parentMessage.attachments[0].type !== attachmentTypes.voice && parentNotLinkAttachment && message.parentMessage.attachments.map(function (attachment, index) {
-    return React__default.createElement(Attachment, {
+    return /*#__PURE__*/React__default.createElement(Attachment$1, {
       key: attachment.attachmentId || attachment.url,
       backgroundColor: message.incoming ? incomingMessageBackground : ownMessageBackground,
       attachment: _extends({}, attachment, {
@@ -24933,24 +26242,24 @@ var Message = function Message(_ref) {
       videoAttachmentMaxWidth: videoAttachmentMaxWidth,
       videoAttachmentMaxHeight: videoAttachmentMaxHeight
     });
-  }), React__default.createElement(ReplyMessageBody, {
+  }), /*#__PURE__*/React__default.createElement(ReplyMessageBody, {
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, React__default.createElement(MessageOwner, {
+  }, /*#__PURE__*/React__default.createElement(MessageOwner, {
     className: 'reply-message-owner',
     color: colors.primary,
     fontSize: '12px',
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, message.parentMessage.user.id === user.id ? 'You' : makeUsername(contactsMap[message.parentMessage.user.id], message.parentMessage.user, getFromContacts)), React__default.createElement(ReplyMessageText, {
+  }, message.parentMessage.user.id === user.id ? 'You' : makeUsername(contactsMap[message.parentMessage.user.id], message.parentMessage.user, getFromContacts)), /*#__PURE__*/React__default.createElement(ReplyMessageText, {
     fontSize: '14px',
     lineHeight: '16px'
-  }, !!message.parentMessage.attachments.length && message.parentMessage.attachments[0].type === attachmentTypes.voice && React__default.createElement(VoiceIconWrapper, {
+  }, !!message.parentMessage.attachments.length && message.parentMessage.attachments[0].type === attachmentTypes.voice && /*#__PURE__*/React__default.createElement(VoiceIconWrapper, {
     color: colors.primary
   }), message.parentMessage.body ? MessageTextFormat({
     text: message.parentMessage.body,
     message: message.parentMessage,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  }) : parentNotLinkAttachment && (message.parentMessage.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parentMessage.attachments[0].type === attachmentTypes.video ? 'Video' : message.parentMessage.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && message.forwardingDetails.user && message.user && message.forwardingDetails.user.id !== message.user.id && React__default.createElement(ForwardedTitle, {
+  }) : parentNotLinkAttachment && (message.parentMessage.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parentMessage.attachments[0].type === attachmentTypes.video ? 'Video' : message.parentMessage.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && message.forwardingDetails.user && message.user && message.forwardingDetails.user.id !== message.user.id && /*#__PURE__*/React__default.createElement(ForwardedTitle, {
     withPadding: withAttachments && notLinkAttachment,
     withAttachments: withAttachments,
     withMediaAttachment: withMediaAttachment,
@@ -24958,7 +26267,7 @@ var Message = function Message(_ref) {
     showSenderName: showMessageSenderName,
     leftPadding: message.incoming ? incomingMessageBackground !== 'inherit' : ownMessageBackground !== 'inherit',
     color: colors.primary
-  }, React__default.createElement(SvgForward, null), "Forwarded message"), React__default.createElement(MessageText, {
+  }, /*#__PURE__*/React__default.createElement(SvgForward, null), "Forwarded message"), /*#__PURE__*/React__default.createElement(MessageText, {
     draggable: false,
     color: colors.textColor1,
     showMessageSenderName: showMessageSenderName,
@@ -24967,29 +26276,29 @@ var Message = function Message(_ref) {
     withMediaAttachment: withMediaAttachment,
     fontFamily: fontFamily,
     isForwarded: !!message.forwardingDetails
-  }, React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageTextRef
   }, MessageTextFormat({
     text: message.body,
     message: message,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  })), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', messageStatusAndTimePosition === 'onMessage' && (!withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link) && (messageStatusVisible || messageTimeVisible) ? React__default.createElement(MessageStatusAndTime, {
+  })), !withAttachments && message.state === MESSAGE_STATUS.DELETE ? /*#__PURE__*/React__default.createElement(MessageStatusDeleted, null, " Message was deleted. ") : '', messageStatusAndTimePosition === 'onMessage' && (!withAttachments || withAttachments && message.attachments[0].type === attachmentTypes.link) && (messageStatusVisible || messageTimeVisible) ? /*#__PURE__*/React__default.createElement(MessageStatusAndTime, {
     showOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
     leftMargin: true,
     isSelfMessage: !message.incoming
-  }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimeVisible && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && React__default.createElement(MessageStatus, {
+  }, message.state === MESSAGE_STATUS.EDIT ? /*#__PURE__*/React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimeVisible && /*#__PURE__*/React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && /*#__PURE__*/React__default.createElement(MessageStatus, {
     iconColor: colors.primary
-  }, messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType))) : null), notLinkAttachment && messageStatusAndTimePosition === 'onMessage' && (messageStatusVisible || messageTimeVisible) && React__default.createElement(MessageStatusAndTime, {
+  }, messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType))) : null), notLinkAttachment && messageStatusAndTimePosition === 'onMessage' && (messageStatusVisible || messageTimeVisible) && /*#__PURE__*/React__default.createElement(MessageStatusAndTime, {
     showOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
     withAttachment: true,
     leftMargin: true,
     isSelfMessage: !message.incoming,
     fileAttachment: message.attachments[0].type === 'file' || message.attachments[0].type === 'voice'
-  }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, {
+  }, message.state === MESSAGE_STATUS.EDIT ? /*#__PURE__*/React__default.createElement(MessageStatusUpdated, {
     color: message.attachments[0].type !== 'voice' && message.attachments[0].type !== 'file' ? colors.white : ''
-  }, "edited") : '', messageTimeVisible && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType, message.attachments[0].type !== 'voice' && message.attachments[0].type !== 'file' ? colors.white : '')), withAttachments && message.attachments.map(function (attachment) {
-    return React__default.createElement(Attachment, {
+  }, "edited") : '', messageTimeVisible && /*#__PURE__*/React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType, message.attachments[0].type !== 'voice' && message.attachments[0].type !== 'file' ? colors.white : '')), withAttachments && message.attachments.map(function (attachment) {
+    return /*#__PURE__*/React__default.createElement(Attachment$1, {
       key: attachment.attachmentId || attachment.url,
       handleMediaItemClick: handleMediaItemClick,
       attachment: _extends({}, attachment, {
@@ -25010,11 +26319,11 @@ var Message = function Message(_ref) {
       videoAttachmentMaxWidth: videoAttachmentMaxWidth,
       videoAttachmentMaxHeight: videoAttachmentMaxHeight
     });
-  }), emojisPopupOpen && emojisPopupPosition && React__default.createElement(EmojiContainer, {
+  }), emojisPopupOpen && emojisPopupPosition && /*#__PURE__*/React__default.createElement(EmojiContainer, {
     id: message.id + "_emoji_popup_container",
     position: emojisPopupPosition,
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, message.deliveryStatus && message.deliveryStatus !== MESSAGE_DELIVERY_STATUS.PENDING && React__default.createElement(EmojisPopup, {
+  }, message.deliveryStatus && message.deliveryStatus !== MESSAGE_DELIVERY_STATUS.PENDING && /*#__PURE__*/React__default.createElement(EmojisPopup, {
     relativePosition: true,
     emojisPopupPosition: emojisPopupPosition,
     emojisCategoryIconsPosition: emojisCategoryIconsPosition,
@@ -25023,27 +26332,29 @@ var Message = function Message(_ref) {
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     handleEmojiPopupToggle: setEmojisPopupOpen,
     handleAddEmoji: handleReactionAddDelete
-  })), frequentlyEmojisOpen && !emojisPopupOpen && React__default.createElement(FrequentlyEmojisContainer, {
+  })), frequentlyEmojisOpen && !emojisPopupOpen && /*#__PURE__*/React__default.createElement(FrequentlyEmojisContainer, {
     id: 'frequently_emojis_container',
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, React__default.createElement(FrequentlyEmojis, {
+  }, /*#__PURE__*/React__default.createElement(FrequentlyEmojis, {
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     handleAddEmoji: handleReactionAddDelete,
     handleEmojiPopupToggle: setEmojisPopupOpen,
     frequentlyEmojis: message.userReactions
-  }))), messageStatusAndTimePosition === 'bottomOfMessage' && (messageStatusVisible || messageTimeVisible) && React__default.createElement(MessageStatusAndTime, {
+  }))), messageStatusAndTimePosition === 'bottomOfMessage' && (messageStatusVisible || messageTimeVisible) &&
+  /*#__PURE__*/
+  React__default.createElement(MessageStatusAndTime, {
     showOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
     isSelfMessage: !message.incoming,
     marginBottom: sameUserMessageSpacing,
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     bottomOfMessage: true
-  }, message.state === MESSAGE_STATUS.EDIT ? React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimeVisible && React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && React__default.createElement(MessageStatus, {
+  }, message.state === MESSAGE_STATUS.EDIT ? /*#__PURE__*/React__default.createElement(MessageStatusUpdated, null, "edited") : '', messageTimeVisible && /*#__PURE__*/React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && /*#__PURE__*/React__default.createElement(MessageStatus, {
     iconColor: colors.primary
-  }, messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType))), message.replyCount && message.replyCount > 0 && !isThreadMessage && React__default.createElement(ThreadMessageCountContainer, {
+  }, messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType))), message.replyCount && message.replyCount > 0 && !isThreadMessage && /*#__PURE__*/React__default.createElement(ThreadMessageCountContainer, {
     onClick: function onClick() {
       return handleReplyMessage(true);
     }
-  }, message.replyCount + " replies"), reactionsPopupOpen && React__default.createElement(ReactionsPopup, {
+  }, message.replyCount + " replies"), reactionsPopupOpen && /*#__PURE__*/React__default.createElement(ReactionsPopup, {
     bottomPosition: reactionsPopupPosition,
     horizontalPositions: reactionsPopupHorizontalPosition,
     reactionTotals: message.reactionTotals || [],
@@ -25053,7 +26364,7 @@ var Message = function Message(_ref) {
     handleAddDeleteEmoji: handleReactionAddDelete,
     reactionsDetailsPopupBorderRadius: reactionsDetailsPopupBorderRadius,
     reactionsDetailsPopupHeaderItemsStyle: reactionsDetailsPopupHeaderItemsStyle
-  }), message.reactionTotals && message.reactionTotals.length && React__default.createElement(ReactionsContainer, {
+  }), message.reactionTotals && message.reactionTotals.length && /*#__PURE__*/React__default.createElement(ReactionsContainer, {
     id: message.id + "_reactions_container",
     border: reactionsContainerBorder,
     boxShadow: reactionsContainerBoxShadow,
@@ -25062,11 +26373,11 @@ var Message = function Message(_ref) {
     padding: reactionsContainerPadding,
     backgroundColor: reactionsContainerBackground || colors.backgroundColor,
     rtlDirection: ownMessageOnRightSide && !message.incoming
-  }, React__default.createElement(MessageReactionsCont, {
+  }, /*#__PURE__*/React__default.createElement(MessageReactionsCont, {
     rtlDirection: ownMessageOnRightSide && !message.incoming,
     onClick: handleToggleReactionsPopup
   }, message.reactionTotals.slice(0, reactionsDisplayCount || 5).map(function (summery) {
-    return React__default.createElement(MessageReaction, {
+    return /*#__PURE__*/React__default.createElement(MessageReaction, {
       key: summery.key,
       color: colors.textColor1,
       self: !!message.userReactions.find(function (userReaction) {
@@ -25079,8 +26390,8 @@ var Message = function Message(_ref) {
       margin: reactionItemMargin,
       isLastReaction: reactionsCount === 1,
       fontSize: reactionsFontSize
-    }, React__default.createElement(MessageReactionKey, null, summery.key, showEachReactionCount && React__default.createElement(ReactionItemCount, null, summery.count)));
-  }), showTotalReactionCount && reactionsCount && reactionsCount > 1 && React__default.createElement(MessageReaction, {
+    }, /*#__PURE__*/React__default.createElement(MessageReactionKey, null, summery.key, showEachReactionCount && /*#__PURE__*/React__default.createElement(ReactionItemCount, null, summery.count)));
+  }), showTotalReactionCount && reactionsCount && reactionsCount > 1 && /*#__PURE__*/React__default.createElement(MessageReaction, {
     border: reactionItemBorder,
     color: colors.textColor1,
     borderRadius: reactionItemBorderRadius,
@@ -25088,7 +26399,7 @@ var Message = function Message(_ref) {
     padding: reactionItemPadding,
     margin: '0',
     fontSize: '12px'
-  }, reactionsCount)))), deletePopupOpen && React__default.createElement(ConfirmPopup, {
+  }, reactionsCount)))), deletePopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteMessage,
     togglePopup: handleToggleDeleteMessagePopup,
     buttonText: 'Delete',
@@ -25099,18 +26410,22 @@ var Message = function Message(_ref) {
     allowDeleteIncoming: allowEditDeleteIncomingMessage,
     isDirectChannel: channel.type === CHANNEL_TYPE.DIRECT,
     title: 'Delete message'
-  }), forwardPopupOpen && React__default.createElement(ForwardMessagePopup, {
+  }), forwardPopupOpen && /*#__PURE__*/React__default.createElement(ForwardMessagePopup, {
     handleForward: handleForwardMessage,
     togglePopup: handleToggleForwardMessagePopup,
     buttonText: 'Forward',
     title: 'Forward message'
   }));
 };
-var MessageReactionKey = styled__default.span(_templateObject$t || (_templateObject$t = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  align-items: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
-var ReactionItemCount = styled__default.span(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+
+var Message$1 = /*#__PURE__*/React__default.memo(Message, function (prevProps, nextProps) {
+  return prevProps.message.deliveryStatus === nextProps.message.deliveryStatus && prevProps.message.state === nextProps.message.state && prevProps.message.userReactions === nextProps.message.userReactions && prevProps.message.body === nextProps.message.body && prevProps.message.reactionTotals === nextProps.message.reactionTotals && prevProps.message.attachments === nextProps.message.attachments;
+});
+var MessageReactionKey = styled__default.span(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  align-items: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
+var ReactionItemCount = styled__default.span(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
-var MessageReaction = styled__default.span(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n\n  &:last-child {\n    margin-right: 0;\n  }\n"])), function (props) {
+var MessageReaction = styled__default.span(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  //min-width: 23px;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  margin: ", ";\n  margin-right: ", ";\n  border: ", ";\n  border-color: ", ";\n  color: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n  font-size: ", ";\n  line-height: ", ";\n  padding: ", ";\n  background-color: ", ";\n  white-space: nowrap;\n\n  &:last-child {\n    margin-right: 0;\n  }\n"])), function (props) {
   return props.margin || '0 8px 0 0';
 }, function (props) {
   return props.isLastReaction && '0';
@@ -25131,14 +26446,14 @@ var MessageReaction = styled__default.span(_templateObject3$j || (_templateObjec
 }, function (props) {
   return props.backgroundColor;
 });
-var ThreadMessageCountContainer = styled__default.div(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.primary);
-var FailedMessageIcon = styled__default.div(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: -6px;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
+var ThreadMessageCountContainer = styled__default.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  color: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 15px;\n  margin: 12px;\n  cursor: pointer;\n\n  &::before {\n    content: '';\n    position: absolute;\n    left: -25px;\n    top: -21px;\n    width: 16px;\n    height: 26px;\n    border-left: 2px solid #cdcdcf;\n    border-bottom: 2px solid #cdcdcf;\n    border-radius: 0 0 0 14px;\n  }\n"])), colors.primary);
+var FailedMessageIcon = styled__default.div(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: -6px;\n  left: ", ";\n  right: ", ";\n  width: 20px;\n  height: 20px;\n"])), function (props) {
   return !props.rtl && '-24px';
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
-var ReactionsContainer = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  filter: drop-shadow(0px 0px 2px rgba(17, 21, 57, 0.08));\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
+var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
+var ReactionsContainer = styled__default.div(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  filter: drop-shadow(0px 0px 2px rgba(17, 21, 57, 0.08));\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
   return props.rtlDirection && 'auto';
 }, function (props) {
   return !props.rtlDirection && 'auto';
@@ -25155,13 +26470,13 @@ var ReactionsContainer = styled__default.div(_templateObject7$a || (_templateObj
 }, function (props) {
   return props.topPosition && "\n      position: relative;\n      top: " + props.topPosition + ";\n  ";
 });
-var MessageReactionsCont = styled__default.div(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n  cursor: pointer;\n"])), function (props) {
+var MessageReactionsCont = styled__default.div(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  max-width: 300px;\n  //overflow-x: auto;\n  direction: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.rtlDirection && 'ltr';
 });
-var MessageHeaderCont = styled__default.div(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: ", ";\n"])), function (props) {
+var MessageHeaderCont = styled__default.div(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: ", ";\n"])), function (props) {
   return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReplied && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
 });
-var ReplyMessageContainer = styled__default.div(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
+var ReplyMessageContainer = styled__default.div(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.leftBorderColor || '#b8b9c2';
 }, function (props) {
   return props.withAttachments ? '8px 8px' : '0 0 8px';
@@ -25170,10 +26485,10 @@ var ReplyMessageContainer = styled__default.div(_templateObject10$5 || (_templat
 }, function (props) {
   return !props.withSenderName && props.withAttachments && '8px';
 });
-var ReplyMessageBody = styled__default.div(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  direction: ", ";\n  max-width: 100%;\n"])), function (props) {
+var ReplyMessageBody = styled__default.div(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  margin-top: auto;\n  margin-bottom: auto;\n  direction: ", ";\n  max-width: 100%;\n"])), function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var ForwardedTitle = styled__default.h3(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
+var ForwardedTitle = styled__default.h3(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-weight: 500;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  //margin: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-top: ", ";\n  padding-bottom: ", ";\n  & > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.withAttachments && props.withBody ? '0' : '0 0 4px';
@@ -25186,11 +26501,11 @@ var ForwardedTitle = styled__default.h3(_templateObject12$2 || (_templateObject1
 }, function (props) {
   return props.color || colors.primary;
 });
-var MessageStatus = styled__default.span(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
+var MessageStatus = styled__default.span(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  margin-left: 4px;\n  text-align: right;\n  transform: translate(0px, -1px);\n  height: 14px;\n  //visibility: ", ";\n"])), function (_ref2) {
   var lastMessage = _ref2.lastMessage;
   return lastMessage ? 'visible' : 'hidden';
 });
-var HiddenMessageTime = styled__default.span(_templateObject14$2 || (_templateObject14$2 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
+var HiddenMessageTime = styled__default.span(_templateObject14$3 || (_templateObject14$3 = _taggedTemplateLiteralLoose(["\n  display: ", ";\n  font-weight: 400;\n  font-size: 12px;\n  color: ", ";\n"])), function (props) {
   return props.hide && 'none';
 }, colors.textColor2);
 var MessageStatusAndTime = styled__default.div(_templateObject15$2 || (_templateObject15$2 = _taggedTemplateLiteralLoose(["\n  visibility: ", ";\n  display: ", ";\n  align-items: flex-end;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: ", ";\n  float: right;\n  line-height: 14px;\n  margin-right: ", ";\n  margin-left: ", ";\n  margin-bottom: ", ";\n  direction: ", ";\n  transform: translate(0px, 4px);\n  white-space: nowrap;\n  width: ", ";\n  justify-content: ", ";\n  & > svg {\n    margin-left: 4px;\n    transform: translate(0px, -1px);\n    height: 14px;\n  }\n\n  & > ", " {\n    color: ", ";\n  }\n\n  ", "\n"])), function (props) {
@@ -25279,923 +26594,6 @@ var FrequentlyEmojisContainer = styled__default.div(_templateObject23$1 || (_tem
   return props.rtlDirection && '0';
 });
 
-var _path$P;
-
-function _extends$R() {
-  _extends$R = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$R.apply(this, arguments);
-}
-
-function SvgSliderButtonRight(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$R({
-    width: 28,
-    height: 28,
-    viewBox: "0 0 28.01 28.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$P || (_path$P = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
-    fill: "#fff"
-  })));
-}
-
-var _path$Q;
-
-function _extends$S() {
-  _extends$S = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$S.apply(this, arguments);
-}
-
-function SvgSliderButtonLeft(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$S({
-    width: 28,
-    height: 28,
-    viewBox: "0 0 28.01 28.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$Q || (_path$Q = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
-    fill: "#fff"
-  })));
-}
-
-var _path$R;
-
-function _extends$T() {
-  _extends$T = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$T.apply(this, arguments);
-}
-
-function SvgVideoPlayerPlay(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$T({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$R || (_path$R = /*#__PURE__*/React.createElement("path", {
-    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
-    fill: "#fff"
-  })));
-}
-
-var _path$S;
-
-function _extends$U() {
-  _extends$U = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$U.apply(this, arguments);
-}
-
-function SvgVideoPlayerPause(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$U({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$S || (_path$S = /*#__PURE__*/React.createElement("path", {
-    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
-    fill: "#fff"
-  })));
-}
-
-var _path$T;
-
-function _extends$V() {
-  _extends$V = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$V.apply(this, arguments);
-}
-
-function SvgVolume(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$V({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
-    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
-    fill: "#fff"
-  })));
-}
-
-var _path$U;
-
-function _extends$W() {
-  _extends$W = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$W.apply(this, arguments);
-}
-
-function SvgVolumeMute(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$W({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
-    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
-    fill: "#fff"
-  })));
-}
-
-var _path$V;
-
-function _extends$X() {
-  _extends$X = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$X.apply(this, arguments);
-}
-
-function SvgFullscreen(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$X({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$V || (_path$V = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
-    fill: "#fff"
-  })));
-}
-
-var _path$W;
-
-function _extends$Y() {
-  _extends$Y = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$Y.apply(this, arguments);
-}
-
-function SvgFullscreenExit(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$Y({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$W || (_path$W = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M3.438 11.781c0-.466.377-.844.843-.844H8.22c.466 0 .844.378.844.844v3.938a.844.844 0 01-1.688 0v-1.9L3.94 17.252a.844.844 0 11-1.193-1.193l3.435-3.435h-1.9a.844.844 0 01-.844-.844zM17.253 2.747c.33.33.33.864 0 1.193l-3.435 3.435h1.899a.844.844 0 110 1.688h-3.936a.844.844 0 01-.844-.844V4.28a.844.844 0 011.688 0v1.9l3.435-3.434a.844.844 0 011.193 0z",
-    fill: "#fff"
-  })));
-}
-
-var _templateObject$u, _templateObject2$q, _templateObject3$k, _templateObject4$g, _templateObject5$e, _templateObject6$d, _templateObject7$b, _templateObject8$a, _templateObject9$8, _templateObject10$6;
-var timerInterval;
-
-var VideoPlayer = function VideoPlayer(_ref) {
-  var src = _ref.src,
-      videoFileId = _ref.videoFileId,
-      activeFileId = _ref.activeFileId;
-  var containerRef = React.useRef(null);
-  var videoRef = React.useRef(null);
-  var progressRef = React.useRef(null);
-  var volumeRef = React.useRef(null);
-
-  var _useState = React.useState(false),
-      playing = _useState[0],
-      setPlaying = _useState[1];
-
-  var _useState2 = React.useState(0),
-      currentTime = _useState2[0],
-      setCurrentTime = _useState2[1];
-
-  var _useState3 = React.useState(0),
-      videoTime = _useState3[0],
-      setVideoTime = _useState3[1];
-
-  var _useState4 = React.useState(0),
-      progress = _useState4[0],
-      setProgress = _useState4[1];
-
-  var _useState5 = React.useState(0),
-      volume = _useState5[0],
-      setVolume = _useState5[1];
-
-  var _useState6 = React.useState(0),
-      volumePrevValue = _useState6[0],
-      setVolumePrevValue = _useState6[1];
-
-  var _useState7 = React.useState(false),
-      isMuted = _useState7[0],
-      setIsMuted = _useState7[1];
-
-  var _useState8 = React.useState(false),
-      isFullScreen = _useState8[0],
-      setIsFullScreen = _useState8[1];
-
-  var videoHandler = function videoHandler(control) {
-    if (control === 'play') {
-      videoRef.current && videoRef.current.play();
-      setPlaying(true);
-    } else if (control === 'pause') {
-      videoRef.current && videoRef.current.pause();
-      setPlaying(false);
-    }
-  };
-
-  var handleProgressInputChange = function handleProgressInputChange(e) {
-    var target = e.target;
-    var val = target.value;
-    setProgress(val);
-
-    if (videoRef.current) {
-      videoRef.current.currentTime = val / 100 * videoTime;
-    }
-  };
-
-  var handleMuteUnmute = function handleMuteUnmute() {
-    if (videoRef.current) {
-      if (!isMuted) {
-        setVolumePrevValue(volume);
-        videoRef.current.volume = 0;
-        setVolume(0);
-      } else {
-        videoRef.current.volume = volumePrevValue;
-        setVolume(volumePrevValue);
-      }
-
-      setIsMuted(!isMuted);
-    }
-  };
-
-  var handleVolumeInputChange = function handleVolumeInputChange(e) {
-    var target = e.target;
-    var val = target.value;
-
-    if (val === '0') {
-      setIsMuted(true);
-    } else {
-      setIsMuted(false);
-    }
-
-    setVolume(val);
-
-    if (videoRef.current) {
-      videoRef.current.volume = parseFloat(val);
-    }
-  };
-
-  var handleOpenFullScreen = function handleOpenFullScreen() {
-    if (containerRef.current) {
-      if (isFullScreen) {
-        document.exitFullscreen().then(function () {
-          setIsFullScreen(false);
-        });
-      } else {
-        containerRef.current.requestFullscreen().then(function () {
-          setIsFullScreen(true);
-        });
-      }
-    }
-  };
-
-  React.useEffect(function () {
-    if (progressRef.current) {
-      progressRef.current.style.backgroundSize = progress + "%";
-    }
-  }, [progress]);
-  React.useEffect(function () {
-    if (volumeRef.current) {
-      volumeRef.current.style.backgroundSize = volume * 100 + "%";
-    }
-  }, [volume]);
-  React.useEffect(function () {
-    if (playing) {
-      var vid = document.getElementById('video1');
-      var videoDuration = vid ? vid.duration : '';
-      timerInterval = setInterval(function () {
-        if (videoRef.current && videoDuration) {
-          var _videoRef$current, _videoRef$current2;
-
-          setCurrentTime((_videoRef$current = videoRef.current) === null || _videoRef$current === void 0 ? void 0 : _videoRef$current.currentTime);
-          setProgress(((_videoRef$current2 = videoRef.current) === null || _videoRef$current2 === void 0 ? void 0 : _videoRef$current2.currentTime) / videoDuration * 100);
-
-          if (videoRef.current.paused) {
-            videoRef.current.currentTime = 0;
-            setProgress(0);
-            setCurrentTime(videoRef.current.currentTime);
-            setPlaying(false);
-            clearInterval(timerInterval);
-          }
-        }
-      }, 100);
-    } else {
-      clearInterval(timerInterval);
-    }
-  }, [playing]);
-  React.useEffect(function () {
-    if (videoFileId !== activeFileId) {
-      if (videoRef.current) {
-        videoRef.current.pause();
-        setPlaying(false);
-      }
-    }
-  }, [activeFileId]);
-  React.useEffect(function () {
-    var checkVideoInterval;
-
-    if (videoRef.current) {
-      checkVideoInterval = setInterval(function () {
-        if (videoRef.current && videoRef.current.readyState > 0) {
-          setVideoTime(videoRef.current.duration);
-          setVolume(videoRef.current.volume);
-          setPlaying(true);
-          videoRef.current.play();
-          clearInterval(checkVideoInterval);
-        }
-      }, 500);
-    }
-
-    return function () {
-      clearInterval(timerInterval);
-      clearInterval(checkVideoInterval);
-    };
-  }, []);
-  return React__default.createElement(Component$1, {
-    ref: containerRef,
-    fullScreen: isFullScreen,
-    className: 'custom_video_player'
-  }, React__default.createElement("video", {
-    onClick: function onClick() {
-      return videoHandler(playing ? 'pause' : 'play');
-    },
-    id: 'video1',
-    ref: videoRef,
-    className: 'video',
-    src: src
-  }), React__default.createElement(ControlsContainer, null, React__default.createElement(ProgressBlock, null, React__default.createElement(Progress, {
-    ref: progressRef,
-    onMouseDown: function onMouseDown(e) {
-      return e.stopPropagation();
-    },
-    onChange: handleProgressInputChange,
-    type: 'range',
-    value: progress,
-    min: '0',
-    max: '100'
-  })), playing ? React__default.createElement(PlayPauseWrapper, {
-    onClick: function onClick() {
-      return videoHandler('pause');
-    }
-  }, React__default.createElement(SvgVideoPlayerPause, null)) : React__default.createElement(PlayPauseWrapper, {
-    onClick: function onClick() {
-      return videoHandler('play');
-    }
-  }, React__default.createElement(SvgVideoPlayerPlay, null)), React__default.createElement(ControlTime, null, Math.floor(currentTime / 60) + ':' + ('0' + Math.floor(currentTime % 60)).slice(-2), " /", ' ', Math.floor(videoTime / 60) + ':' + ('0' + Math.floor(videoTime % 60)).slice(-2)), React__default.createElement(VolumeController, null, React__default.createElement(VolumeIconWrapper, {
-    onClick: handleMuteUnmute
-  }, isMuted ? React__default.createElement(SvgVolumeMute, null) : React__default.createElement(SvgVolume, null)), React__default.createElement(VolumeSlide, {
-    ref: volumeRef,
-    onMouseDown: function onMouseDown(e) {
-      return e.stopPropagation();
-    },
-    onChange: handleVolumeInputChange,
-    type: 'range',
-    value: volume,
-    min: '0',
-    max: '1',
-    step: 'any'
-  })), React__default.createElement(FullScreenWrapper, {
-    onClick: handleOpenFullScreen
-  }, isFullScreen ? React__default.createElement(SvgFullscreenExit, null) : React__default.createElement(SvgFullscreen, null))));
-};
-var Component$1 = styled__default.div(_templateObject$u || (_templateObject$u = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: '';\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
-  return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
-});
-var PlayPauseWrapper = styled__default.span(_templateObject2$q || (_templateObject2$q = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var ControlsContainer = styled__default.div(_templateObject3$k || (_templateObject3$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 16px;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background-color: transparent;\n  padding: 0 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
-var ControlTime = styled__default.span(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
-var ProgressBlock = styled__default.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
-var VolumeController = styled__default.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
-var VolumeIconWrapper = styled__default.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var VolumeSlide = styled__default.input(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
-var Progress = styled__default.input(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
-var FullScreenWrapper = styled__default.div(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-
-var _templateObject$v, _templateObject2$r, _templateObject3$l, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$9, _templateObject10$7, _templateObject11$5, _templateObject12$3, _templateObject13$3, _templateObject14$3;
-
-var SliderPopup = function SliderPopup(_ref) {
-  var channelId = _ref.channelId,
-      setIsSliderOpen = _ref.setIsSliderOpen,
-      mediaFiles = _ref.mediaFiles,
-      currentMediaFile = _ref.currentMediaFile;
-  var dispatch = reactRedux.useDispatch();
-  var getFromContacts = getShowOnlyContactUsers();
-  var ChatClient = getClient();
-  var user = ChatClient.user;
-
-  var _useState = React.useState(_extends({}, currentMediaFile)),
-      currentFile = _useState[0],
-      setCurrentFile = _useState[1];
-
-  var _useState2 = React.useState({}),
-      downloadingFilesMap = _useState2[0],
-      setDownloadingFilesMap = _useState2[1];
-
-  var _useState3 = React.useState([]),
-      attachmentsList = _useState3[0],
-      setAttachmentsList = _useState3[1];
-
-  var _useState4 = React.useState(true),
-      imageLoading = _useState4[0],
-      setImageLoading = _useState4[1];
-
-  var _useState5 = React.useState({}),
-      downloadedFiles = _useState5[0],
-      setDownloadedFiles = _useState5[1];
-
-  var _useState6 = React.useState(),
-      playedVideo = _useState6[0],
-      setPlayedVideo = _useState6[1];
-
-  var _useState7 = React.useState(true),
-      nextButtonDisabled = _useState7[0],
-      setNextButtonDisabled = _useState7[1];
-
-  var _useState8 = React.useState(true),
-      prevButtonDisabled = _useState8[0],
-      setPrevButtonDisabled = _useState8[1];
-
-  var _useState9 = React.useState(false),
-      visibleSlide = _useState9[0],
-      setVisibleSlide = _useState9[1];
-
-  var customDownloader = getCustomDownloader();
-  var contactsMap = reactRedux.useSelector(contactsMapSelector);
-  var attachments = reactRedux.useSelector(attachmentsForPopupSelector, reactRedux.shallowEqual) || [];
-  var visibilityTimeout = React.useRef();
-  var attachmentUserName = currentFile ? currentFile.user && makeUsername(contactsMap[currentFile.user.id], currentFile.user, getFromContacts && user.id !== currentFile.user.id) : '';
-
-  var handleClosePopup = function handleClosePopup() {
-    setAttachmentsList([]);
-    setIsSliderOpen(false);
-  };
-
-  var downloadImage = function downloadImage(src, setToDownloadedFiles) {
-    clearTimeout(visibilityTimeout.current);
-    var image = new Image();
-    image.src = src;
-
-    image.onload = function () {
-      if (setToDownloadedFiles) {
-        var _extends2;
-
-        setDownloadedFiles(_extends({}, downloadedFiles, (_extends2 = {}, _extends2[currentFile.id] = src, _extends2)));
-        visibilityTimeout.current = setTimeout(function () {
-          setVisibleSlide(true);
-        }, 100);
-      }
-
-      setImageLoading(false);
-    };
-  };
-
-  var handleCompleteDownload = function handleCompleteDownload(attachmentId, failed) {
-    if (failed) {
-      console.log('file download failed!');
-    }
-
-    var stateCopy = _extends({}, downloadingFilesMap);
-
-    delete stateCopy[attachmentId];
-    setDownloadingFilesMap(stateCopy);
-  };
-
-  var handleDownloadFile = function handleDownloadFile(attachment) {
-    if (attachment.id) {
-      setDownloadingFilesMap(function (prevState) {
-        var _extends3;
-
-        return _extends({}, prevState, (_extends3 = {}, _extends3[attachment.id] = true, _extends3));
-      });
-    }
-
-    downloadFile(attachment, handleCompleteDownload);
-  };
-
-  var handleClicks = function handleClicks(e) {
-    if (!e.target.closest('.custom_carousel_item') && !e.target.closest('.custom_carousel_arrow')) {
-      handleClosePopup();
-    }
-  };
-
-  useDidUpdate(function () {
-    if (playedVideo) {
-      var videoElem = document.getElementById(playedVideo);
-
-      if (videoElem) {
-        videoElem.pause();
-      }
-    }
-
-    getAttachmentUrlFromCache(currentFile.id).then(function (cachedUrl) {
-      if (currentFile) {
-        if (cachedUrl) {
-          if (!downloadedFiles[currentFile.id]) {
-            setVisibleSlide(false);
-
-            if (currentFile.type === 'image') {
-              downloadImage(cachedUrl, true);
-            } else {
-              var _extends4;
-
-              clearTimeout(visibilityTimeout.current);
-              setDownloadedFiles(_extends({}, downloadedFiles, (_extends4 = {}, _extends4[currentFile.id] = cachedUrl, _extends4)));
-              setPlayedVideo(currentFile.id);
-              visibilityTimeout.current = setTimeout(function () {
-                setVisibleSlide(true);
-              }, 100);
-            }
-          } else {
-            if (currentFile.type === 'image') {
-              downloadImage(cachedUrl);
-            } else {
-              setVisibleSlide(true);
-            }
-          }
-        } else {
-          if (customDownloader) {
-            customDownloader(currentFile.url).then(function (url) {
-              try {
-                return Promise.resolve(fetch(url)).then(function (response) {
-                  setAttachmentToCache(currentFile.id, response);
-
-                  if (currentFile.type === 'image') {
-                    downloadImage(url, true);
-                  } else {
-                    var _extends5;
-
-                    clearTimeout(visibilityTimeout.current);
-                    setDownloadedFiles(_extends({}, downloadedFiles, (_extends5 = {}, _extends5[currentFile.id] = url, _extends5)));
-                    setPlayedVideo(currentFile.id);
-                    visibilityTimeout.current = setTimeout(function () {
-                      setVisibleSlide(true);
-                    }, 100);
-                  }
-                });
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            })["catch"](function (e) {
-              console.log('fail to download image...... ', e);
-            });
-          } else {
-            if (!downloadedFiles[currentFile.id]) {
-              setVisibleSlide(false);
-
-              if (currentFile.type === 'image') {
-                downloadImage(currentFile.url, true);
-              } else {
-                var _extends6;
-
-                clearTimeout(visibilityTimeout.current);
-                setDownloadedFiles(_extends({}, downloadedFiles, (_extends6 = {}, _extends6[currentFile.id] = currentFile.url, _extends6)));
-                setPlayedVideo(currentFile.id);
-                visibilityTimeout.current = setTimeout(function () {
-                  setVisibleSlide(true);
-                }, 100);
-              }
-            } else {
-              if (currentFile.type === 'image') {
-                downloadImage(cachedUrl);
-              } else {
-                setVisibleSlide(true);
-              }
-            }
-          }
-        }
-      }
-    });
-  }, [currentFile]);
-  useDidUpdate(function () {
-    var currentMedia = attachmentsList.find(function (att) {
-      return att.id === currentMediaFile.id;
-    });
-    setCurrentFile(currentMedia);
-
-    if (currentMedia) {
-      var indexOnList = attachmentsList.findIndex(function (item) {
-        return item.id === currentMedia.id;
-      });
-
-      if (!attachmentsList[indexOnList + 1]) {
-        setNextButtonDisabled(true);
-      } else {
-        setNextButtonDisabled(false);
-      }
-
-      if (!attachmentsList[indexOnList - 1]) {
-        setPrevButtonDisabled(true);
-      } else {
-        setPrevButtonDisabled(false);
-      }
-    }
-  }, [attachmentsList]);
-  useDidUpdate(function () {
-    setAttachmentsList(attachments || []);
-  }, [attachments]);
-  React.useEffect(function () {
-    setImageLoading(true);
-
-    if (customDownloader && currentMediaFile) {
-      getAttachmentUrlFromCache(currentMediaFile.id).then(function (cachedUrl) {
-        if (cachedUrl) {
-          if (currentMediaFile.type === 'image') {
-            downloadImage(cachedUrl);
-          } else {
-            var _extends7;
-
-            setDownloadedFiles(_extends({}, downloadedFiles, (_extends7 = {}, _extends7[currentMediaFile.id] = cachedUrl, _extends7)));
-            setPlayedVideo(currentMediaFile.id);
-          }
-        } else {
-          if (customDownloader) {
-            customDownloader(currentMediaFile.url).then(function (url) {
-              try {
-                return Promise.resolve(fetch(url)).then(function (response) {
-                  setAttachmentToCache(currentMediaFile.id, response);
-
-                  if (currentMediaFile.type === 'image') {
-                    downloadImage(url);
-                  } else {
-                    var _extends8;
-
-                    setDownloadedFiles(_extends({}, downloadedFiles, (_extends8 = {}, _extends8[currentMediaFile.id] = url, _extends8)));
-                    setPlayedVideo(currentMediaFile.id);
-                  }
-                });
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            });
-          } else {
-            downloadImage(currentMediaFile.url);
-          }
-        }
-      });
-    }
-
-    if (currentMediaFile) {
-      if (mediaFiles) {
-        setAttachmentsList(mediaFiles);
-      } else {
-        dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media, 35, queryDirection.NEAR, currentMediaFile.id, true));
-      }
-    }
-
-    return function () {
-      setAttachmentsList([]);
-    };
-  }, []);
-  return React__default.createElement(Container$e, null, React__default.createElement(SliderHeader, {
-    backgroundColor: colors.textColor1
-  }, React__default.createElement(FileInfo, null, React__default.createElement(Avatar, {
-    name: attachmentUserName,
-    setDefaultAvatar: true,
-    size: 36,
-    image: currentFile && currentFile.user && currentFile.user.avatarUrl
-  }), React__default.createElement(Info, null, React__default.createElement(UserName, null, attachmentUserName), React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.createdAt).format('DD.MM.YYYY HH:mm'), ' ', React__default.createElement(FileSize, null, currentFile && currentFile.size && currentFile.size > 0 ? bytesToSize(currentFile.size, 1) : '')))), React__default.createElement(ActionDownload, {
-    onClick: function onClick() {
-      return handleDownloadFile(currentFile);
-    }
-  }, downloadingFilesMap[currentFile.id] ? React__default.createElement(UploadingIcon, {
-    width: '24px',
-    height: '24px',
-    borderWidth: '3px',
-    color: colors.textColor2
-  }) : React__default.createElement(SvgDownload, null)), React__default.createElement(Actions, null, React__default.createElement(ActionItem, {
-    onClick: handleClosePopup
-  }, React__default.createElement(SvgClose, null)))), React__default.createElement(SliderBody, {
-    onClick: handleClicks
-  }, attachmentsList && attachmentsList.length ? React__default.createElement(Carousel, {
-    draggable: false,
-    pagination: false,
-    className: 'custom_carousel',
-    initialActiveIndex: currentFile && attachmentsList.findIndex(function (item) {
-      return item.id === currentFile.id;
-    }),
-    onChange: function onChange(_currentItem, pageIndex) {
-      setImageLoading(true);
-      setCurrentFile(attachmentsList[pageIndex]);
-
-      if (!attachmentsList[pageIndex + 1]) {
-        setNextButtonDisabled(true);
-      } else {
-        setNextButtonDisabled(false);
-      }
-
-      if (!attachmentsList[pageIndex - 1]) {
-        setPrevButtonDisabled(true);
-      } else {
-        setPrevButtonDisabled(false);
-      }
-    },
-    renderArrow: function renderArrow(_ref2) {
-      var type = _ref2.type,
-          _onClick = _ref2.onClick,
-          isEdge = _ref2.isEdge;
-      var pointer = type === 'PREV' ? React__default.createElement(SvgSliderButtonLeft, null) : React__default.createElement(SvgSliderButtonRight, null);
-      var disabled = type === 'PREV' ? prevButtonDisabled : nextButtonDisabled;
-      return React__default.createElement(ArrowButton, {
-        className: 'custom_carousel_arrow',
-        leftButton: type === 'PREV',
-        type: 'button',
-        backgroundColor: colors.textColor1,
-        onClick: function onClick(e) {
-          e.preventDefault();
-
-          _onClick();
-        },
-        disabled: isEdge,
-        hide: disabled
-      }, pointer);
-    },
-    isRTL: false
-  }, attachmentsList.map(function (file) {
-    return React__default.createElement(CarouselItem, {
-      className: 'custom_carousel_item',
-      key: file.id,
-      draggable: false,
-      visibleSlide: visibleSlide
-    }, downloadedFiles[file.id] ? React__default.createElement(React__default.Fragment, null, file.type === 'image' ? React__default.createElement(React__default.Fragment, null, imageLoading ? React__default.createElement(UploadCont, null, React__default.createElement(UploadingIcon, null)) : React__default.createElement("img", {
-      draggable: false,
-      src: downloadedFiles[file.id],
-      alt: file.name
-    })) : React__default.createElement(React__default.Fragment, null, React__default.createElement(VideoPlayer, {
-      activeFileId: currentFile.id,
-      videoFileId: file.id,
-      src: downloadedFiles[file.id]
-    }))) : React__default.createElement(UploadingIcon, null));
-  })) : React__default.createElement(UploadingIcon, null)));
-};
-var Container$e = styled__default.div(_templateObject$v || (_templateObject$v = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
-var SliderHeader = styled__default.div(_templateObject2$r || (_templateObject2$r = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), function (props) {
-  return props.backgroundColor || colors.textColor1;
-});
-var SliderBody = styled__default.div(_templateObject3$l || (_templateObject3$l = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.4);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
-var FileInfo = styled__default.div(_templateObject4$h || (_templateObject4$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
-var Info = styled__default.div(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
-var Actions = styled__default.div(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
-var FileDateAndSize = styled__default.span(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
-var FileSize = styled__default.span(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
-var UserName = styled__default.h4(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
-var ActionItem = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
-var ActionDownload = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
-var CarouselItem = styled__default.div(_templateObject12$3 || (_templateObject12$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
-  return props.visibleSlide ? 1 : 0;
-});
-var UploadCont = styled__default.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var ArrowButton = styled__default.button(_templateObject14$3 || (_templateObject14$3 = _taggedTemplateLiteralLoose(["\n  min-width: 60px;\n  max-width: 60px;\n  height: 60px;\n  margin-right: ", ";\n  margin-left: ", ";\n  background: ", ";\n  border: 1px solid rgba(0, 0, 0, 0.1);\n  box-sizing: border-box;\n  border-radius: 50%;\n  line-height: 1px;\n  align-self: center;\n  outline: none;\n  cursor: pointer;\n  visibility: ", ";\n  @media (max-width: 768px) {\n    min-width: 36px;\n    max-width: 36px;\n    height: 36px;\n    margin-right: ", ";\n    margin-left: ", ";\n\n    & > svg {\n      width: 22px;\n      height: 22px;\n    }\n  }\n  @media (max-width: 450px) {\n    min-width: 32px;\n    max-width: 32px;\n    height: 32px;\n\n    & > svg {\n      width: 20px;\n      height: 20px;\n    }\n  }\n"])), function (props) {
-  return !props.leftButton && '24px';
-}, function (props) {
-  return props.leftButton && '24px';
-}, function (props) {
-  return props.backgroundColor || colors.textColor1;
-}, function (props) {
-  return props.hide && 'hidden';
-}, function (props) {
-  return !props.leftButton && '4px';
-}, function (props) {
-  return props.leftButton && '4px';
-});
-
-var _path$X;
-
-function _extends$Z() {
-  _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$Z.apply(this, arguments);
-}
-
-function SvgChoseMedia(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$Z({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 19 19",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$X || (_path$X = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
-    fill: "CurrentColor"
-  })));
-}
-
 var _templateObject$w, _templateObject2$s, _templateObject3$m, _templateObject4$i, _templateObject5$g, _templateObject6$f, _templateObject7$d, _templateObject8$c, _templateObject9$a;
 var loading = false;
 var loadFromServer = false;
@@ -26230,7 +26628,7 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
     dividerText = moment().year() === moment(current).year() ? current.format('MMMM D') : current.format('MMMM D YYYY');
   }
 
-  return !differentDays ? null : React__default.createElement(MessageDivider, {
+  return !differentDays ? null : /*#__PURE__*/React__default.createElement(MessageDivider, {
     theme: theme,
     dividerText: dividerText,
     visibility: messagesHasNext && lastIndex,
@@ -26246,7 +26644,8 @@ var CreateMessageDateDivider = function CreateMessageDateDivider(_ref) {
 };
 
 var MessageList = function MessageList(_ref2) {
-  var fontFamily = _ref2.fontFamily,
+  var messages = _ref2.messages,
+      fontFamily = _ref2.fontFamily,
       _ref2$ownMessageOnRig = _ref2.ownMessageOnRightSide,
       ownMessageOnRightSide = _ref2$ownMessageOnRig === void 0 ? true : _ref2$ownMessageOnRig,
       messageWidthPercent = _ref2.messageWidthPercent,
@@ -26416,8 +26815,10 @@ var MessageList = function MessageList(_ref2) {
       scrollToReply = _useState7[0],
       setScrollToReply = _useState7[1];
 
-  var messages = reactRedux.useSelector(activeChannelMessagesSelector) || [];
   var messageForReply = {};
+  var messageList = React.useMemo(function () {
+    return messages;
+  }, [messages]);
   var attachmentsSelected = false;
   var messagesBoxRef = React.useRef(null);
   var messageTopDateRef = React.useRef(null);
@@ -26469,7 +26870,7 @@ var MessageList = function MessageList(_ref2) {
           dispatch(showScrollToNewMessageButtonAC(false));
         }
 
-        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && messagesIndexMap[lastVisibleMessageId] < 15) {
+        if (connectionStatus === CONNECTION_STATUS.CONNECTED && !prevDisable && messagesLoading !== LOADING_STATE.LOADING && hasPrevMessages && messagesIndexMap[lastVisibleMessageId] < 15) {
           loadDirection = 'prev';
           prevMessageId = messages[0].id;
           handleLoadMoreMessages(MESSAGE_LOAD_DIRECTION.PREV, LOAD_MAX_MESSAGE_COUNT);
@@ -26528,6 +26929,7 @@ var MessageList = function MessageList(_ref2) {
   };
 
   var handleLoadMoreMessages = function handleLoadMoreMessages(direction, limit) {
+    console.log('load more messages ....... ', direction);
     var lastMessageId = messages.length && messages[messages.length - 1].id;
     var firstMessageId = messages.length && messages[0].id;
     var hasPrevCached = getHasPrevCached();
@@ -26767,7 +27169,7 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages... ', messages);
+    console.log('messages...', messages);
   }, [messages]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
@@ -26798,28 +27200,28 @@ var MessageList = function MessageList(_ref2) {
       }
     }
   });
-  return React__default.createElement(React__default.Fragment, null, isDragging && React__default.createElement(DragAndDropContainer, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, isDragging && /*#__PURE__*/React__default.createElement(DragAndDropContainer, {
     id: 'draggingContainer',
     draggable: true,
     onDragLeave: handleDragOut,
     topOffset: scrollRef && scrollRef.current && scrollRef.current.offsetTop,
     height: scrollRef && scrollRef.current && scrollRef.current.offsetHeight
-  }, React__default.createElement(DropAttachmentArea, {
+  }, /*#__PURE__*/React__default.createElement(DropAttachmentArea, {
     margin: '32px 32px 12px',
     draggable: true,
     onDrop: handleDropFile,
     onDragOver: handleDragOver
-  }, React__default.createElement(IconWrapper, {
+  }, /*#__PURE__*/React__default.createElement(IconWrapper, {
     draggable: true,
     iconColor: colors.primary
-  }, React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), isDragging === 'media' && React__default.createElement(DropAttachmentArea, {
+  }, /*#__PURE__*/React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), isDragging === 'media' && /*#__PURE__*/React__default.createElement(DropAttachmentArea, {
     draggable: true,
     onDrop: handleDropMedia,
     onDragOver: handleDragOver
-  }, React__default.createElement(IconWrapper, {
+  }, /*#__PURE__*/React__default.createElement(IconWrapper, {
     draggable: true,
     iconColor: colors.primary
-  }, React__default.createElement(SvgChoseMedia, null)), "Drag & drop to send as media")), React__default.createElement(React__default.Fragment, null, showTopFixedDate && React__default.createElement(MessageTopDate, {
+  }, /*#__PURE__*/React__default.createElement(SvgChoseMedia, null)), "Drag & drop to send as media")), /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showTopFixedDate && /*#__PURE__*/React__default.createElement(MessageTopDate, {
     visible: showTopDate,
     dateDividerFontSize: dateDividerFontSize,
     dateDividerTextColor: dateDividerTextColor || colors.textColor1,
@@ -26827,29 +27229,29 @@ var MessageList = function MessageList(_ref2) {
     dateDividerBackgroundColor: dateDividerBackgroundColor || colors.backgroundColor,
     dateDividerBorderRadius: dateDividerBorderRadius,
     topOffset: scrollRef && scrollRef.current && scrollRef.current.offsetTop
-  }, React__default.createElement("span", {
+  }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageTopDateRef
-  })), React__default.createElement(Container$f, {
+  })), /*#__PURE__*/React__default.createElement(Container$f, {
     id: 'scrollableDiv',
     ref: scrollRef,
     stopScrolling: stopScrolling,
     onScroll: handleMessagesListScroll,
     onDragEnter: handleDragIn
-  }, messages.length && messages.length > 0 ? React__default.createElement(MessagesBox, {
+  }, messages.length && messages.length > 0 ? /*#__PURE__*/React__default.createElement(MessagesBox, {
     enableResetScrollToCoords: false,
     replyMessage: messageForReply && messageForReply.id,
     attachmentsSelected: attachmentsSelected,
     ref: messagesBoxRef,
     className: 'messageBox'
-  }, messages.map(function (message, index) {
+  }, messageList.map(function (message, index) {
     var prevMessage = messages[index - 1];
     var nextMessage = messages[index + 1];
     var isUnreadMessage = !!(unreadMessageId && unreadMessageId === message.id);
     var messageMetas = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
     messagesIndexMap[message.id] = index;
-    return React__default.createElement(React__default.Fragment, {
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
       key: message.id || message.tid
-    }, React__default.createElement(CreateMessageDateDivider, {
+    }, /*#__PURE__*/React__default.createElement(CreateMessageDateDivider, {
       noMargin: !isUnreadMessage && prevMessage && prevMessage.type === 'system' && message.type !== 'system',
       theme: theme,
       lastIndex: false,
@@ -26863,7 +27265,7 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorderRadius: dateDividerBorderRadius,
       marginBottom: prevMessage && prevMessage.type === 'system' && message.type !== 'system',
       marginTop: differentUserMessageSpacing
-    }), message.type === 'system' ? React__default.createElement(MessageTopDate, {
+    }), message.type === 'system' ? /*#__PURE__*/React__default.createElement(MessageTopDate, {
       systemMessage: true,
       marginTop: message.type === 'system' && (differentUserMessageSpacing || '16px'),
       marginBottom: message.type === 'system' && nextMessage && nextMessage.type !== 'system' && (differentUserMessageSpacing || '16px'),
@@ -26874,13 +27276,13 @@ var MessageList = function MessageList(_ref2) {
       dateDividerBorder: dateDividerBorder,
       dateDividerBackgroundColor: dateDividerBackgroundColor || colors.backgroundColor,
       dateDividerBorderRadius: dateDividerBorderRadius
-    }, React__default.createElement("span", null, message.incoming ? makeUsername(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(messageMetas && messageMetas.m) && messageMetas.m.slice(0, 5).map(function (mem) {
+    }, /*#__PURE__*/React__default.createElement("span", null, message.incoming ? makeUsername(message.user && contactsMap[message.user.id], message.user, getFromContacts) : 'You', message.body === 'CC' ? ' created this channel ' : message.body === 'CG' ? ' created this group' : message.body === 'AM' ? " added " + (!!(messageMetas && messageMetas.m) && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
     })) + " " + (messageMetas && messageMetas.m && messageMetas.m.length > 5 ? "and " + (messageMetas.m.length - 5) + " more" : '') : message.body === 'RM' ? " removed " + (messageMetas && messageMetas.m && messageMetas.m.slice(0, 5).map(function (mem) {
       return mem === user.id ? 'You' : " " + systemMessageUserName(contactsMap[mem], mem);
-    })) + " " + (messageMetas && messageMetas.m && messageMetas.m.length > 5 ? "and " + (messageMetas.m.length - 5) + " more" : '') : message.body === 'LG' ? ' left the group' : '')) : React__default.createElement(MessageWrapper, {
+    })) + " " + (messageMetas && messageMetas.m && messageMetas.m.length > 5 ? "and " + (messageMetas.m.length - 5) + " more" : '') : message.body === 'LG' ? ' left the group' : '')) : /*#__PURE__*/React__default.createElement(MessageWrapper, {
       id: message.id
-    }, React__default.createElement(Message, {
+    }, /*#__PURE__*/React__default.createElement(Message$1, {
       message: _extends({}, message, {
         metadata: messageMetas
       }),
@@ -26986,7 +27388,7 @@ var MessageList = function MessageList(_ref2) {
       reactionsDetailsPopupHeaderItemsStyle: reactionsDetailsPopupHeaderItemsStyle,
       sameUserMessageSpacing: sameUserMessageSpacing,
       differentUserMessageSpacing: differentUserMessageSpacing
-    })), isUnreadMessage ? React__default.createElement(MessageDivider, {
+    })), isUnreadMessage ? /*#__PURE__*/React__default.createElement(MessageDivider, {
       theme: theme,
       newMessagesSeparatorTextColor: newMessagesSeparatorTextColor,
       newMessagesSeparatorFontSize: newMessagesSeparatorFontSize,
@@ -26998,9 +27400,9 @@ var MessageList = function MessageList(_ref2) {
       dividerText: newMessagesSeparatorText || 'Unread Messages',
       unread: true
     }) : null);
-  })) : messagesLoading === LOADING_STATE.LOADED && React__default.createElement(NoMessagesContainer, {
+  })) : messagesLoading === LOADING_STATE.LOADED && /*#__PURE__*/React__default.createElement(NoMessagesContainer, {
     color: colors.textColor1
-  }, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.GROUP ? ' group chat' : ' channel'), attachmentsPreview && mediaFile && React__default.createElement(SliderPopup, {
+  }, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.GROUP ? ' group chat' : ' channel'), attachmentsPreview && mediaFile && /*#__PURE__*/React__default.createElement(SliderPopup, {
     channelId: channel.id,
     setIsSliderOpen: setMediaFile,
     currentMediaFile: mediaFile
@@ -27049,6 +27451,241 @@ var MessageWrapper = styled__default.div(_templateObject8$c || (_templateObject8
 var NoMessagesContainer = styled__default.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
+
+var MessagesContainer = function MessagesContainer(_ref) {
+  var fontFamily = _ref.fontFamily,
+      _ref$ownMessageOnRigh = _ref.ownMessageOnRightSide,
+      ownMessageOnRightSide = _ref$ownMessageOnRigh === void 0 ? true : _ref$ownMessageOnRigh,
+      messageWidthPercent = _ref.messageWidthPercent,
+      messageStatusAndTimePosition = _ref.messageStatusAndTimePosition,
+      messageStatusDisplayingType = _ref.messageStatusDisplayingType,
+      showMessageStatus = _ref.showMessageStatus,
+      showMessageTimeAndStatusOnlyOnHover = _ref.showMessageTimeAndStatusOnlyOnHover,
+      showMessageTime = _ref.showMessageTime,
+      showMessageStatusForEachMessage = _ref.showMessageStatusForEachMessage,
+      showMessageTimeForEachMessage = _ref.showMessageTimeForEachMessage,
+      _ref$ownMessageBackgr = _ref.ownMessageBackground,
+      ownMessageBackground = _ref$ownMessageBackgr === void 0 ? colors.primaryLight : _ref$ownMessageBackgr,
+      _ref$incomingMessageB = _ref.incomingMessageBackground,
+      incomingMessageBackground = _ref$incomingMessageB === void 0 ? colors.backgroundColor : _ref$incomingMessageB,
+      _ref$hoverBackground = _ref.hoverBackground,
+      hoverBackground = _ref$hoverBackground === void 0 ? false : _ref$hoverBackground,
+      _ref$showSenderNameOn = _ref.showSenderNameOnDirectChannel,
+      showSenderNameOnDirectChannel = _ref$showSenderNameOn === void 0 ? false : _ref$showSenderNameOn,
+      _ref$showSenderNameOn2 = _ref.showSenderNameOnOwnMessages,
+      showSenderNameOnOwnMessages = _ref$showSenderNameOn2 === void 0 ? false : _ref$showSenderNameOn2,
+      _ref$showSenderNameOn3 = _ref.showSenderNameOnGroupChannel,
+      showSenderNameOnGroupChannel = _ref$showSenderNameOn3 === void 0 ? true : _ref$showSenderNameOn3,
+      _ref$showOwnAvatar = _ref.showOwnAvatar,
+      showOwnAvatar = _ref$showOwnAvatar === void 0 ? false : _ref$showOwnAvatar,
+      _ref$messageReaction = _ref.messageReaction,
+      messageReaction = _ref$messageReaction === void 0 ? false : _ref$messageReaction,
+      _ref$editMessage = _ref.editMessage,
+      editMessage = _ref$editMessage === void 0 ? false : _ref$editMessage,
+      _ref$copyMessage = _ref.copyMessage,
+      copyMessage = _ref$copyMessage === void 0 ? false : _ref$copyMessage,
+      _ref$replyMessage = _ref.replyMessage,
+      replyMessage = _ref$replyMessage === void 0 ? false : _ref$replyMessage,
+      _ref$replyMessageInTh = _ref.replyMessageInThread,
+      replyMessageInThread = _ref$replyMessageInTh === void 0 ? false : _ref$replyMessageInTh,
+      _ref$forwardMessage = _ref.forwardMessage,
+      forwardMessage = _ref$forwardMessage === void 0 ? false : _ref$forwardMessage,
+      _ref$deleteMessage = _ref.deleteMessage,
+      deleteMessage = _ref$deleteMessage === void 0 ? false : _ref$deleteMessage,
+      _ref$reportMessage = _ref.reportMessage,
+      reportMessage = _ref$reportMessage === void 0 ? false : _ref$reportMessage,
+      reactionIcon = _ref.reactionIcon,
+      editIcon = _ref.editIcon,
+      copyIcon = _ref.copyIcon,
+      replyIcon = _ref.replyIcon,
+      replyInThreadIcon = _ref.replyInThreadIcon,
+      forwardIcon = _ref.forwardIcon,
+      deleteIcon = _ref.deleteIcon,
+      _ref$allowEditDeleteI = _ref.allowEditDeleteIncomingMessage,
+      allowEditDeleteIncomingMessage = _ref$allowEditDeleteI === void 0 ? true : _ref$allowEditDeleteI,
+      starIcon = _ref.starIcon,
+      staredIcon = _ref.staredIcon,
+      reportIcon = _ref.reportIcon,
+      reactionIconOrder = _ref.reactionIconOrder,
+      openFrequentlyUsedReactions = _ref.openFrequentlyUsedReactions,
+      fixEmojiCategoriesTitleOnTop = _ref.fixEmojiCategoriesTitleOnTop,
+      emojisCategoryIconsPosition = _ref.emojisCategoryIconsPosition,
+      emojisContainerBorderRadius = _ref.emojisContainerBorderRadius,
+      reactionsDisplayCount = _ref.reactionsDisplayCount,
+      showEachReactionCount = _ref.showEachReactionCount,
+      showTotalReactionCount = _ref.showTotalReactionCount,
+      reactionItemBorder = _ref.reactionItemBorder,
+      reactionItemBorderRadius = _ref.reactionItemBorderRadius,
+      reactionItemBackground = _ref.reactionItemBackground,
+      reactionItemPadding = _ref.reactionItemPadding,
+      reactionItemMargin = _ref.reactionItemMargin,
+      reactionsFontSize = _ref.reactionsFontSize,
+      reactionsContainerBoxShadow = _ref.reactionsContainerBoxShadow,
+      reactionsContainerBorder = _ref.reactionsContainerBorder,
+      reactionsContainerBorderRadius = _ref.reactionsContainerBorderRadius,
+      reactionsContainerBackground = _ref.reactionsContainerBackground,
+      reactionsContainerPadding = _ref.reactionsContainerPadding,
+      reactionsContainerTopPosition = _ref.reactionsContainerTopPosition,
+      reactionsDetailsPopupBorderRadius = _ref.reactionsDetailsPopupBorderRadius,
+      _ref$reactionsDetails = _ref.reactionsDetailsPopupHeaderItemsStyle,
+      reactionsDetailsPopupHeaderItemsStyle = _ref$reactionsDetails === void 0 ? 'bubbles' : _ref$reactionsDetails,
+      editIconOrder = _ref.editIconOrder,
+      copyIconOrder = _ref.copyIconOrder,
+      replyIconOrder = _ref.replyIconOrder,
+      replyInThreadIconOrder = _ref.replyInThreadIconOrder,
+      forwardIconOrder = _ref.forwardIconOrder,
+      deleteIconOrder = _ref.deleteIconOrder,
+      starIconOrder = _ref.starIconOrder,
+      reportIconOrder = _ref.reportIconOrder,
+      reactionIconTooltipText = _ref.reactionIconTooltipText,
+      editIconTooltipText = _ref.editIconTooltipText,
+      copyIconTooltipText = _ref.copyIconTooltipText,
+      replyIconTooltipText = _ref.replyIconTooltipText,
+      replyInThreadIconTooltipText = _ref.replyInThreadIconTooltipText,
+      forwardIconTooltipText = _ref.forwardIconTooltipText,
+      deleteIconTooltipText = _ref.deleteIconTooltipText,
+      starIconTooltipText = _ref.starIconTooltipText,
+      reportIconTooltipText = _ref.reportIconTooltipText,
+      messageActionIconsColor = _ref.messageActionIconsColor,
+      dateDividerFontSize = _ref.dateDividerFontSize,
+      dateDividerTextColor = _ref.dateDividerTextColor,
+      dateDividerBorder = _ref.dateDividerBorder,
+      dateDividerBackgroundColor = _ref.dateDividerBackgroundColor,
+      dateDividerBorderRadius = _ref.dateDividerBorderRadius,
+      _ref$showTopFixedDate = _ref.showTopFixedDate,
+      showTopFixedDate = _ref$showTopFixedDate === void 0 ? true : _ref$showTopFixedDate,
+      inlineReactionIcon = _ref.inlineReactionIcon,
+      newMessagesSeparatorText = _ref.newMessagesSeparatorText,
+      newMessagesSeparatorFontSize = _ref.newMessagesSeparatorFontSize,
+      newMessagesSeparatorTextColor = _ref.newMessagesSeparatorTextColor,
+      newMessagesSeparatorWidth = _ref.newMessagesSeparatorWidth,
+      newMessagesSeparatorBorder = _ref.newMessagesSeparatorBorder,
+      newMessagesSeparatorBorderRadius = _ref.newMessagesSeparatorBorderRadius,
+      newMessagesSeparatorBackground = _ref.newMessagesSeparatorBackground,
+      newMessagesSeparatorTextLeftRightSpacesWidth = _ref.newMessagesSeparatorTextLeftRightSpacesWidth,
+      fileAttachmentsIcon = _ref.fileAttachmentsIcon,
+      fileAttachmentsBoxWidth = _ref.fileAttachmentsBoxWidth,
+      fileAttachmentsBoxBackground = _ref.fileAttachmentsBoxBackground,
+      fileAttachmentsBoxBorder = _ref.fileAttachmentsBoxBorder,
+      fileAttachmentsTitleColor = _ref.fileAttachmentsTitleColor,
+      fileAttachmentsSizeColor = _ref.fileAttachmentsSizeColor,
+      imageAttachmentMaxWidth = _ref.imageAttachmentMaxWidth,
+      imageAttachmentMaxHeight = _ref.imageAttachmentMaxHeight,
+      videoAttachmentMaxWidth = _ref.videoAttachmentMaxWidth,
+      videoAttachmentMaxHeight = _ref.videoAttachmentMaxHeight,
+      _ref$attachmentsPrevi = _ref.attachmentsPreview,
+      attachmentsPreview = _ref$attachmentsPrevi === void 0 ? true : _ref$attachmentsPrevi,
+      sameUserMessageSpacing = _ref.sameUserMessageSpacing,
+      differentUserMessageSpacing = _ref.differentUserMessageSpacing;
+  var messages = reactRedux.useSelector(activeChannelMessagesSelector) || [];
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(MessageList, {
+    messages: messages,
+    fontFamily: fontFamily,
+    ownMessageOnRightSide: ownMessageOnRightSide,
+    messageWidthPercent: messageWidthPercent,
+    messageStatusAndTimePosition: messageStatusAndTimePosition,
+    messageStatusDisplayingType: messageStatusDisplayingType,
+    showMessageStatus: showMessageStatus,
+    showMessageTimeAndStatusOnlyOnHover: showMessageTimeAndStatusOnlyOnHover,
+    showMessageTime: showMessageTime,
+    showMessageStatusForEachMessage: showMessageStatusForEachMessage,
+    showMessageTimeForEachMessage: showMessageTimeForEachMessage,
+    ownMessageBackground: ownMessageBackground,
+    incomingMessageBackground: incomingMessageBackground,
+    hoverBackground: hoverBackground,
+    showSenderNameOnDirectChannel: showSenderNameOnDirectChannel,
+    showSenderNameOnOwnMessages: showSenderNameOnOwnMessages,
+    showSenderNameOnGroupChannel: showSenderNameOnGroupChannel,
+    showOwnAvatar: showOwnAvatar,
+    messageReaction: messageReaction,
+    editMessage: editMessage,
+    copyMessage: copyMessage,
+    replyMessage: replyMessage,
+    replyMessageInThread: replyMessageInThread,
+    forwardMessage: forwardMessage,
+    deleteMessage: deleteMessage,
+    reportMessage: reportMessage,
+    reactionIcon: reactionIcon,
+    editIcon: editIcon,
+    copyIcon: copyIcon,
+    replyIcon: replyIcon,
+    replyInThreadIcon: replyInThreadIcon,
+    forwardIcon: forwardIcon,
+    deleteIcon: deleteIcon,
+    allowEditDeleteIncomingMessage: allowEditDeleteIncomingMessage,
+    starIcon: starIcon,
+    staredIcon: staredIcon,
+    reportIcon: reportIcon,
+    reactionIconOrder: reactionIconOrder,
+    openFrequentlyUsedReactions: openFrequentlyUsedReactions,
+    fixEmojiCategoriesTitleOnTop: fixEmojiCategoriesTitleOnTop,
+    emojisCategoryIconsPosition: emojisCategoryIconsPosition,
+    emojisContainerBorderRadius: emojisContainerBorderRadius,
+    reactionsDisplayCount: reactionsDisplayCount,
+    showEachReactionCount: showEachReactionCount,
+    showTotalReactionCount: showTotalReactionCount,
+    reactionItemBorder: reactionItemBorder,
+    reactionItemBorderRadius: reactionItemBorderRadius,
+    reactionItemBackground: reactionItemBackground,
+    reactionItemPadding: reactionItemPadding,
+    reactionItemMargin: reactionItemMargin,
+    reactionsFontSize: reactionsFontSize,
+    reactionsContainerBoxShadow: reactionsContainerBoxShadow,
+    reactionsContainerBorder: reactionsContainerBorder,
+    reactionsContainerBorderRadius: reactionsContainerBorderRadius,
+    reactionsContainerBackground: reactionsContainerBackground,
+    reactionsContainerPadding: reactionsContainerPadding,
+    reactionsContainerTopPosition: reactionsContainerTopPosition,
+    reactionsDetailsPopupBorderRadius: reactionsDetailsPopupBorderRadius,
+    reactionsDetailsPopupHeaderItemsStyle: reactionsDetailsPopupHeaderItemsStyle,
+    editIconOrder: editIconOrder,
+    copyIconOrder: copyIconOrder,
+    replyIconOrder: replyIconOrder,
+    replyInThreadIconOrder: replyInThreadIconOrder,
+    forwardIconOrder: forwardIconOrder,
+    deleteIconOrder: deleteIconOrder,
+    starIconOrder: starIconOrder,
+    reportIconOrder: reportIconOrder,
+    reactionIconTooltipText: reactionIconTooltipText,
+    editIconTooltipText: editIconTooltipText,
+    copyIconTooltipText: copyIconTooltipText,
+    replyIconTooltipText: replyIconTooltipText,
+    replyInThreadIconTooltipText: replyInThreadIconTooltipText,
+    forwardIconTooltipText: forwardIconTooltipText,
+    deleteIconTooltipText: deleteIconTooltipText,
+    starIconTooltipText: starIconTooltipText,
+    reportIconTooltipText: reportIconTooltipText,
+    messageActionIconsColor: messageActionIconsColor,
+    dateDividerFontSize: dateDividerFontSize,
+    dateDividerTextColor: dateDividerTextColor,
+    dateDividerBorder: dateDividerBorder,
+    dateDividerBackgroundColor: dateDividerBackgroundColor,
+    dateDividerBorderRadius: dateDividerBorderRadius,
+    showTopFixedDate: showTopFixedDate,
+    inlineReactionIcon: inlineReactionIcon,
+    newMessagesSeparatorText: newMessagesSeparatorText,
+    newMessagesSeparatorFontSize: newMessagesSeparatorFontSize,
+    newMessagesSeparatorTextColor: newMessagesSeparatorTextColor,
+    newMessagesSeparatorWidth: newMessagesSeparatorWidth,
+    newMessagesSeparatorBorder: newMessagesSeparatorBorder,
+    newMessagesSeparatorBorderRadius: newMessagesSeparatorBorderRadius,
+    newMessagesSeparatorBackground: newMessagesSeparatorBackground,
+    newMessagesSeparatorTextLeftRightSpacesWidth: newMessagesSeparatorTextLeftRightSpacesWidth,
+    fileAttachmentsIcon: fileAttachmentsIcon,
+    fileAttachmentsBoxWidth: fileAttachmentsBoxWidth,
+    fileAttachmentsBoxBackground: fileAttachmentsBoxBackground,
+    fileAttachmentsBoxBorder: fileAttachmentsBoxBorder,
+    fileAttachmentsTitleColor: fileAttachmentsTitleColor,
+    fileAttachmentsSizeColor: fileAttachmentsSizeColor,
+    imageAttachmentMaxWidth: imageAttachmentMaxWidth,
+    imageAttachmentMaxHeight: imageAttachmentMaxHeight,
+    videoAttachmentMaxWidth: videoAttachmentMaxWidth,
+    videoAttachmentMaxHeight: videoAttachmentMaxHeight,
+    attachmentsPreview: attachmentsPreview,
+    sameUserMessageSpacing: sameUserMessageSpacing,
+    differentUserMessageSpacing: differentUserMessageSpacing
+  }));
+};
 
 var _circle$5, _path$Y;
 
@@ -27315,16 +27952,16 @@ function MentionMembersPopup(_ref) {
       setHideMenu(false);
     }
   }, [filteredMembersLength.current]);
-  return React__default.createElement(Container$g, {
+  return /*#__PURE__*/React__default.createElement(Container$g, {
     className: 'mention_member_popup',
     hidden: hideMenu,
     height: filteredMembers && filteredMembers.length * 44,
     backgroundColor: theme === THEME$1.DARK ? colors.backgroundColor : colors.white,
     withBorder: theme !== THEME$1.DARK
-  }, React__default.createElement(MembersList, {
+  }, /*#__PURE__*/React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
   }, filteredMembers.map(function (member, index) {
-    return React__default.createElement(MemberItem, {
+    return /*#__PURE__*/React__default.createElement(MemberItem, {
       key: member.id,
       onClick: function onClick() {
         handleMentionMember();
@@ -27334,15 +27971,15 @@ function MentionMembersPopup(_ref) {
         return setActiveIndex(index);
       },
       activeBackgroundColor: colors.hoverBackgroundColor
-    }, React__default.createElement(AvatarWrapper, null, React__default.createElement(Avatar, {
+    }, /*#__PURE__*/React__default.createElement(AvatarWrapper, null, /*#__PURE__*/React__default.createElement(Avatar, {
       name: member.firstName || member.id,
       image: member.avatarUrl,
       size: 32,
       textSize: 14,
       setDefaultAvatar: true
-    })), React__default.createElement(UserNamePresence$2, null, React__default.createElement(MemberName$2, {
+    })), /*#__PURE__*/React__default.createElement(UserNamePresence$2, null, /*#__PURE__*/React__default.createElement(MemberName$2, {
       color: colors.textColor1
-    }, makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
+    }, makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), /*#__PURE__*/React__default.createElement(SubTitle, null, member.presence && member.presence.state === PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
   })));
 }
 var Container$g = styled__default.div(_templateObject$x || (_templateObject$x = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
@@ -27364,7 +28001,7 @@ var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = 
   return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$8, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$8, _templateObject11$7, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$3, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -28129,6 +28766,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
           if (fileType === 'image') {
             resizeImage(file).then(function (resizedFile) {
               try {
+                console.log('resizedFile. .. . ', resizedFile);
+                console.log('URL.createObjectURL(resizedFile.blob as any).  . ', URL.createObjectURL(resizedFile.blob));
                 setAttachments(function (prevState) {
                   return [].concat(prevState, [{
                     data: file,
@@ -28161,7 +28800,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
                 data: file,
                 upload: false,
                 type: 'file',
-                attachmentUrl: URL.createObjectURL(file),
                 attachmentId: uuid.v4(),
                 size: file.size
               }]);
@@ -28391,7 +29029,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       if (attachments.length) {
         var videoAttachment = false;
         attachments.forEach(function (att) {
-          if (att.type === 'video') {
+          if (att.type === 'video' || att.data.type.split('/')[0] === 'video') {
             videoAttachment = true;
 
             if (!readyVideoAttachments[att.attachmentId]) {
@@ -28574,46 +29212,46 @@ var SendMessageInput = function SendMessageInput(_ref) {
       document.removeEventListener('mousedown', handleClick);
     };
   }, []);
-  return React__default.createElement(Container$h, {
+  return /*#__PURE__*/React__default.createElement(Container$h, {
     margin: margin,
     border: border,
     ref: messageContRef,
     theme: theme
-  }, !activeChannel.id ? React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disabled ? React__default.createElement(BlockedUserInfo, null, React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disabled ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.userRole && activeChannel.type !== CHANNEL_TYPE.DIRECT ? React__default.createElement(JoinChannelCont, {
+  }, !activeChannel.id ? /*#__PURE__*/React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disabled ? /*#__PURE__*/React__default.createElement(BlockedUserInfo, null, /*#__PURE__*/React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disabled ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.userRole && activeChannel.type !== CHANNEL_TYPE.DIRECT ? /*#__PURE__*/React__default.createElement(JoinChannelCont, {
     onClick: handleJoinToChannel,
     color: colors.primary
-  }, "Join") : (activeChannel.type === CHANNEL_TYPE.BROADCAST ? !(activeChannel.userRole === 'admin' || activeChannel.userRole === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? React__default.createElement(ReadOnlyCont, {
+  }, "Join") : (activeChannel.type === CHANNEL_TYPE.BROADCAST ? !(activeChannel.userRole === 'admin' || activeChannel.userRole === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? /*#__PURE__*/React__default.createElement(ReadOnlyCont, {
     color: colors.textColor1,
     iconColor: colors.primary
-  }, React__default.createElement(SvgEye, null), " Read only") : React__default.createElement(React__default.Fragment, null, React__default.createElement(TypingIndicator$1, null, typingIndicator && typingIndicator.typingState && (CustomTypingIndicator ? React__default.createElement(CustomTypingIndicator, {
+  }, /*#__PURE__*/React__default.createElement(SvgEye, null), " Read only") : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(TypingIndicator$1, null, typingIndicator && typingIndicator.typingState && (CustomTypingIndicator ? /*#__PURE__*/React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
     typingState: typingIndicator.typingState
-  }) : React__default.createElement(TypingIndicatorCont, null, React__default.createElement(TypingFrom, null, makeUsername(getFromContacts && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts), ' ', "is typing"), React__default.createElement(TypingAnimation, null, React__default.createElement(DotOne, null), React__default.createElement(DotTwo, null), React__default.createElement(DotThree, null))))), isEmojisOpened && React__default.createElement(EmojisPopup, {
+  }) : /*#__PURE__*/React__default.createElement(TypingIndicatorCont, null, /*#__PURE__*/React__default.createElement(TypingFrom, null, makeUsername(getFromContacts && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts), ' ', "is typing"), /*#__PURE__*/React__default.createElement(TypingAnimation, null, /*#__PURE__*/React__default.createElement(DotOne, null), /*#__PURE__*/React__default.createElement(DotTwo, null), /*#__PURE__*/React__default.createElement(DotThree, null))))), isEmojisOpened && /*#__PURE__*/React__default.createElement(EmojisPopup, {
     handleAddEmoji: handleAddEmoji,
     handleEmojiPopupToggle: handleEmojiPopupToggle,
     rightSide: emojisInRightSide,
     bottomPosition: '100%'
-  }), messageToEdit && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
+  }), messageToEdit && /*#__PURE__*/React__default.createElement(EditReplyMessageCont, null, /*#__PURE__*/React__default.createElement(CloseEditMode, {
     onClick: handleCloseEditMode
-  }, React__default.createElement(SvgClose, null)), React__default.createElement(EditReplyMessageHeader, {
+  }, /*#__PURE__*/React__default.createElement(SvgClose, null)), /*#__PURE__*/React__default.createElement(EditReplyMessageHeader, {
     color: colors.primary
-  }, editMessageIcon || React__default.createElement(SvgEditIcon, null), "Edit Message"), React__default.createElement(EditMessageText, null, messageToEdit.body)), messageForReply && React__default.createElement(EditReplyMessageCont, null, React__default.createElement(CloseEditMode, {
+  }, editMessageIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null), "Edit Message"), /*#__PURE__*/React__default.createElement(EditMessageText, null, messageToEdit.body)), messageForReply && /*#__PURE__*/React__default.createElement(EditReplyMessageCont, null, /*#__PURE__*/React__default.createElement(CloseEditMode, {
     onClick: handleCloseReply
-  }, React__default.createElement(SvgClose, null)), React__default.createElement(ReplyMessageCont, null, !!(messageForReply.attachments && messageForReply.attachments.length) && (messageForReply.attachments[0].type === attachmentTypes.image || messageForReply.attachments[0].type === attachmentTypes.video ? React__default.createElement(Attachment, {
+  }, /*#__PURE__*/React__default.createElement(SvgClose, null)), /*#__PURE__*/React__default.createElement(ReplyMessageCont, null, !!(messageForReply.attachments && messageForReply.attachments.length) && (messageForReply.attachments[0].type === attachmentTypes.image || messageForReply.attachments[0].type === attachmentTypes.video ? /*#__PURE__*/React__default.createElement(Attachment$1, {
     attachment: messageForReply.attachments[0],
     backgroundColor: selectedFileAttachmentsBoxBackground || '',
     isRepliedMessage: true
-  }) : messageForReply.attachments[0].type === attachmentTypes.file && React__default.createElement(ReplyIconWrapper, {
+  }) : messageForReply.attachments[0].type === attachmentTypes.file && /*#__PURE__*/React__default.createElement(ReplyIconWrapper, {
     backgroundColor: colors.primary
-  }, React__default.createElement(SvgChoseFile, null))), React__default.createElement("div", null, React__default.createElement(EditReplyMessageHeader, {
+  }, /*#__PURE__*/React__default.createElement(SvgChoseFile, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(EditReplyMessageHeader, {
     color: colors.primary
-  }, replyMessageIcon || React__default.createElement(SvgReplyIcon, null), " Reply to", React__default.createElement(UserName$1, null, user.id === messageForReply.user.id ? user.firstName ? user.firstName + " " + user.lastName : user.id : makeUsername(contactsMap[messageForReply.user.id], messageForReply.user, getFromContacts))), messageForReply.attachments && messageForReply.attachments.length ? messageForReply.attachments[0].type === attachmentTypes.voice ? 'Voice' : messageForReply.attachments[0].type === attachmentTypes.image ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Photo') : messageForReply.attachments[0].type === attachmentTypes.video ? React__default.createElement(TextInOneLine, null, messageForReply.body || 'Video') : React__default.createElement(TextInOneLine, null, messageForReply.body || 'File') : MessageTextFormat({
+  }, replyMessageIcon || /*#__PURE__*/React__default.createElement(SvgReplyIcon, null), " Reply to", /*#__PURE__*/React__default.createElement(UserName$1, null, user.id === messageForReply.user.id ? user.firstName ? user.firstName + " " + user.lastName : user.id : makeUsername(contactsMap[messageForReply.user.id], messageForReply.user, getFromContacts))), messageForReply.attachments && messageForReply.attachments.length ? messageForReply.attachments[0].type === attachmentTypes.voice ? 'Voice' : messageForReply.attachments[0].type === attachmentTypes.image ? /*#__PURE__*/React__default.createElement(TextInOneLine, null, messageForReply.body || 'Photo') : messageForReply.attachments[0].type === attachmentTypes.video ? /*#__PURE__*/React__default.createElement(TextInOneLine, null, messageForReply.body || 'Video') : /*#__PURE__*/React__default.createElement(TextInOneLine, null, messageForReply.body || 'File') : MessageTextFormat({
     text: messageForReply.body,
     message: messageForReply,
     contactsMap: contactsMap,
     getFromContacts: getFromContacts
-  })))), !!attachments.length && !sendAttachmentSeparately && React__default.createElement(ChosenAttachments, null, attachments.map(function (attachment) {
-    return React__default.createElement(Attachment, {
+  })))), !!attachments.length && !sendAttachmentSeparately && /*#__PURE__*/React__default.createElement(ChosenAttachments, null, attachments.map(function (attachment) {
+    return /*#__PURE__*/React__default.createElement(Attachment$1, {
       attachment: attachment,
       isPreview: true,
       removeSelected: removeUpload,
@@ -28626,28 +29264,28 @@ var SendMessageInput = function SendMessageInput(_ref) {
       selectedFileAttachmentsTitleColor: selectedFileAttachmentsTitleColor,
       selectedFileAttachmentsSizeColor: selectedFileAttachmentsSizeColor
     });
-  })), React__default.createElement(SendMessageInputContainer, {
+  })), /*#__PURE__*/React__default.createElement(SendMessageInputContainer, {
     iconColor: colors.primary,
     minHeight: minHeight
-  }, React__default.createElement(MentionsContainer, {
+  }, /*#__PURE__*/React__default.createElement(MentionsContainer, {
     mentionsIsOpen: openMention
-  }, openMention && React__default.createElement(MentionMembersPopup, {
+  }, openMention && /*#__PURE__*/React__default.createElement(MentionMembersPopup, {
     theme: theme,
     channelId: activeChannel.id,
     addMentionMember: handleSetMention,
     searchMention: currentMentions.typed,
     handleMentionsPopupClose: handleCloseMentionsPopup
-  })), React__default.createElement(UploadFile, {
+  })), /*#__PURE__*/React__default.createElement(UploadFile, {
     ref: fileUploader,
     onChange: handleFileUpload,
     multiple: true,
     type: 'file'
-  }), React__default.createElement(MessageInputWrapper, {
+  }), /*#__PURE__*/React__default.createElement(MessageInputWrapper, {
     borderRadius: borderRadius,
     ref: inputWrapperRef,
     backgroundColor: backgroundColor || colors.backgroundColor,
     channelDetailsIsOpen: channelDetailsIsOpen
-  }, showAddEmojis && React__default.createElement(EmojiButton, {
+  }, showAddEmojis && /*#__PURE__*/React__default.createElement(EmojiButton, {
     order: emojiIcoOrder,
     isEmojisOpened: isEmojisOpened,
     ref: emojiBtnRef,
@@ -28656,18 +29294,18 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onClick: function onClick() {
       setIsEmojisOpened(!isEmojisOpened);
     }
-  }, AddEmojisIcon || React__default.createElement(SvgEmojiSmileIcon, null)), showAddAttachments && React__default.createElement(DropDown, {
+  }, AddEmojisIcon || /*#__PURE__*/React__default.createElement(SvgEmojiSmileIcon, null)), showAddAttachments && /*#__PURE__*/React__default.createElement(DropDown, {
     theme: theme,
     forceClose: showChooseAttachmentType,
     position: addAttachmentsInRightSide ? 'top' : 'topRight',
     margin: 'auto 0 0',
     order: attachmentIcoOrder,
-    trigger: React__default.createElement(AddAttachmentIcon, {
+    trigger: /*#__PURE__*/React__default.createElement(AddAttachmentIcon, {
       ref: addAttachmentsBtnRef,
       color: colors.primary,
       height: inputContainerHeight || minHeight
-    }, AddAttachmentsIcon || React__default.createElement(SvgAddAttachment, null))
-  }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
+    }, AddAttachmentsIcon || /*#__PURE__*/React__default.createElement(SvgAddAttachment, null))
+  }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 1,
     textColor: colors.textColor1,
     hoverBackground: colors.hoverBackgroundColor,
@@ -28676,7 +29314,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     },
     iconWidth: '20px',
     iconColor: colors.textColor2
-  }, React__default.createElement(SvgChoseMedia, null), "Photo or video"), React__default.createElement(DropdownOptionLi, {
+  }, /*#__PURE__*/React__default.createElement(SvgChoseMedia, null), "Photo or video"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 2,
     textColor: colors.textColor1,
     hoverBackground: colors.hoverBackgroundColor,
@@ -28685,7 +29323,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     },
     iconWidth: '20px',
     iconColor: colors.textColor2
-  }, React__default.createElement(SvgChoseFile, null), "File"))), React__default.createElement(MessageInput, {
+  }, /*#__PURE__*/React__default.createElement(SvgChoseFile, null), "File"))), /*#__PURE__*/React__default.createElement(MessageInput, {
     contentEditable: true,
     suppressContentEditableWarning: true,
     onKeyUp: handleTyping,
@@ -28702,13 +29340,13 @@ var SendMessageInput = function SendMessageInput(_ref) {
     ref: messageInputRef,
     mentionColor: colors.primary,
     className: inputCustomClassname
-  })), React__default.createElement(SendMessageIcon, {
+  })), /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     color: colors.backgroundColor,
     height: inputContainerHeight || minHeight,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
-  }, React__default.createElement(SvgSend, null)))));
+  }, /*#__PURE__*/React__default.createElement(SvgSend, null)))));
 };
 
 var Container$h = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
@@ -28761,7 +29399,7 @@ var MessageInput = styled__default.div(_templateObject10$8 || (_templateObject10
 }, colors.textColor3, colors.textColor3, function (props) {
   return props.mentionColor || colors.primary;
 });
-var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var EmojiButton = styled__default.span(_templateObject11$7 || (_templateObject11$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 2;
@@ -28770,8 +29408,8 @@ var EmojiButton = styled__default.span(_templateObject11$6 || (_templateObject11
 }, function (props) {
   return props.hoverColor || colors.primary;
 });
-var MentionsContainer = styled__default.div(_templateObject12$4 || (_templateObject12$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
-var SendMessageIcon = styled__default.span(_templateObject13$4 || (_templateObject13$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
+var MentionsContainer = styled__default.div(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
+var SendMessageIcon = styled__default.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
@@ -29166,7 +29804,6 @@ var Actions$1 = function Actions(_ref) {
       clearHistoryOrder = _ref.clearHistoryOrder,
       clearHistoryIcon = _ref.clearHistoryIcon,
       clearHistoryTextColor = _ref.clearHistoryTextColor,
-      showDeleteAllMessages = _ref.showDeleteAllMessages,
       deleteAllMessagesOrder = _ref.deleteAllMessagesOrder,
       deleteAllMessagesIcon = _ref.deleteAllMessagesIcon,
       deleteAllMessagesTextColor = _ref.deleteAllMessagesTextColor;
@@ -29318,17 +29955,17 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return React__default.createElement(Container$i, {
+  return /*#__PURE__*/React__default.createElement(Container$i, {
     isDirect: isDirectChannel,
     theme: theme,
     borderColor: colors.backgroundColor
-  }, toggleable && React__default.createElement(ActionHeader, {
+  }, toggleable && /*#__PURE__*/React__default.createElement(ActionHeader, {
     onClick: handleActionsOpen
-  }, React__default.createElement(SectionHeader, null, "ACTIONS"), React__default.createElement(MenuTriggerIcon, {
+  }, /*#__PURE__*/React__default.createElement(SectionHeader, null, "ACTIONS"), /*#__PURE__*/React__default.createElement(MenuTriggerIcon, {
     isOpen: menuIsOpen
-  }, React__default.createElement(SvgBottom, null))), React__default.createElement(ActionsMenu, {
+  }, /*#__PURE__*/React__default.createElement(SvgBottom, null))), /*#__PURE__*/React__default.createElement(ActionsMenu, {
     isOpen: menuIsOpen
-  }, showMuteUnmuteNotifications && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.muted ? React__default.createElement(ActionItem$1, {
+  }, showMuteUnmuteNotifications && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.muted ? /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 0,
     order: muteUnmuteNotificationsOrder,
     onClick: function onClick() {
@@ -29337,52 +29974,52 @@ var Actions$1 = function Actions(_ref) {
     iconColor: muteNotificationIconColor || colors.textColor2,
     color: muteUnmuteNotificationTextColor || colors.textColor1,
     hoverColor: muteUnmuteNotificationTextColor || colors.textColor1
-  }, React__default.createElement(React__default.Fragment, null, muteNotificationIcon || React__default.createElement(DefaultMutedIcon, null), " Unmute notifications")) : React__default.createElement(DropDown, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, muteNotificationIcon || /*#__PURE__*/React__default.createElement(DefaultMutedIcon, null), " Unmute notifications")) : /*#__PURE__*/React__default.createElement(DropDown, {
     isSelect: true,
     theme: theme,
     height: 'auto',
     position: 'left',
     order: muteUnmuteNotificationsOrder,
-    trigger: React__default.createElement(ActionItem$1, {
+    trigger: /*#__PURE__*/React__default.createElement(ActionItem$1, {
       key: 0,
       disableEvent: true,
       iconColor: unmuteNotificationIconColor || colors.textColor2,
       color: muteUnmuteNotificationTextColor || colors.textColor1,
       hoverColor: muteUnmuteNotificationTextColor || colors.textColor1
-    }, React__default.createElement(React__default.Fragment, null, unmuteNotificationIcon || React__default.createElement(SvgNotifications, null), " Mute notifications"))
-  }, React__default.createElement(DropdownOptionsUl, null, timeOptionsToMuteNotifications && timeOptionsToMuteNotifications.length ? timeOptionsToMuteNotifications.map(function (value, index) {
-    return React__default.createElement(DropdownOptionLi, {
+    }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, unmuteNotificationIcon || /*#__PURE__*/React__default.createElement(SvgNotifications, null), " Mute notifications"))
+  }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, timeOptionsToMuteNotifications && timeOptionsToMuteNotifications.length ? timeOptionsToMuteNotifications.map(function (value, index) {
+    return /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       key: value + index,
       hoverBackground: colors.primaryLight,
       onClick: function onClick() {
         return handleNotificationOnOff(value * oneHour);
       }
     }, "Mute for ", value < 24 ? value + " " + (value > 1 ? 'hours' : 'hour') + " " : '1 day');
-  }) : React__default.createElement(React__default.Fragment, null, React__default.createElement(DropdownOptionLi, {
+  }) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 1,
     hoverBackground: colors.primaryLight,
     onClick: function onClick() {
       return handleNotificationOnOff(oneHour);
     }
-  }, "Mute for 1 hour"), React__default.createElement(DropdownOptionLi, {
+  }, "Mute for 1 hour"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 2,
     hoverBackground: colors.primaryLight,
     onClick: function onClick() {
       return handleNotificationOnOff(twoHours);
     }
-  }, "Mute for 2 hours"), React__default.createElement(DropdownOptionLi, {
+  }, "Mute for 2 hours"), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 3,
     hoverBackground: colors.primaryLight,
     onClick: function onClick() {
       return handleNotificationOnOff(oneDay);
     }
-  }, "Mute for 1 day")), React__default.createElement(DropdownOptionLi, {
+  }, "Mute for 1 day")), /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 4,
     hoverBackground: colors.primaryLight,
     onClick: function onClick() {
       return handleNotificationOnOff();
     }
-  }, "Mute forever")))), showStarredMessages && React__default.createElement(ActionItem$1, {
+  }, "Mute forever")))), showStarredMessages && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 1,
     onClick: function onClick() {
       return console.log('stared messages');
@@ -29391,7 +30028,7 @@ var Actions$1 = function Actions(_ref) {
     iconColor: staredMessagesIconColor || colors.textColor2,
     color: staredMessagesTextColor || colors.textColor1,
     hoverColor: staredMessagesTextColor || colors.textColor1
-  }, React__default.createElement(React__default.Fragment, null, staredMessagesIcon || React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, staredMessagesIcon || /*#__PURE__*/React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 2,
     onClick: function onClick() {
       return console.log('pin channel');
@@ -29400,21 +30037,21 @@ var Actions$1 = function Actions(_ref) {
     iconColor: pinChannelIconColor || colors.textColor2,
     color: pinChannelTextColor || colors.textColor1,
     hoverColor: pinChannelTextColor || colors.textColor1
-  }, React__default.createElement(React__default.Fragment, null, pinChannelIcon || React__default.createElement(SvgPin, null), " Pin")), showMarkAsReadUnread && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.unread ? React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, pinChannelIcon || /*#__PURE__*/React__default.createElement(SvgPin, null), " Pin")), showMarkAsReadUnread && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (channel.unread ? /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 3,
     onClick: handleToggleChannelMarkAs,
     order: markAsReadUnreadOrder,
     iconColor: markAsReadIconColor || colors.textColor2,
     color: markAsReadUnreadTextColor || colors.textColor1,
     hoverColor: markAsReadUnreadTextColor || colors.textColor1
-  }, React__default.createElement(React__default.Fragment, null, markAsReadIcon || React__default.createElement(SvgMarkAsRead, null), " Mark as read")) : React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, markAsReadIcon || /*#__PURE__*/React__default.createElement(SvgMarkAsRead, null), " Mark as read")) : /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 3,
     order: markAsReadUnreadOrder,
     onClick: handleToggleChannelMarkAs,
     iconColor: markAsUnreadIconColor || colors.textColor2,
     color: markAsReadUnreadTextColor || colors.textColor1,
     hoverColor: markAsReadUnreadTextColor || colors.textColor1
-  }, React__default.createElement(React__default.Fragment, null, markAsUnreadIcon || React__default.createElement(SvgMarkAsUnRead, null), " Mark as unread"))), !isDirectChannel && showLeaveChannel && React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, markAsUnreadIcon || /*#__PURE__*/React__default.createElement(SvgMarkAsUnRead, null), " Mark as unread"))), !isDirectChannel && showLeaveChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 4,
     order: leaveChannelOrder,
     color: leaveChannelTextColor || colors.red1,
@@ -29425,14 +30062,14 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type));
       handleToggleLeaveChannelPopupOpen();
     }
-  }, leaveChannelIcon || React__default.createElement(SvgLeave, null), " Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type)), isDirectChannel && otherMembers.length === 1 ? React__default.createElement(React__default.Fragment, null, showBlockUser && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (directChannelUser && directChannelUser.blocked ? React__default.createElement(ActionItem$1, {
+  }, leaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgLeave, null), " Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type)), isDirectChannel && otherMembers.length === 1 ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showBlockUser && (isDirectChannel && directChannelUser ? directChannelUser.activityState !== 'Deleted' : true) && (directChannelUser && directChannelUser.blocked ? /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 5,
     color: unblockUserTextColor || colors.textColor1,
     hoverColor: unblockUserTextColor || colors.textColor1,
     onClick: function onClick() {
       handleUnblockUser();
     }
-  }, unblockUserIcon || React__default.createElement(SvgBlockChannel, null), " Unblock user") : React__default.createElement(ActionItem$1, {
+  }, unblockUserIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), " Unblock user") : /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 6,
     color: deleteChannelTextColor || colors.red1,
     iconColor: deleteChannelIconColor || colors.red1,
@@ -29442,7 +30079,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Block user');
       handleToggleBlockUserPopupOpen();
     }
-  }, blockAndLeaveChannelIcon || React__default.createElement(SvgBlockChannel, null), " Block user")), showReportChannel && React__default.createElement(ActionItem$1, {
+  }, blockAndLeaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), " Block user")), showReportChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     color: deleteChannelTextColor || colors.red1,
     iconColor: deleteChannelIconColor || colors.red1,
     hoverColor: deleteChannelTextColor || colors.red1,
@@ -29450,7 +30087,7 @@ var Actions$1 = function Actions(_ref) {
     onClick: function onClick() {
       return toggleReportUserPopup();
     }
-  }, React__default.createElement(SvgReport, null), "Report user")) : React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(SvgReport, null), "Report user")) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 8,
     color: blockAndLeaveChannelTextColor || colors.red1,
     iconColor: blockAndLeaveChannelIconColor || colors.red1,
@@ -29460,7 +30097,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Block and Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.DIRECT ? 'chat' : channel.type));
       handleToggleBlockChannelPopupOpen();
     }
-  }, blockAndLeaveChannelIcon || React__default.createElement(SvgBlockChannel, null), "Block and Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === 'direct' ? 'chat' : channel.type) + "\n                "), showReportChannel && React__default.createElement(ActionItem$1, {
+  }, blockAndLeaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), "Block and Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === 'direct' ? 'chat' : channel.type) + "\n                "), showReportChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 9,
     order: reportChannelOrder,
     color: reportChannelTextColor || colors.red1,
@@ -29471,7 +30108,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Report channel');
       console.log('Report channel');
     }
-  }, reportChannelIcon || React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), showClearHistory && checkActionPermission('deleteAllMessagesForMe') && React__default.createElement(ActionItem$1, {
+  }, reportChannelIcon || /*#__PURE__*/React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), showClearHistory && (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE || channel.type === CHANNEL_TYPE.DIRECT) && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 10,
     color: clearHistoryTextColor || colors.red1,
     iconColor: clearHistoryTextColor || colors.red1,
@@ -29482,7 +30119,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Clear history');
       handleToggleClearHistoryPopup();
     }
-  }, clearHistoryIcon || React__default.createElement(SvgClear, null), " Clear history"), showDeleteAllMessages && checkActionPermission('deleteAllMessagesForAll') && React__default.createElement(ActionItem$1, {
+  }, clearHistoryIcon || /*#__PURE__*/React__default.createElement(SvgClear, null), " Clear history"), showClearHistory && (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC) && checkActionPermission('clearAllMessages') && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 11,
     color: deleteAllMessagesTextColor || colors.red1,
     iconColor: deleteAllMessagesTextColor || colors.red1,
@@ -29493,7 +30130,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Clear history");
       handleToggleDeleteAllMessagesPopup();
     }
-  }, deleteAllMessagesIcon || React__default.createElement(SvgClear, null), " Clear history"), showDeleteChannel && checkActionPermission('deleteChannel') && React__default.createElement(ActionItem$1, {
+  }, deleteAllMessagesIcon || /*#__PURE__*/React__default.createElement(SvgClear, null), " Clear history"), showDeleteChannel && checkActionPermission('deleteChannel') && /*#__PURE__*/React__default.createElement(ActionItem$1, {
     key: 12,
     order: deleteChannelOrder,
     color: deleteChannelTextColor || colors.red1,
@@ -29504,43 +30141,43 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Delete   " + (channel.type === CHANNEL_TYPE.PRIVATE || channel.type === CHANNEL_TYPE.GROUP ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.DIRECT ? 'chat' : channel.type));
       handleToggleDeleteChannelPopupOpen();
     }
-  }, deleteChannelIcon || React__default.createElement(SvgDeleteChannel, null), " Delete " + (channel.type === CHANNEL_TYPE.PRIVATE || channel.type === CHANNEL_TYPE.GROUP ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.DIRECT ? 'chat' : channel.type))), leaveChannelPopupOpen && React__default.createElement(ConfirmPopup, {
+  }, deleteChannelIcon || /*#__PURE__*/React__default.createElement(SvgDeleteChannel, null), " Delete " + (channel.type === CHANNEL_TYPE.PRIVATE || channel.type === CHANNEL_TYPE.GROUP ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.DIRECT ? 'chat' : channel.type))), leaveChannelPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleLeaveChannel,
     togglePopup: handleToggleLeaveChannelPopupOpen,
     buttonText: popupButtonText,
     description: channel.type === CHANNEL_TYPE.GROUP ? 'Once you leave this group it will be removed for you along with its entire history.' : 'Once you leave this channel it will be removed for you along with its entire history.',
     title: popupTitle
-  }), deleteChannelPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), deleteChannelPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteChannel,
     togglePopup: handleToggleDeleteChannelPopupOpen,
     buttonText: popupButtonText,
     description: channel.type === CHANNEL_TYPE.DIRECT ? 'Once you delete this chat it will be removed from the chat list with its message history.' : channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'Once you delete this group it will be permanently removed along with its entire history for all the group members.' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'Once you delete this channel it will be permanently removed along with its entire history for all the channel subscribers.' : 'Once you delete this channel it will be permanently removed along with its entire history for all the channel members.',
     title: popupTitle
-  }), blockChannelPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), blockChannelPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleBlockChannel,
     togglePopup: handleToggleBlockChannelPopupOpen,
     buttonText: popupButtonText,
     description: "Are you sure you want to block the " + (channel.subject || (channel.type === CHANNEL_TYPE.DIRECT ? channel.members && (channel.members[0].firstName || channel.members[0].id) : 'channel')),
     title: popupTitle
-  }), blockUserPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), blockUserPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleBlockUser,
     togglePopup: handleToggleBlockUserPopupOpen,
     buttonText: popupButtonText,
     description: 'Blocking a user will prevent them from sending you messages, calls, adding you to groups and channels.',
     title: popupTitle
-  }), unblockUserPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), unblockUserPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleUnblockUser,
     togglePopup: handleToggleUnblockUserPopupOpen,
     buttonText: popupButtonText,
     description: 'Are you sure you want to unblock?',
     title: popupTitle
-  }), clearHistoryPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), clearHistoryPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleClearHistory,
     togglePopup: handleToggleClearHistoryPopup,
     buttonText: popupButtonText,
     description: channel.type === CHANNEL_TYPE.DIRECT ? 'Once you clear the history, the messages in this chat will be permanently removed for you.' : channel.type === CHANNEL_TYPE.GROUP ? 'Once you clear the history it will be permanently removed for you.' : channel.type === CHANNEL_TYPE.BROADCAST ? 'Once you clear the history, the messages in this channel will be permanently removed for all the subscribers.' : 'Are you sure you want to clear history? This action cannot be undone.',
     title: popupTitle
-  }), deleteAllMessagesPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), deleteAllMessagesPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleDeleteAllMessagesHistory,
     togglePopup: handleToggleDeleteAllMessagesPopup,
     buttonText: popupButtonText,
@@ -29688,53 +30325,53 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
     setSelectedRole(roleName);
   }
 
-  return React__default.createElement(PopupContainer, null, React__default.createElement(Popup, {
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
     backgroundColor: colors.backgroundColor,
     maxWidth: '400px',
     padding: '0'
-  }, React__default.createElement(PopupBody, {
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
     paddingH: '24px',
     paddingV: '24px'
-  }, React__default.createElement(CloseIcon, {
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
     color: colors.textColor1,
     onClick: function onClick() {
       return handleClosePopup();
     }
-  }), React__default.createElement(PopupName, {
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
     color: colors.textColor1
-  }, "Change member role"), React__default.createElement(RolesSelect, null, React__default.createElement(RoleLabel, {
+  }, "Change member role"), /*#__PURE__*/React__default.createElement(RolesSelect, null, /*#__PURE__*/React__default.createElement(RoleLabel, {
     color: colors.textColor1
-  }, "Roles"), React__default.createElement(CustomSelect, {
+  }, "Roles"), /*#__PURE__*/React__default.createElement(CustomSelect, {
     backgroundColor: colors.backgroundColor,
     color: colors.textColor1
-  }, React__default.createElement(DropDown, {
+  }, /*#__PURE__*/React__default.createElement(DropDown, {
     withIcon: true,
     theme: theme,
     isSelect: true,
-    trigger: React__default.createElement(CustomSelectTrigger, {
+    trigger: /*#__PURE__*/React__default.createElement(CustomSelectTrigger, {
       color: colors.textColor1
     }, selectedRole || member.role || 'Select')
-  }, React__default.createElement(DropdownOptionsUl, {
+  }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, {
     theme: theme
   }, !!roles.length && roles.map(function (role) {
-    return React__default.createElement(DropdownOptionLi, {
+    return /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       hoverBackground: colors.primaryLight,
       key: role.name,
       onClick: function onClick() {
         return onChangeFunction(role.name);
       },
       textColor: colors.textColor1
-    }, React__default.createElement(RoleSpan, null, role.name));
-  })))))), React__default.createElement(PopupFooter, {
+    }, /*#__PURE__*/React__default.createElement(RoleSpan, null, role.name));
+  })))))), /*#__PURE__*/React__default.createElement(PopupFooter, {
     backgroundColor: colors.backgroundColor
-  }, React__default.createElement(Button, {
+  }, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     color: colors.textColor1,
     backgroundColor: 'transparent',
     onClick: function onClick() {
       return handleClosePopup();
     }
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     backgroundColor: colors.primary,
     borderRadius: '8px',
@@ -29902,49 +30539,49 @@ var Members = function Members(_ref) {
 
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return React__default.createElement(Container$j, {
+  return /*#__PURE__*/React__default.createElement(Container$j, {
     theme: theme
-  }, React__default.createElement(ActionsMenu$1, null, React__default.createElement(MembersList$1, {
+  }, /*#__PURE__*/React__default.createElement(ActionsMenu$1, null, /*#__PURE__*/React__default.createElement(MembersList$1, {
     onScroll: handleMembersListScroll
-  }, checkActionPermission('addMember') && React__default.createElement(MemberItem$1, {
+  }, checkActionPermission('addMember') && /*#__PURE__*/React__default.createElement(MemberItem$1, {
     key: 1,
     onClick: handleAddMemberPopup,
     color: colors.textColor1,
     hoverBackground: theme === THEME.DARK ? colors.hoverBackgroundColor : colors.primaryLight,
     addMemberIconColor: colors.primary
-  }, React__default.createElement(SvgAddMember, null), "Add " + displayMemberText), !!members.length && members.map(function (member, index) {
-    return React__default.createElement(MemberItem$1, {
+  }, /*#__PURE__*/React__default.createElement(SvgAddMember, null), "Add " + displayMemberText), !!members.length && members.map(function (member, index) {
+    return /*#__PURE__*/React__default.createElement(MemberItem$1, {
       key: member.id + index,
       color: colors.textColor1,
       hoverBackground: colors.hoverBackgroundColor
-    }, React__default.createElement(Avatar, {
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
       name: member.firstName || member.id,
       image: member.avatarUrl,
       size: 40,
       textSize: 14,
       setDefaultAvatar: true
-    }), React__default.createElement(MemberNamePresence, null, React__default.createElement(MemberNameWrapper, null, React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), member.role === 'owner' ? React__default.createElement(RoleBadge, {
+    }), /*#__PURE__*/React__default.createElement(MemberNamePresence, null, /*#__PURE__*/React__default.createElement(MemberNameWrapper, null, /*#__PURE__*/React__default.createElement(MemberName$3, null, member.id === user.id ? 'You' : makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), member.role === 'owner' ? /*#__PURE__*/React__default.createElement(RoleBadge, {
       color: colors.primary
-    }, "Owner") : member.role === 'admin' ? React__default.createElement(RoleBadge, {
+    }, "Owner") : member.role === 'admin' ? /*#__PURE__*/React__default.createElement(RoleBadge, {
       color: colors.purple
-    }, "Admin") : ''), React__default.createElement(SubTitle, {
+    }, "Admin") : ''), /*#__PURE__*/React__default.createElement(SubTitle, {
       margin: '1px 0 0'
-    }, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && member.role !== 'owner' && member.id !== user.id && React__default.createElement(DropDown, {
+    }, member.presence && member.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))), !noMemberEditPermissions && member.role !== 'owner' && member.id !== user.id && /*#__PURE__*/React__default.createElement(DropDown, {
       theme: theme,
       isSelect: true,
       forceClose: !!(closeMenu && closeMenu !== member.id),
       watchToggleState: function watchToggleState(state) {
         return watchDropdownState(state, member.id);
       },
-      trigger: React__default.createElement(EditMemberIcon$1, null, React__default.createElement(SvgMoreVert, null))
-    }, React__default.createElement(DropdownOptionsUl, null, showChangeMemberRole && checkActionPermission('changeMemberRole') && React__default.createElement(DropdownOptionLi, {
+      trigger: /*#__PURE__*/React__default.createElement(EditMemberIcon$1, null, /*#__PURE__*/React__default.createElement(SvgMoreVert, null))
+    }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, showChangeMemberRole && checkActionPermission('changeMemberRole') && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
         toggleChangeRolePopup();
       },
       key: 1,
       hoverBackground: colors.hoverBackgroundColor
-    }, "Change role"), showMakeMemberAdmin && checkActionPermission('changeMemberRole') && member.role !== 'owner' && React__default.createElement(DropdownOptionLi, {
+    }, "Change role"), showMakeMemberAdmin && checkActionPermission('changeMemberRole') && member.role !== 'owner' && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
         toggleMakeAdminPopup(member.role === 'admin');
@@ -29952,7 +30589,7 @@ var Members = function Members(_ref) {
       textColor: member.role === 'admin' ? colors.red1 : '',
       key: 2,
       hoverBackground: colors.hoverBackgroundColor
-    }, member.role === 'admin' ? 'Revoke Admin' : 'Make Admin'), showKickMember && checkActionPermission('kickMember') && member.role !== 'owner' && React__default.createElement(DropdownOptionLi, {
+    }, member.role === 'admin' ? 'Revoke Admin' : 'Make Admin'), showKickMember && checkActionPermission('kickMember') && member.role !== 'owner' && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
         toggleKickMemberPopup();
@@ -29960,7 +30597,7 @@ var Members = function Members(_ref) {
       textColor: colors.red1,
       key: 3,
       hoverBackground: colors.hoverBackgroundColor
-    }, "Remove"), showKickAndBlockMember && checkActionPermission('kickAndBlockMember') && React__default.createElement(DropdownOptionLi, {
+    }, "Remove"), showKickAndBlockMember && checkActionPermission('kickAndBlockMember') && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       textColor: colors.red1,
       key: 4,
       hoverBackground: colors.hoverBackgroundColor,
@@ -29969,21 +30606,21 @@ var Members = function Members(_ref) {
         toggleBlockMemberPopup();
       }
     }, "Remove and Block member"))));
-  }))), kickMemberPopupOpen && React__default.createElement(ConfirmPopup, {
+  }))), kickMemberPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     theme: theme,
     handleFunction: handleKickMember,
     togglePopup: toggleKickMemberPopup,
     buttonText: 'Remove',
     title: channel.type === CHANNEL_TYPE.GROUP ? 'Remove member' : 'Remove subscriber',
-    description: React__default.createElement("span", null, "Are you sure to remove", !!selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "from this", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : 'group', "?")
-  }), blockMemberPopupOpen && React__default.createElement(ConfirmPopup, {
+    description: /*#__PURE__*/React__default.createElement("span", null, "Are you sure to remove", !!selectedMember && /*#__PURE__*/React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "from this", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : 'group', "?")
+  }), blockMemberPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     theme: theme,
     handleFunction: handleBlockMember,
     togglePopup: toggleBlockMemberPopup,
     buttonText: 'Block',
     description: "Block and remove member - " + (selectedMember && (selectedMember.firstName || selectedMember.lastName || selectedMember.id)),
     title: 'Block and remove user'
-  }), makeAdminPopup && React__default.createElement(ConfirmPopup, {
+  }), makeAdminPopup && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     theme: theme,
     handleFunction: handleMakeAdmin,
     togglePopup: function togglePopup() {
@@ -29992,8 +30629,8 @@ var Members = function Members(_ref) {
     buttonText: 'Promote',
     buttonBackground: colors.primary,
     title: 'Promote admin',
-    description: React__default.createElement("span", null, "Are you sure you want to promote", selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "to ", React__default.createElement(BoltText, null, "Admin?"))
-  }), revokeAdminPopup && React__default.createElement(ConfirmPopup, {
+    description: /*#__PURE__*/React__default.createElement("span", null, "Are you sure you want to promote", selectedMember && /*#__PURE__*/React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "to ", /*#__PURE__*/React__default.createElement(BoltText, null, "Admin?"))
+  }), revokeAdminPopup && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleRevokeAdmin,
     togglePopup: function togglePopup() {
       return toggleMakeAdminPopup(true);
@@ -30001,13 +30638,13 @@ var Members = function Members(_ref) {
     buttonText: 'Revoke',
     title: 'Revoke admin',
     theme: theme,
-    description: React__default.createElement("span", null, "Are you sure you want to revoke", React__default.createElement(BoltText, null, " \u201CAdmin\u201D "), "rights from user:", selectedMember && React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "?")
-  }), changeMemberRolePopup && React__default.createElement(ChangeMemberRole, {
+    description: /*#__PURE__*/React__default.createElement("span", null, "Are you sure you want to revoke", /*#__PURE__*/React__default.createElement(BoltText, null, " \u201CAdmin\u201D "), "rights from user:", selectedMember && /*#__PURE__*/React__default.createElement(BoltText, null, " ", makeUsername(contactsMap[selectedMember.id], selectedMember, getFromContacts), " "), "?")
+  }), changeMemberRolePopup && /*#__PURE__*/React__default.createElement(ChangeMemberRole, {
     theme: theme,
     channelId: channel.id,
     member: selectedMember,
     handleClosePopup: toggleChangeRolePopup
-  }), addMemberPopupOpen && React__default.createElement(UsersPopup, {
+  }), addMemberPopupOpen && /*#__PURE__*/React__default.createElement(UsersPopup, {
     popupHeight: '540px',
     popupWidth: '520px',
     actionType: 'addMembers',
@@ -30059,20 +30696,22 @@ var Media = function Media(_ref) {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return React__default.createElement(Container$k, null, attachments.map(function (file) {
-    return React__default.createElement(MediaItem, {
+  return /*#__PURE__*/React__default.createElement(Container$k, null, attachments.map(function (file) {
+    return /*#__PURE__*/React__default.createElement(MediaItem, {
       key: file.id,
       onClick: function onClick() {
         return handleMediaItemClick(file);
       }
-    }, file.type === 'image' ? React__default.createElement(Attachment, {
+    }, file.type === 'image' ? /*#__PURE__*/React__default.createElement(Attachment$1, {
       attachment: _extends({}, file, {
         metadata: isJSON(file.metadata) ? JSON.parse(file.metadata) : file.metadata
       }),
       backgroundColor: colors.white,
       borderRadius: '8px',
       isDetailsView: true
-    }) : React__default.createElement(Attachment, {
+    }) :
+    /*#__PURE__*/
+    React__default.createElement(Attachment$1, {
       attachment: _extends({}, file, {
         metadata: isJSON(file.metadata) ? JSON.parse(file.metadata) : file.metadata
       }),
@@ -30080,7 +30719,7 @@ var Media = function Media(_ref) {
       borderRadius: '8px',
       isDetailsView: true
     }));
-  }), mediaFile && React__default.createElement(SliderPopup, {
+  }), mediaFile && /*#__PURE__*/React__default.createElement(SliderPopup, {
     channelId: channelId,
     setIsSliderOpen: setMediaFile,
     mediaFiles: attachments,
@@ -30211,35 +30850,38 @@ var Files = function Files(_ref) {
       });
     }
 
-    downloadFile(attachment, handleCompleteDownload);
+    downloadFile(attachment, true, handleCompleteDownload);
   };
 
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
-  return React__default.createElement(Container$l, {
+  return /*#__PURE__*/React__default.createElement(Container$l, {
     theme: theme
   }, attachments.map(function (file) {
-    return React__default.createElement(FileItem, {
-      key: file.url,
-      hoverBackgroundColor: filePreviewHoverBackgroundColor || colors.hoverBackgroundColor
-    }, file.metadata && file.metadata.tmb ? React__default.createElement(FileThumb, {
-      draggable: false,
-      src: "data:image/jpeg;base64," + file.metadata.tmb
-    }) : React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont, null, filePreviewIcon || React__default.createElement(SvgFileIcon$1, null)), React__default.createElement(FileHoverIconCont, null, filePreviewHoverIcon || React__default.createElement(SvgFileIcon$1, null))), React__default.createElement("div", null, React__default.createElement(AttachmentPreviewTitle, {
-      color: filePreviewTitleColor
-    }, formatLargeText(file.name, 32)), React__default.createElement(FileSizeAndDate, {
-      color: filePreviewSizeColor
-    }, file.size ? bytesToSize(file.size) : '')), React__default.createElement(DownloadWrapper, {
-      onClick: function onClick() {
-        return handleDownloadFile(file);
-      }
-    }, downloadingFilesMap[file.id] ? React__default.createElement(UploadingIcon, {
-      width: '12px',
-      height: '12px',
-      borderWidth: '2px',
-      color: colors.textColor2
-    }) : filePreviewDownloadIcon || React__default.createElement(SvgDownloadFile, null)));
+    return (
+      /*#__PURE__*/
+      React__default.createElement(FileItem, {
+        key: file.url,
+        hoverBackgroundColor: filePreviewHoverBackgroundColor || colors.hoverBackgroundColor
+      }, file.metadata && file.metadata.tmb ? /*#__PURE__*/React__default.createElement(FileThumb, {
+        draggable: false,
+        src: "data:image/jpeg;base64," + file.metadata.tmb
+      }) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FileIconCont, null, filePreviewIcon || /*#__PURE__*/React__default.createElement(SvgFileIcon$1, null)), /*#__PURE__*/React__default.createElement(FileHoverIconCont, null, filePreviewHoverIcon || /*#__PURE__*/React__default.createElement(SvgFileIcon$1, null))), /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement(AttachmentPreviewTitle, {
+        color: filePreviewTitleColor
+      }, formatLargeText(file.name, 32)), /*#__PURE__*/React__default.createElement(FileSizeAndDate, {
+        color: filePreviewSizeColor
+      }, file.size ? bytesToSize(file.size) : '')), /*#__PURE__*/React__default.createElement(DownloadWrapper, {
+        onClick: function onClick() {
+          return handleDownloadFile(file);
+        }
+      }, downloadingFilesMap[file.id] ? /*#__PURE__*/React__default.createElement(UploadingIcon, {
+        width: '12px',
+        height: '12px',
+        borderWidth: '2px',
+        color: colors.textColor2
+      }) : filePreviewDownloadIcon || /*#__PURE__*/React__default.createElement(SvgDownloadFile, null)))
+    );
   }));
 };
 var Container$l = styled__default.ul(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
@@ -30316,19 +30958,19 @@ var LinkItem = function LinkItem(_ref) {
       linkPreviewColor = _ref.linkPreviewColor,
       linkPreviewHoverBackgroundColor = _ref.linkPreviewHoverBackgroundColor;
   React.useEffect(function () {}, []);
-  return React__default.createElement(FileItem$1, {
+  return /*#__PURE__*/React__default.createElement(FileItem$1, {
     draggable: false,
     hoverBackgroundColor: linkPreviewHoverBackgroundColor || colors.hoverBackgroundColor
-  }, React__default.createElement("a", {
+  }, /*#__PURE__*/React__default.createElement("a", {
     draggable: false,
     href: link.startsWith('http') ? link : "https://" + link,
     target: '_blank',
     rel: 'noreferrer'
-  }, React__default.createElement(React__default.Fragment, null, React__default.createElement(LinkIconCont, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(LinkIconCont, {
     color: colors.primaryLight
-  }, linkPreviewIcon || React__default.createElement(SvgLinkIcon, null)), React__default.createElement(LinkHoverIconCont, {
+  }, linkPreviewIcon || /*#__PURE__*/React__default.createElement(SvgLinkIcon, null)), /*#__PURE__*/React__default.createElement(LinkHoverIconCont, {
     color: colors.primaryLight
-  }, linkPreviewHoverIcon || React__default.createElement(SvgLinkIcon, null))), React__default.createElement(LinkInfoCont, null, React__default.createElement(LinkUrl, {
+  }, linkPreviewHoverIcon || /*#__PURE__*/React__default.createElement(SvgLinkIcon, null))), /*#__PURE__*/React__default.createElement(LinkInfoCont, null, /*#__PURE__*/React__default.createElement(LinkUrl, {
     color: linkPreviewColor
   }, link))));
 };
@@ -30361,8 +31003,8 @@ var Links = function Links(_ref) {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
   console.log('attachments. .. . . ', attachments);
-  return React__default.createElement(Container$m, null, attachments.map(function (file) {
-    return React__default.createElement(LinkItem, {
+  return /*#__PURE__*/React__default.createElement(Container$m, null, attachments.map(function (file) {
+    return /*#__PURE__*/React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
       linkPreviewColor: linkPreviewColor,
@@ -30629,7 +31271,7 @@ var VoiceItem = function VoiceItem(_ref) {
   }, [playingVoiceId]);
   React.useEffect(function () {
     if (customDownloader) {
-      customDownloader(file.url).then(function (url) {
+      customDownloader(file.url, false).then(function (url) {
         setFileUrl(url);
       });
     } else {
@@ -30640,7 +31282,7 @@ var VoiceItem = function VoiceItem(_ref) {
       clearInterval(intervalRef.current);
     };
   }, []);
-  return React__default.createElement(FileItem$2, {
+  return /*#__PURE__*/React__default.createElement(FileItem$2, {
     onMouseEnter: function onMouseEnter(e) {
       return e.currentTarget.classList.add('isHover');
     },
@@ -30648,26 +31290,26 @@ var VoiceItem = function VoiceItem(_ref) {
       return e.currentTarget.classList.remove('isHover');
     },
     hoverBackgroundColor: voicePreviewHoverBackgroundColor
-  }, audioIsPlaying ? React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
+  }, audioIsPlaying ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FileIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewPauseIcon || React__default.createElement(SvgVoicePreviewPause, null)), React__default.createElement(FileHoverIconCont$1, {
+  }, voicePreviewPauseIcon || /*#__PURE__*/React__default.createElement(SvgVoicePreviewPause, null)), /*#__PURE__*/React__default.createElement(FileHoverIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewPauseHoverIcon || React__default.createElement(SvgVoicePreviewPauseHover, null))) : React__default.createElement(React__default.Fragment, null, React__default.createElement(FileIconCont$1, {
+  }, voicePreviewPauseHoverIcon || /*#__PURE__*/React__default.createElement(SvgVoicePreviewPauseHover, null))) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FileIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewPlayIcon || React__default.createElement(SvgVoicePreview, null)), React__default.createElement(FileHoverIconCont$1, {
+  }, voicePreviewPlayIcon || /*#__PURE__*/React__default.createElement(SvgVoicePreview, null)), /*#__PURE__*/React__default.createElement(FileHoverIconCont$1, {
     onClick: handlePlayPause
-  }, voicePreviewPlayHoverIcon || React__default.createElement(SvgVoicePreviewHoverIcon, null))), React__default.createElement(AudioInfo, null, React__default.createElement(AudioTitle, {
+  }, voicePreviewPlayHoverIcon || /*#__PURE__*/React__default.createElement(SvgVoicePreviewHoverIcon, null))), /*#__PURE__*/React__default.createElement(AudioInfo, null, /*#__PURE__*/React__default.createElement(AudioTitle, {
     color: voicePreviewTitleColor
-  }, file.user && (file.user.id === user.id ? 'You' : makeUsername(contactsMap[file.user.id], file.user, getFromContacts))), React__default.createElement(AudioDate, {
+  }, file.user && (file.user.id === user.id ? 'You' : makeUsername(contactsMap[file.user.id], file.user, getFromContacts))), /*#__PURE__*/React__default.createElement(AudioDate, {
     color: voicePreviewDateAndTimeColor
-  }, moment(file.createdAt).format('DD MMMM, YYYY')), React__default.createElement(AudioSendTime, null, currentTime || (file.metadata.dur ? formatAudioVideoTime(file.metadata.dur, 0) : ''))), React__default.createElement(Audio, {
+  }, moment(file.createdAt).format('DD MMMM, YYYY')), /*#__PURE__*/React__default.createElement(AudioSendTime, null, currentTime || (file.metadata.dur ? formatAudioVideoTime(file.metadata.dur, 0) : ''))), /*#__PURE__*/React__default.createElement(Audio, {
     controls: true,
     ref: audioRef,
     src: fileUrl
-  }, React__default.createElement("source", {
+  }, /*#__PURE__*/React__default.createElement("source", {
     src: fileUrl,
     type: 'audio/ogg'
-  }), React__default.createElement("source", {
+  }), /*#__PURE__*/React__default.createElement("source", {
     src: fileUrl,
     type: 'audio/mpeg'
   })));
@@ -30710,8 +31352,8 @@ var Voices = function Voices(_ref) {
   React.useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return React__default.createElement(Container$n, null, attachments.map(function (file) {
-    return React__default.createElement(VoiceItem, {
+  return /*#__PURE__*/React__default.createElement(Container$n, null, attachments.map(function (file) {
+    return /*#__PURE__*/React__default.createElement(VoiceItem, {
       key: file.id,
       file: _extends({}, file, {
         metadata: isJSON(file.metadata) ? JSON.parse(file.metadata) : file.metadata
@@ -30780,15 +31422,15 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return React__default.createElement(Container$o, {
+  return /*#__PURE__*/React__default.createElement(Container$o, {
     theme: theme
-  }, React__default.createElement(DetailsTabHeader, {
+  }, /*#__PURE__*/React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary,
     backgroundColor: theme === THEME.DARK ? colors.dark : colors.white
   }, Object.keys(channelDetailsTabs).map(function (key) {
     if (key === 'member') {
       if (showMembers) {
-        return React__default.createElement("button", {
+        return /*#__PURE__*/React__default.createElement("button", {
           className: activeTab === channelDetailsTabs[key] ? 'active' : '',
           type: 'button',
           onClick: function onClick() {
@@ -30801,7 +31443,7 @@ var DetailsTab = function DetailsTab(_ref) {
       }
     }
 
-    return React__default.createElement("button", {
+    return /*#__PURE__*/React__default.createElement("button", {
       className: activeTab === channelDetailsTabs[key] ? 'active' : '',
       type: 'button',
       onClick: function onClick() {
@@ -30809,7 +31451,7 @@ var DetailsTab = function DetailsTab(_ref) {
       },
       key: key
     }, channelDetailsTabs[key]);
-  })), showMembers && activeTab === channelDetailsTabs.member && React__default.createElement(Members, {
+  })), showMembers && activeTab === channelDetailsTabs.member && /*#__PURE__*/React__default.createElement(Members, {
     theme: theme,
     channel: channel,
     checkActionPermission: checkActionPermission,
@@ -30817,9 +31459,9 @@ var DetailsTab = function DetailsTab(_ref) {
     showKickMember: showKickMember,
     showKickAndBlockMember: showKickAndBlockMember,
     showMakeMemberAdmin: showMakeMemberAdmin
-  }), activeTab === channelDetailsTabs.media && React__default.createElement(Media, {
+  }), activeTab === channelDetailsTabs.media && /*#__PURE__*/React__default.createElement(Media, {
     channelId: channel.id
-  }), activeTab === channelDetailsTabs.file && React__default.createElement(Files, {
+  }), activeTab === channelDetailsTabs.file && /*#__PURE__*/React__default.createElement(Files, {
     channelId: channel.id,
     theme: theme,
     filePreviewIcon: filePreviewIcon,
@@ -30828,14 +31470,14 @@ var DetailsTab = function DetailsTab(_ref) {
     filePreviewSizeColor: filePreviewSizeColor,
     filePreviewHoverBackgroundColor: filePreviewHoverBackgroundColor,
     filePreviewDownloadIcon: filePreviewDownloadIcon
-  }), activeTab === channelDetailsTabs.link && React__default.createElement(Links, {
+  }), activeTab === channelDetailsTabs.link && /*#__PURE__*/React__default.createElement(Links, {
     channelId: channel.id,
     linkPreviewIcon: linkPreviewIcon,
     linkPreviewHoverIcon: linkPreviewHoverIcon,
     linkPreviewTitleColor: linkPreviewTitleColor,
     linkPreviewColor: linkPreviewColor,
     linkPreviewHoverBackgroundColor: linkPreviewHoverBackgroundColor
-  }), activeTab === channelDetailsTabs.voice && React__default.createElement(Voices, {
+  }), activeTab === channelDetailsTabs.voice && /*#__PURE__*/React__default.createElement(Voices, {
     channelId: channel.id,
     voicePreviewPlayHoverIcon: voicePreviewPlayIcon,
     voicePreviewPlayIcon: voicePreviewPlayHoverIcon,
@@ -31004,40 +31646,40 @@ var EditChannel = function EditChannel(_ref) {
   React.useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return React__default.createElement(React__default.Fragment, null, React__default.createElement(Container$p, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Container$p, {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode,
     backgroundColor: theme === THEME.DARK ? colors.dark : colors.white
-  }, React__default.createElement(AvatarCont, null, React__default.createElement(DropDownWrapper, null, !isDirectChannel && channel.userRole && React__default.createElement(DropDown, {
+  }, /*#__PURE__*/React__default.createElement(AvatarCont, null, /*#__PURE__*/React__default.createElement(DropDownWrapper, null, !isDirectChannel && channel.userRole && /*#__PURE__*/React__default.createElement(DropDown, {
     theme: theme,
     position: 'center',
     iconColor: colors.white,
-    trigger: getUploadImageIcon() || React__default.createElement(SvgCameraIcon, null)
-  }, React__default.createElement(DropdownOptionsUl, null, React__default.createElement(DropdownOptionLi, {
+    trigger: getUploadImageIcon() || /*#__PURE__*/React__default.createElement(SvgCameraIcon, null)
+  }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 1,
     hoverBackground: colors.primaryLight,
     onClick: function onClick() {
       return onOpenFileUploader();
     },
     iconWidth: '20px'
-  }, React__default.createElement(SvgPicture, null), React__default.createElement(UploadFileLabel, null, "Upload Avatar"), React__default.createElement(UploadFile, {
+  }, /*#__PURE__*/React__default.createElement(SvgPicture, null), /*#__PURE__*/React__default.createElement(UploadFileLabel, null, "Upload Avatar"), /*#__PURE__*/React__default.createElement(UploadFile, {
     ref: fileUploader,
     accept: '.png,.jpeg,.jpg',
     onChange: handleFileUpload,
     type: 'file'
-  })), newAvatar.url && React__default.createElement(DropdownOptionLi, {
+  })), newAvatar.url && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
     key: 2,
     hoverBackground: colors.primaryLight,
     textColor: colors.red1,
     onClick: handleToggleDeleteAvatarPopup,
     iconWidth: '20px'
-  }, React__default.createElement(SvgDeleteChannel, null), "Remove Avatar")))), React__default.createElement(Avatar, {
+  }, /*#__PURE__*/React__default.createElement(SvgDeleteChannel, null), "Remove Avatar")))), /*#__PURE__*/React__default.createElement(Avatar, {
     size: 120,
     image: newAvatar.url || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
     name: isDirectChannel && directChannelUser ? directChannelUser.id : channel.subject || channel.id,
     textSize: 70
-  })), React__default.createElement(Label, null, " Name "), React__default.createElement(CustomInput, {
+  })), /*#__PURE__*/React__default.createElement(Label, null, " Name "), /*#__PURE__*/React__default.createElement(CustomInput, {
     theme: theme,
     color: colors.textColor1,
     placeholder: 'Channel Subject',
@@ -31045,7 +31687,7 @@ var EditChannel = function EditChannel(_ref) {
     onChange: function onChange(e) {
       return setNewSubject(e.target.value);
     }
-  }), React__default.createElement(Label, null, " Description "), React__default.createElement(CustomInput, {
+  }), /*#__PURE__*/React__default.createElement(Label, null, " Description "), /*#__PURE__*/React__default.createElement(CustomInput, {
     theme: theme,
     color: colors.textColor1,
     placeholder: 'Channel description',
@@ -31053,7 +31695,7 @@ var EditChannel = function EditChannel(_ref) {
     onChange: function onChange(e) {
       return setNewDescription(e.target.value);
     }
-  }), React__default.createElement(EditChannelFooter, null, React__default.createElement(Button, {
+  }), /*#__PURE__*/React__default.createElement(EditChannelFooter, null, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     borderRadius: '8px',
     color: editChannelCancelButtonTextColor || colors.textColor1,
@@ -31061,12 +31703,12 @@ var EditChannel = function EditChannel(_ref) {
     onClick: function onClick() {
       return handleToggleEditMode(false);
     }
-  }, "Cancel"), React__default.createElement(Button, {
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
     borderRadius: '8px',
     color: editChannelSaveButtonTextColor,
     backgroundColor: editChannelSaveButtonBackgroundColor || colors.primary,
     onClick: handleSave
-  }, "Save"))), cropPopup && React__default.createElement(ImageCrop, {
+  }, "Save"))), cropPopup && /*#__PURE__*/React__default.createElement(ImageCrop, {
     theme: theme,
     image: {
       name: newAvatar.name,
@@ -31076,7 +31718,7 @@ var EditChannel = function EditChannel(_ref) {
     handleClosePopup: function handleClosePopup() {
       return setCropPopup(false);
     }
-  }), deleteAvatarPopupOpen && React__default.createElement(ConfirmPopup, {
+  }), deleteAvatarPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleRemoveAvatar,
     togglePopup: handleToggleDeleteAvatarPopup,
     title: 'Remove avatar?',
@@ -31085,7 +31727,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$K, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$g, _templateObject9$d, _templateObject10$9, _templateObject11$7;
+var _templateObject$K, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$g, _templateObject9$d, _templateObject10$9, _templateObject11$8;
 
 var Details = function Details(_ref) {
   var size = _ref.size,
@@ -31240,26 +31882,26 @@ var Details = function Details(_ref) {
       setChannelDetailsHeight(detailsContainer.offsetHeight);
     }
   }, []);
-  return React__default.createElement(Container$q, {
+  return /*#__PURE__*/React__default.createElement(Container$q, {
     mounted: mounted,
     size: size,
     theme: theme,
     borderColor: colors.backgroundColor
-  }, React__default.createElement(ChannelDetailsHeader, {
+  }, /*#__PURE__*/React__default.createElement(ChannelDetailsHeader, {
     borderColor: colors.backgroundColor
-  }, editMode ? React__default.createElement(React__default.Fragment, null, React__default.createElement(SvgArrowLeft, {
+  }, editMode ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(SvgArrowLeft, {
     onClick: function onClick() {
       return setEditMode(false);
     }
-  }), React__default.createElement(SectionHeader, {
+  }), /*#__PURE__*/React__default.createElement(SectionHeader, {
     margin: '0 0 0 12px',
     color: colors.textColor1
-  }, "Edit details")) : React__default.createElement(React__default.Fragment, null, React__default.createElement(SectionHeader, {
+  }, "Edit details")) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(SectionHeader, {
     color: colors.textColor1
-  }, "Details"), ' ', React__default.createElement(CloseIcon, {
+  }, "Details"), ' ', /*#__PURE__*/React__default.createElement(CloseIcon, {
     color: colors.textColor1,
     onClick: handleDetailsClose
-  }))), editMode && React__default.createElement(EditChannel, {
+  }))), editMode && /*#__PURE__*/React__default.createElement(EditChannel, {
     theme: theme,
     channel: channel,
     handleToggleEditMode: setEditMode,
@@ -31267,33 +31909,33 @@ var Details = function Details(_ref) {
     editChannelSaveButtonTextColor: editChannelSaveButtonTextColor,
     editChannelCancelButtonBackgroundColor: editChannelCancelButtonBackgroundColor,
     editChannelCancelButtonTextColor: editChannelCancelButtonTextColor
-  }), React__default.createElement(ChatDetails, {
+  }), /*#__PURE__*/React__default.createElement(ChatDetails, {
     size: size,
     onScroll: handleMembersListScroll,
     heightOffset: detailsRef && detailsRef.current && detailsRef.current.offsetTop,
     height: channelDetailsHeight,
     ref: detailsRef
-  }, React__default.createElement(DetailsHeader, {
+  }, /*#__PURE__*/React__default.createElement(DetailsHeader, {
     borderColor: colors.backgroundColor
-  }, React__default.createElement(ChannelAvatarAndName, {
+  }, /*#__PURE__*/React__default.createElement(ChannelAvatarAndName, {
     direction: avatarAndNameDirection
-  }, React__default.createElement(Avatar, {
+  }, /*#__PURE__*/React__default.createElement(Avatar, {
     image: channel.avatarUrl || directChannelUser && directChannelUser.avatarUrl,
     name: channel.subject || directChannelUser && (directChannelUser.firstName || directChannelUser.id),
     size: 72,
     textSize: 26,
     setDefaultAvatar: isDirectChannel
-  }), React__default.createElement(ChannelInfo$3, {
+  }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, {
     direction: avatarAndNameDirection
-  }, React__default.createElement(ChannelName$1, {
+  }, /*#__PURE__*/React__default.createElement(ChannelName$1, {
     isDirect: isDirectChannel
-  }, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), isDirectChannel ? React__default.createElement(SubTitle, null, hideUserPresence && directChannelUser && hideUserPresence(directChannelUser) ? '' : directChannelUser && directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : React__default.createElement(SubTitle, null, channel.memberCount, " ", displayMemberText), !isDirectChannel && checkActionPermission('editChannel') && React__default.createElement(EditButton, {
+  }, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), isDirectChannel ? /*#__PURE__*/React__default.createElement(SubTitle, null, hideUserPresence && directChannelUser && hideUserPresence(directChannelUser) ? '' : directChannelUser && directChannelUser.presence && (directChannelUser.presence.state === PRESENCE_STATUS.ONLINE ? 'Online' : directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt))) : /*#__PURE__*/React__default.createElement(SubTitle, null, channel.memberCount, " ", displayMemberText), !isDirectChannel && checkActionPermission('editChannel') && /*#__PURE__*/React__default.createElement(EditButton, {
     onClick: function onClick() {
       return setEditMode(true);
     }
-  }, channelEditIcon || React__default.createElement(SvgEditIcon, null)))), showAboutChannel && channel.metadata && channel.metadata.d && React__default.createElement(AboutChannel, null, React__default.createElement(AboutChannelTitle, null, "About"), React__default.createElement(AboutChannelText, {
+  }, channelEditIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null)))), showAboutChannel && channel.metadata && channel.metadata.d && /*#__PURE__*/React__default.createElement(AboutChannel, null, /*#__PURE__*/React__default.createElement(AboutChannelTitle, null, "About"), /*#__PURE__*/React__default.createElement(AboutChannelText, {
     color: colors.textColor1
-  }, channel.metadata && channel.metadata.d ? channel.metadata.d : ''))), channel.userRole && React__default.createElement(Actions$1, {
+  }, channel.metadata && channel.metadata.d ? channel.metadata.d : ''))), channel.userRole && /*#__PURE__*/React__default.createElement(Actions$1, {
     theme: theme,
     showMuteUnmuteNotifications: showMuteUnmuteNotifications,
     muteUnmuteNotificationsOrder: muteUnmuteNotificationsOrder,
@@ -31352,7 +31994,7 @@ var Details = function Details(_ref) {
     channel: channel,
     toggleable: false,
     timeOptionsToMuteNotifications: timeOptionsToMuteNotifications
-  }), React__default.createElement(DetailsTab, {
+  }), /*#__PURE__*/React__default.createElement(DetailsTab, {
     theme: theme,
     channel: channel,
     activeTab: activeTab,
@@ -31418,7 +32060,7 @@ var ChannelAvatarAndName = styled__default.div(_templateObject9$d || (_templateO
 var ChannelName$1 = styled__default(SectionHeader)(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
-var EditButton = styled__default.span(_templateObject11$7 || (_templateObject11$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+var EditButton = styled__default.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
 var _templateObject$L;
 
@@ -31503,9 +32145,9 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
       showKickMember = _ref.showKickMember,
       showKickAndBlockMember = _ref.showKickAndBlockMember;
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
-  return React__default.createElement(DetailsWrapper, {
+  return /*#__PURE__*/React__default.createElement(DetailsWrapper, {
     id: 'channel_details_wrapper'
-  }, channelDetailsIsOpen && React__default.createElement(Details, {
+  }, channelDetailsIsOpen && /*#__PURE__*/React__default.createElement(Details, {
     size: size,
     showAboutChannel: showAboutChannel,
     avatarAndNameDirection: avatarAndNameDirection,
@@ -31646,7 +32288,7 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     dispatch(scrollToNewMessageAC(true, true));
   };
 
-  return React__default.createElement(React__default.Fragment, null, showScrollToNewMessageButton && React__default.createElement(BottomButton, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showScrollToNewMessageButton && /*#__PURE__*/React__default.createElement(BottomButton, {
     theme: theme,
     width: buttonWidth,
     height: buttonHeight,
@@ -31659,14 +32301,14 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     bottomOffset: sendMessageInputHeight,
     bottomPosition: bottomPosition,
     rightPosition: rightPosition
-  }, !!(channel.newMessageCount && channel.newMessageCount > 0) && React__default.createElement(UnreadCount$1, {
+  }, !!(channel.newMessageCount && channel.newMessageCount > 0) && /*#__PURE__*/React__default.createElement(UnreadCount$1, {
     width: unreadCountWidth,
     height: unreadCountHeight,
     textColor: unreadCountTextColor,
     fontSize: unreadCountFontSize,
     backgroundColor: colors.primary,
     isMuted: channel.muted
-  }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : ''), buttonIcon || React__default.createElement(SvgChevronDown, null)));
+  }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : ''), buttonIcon || /*#__PURE__*/React__default.createElement(SvgChevronDown, null)));
 };
 var BottomButton = styled__default.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: ", ";\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomOffset + (props.bottomPosition || 45) + "px";
@@ -31697,7 +32339,7 @@ exports.Chat = Chat;
 exports.ChatHeader = ChatHeader;
 exports.CreateChannel = CreateChannel;
 exports.DropDown = DropDown;
-exports.MessageList = MessageList;
+exports.MessageList = MessagesContainer;
 exports.MessagesScrollToBottomButton = MessagesScrollToBottomButton;
 exports.SceytChat = SceytChatContainer;
 exports.SendMessage = SendMessageInput;
