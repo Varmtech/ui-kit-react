@@ -25,7 +25,6 @@ interface AttachmentPops {
 }
 declare const _default: React.MemoExoticComponent<({ attachment, isPreview, removeSelected, isRepliedMessage, borderRadius, handleMediaItemClick, setVideoIsReadyToSend, selectedFileAttachmentsIcon, backgroundColor, selectedFileAttachmentsBoxBorder, selectedFileAttachmentsTitleColor, selectedFileAttachmentsSizeColor, isDetailsView, imageMinWidth, closeMessageActions, fileAttachmentWidth, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight }: AttachmentPops) => JSX.Element>;
 export default _default;
-export declare const ProgressWrapper: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const SizeProgress: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const AttachmentFile: import("styled-components").StyledComponent<"div", any, {
     isPreview?: boolean | undefined;
