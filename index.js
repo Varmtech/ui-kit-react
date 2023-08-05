@@ -7650,9 +7650,9 @@ var userLastActiveDateFormat = function userLastActiveDateFormat(date) {
 
   return "Last seen " + moment(date).format('DD.MM.YY');
 };
-var formatAudioVideoTime = function formatAudioVideoTime(duration, currentTime) {
-  var minutes = Math.floor((duration - currentTime) / 60);
-  var seconds = Math.floor((duration - currentTime) % 60);
+var formatAudioVideoTime = function formatAudioVideoTime(currentTime) {
+  var minutes = Math.floor(currentTime / 60);
+  var seconds = Math.floor(currentTime % 60);
   return minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
 };
 var formatLargeText = function formatLargeText(text, maxLength) {
@@ -9221,7 +9221,7 @@ function updateChannelDataAC(channelId, config) {
 }
 function updateSearchedChannelDataAC(channelId, config, groupName) {
   return {
-    type: UPDATE_CHANNEL_DATA,
+    type: UPDATE_SEARCHED_CHANNEL_DATA,
     payload: {
       channelId: channelId,
       updateData: config,
@@ -10959,20 +10959,17 @@ var showNotifications = true;
 var setNotification = function setNotification(body, user, channel, reaction) {
   var getFromContacts = getShowOnlyContactUsers();
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-  var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-    return member.id !== user.id;
-  });
   var notification;
 
   if (showNotifications) {
     if (reaction) {
-      notification = new Notification("" + (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : channel.subject), {
+      notification = new Notification("" + (isDirectChannel ? makeUsername(contactsMap[user.id], user, getFromContacts) : channel.subject), {
         body: (channel.type !== CHANNEL_TYPE.DIRECT ? makeUsername(contactsMap[user.id], user, getFromContacts) + ': ' : '') + " reacted " + reaction + " to \"" + body + "\"",
         icon: logoSrc
       });
     } else {
-      notification = new Notification("New Message from " + makeUsername(contactsMap[user.id], user, getFromContacts), {
-        body: body,
+      notification = new Notification("" + (isDirectChannel ? makeUsername(contactsMap[user.id], user, getFromContacts) : channel.subject), {
+        body: isDirectChannel ? body : makeUsername(contactsMap[user.id], user, getFromContacts) + "\n" + body,
         icon: logoSrc
       });
     }
@@ -15048,11 +15045,12 @@ function sendTextMessage(action) {
             setChannelInMap(channel);
           }
 
-          _context2.next = 8;
+          console.log('add channel ac');
+          _context2.next = 9;
           return effects.put(addChannelAC(JSON.parse(JSON.stringify(channel))));
 
-        case 8:
-          _context2.prev = 8;
+        case 9:
+          _context2.prev = 9;
           mentionedUserIds = message.mentionedMembers ? message.mentionedMembers.map(function (member) {
             return member.id;
           }) : [];
@@ -15086,66 +15084,66 @@ function sendTextMessage(action) {
             pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
           }
 
-          _context2.next = 22;
+          _context2.next = 23;
           return effects.select(messagesHasNextSelector);
 
-        case 22:
+        case 23:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 31;
+            _context2.next = 32;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 29;
+            _context2.next = 30;
             break;
           }
 
-          _context2.next = 27;
+          _context2.next = 28;
           return effects.put(getMessagesAC(channel));
 
-        case 27:
-          _context2.next = 31;
+        case 28:
+          _context2.next = 32;
           break;
 
-        case 29:
-          _context2.next = 31;
+        case 30:
+          _context2.next = 32;
           return effects.put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 31:
+        case 32:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context2.next = 35;
+          _context2.next = 36;
           return effects.put(scrollToNewMessageAC(true, true));
 
-        case 35:
+        case 36:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 57;
+            _context2.next = 60;
             break;
           }
 
           if (!sendMessageHandler) {
-            _context2.next = 42;
+            _context2.next = 43;
             break;
           }
 
-          _context2.next = 39;
+          _context2.next = 40;
           return effects.call(sendMessageHandler, messageToSend, channelId);
 
-        case 39:
+        case 40:
           messageResponse = _context2.sent;
-          _context2.next = 45;
+          _context2.next = 46;
           break;
 
-        case 42:
-          _context2.next = 44;
+        case 43:
+          _context2.next = 45;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 44:
+        case 45:
           messageResponse = _context2.sent;
 
-        case 45:
+        case 46:
           messageUpdateData = {
             id: messageResponse.id,
             deliveryStatus: messageResponse.deliveryStatus,
@@ -15156,10 +15154,10 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 48;
+          _context2.next = 49;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
-        case 48:
+        case 49:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
@@ -15167,27 +15165,33 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, messageUpdateData);
           messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
           updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
+          _context2.next = 55;
+          return effects.put(updateChannelLastMessageAC(messageToUpdate, {
+            id: channel.id
+          }));
+
+        case 55:
           channelUpdateParam = {
             lastMessage: messageToUpdate,
             lastReactedMessage: null
           };
-          _context2.next = 55;
+          _context2.next = 58;
           return effects.put(updateChannelDataAC(channel.id, channelUpdateParam));
 
-        case 55:
-          _context2.next = 58;
-          break;
-
-        case 57:
-          throw new Error('Connection required to send message');
-
         case 58:
-          _context2.next = 67;
+          _context2.next = 61;
           break;
 
         case 60:
-          _context2.prev = 60;
-          _context2.t0 = _context2["catch"](8);
+          throw new Error('Connection required to send message');
+
+        case 61:
+          _context2.next = 70;
+          break;
+
+        case 63:
+          _context2.prev = 63;
+          _context2.t0 = _context2["catch"](9);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
             messageId: sendMessageTid,
@@ -15198,17 +15202,17 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 67;
+          _context2.next = 70;
           return effects.put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 67:
+        case 70:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[8, 60]]);
+  }, _marked2$1, null, [[9, 63]]);
 }
 
 function forwardMessage(action) {
@@ -21712,7 +21716,7 @@ var VideoPlayer = function VideoPlayer(_ref) {
     onClick: function onClick() {
       return videoHandler('play');
     }
-  }, /*#__PURE__*/React__default.createElement(SvgVideoPlayerPlay, null)), /*#__PURE__*/React__default.createElement(ControlTime, null, Math.floor(currentTime / 60) + ':' + ('0' + Math.floor(currentTime % 60)).slice(-2), " /", ' ', Math.floor(videoTime / 60) + ':' + ('0' + Math.floor(videoTime % 60)).slice(-2)), /*#__PURE__*/React__default.createElement(VolumeController, null, /*#__PURE__*/React__default.createElement(VolumeIconWrapper, {
+  }, /*#__PURE__*/React__default.createElement(SvgVideoPlayerPlay, null)), /*#__PURE__*/React__default.createElement(ControlTime, null, formatAudioVideoTime(currentTime), " / ", formatAudioVideoTime(videoTime)), /*#__PURE__*/React__default.createElement(VolumeController, null, /*#__PURE__*/React__default.createElement(VolumeIconWrapper, {
     onClick: handleMuteUnmute
   }, isMuted ? /*#__PURE__*/React__default.createElement(SvgVolumeMute, null) : /*#__PURE__*/React__default.createElement(SvgVolume, null)), /*#__PURE__*/React__default.createElement(VolumeSlide, {
     ref: volumeRef,
@@ -23027,25 +23031,21 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
       isDetailsView = _ref.isDetailsView,
       setVideoIsReadyToSend = _ref.setVideoIsReadyToSend;
 
-  var _useState = React.useState(false),
-      videoPlaying = _useState[0],
-      setVideoPlaying = _useState[1];
+  var _useState = React.useState(0),
+      videoDuration = _useState[0],
+      setVideoDuration = _useState[1];
 
-  var _useState2 = React.useState(0),
-      videoDuration = _useState2[0],
-      setVideoDuration = _useState2[1];
+  var _useState2 = React.useState(null),
+      videoCurrentTime = _useState2[0],
+      setVideoCurrentTime = _useState2[1];
 
-  var _useState3 = React.useState(null),
-      videoCurrentTime = _useState3[0],
-      setVideoCurrentTime = _useState3[1];
+  var _useState3 = React.useState(true),
+      loading = _useState3[0],
+      setLoading = _useState3[1];
 
-  var _useState4 = React.useState(true),
-      loading = _useState4[0],
-      setLoading = _useState4[1];
-
-  var _useState5 = React.useState(''),
-      videoUrl = _useState5[0],
-      setVideoUrl = _useState5[1];
+  var _useState4 = React.useState(''),
+      videoUrl = _useState4[0],
+      setVideoUrl = _useState4[1];
 
   var videoRef = React.useRef(null);
   var attachmentThumb;
@@ -23060,39 +23060,6 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
     }
   }
 
-  React.useEffect(function () {
-    var checkVideoInterval = 0;
-
-    if (videoRef.current) {
-      if (videoPlaying) {
-        checkVideoInterval = setInterval(function () {
-          if (videoRef.current && videoRef.current.readyState > 0) {
-            var minutes = Math.floor((videoDuration - videoRef.current.currentTime) / 60);
-            var seconds = Math.floor((videoDuration - videoRef.current.currentTime) % 60);
-            setVideoCurrentTime(minutes + ":" + (seconds < 10 ? "0" + seconds : seconds));
-
-            if (videoRef.current.currentTime >= videoDuration) {
-              setVideoPlaying(false);
-
-              var _minutes = Math.floor(videoDuration / 60);
-
-              var _seconds = Math.floor(videoDuration % 60);
-
-              setVideoCurrentTime(_minutes + ":" + (_seconds < 10 ? "0" + _seconds : _seconds));
-            }
-          }
-        }, 500);
-        videoRef.current.play();
-      } else {
-        clearInterval(checkVideoInterval);
-        videoRef.current.pause();
-      }
-    }
-
-    return function () {
-      return clearInterval(checkVideoInterval);
-    };
-  }, [videoPlaying]);
   React.useEffect(function () {
     var checkVideoInterval;
 
@@ -23174,13 +23141,7 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
     ref: videoRef,
     preload: 'auto',
     id: 'video',
-    src: file.attachmentUrl || videoUrl,
-    onPause: function onPause() {
-      return setVideoPlaying(false);
-    },
-    onPlay: function onPlay() {
-      return setVideoPlaying(true);
-    }
+    src: file.attachmentUrl || videoUrl
   }, /*#__PURE__*/React__default.createElement("source", {
     src: file.attachmentUrl || videoUrl || file.url,
     type: "video/" + getFileExtension(file.name || file.data.name)
@@ -23189,9 +23150,7 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
     type: 'video/ogg'
   }), "Your browser does not support the video tag."), videoCurrentTime && /*#__PURE__*/React__default.createElement(VideoControls, null, !isPreview && !!videoDuration && !isRepliedMessage && !uploading && !isDetailsView &&
   /*#__PURE__*/
-  React__default.createElement(VideoPlayButton, {
-    showOnHover: videoPlaying
-  }, /*#__PURE__*/React__default.createElement(SvgPlayVideo, null)), /*#__PURE__*/React__default.createElement(VideoTime, {
+  React__default.createElement(VideoPlayButton, null, /*#__PURE__*/React__default.createElement(SvgPlayVideo, null)), /*#__PURE__*/React__default.createElement(VideoTime, {
     isDetailsView: isDetailsView,
     isRepliedMessage: isPreview || isRepliedMessage
   }, !isRepliedMessage && !isPreview && /*#__PURE__*/React__default.createElement(SvgVideoCall, null), videoCurrentTime)));
@@ -23396,13 +23355,12 @@ var AudioPlayer = function AudioPlayer(_ref) {
       if (!wavesurfer.current.isPlaying()) {
         setPlayAudio(true);
         setPlayingAudioId(file.id);
-        var audioDuration = wavesurfer.current.getDuration();
         intervalRef.current = setInterval(function () {
           setPayingAudioId(getPlayingAudioId());
           var currentTime = wavesurfer.current.getCurrentTime();
 
           if (currentTime >= 0) {
-            setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+            setCurrentTime(formatAudioVideoTime(currentTime));
           }
         }, 10);
       } else {
@@ -23481,8 +23439,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
             wavesurfer.current.load(url);
             wavesurfer.current.on('ready', function () {
               var audioDuration = wavesurfer.current.getDuration();
-              var currentTime = wavesurfer.current.getCurrentTime();
-              setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+              setCurrentTime(formatAudioVideoTime(audioDuration));
 
               wavesurfer.current.drawBuffer = function (d) {
                 console.log('filters --- ', d);
@@ -23492,8 +23449,7 @@ var AudioPlayer = function AudioPlayer(_ref) {
               setPlayAudio(false);
               wavesurfer.current.seekTo(0);
               var audioDuration = wavesurfer.current.getDuration();
-              var currentTime = wavesurfer.current.getCurrentTime();
-              setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+              setCurrentTime(formatAudioVideoTime(audioDuration));
 
               if (payingAudioId === file.id) {
                 setPayingAudioId('');
@@ -23511,9 +23467,8 @@ var AudioPlayer = function AudioPlayer(_ref) {
               clearInterval(intervalRef.current);
             });
             wavesurfer.current.on('interaction', function () {
-              var audioDuration = wavesurfer.current.getDuration();
               var currentTime = wavesurfer.current.getCurrentTime();
-              setCurrentTime(formatAudioVideoTime(audioDuration, currentTime));
+              setCurrentTime(formatAudioVideoTime(currentTime));
             });
             setIsRendered(true);
           });
@@ -24549,7 +24504,7 @@ function ForwardMessagePopup(_ref) {
     onClick: handleForwardMessage
   }, buttonText || 'Forward'))));
 }
-var ForwardChannelsCont = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 14px;\n"])), function (props) {
+var ForwardChannelsCont = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 22px;\n"])), function (props) {
   return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
 });
 var ChannelItem = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
@@ -27235,7 +27190,7 @@ var MessageList = function MessageList(_ref2) {
   }, messageList.map(function (message, index) {
     var prevMessage = messages[index - 1];
     var nextMessage = messages[index + 1];
-    var isUnreadMessage = !!(unreadMessageId && unreadMessageId === message.id);
+    var isUnreadMessage = !!(unreadMessageId && unreadMessageId === message.id && nextMessage);
     var messageMetas = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
     messagesIndexMap[message.id] = index;
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
@@ -28467,11 +28422,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
     var shiftKey = event.shiftKey,
         charCode = event.charCode,
         type = event.type;
-    var shouldSend = charCode === 13 && shiftKey === false && !openMention || type === 'click';
+    var isEnter = charCode === 13 && shiftKey === false && !openMention;
+    var shouldSend = (isEnter || type === 'click') && (messageToEdit || messageText || attachments.length && attachments.length > 0);
+
+    if (isEnter) {
+      event.preventDefault();
+    }
 
     if (shouldSend) {
-      event.preventDefault();
-
       if (messageToEdit) {
         handleEditMessage();
       } else if (messageText || attachments.length && attachments.length > 0) {
@@ -29326,7 +29284,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     onPaste: handlePastAttachments,
     color: colors.textColor1,
     onCut: handleCut,
-    onKeyDown: handleSendEditMessage,
+    onKeyPress: handleSendEditMessage,
     "data-placeholder": 'Type message here ...',
     borderRadius: inputBorderRadius,
     order: inputOrder,
@@ -31252,11 +31210,11 @@ var VoiceItem = function VoiceItem(_ref) {
 
           if (audioDuration) {
             if ((audioCurrentTime || audioCurrentTime === 0) && audioDuration - audioCurrentTime > 0) {
-              setCurrentTime(formatAudioVideoTime(audioDuration, audioCurrentTime));
+              setCurrentTime(formatAudioVideoTime(audioCurrentTime));
             } else {
               var _audioRef$current3;
 
-              setCurrentTime(formatAudioVideoTime(audioDuration, 0));
+              setCurrentTime(formatAudioVideoTime(audioCurrentTime || 0));
               setAudioIsPlaying(false);
               (_audioRef$current3 = audioRef.current) === null || _audioRef$current3 === void 0 ? void 0 : _audioRef$current3.pause();
               audioRef.current && (audioRef.current.currentTime = 0);
@@ -31327,7 +31285,7 @@ var VoiceItem = function VoiceItem(_ref) {
     color: voicePreviewTitleColor
   }, file.user && (file.user.id === user.id ? 'You' : makeUsername(contactsMap[file.user.id], file.user, getFromContacts))), /*#__PURE__*/React__default.createElement(AudioDate, {
     color: voicePreviewDateAndTimeColor
-  }, moment(file.createdAt).format('DD MMMM, YYYY')), /*#__PURE__*/React__default.createElement(AudioSendTime, null, currentTime || (file.metadata.dur ? formatAudioVideoTime(file.metadata.dur, 0) : ''))), /*#__PURE__*/React__default.createElement(Audio, {
+  }, moment(file.createdAt).format('DD MMMM, YYYY')), /*#__PURE__*/React__default.createElement(AudioSendTime, null, currentTime || (file.metadata.dur ? formatAudioVideoTime(file.metadata.dur) : ''))), /*#__PURE__*/React__default.createElement(Audio, {
     controls: true,
     ref: audioRef,
     src: fileUrl

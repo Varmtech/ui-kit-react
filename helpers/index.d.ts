@@ -14,7 +14,7 @@ export declare const calculateRenderedImageWidth: (width: number, height: number
 export declare const userLastActiveDateFormat: (date: Date) => string;
 export declare const checkArraysEqual: (arr1: any[], arr2: any[]) => boolean;
 export declare const getMetadataFromUrl: (url: string) => Promise<any>;
-export declare const formatAudioVideoTime: (duration: number, currentTime: number) => string;
+export declare const formatAudioVideoTime: (currentTime: number) => string;
 export declare const formatLargeText: (text: string, maxLength: number) => any;
 export declare const getCaretPosition: (element: any) => number;
 export declare const setCursorPosition: (element: any, position: number, isAddMention?: boolean | undefined, attempt?: number | undefined) => void;
