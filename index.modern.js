@@ -20874,7 +20874,7 @@ var Container$6 = styled.div(_templateObject$f || (_templateObject$f = _taggedTe
 });
 var ChannelsList = styled.div(_templateObject2$d || (_templateObject2$d = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  width: 400px;\n  height: 100%;\n"])));
 var SearchedChannels = styled.div(_templateObject3$9 || (_templateObject3$9 = _taggedTemplateLiteralLoose(["\n  height: calc(100vh - 123px);\n  overflow-x: hidden;\n"])));
-var SearchedChannelsHeader = styled.p(_templateObject4$7 || (_templateObject4$7 = _taggedTemplateLiteralLoose(["\n  padding-left: 16px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  color: #676a7c;\n"])));
+var SearchedChannelsHeader = styled.p(_templateObject4$7 || (_templateObject4$7 = _taggedTemplateLiteralLoose(["\n  padding-left: 16px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.textColor2);
 var DirectChannels = styled.div(_templateObject5$6 || (_templateObject5$6 = _taggedTemplateLiteralLoose([""])));
 var GroupChannels = styled.div(_templateObject6$5 || (_templateObject6$5 = _taggedTemplateLiteralLoose([""])));
 var ChatsTitle = styled.h3(_templateObject7$4 || (_templateObject7$4 = _taggedTemplateLiteralLoose(["\n  font-family: Inter, sans-serif;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 20px;\n  line-height: 28px;\n  margin: 0 auto;\n  color: ", ";\n"])), function (props) {
@@ -24286,7 +24286,7 @@ function useOnScreen(ref) {
   return isIntersecting;
 }
 
-var _templateObject$r, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$b, _templateObject7$9, _templateObject8$8, _templateObject9$7;
+var _templateObject$r, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$b, _templateObject7$9, _templateObject8$8, _templateObject9$7, _templateObject10$6;
 
 function ForwardMessagePopup(_ref) {
   var title = _ref.title,
@@ -24298,6 +24298,7 @@ function ForwardMessagePopup(_ref) {
   var user = ChatClient.user;
   var dispatch = useDispatch();
   var channels = useSelector(channelsForForwardSelector) || [];
+  var searchedChannels = useSelector(searchedChannelsSelector) || [];
   var contactsMap = useSelector(contactsMapSelector);
   var getFromContacts = getShowOnlyContactUsers();
   var channelsLoading = useSelector(channelsLoadingState);
@@ -24399,9 +24400,24 @@ function ForwardMessagePopup(_ref) {
   }, [selectedChannels]);
   useEffect(function () {
     dispatch(getChannelsForForwardAC());
+    return function () {
+      dispatch(setSearchedChannelsAC({
+        groups: [],
+        directs: []
+      }));
+    };
   }, []);
   useEffect(function () {
-    dispatch(getChannelsForForwardAC(searchValue));
+    if (searchValue) {
+      dispatch(searchChannelsAC({
+        search: searchValue
+      }, contactsMap));
+    } else {
+      dispatch(setSearchedChannelsAC({
+        groups: [],
+        directs: []
+      }));
+    }
   }, [searchValue]);
   return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
     maxWidth: '522px',
@@ -24437,7 +24453,58 @@ function ForwardMessagePopup(_ref) {
   })), /*#__PURE__*/React__default.createElement(ForwardChannelsCont, {
     onScroll: handleChannelListScroll,
     selectedChannelsHeight: selectedChannelsContHeight
-  }, channels.map(function (channel) {
+  }, searchValue ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !!(searchedChannels.directs && searchedChannels.directs.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, null, "DIRECT"), searchedChannels.directs.map(function (channel) {
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    var directChannelUser = channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id,
+      onClick: function onClick(e) {
+        return handleChoseChannel(e, channel.id);
+      }
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : '',
+      image: directChannelUser && directChannelUser.avatarUrl,
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: true
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User'), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  })), !!(searchedChannels.groups && searchedChannels.groups.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, null, "GROUPS"), searchedChannels.groups.map(function (channel) {
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id,
+      onClick: function onClick(e) {
+        return handleChoseChannel(e, channel.id);
+      }
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: channel.subject || '',
+      image: channel.avatarUrl,
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: false
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  }))) : channels.map(function (channel) {
     var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
     var directChannelUser = isDirectChannel && channel.members.find(function (member) {
       return member.id !== user.id;
@@ -24456,7 +24523,7 @@ function ForwardMessagePopup(_ref) {
       size: 40,
       textSize: 12,
       setDefaultAvatar: isDirectChannel
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
       index: channel.id,
       disabled: selectedChannels.length >= 5 && !isSelected,
       state: isSelected,
@@ -24486,12 +24553,13 @@ var ForwardChannelsCont = styled.div(_templateObject$r || (_templateObject$r = _
 });
 var ChannelItem = styled.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
 var ChannelInfo$2 = styled.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
-var ChannelTitle = styled.h3(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
-var ChannelMembers = styled.h4(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
-var SelectedChannelsContainer = styled.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedChannelBuble = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
-var SelectedChannelName = styled.span(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
-var StyledSubtractSvg$1 = styled(SvgCross)(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
+var ChannelsGroupTitle = styled.h4(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  margin: 20px 0 12px;\n  color: ", ";\n"])), colors.textColor2);
+var ChannelTitle = styled.h3(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
+var ChannelMembers = styled.h4(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
+var SelectedChannelsContainer = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
+var SelectedChannelBuble = styled.div(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
+var SelectedChannelName = styled.span(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
+var StyledSubtractSvg$1 = styled(SvgCross)(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
 var LOADING_STATE$1 = {
   LOADING: 1,
@@ -24506,7 +24574,7 @@ var THEME$1 = {
   LIGHT: 'light'
 };
 
-var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$8, _templateObject10$6;
+var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$8, _templateObject10$7;
 var reactionsPrevLength = 0;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
@@ -24728,7 +24796,7 @@ var ReactionScoreItem = styled.div(_templateObject8$9 || (_templateObject8$9 = _
   return props.active && !props.bubbleStyle && "\n    &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: -13px;\n    width: 100%;\n    height: 2px;\n    background-color: " + (props.activeColor || colors.primary) + ";\n    border-radius: 2px;\n    }\n  ";
 }, TabKey);
 var ReactionKey = styled.span(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
-var ReactionItem$1 = styled.li(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
+var ReactionItem$1 = styled.li(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
 var _path$S;
 
@@ -25623,7 +25691,7 @@ var OpenMoreEmojis = styled.span(_templateObject3$k || (_templateObject3$k = _ta
   return props.hoverBackground || colors.hoverBackgroundColor;
 });
 
-var _templateObject$v, _templateObject2$r, _templateObject3$l, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$9, _templateObject10$7, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$3, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
+var _templateObject$v, _templateObject2$r, _templateObject3$l, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$9, _templateObject10$8, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$3, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -26397,7 +26465,7 @@ var MessageReactionsCont = styled.div(_templateObject8$b || (_templateObject8$b 
 var MessageHeaderCont = styled.div(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: ", ";\n"])), function (props) {
   return props.withPadding && (props.isForwarded ? '8px 0 2px 12px' : !props.isReplied && !props.messageBody ? '8px 0 8px 12px' : '8px 0 0 12px');
 });
-var ReplyMessageContainer = styled.div(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
+var ReplyMessageContainer = styled.div(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-left: 2px solid ", ";\n  padding: 0 6px;\n  position: relative;\n  //margin: ", ";\n  margin: ", ";\n  margin-top: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.leftBorderColor || '#b8b9c2';
 }, function (props) {
   return props.withAttachments ? '8px 8px' : '0 0 8px';
@@ -27936,7 +28004,7 @@ var MemberItem = styled.li(_templateObject6$g || (_templateObject6$g = _taggedTe
   return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$8, _templateObject11$7, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$9, _templateObject11$7, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -29316,7 +29384,7 @@ var MessageInputWrapper = styled.div(_templateObject9$b || (_templateObject9$b =
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var MessageInput = styled.div(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  color: ", ";\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: read-only;\n  }\n\n  //caret-color: #000;\n"])), function (props) {
+var MessageInput = styled.div(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  color: ", ";\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: read-only;\n  }\n\n  //caret-color: #000;\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.borderRadius;
@@ -31687,7 +31755,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$K, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$h, _templateObject9$d, _templateObject10$9, _templateObject11$8;
+var _templateObject$K, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$h, _templateObject9$d, _templateObject10$a, _templateObject11$8;
 
 var Details = function Details(_ref) {
   var size = _ref.size,
@@ -32017,7 +32085,7 @@ var DetailsHeader = styled.div(_templateObject8$h || (_templateObject8$h = _tagg
 var ChannelAvatarAndName = styled.div(_templateObject9$d || (_templateObject9$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  flex-direction: ", ";\n"])), function (props) {
   return props.direction;
 });
-var ChannelName$1 = styled(SectionHeader)(_templateObject10$9 || (_templateObject10$9 = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
+var ChannelName$1 = styled(SectionHeader)(_templateObject10$a || (_templateObject10$a = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 });
 var EditButton = styled.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
