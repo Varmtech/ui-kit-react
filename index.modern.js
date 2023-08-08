@@ -14365,11 +14365,12 @@ var openedMessageMenuSelector = function openedMessageMenuSelector(store) {
   return store.MessageReducer.openedMessageMenu;
 };
 
+var currentVersion = 1;
 var setDataToDB = function setDataToDB(dbName, storeName, data, keyPath) {
   if (!('indexedDB' in window)) {
     console.log("This browser doesn't support IndexedDB");
   } else {
-    var openRequest = indexedDB.open(dbName, 1);
+    var openRequest = indexedDB.open(dbName, currentVersion);
 
     openRequest.onupgradeneeded = function () {
       var db = openRequest.result;
@@ -14380,9 +14381,16 @@ var setDataToDB = function setDataToDB(dbName, storeName, data, keyPath) {
       console.error('Indexeddb Error ', openRequest.error);
     };
 
-    openRequest.onsuccess = function () {
-      var db = openRequest.result;
-      addData(db, storeName, keyPath, data);
+    openRequest.onsuccess = function (event) {
+      var db = event.target.result;
+
+      if (db.objectStoreNames.contains(storeName)) {
+        addData(db, storeName, keyPath, data);
+      } else {
+        db.close();
+        currentVersion++;
+        setDataToDB(dbName, storeName, data, keyPath);
+      }
 
       db.onversionchange = function () {
         db.close();
@@ -14395,13 +14403,18 @@ var setDataToDB = function setDataToDB(dbName, storeName, data, keyPath) {
 };
 var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath) {
   return new Promise(function (resolve, reject) {
-    var openRequest = indexedDB.open(dbName, 1);
+    var openRequest = indexedDB.open(dbName, currentVersion);
 
-    openRequest.onupgradeneeded = function () {
-      var db = openRequest.result;
-      var transaction = db.transaction([storeName]);
-      var objectStore = transaction.objectStore(storeName);
-      return objectStore.get(keyPath);
+    openRequest.onupgradeneeded = function (event) {
+      var db = event.target.result;
+
+      if (db.objectStoreNames.contains(storeName)) {
+        var transaction = db.transaction([storeName]);
+        var objectStore = transaction.objectStore(storeName);
+        resolve(objectStore.get(keyPath));
+      } else {
+        resolve('');
+      }
     };
 
     openRequest.onerror = function (event) {
@@ -14411,33 +14424,44 @@ var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath) {
 
     openRequest.onsuccess = function (event) {
       var db = event.target.result;
-      var transaction = db.transaction(storeName, 'readonly');
-      var objectStore = transaction.objectStore(storeName);
-      var request = objectStore.get(keyPath);
 
-      request.onsuccess = function (event) {
-        var result = event.target.result;
+      if (db.objectStoreNames.contains(storeName)) {
+        var transaction = db.transaction(storeName, 'readonly');
+        var objectStore = transaction.objectStore(storeName);
+        var request = objectStore.get(keyPath);
 
-        if (result) {
-          resolve(result);
-        } else {
-          console.log('No data found for the specified keyPathValue.');
-          resolve('');
-        }
-      };
+        request.onsuccess = function (event) {
+          var result = event.target.result;
 
-      request.onerror = function (event) {
-        console.error('Error retrieving data: ', event.target.error);
-      };
+          if (result) {
+            db.close();
+            resolve(result);
+          } else {
+            console.log('No data found for the specified keyPathValue.');
+            db.close();
+            resolve('');
+          }
+        };
+
+        request.onerror = function (event) {
+          db.close();
+          console.error('Error retrieving data: ', event.target.error);
+        };
+      } else {
+        db.close();
+        resolve('');
+      }
     };
   });
 };
 
 var addData = function addData(db, storeName, keyPath, data) {
   if (!db.objectStoreNames.contains(storeName)) {
+    console.log('create object store . . . . ', storeName);
     var objectStore = db.createObjectStore(storeName, {
       keyPath: keyPath
     });
+    console.log('objectStore . . . . ', objectStore);
 
     objectStore.transaction.oncomplete = function () {
       var channelObjectStore = db.transaction(storeName, 'readwrite').objectStore(storeName);
@@ -27254,7 +27278,6 @@ var MessageList = function MessageList(_ref2) {
     }
 
     renderTopDate();
-    console.log('messages...', messages);
   }, [messages]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
