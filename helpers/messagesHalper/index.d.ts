@@ -60,8 +60,14 @@ export declare const messagesDiff: (message: IMessage, updatedMessage: IMessage)
 export declare const setVideoThumb: (attachmentId: string, thumb: IAttachmentMeta) => void;
 export declare const getVideoThumb: (attachmentId: string) => IAttachmentMeta;
 export declare const deleteVideoThumb: (attachmentId: string) => void;
-export declare const setPendingAttachment: (attachmentId: string, file: File) => void;
-export declare const getPendingAttachment: (attachmentId: string) => File;
+export declare const setPendingAttachment: (attachmentId: string, data: {
+    file?: File;
+    signature?: string;
+}) => void;
+export declare const getPendingAttachment: (attachmentId: string) => {
+    file: File;
+    signature: string;
+};
 export declare const deletePendingAttachment: (attachmentId: string) => boolean;
 export declare const getPendingMessages: (channelId: string) => IMessage[];
 export declare const getPendingMessagesMap: () => pendingMessagesMap;

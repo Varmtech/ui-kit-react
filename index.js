@@ -1009,6 +1009,14 @@ var channelDetailsTabs = {
   link: 'Links',
   voice: 'Voice'
 };
+var DB_NAMES = {
+  FILES_STORAGE: 'files-storage'
+};
+var DB_STORE_NAMES = {
+  CHANNELS: 'channels',
+  MESSAGES: 'messages',
+  ATTACHMENTS: 'attachments'
+};
 var THEME = {
   DARK: 'dark',
   LIGHT: 'light'
@@ -8176,8 +8184,8 @@ var getVideoThumb = function getVideoThumb(attachmentId) {
 var deleteVideoThumb = function deleteVideoThumb(attachmentId) {
   delete pendingVideoAttachmentsThumbs[attachmentId];
 };
-var setPendingAttachment = function setPendingAttachment(attachmentId, file) {
-  pendingAttachments[attachmentId] = file;
+var setPendingAttachment = function setPendingAttachment(attachmentId, data) {
+  pendingAttachments[attachmentId] = _extends({}, pendingAttachments[attachmentId], data);
 };
 var getPendingAttachment = function getPendingAttachment(attachmentId) {
   return pendingAttachments[attachmentId];
@@ -14380,6 +14388,109 @@ var openedMessageMenuSelector = function openedMessageMenuSelector(store) {
   return store.MessageReducer.openedMessageMenu;
 };
 
+var setDataToDB = function setDataToDB(dbName, storeName, data, keyPath) {
+  if (!('indexedDB' in window)) {
+    console.log("This browser doesn't support IndexedDB");
+  } else {
+    var openRequest = indexedDB.open(dbName, 1);
+
+    openRequest.onupgradeneeded = function () {
+      var db = openRequest.result;
+      addData(db, storeName, keyPath, data);
+    };
+
+    openRequest.onerror = function () {
+      console.error('Indexeddb Error ', openRequest.error);
+    };
+
+    openRequest.onsuccess = function () {
+      var db = openRequest.result;
+      addData(db, storeName, keyPath, data);
+
+      db.onversionchange = function () {
+        db.close();
+        alert('The database is out of date, please reload the page.');
+      };
+    };
+
+    openRequest.onblocked = function () {};
+  }
+};
+var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath) {
+  return new Promise(function (resolve, reject) {
+    var openRequest = indexedDB.open(dbName, 1);
+
+    openRequest.onupgradeneeded = function () {
+      var db = openRequest.result;
+      var transaction = db.transaction([storeName]);
+      var objectStore = transaction.objectStore(storeName);
+      return objectStore.get(keyPath);
+    };
+
+    openRequest.onerror = function (event) {
+      console.log('Error on get data from db', event);
+      reject(event);
+    };
+
+    openRequest.onsuccess = function (event) {
+      var db = event.target.result;
+      var transaction = db.transaction(storeName, 'readonly');
+      var objectStore = transaction.objectStore(storeName);
+      var request = objectStore.get(keyPath);
+
+      request.onsuccess = function (event) {
+        var result = event.target.result;
+
+        if (result) {
+          resolve(result);
+        } else {
+          console.log('No data found for the specified keyPathValue.');
+          resolve('');
+        }
+      };
+
+      request.onerror = function (event) {
+        console.error('Error retrieving data: ', event.target.error);
+      };
+    };
+  });
+};
+
+var addData = function addData(db, storeName, keyPath, data) {
+  if (!db.objectStoreNames.contains(storeName)) {
+    var objectStore = db.createObjectStore(storeName, {
+      keyPath: keyPath
+    });
+
+    objectStore.transaction.oncomplete = function () {
+      var channelObjectStore = db.transaction(storeName, 'readwrite').objectStore(storeName);
+      data.forEach(function (value) {
+        var request = channelObjectStore.put(value);
+
+        request.onsuccess = function () {};
+
+        request.onerror = function () {
+          console.log('Error on put channel to db .. ', request.error);
+        };
+      });
+    };
+  } else {
+    var transaction = db.transaction(storeName, 'readwrite');
+    var store = transaction.objectStore(storeName);
+    data.forEach(function (value) {
+      var request = store.put(value);
+
+      request.onsuccess = function () {
+        console.log('data added to db.. ', request.result);
+      };
+
+      request.onerror = function () {
+        console.log('Error on put channel to db .. ', request.error);
+      };
+    });
+  }
+};
+
 var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked2$1 = /*#__PURE__*/_regeneratorRuntime().mark(sendTextMessage),
     _marked3$1 = /*#__PURE__*/_regeneratorRuntime().mark(forwardMessage),
@@ -14399,7 +14510,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, fileSize, handleUpdateLocalPath, uri, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, messageUpdateData, messageToUpdate, channelUpdateParam, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, _channelUpdateParam, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, _messageToUpdate2, _channelUpdateParam2;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, filePath, handleUploadProgress, fileSize, handleUpdateLocalPath, uri, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, pendingAttachment, messageUpdateData, messageToUpdate, channelUpdateParam, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, _channelUpdateParam, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messageResponse2, _messageUpdateData2, _messageToUpdate2, _channelUpdateParam2;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -14430,14 +14541,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 190;
+            _context.next = 187;
             break;
           }
 
-          console.log('saga sendAttachmentsAsSeparateMessage. .... ', sendAttachmentsAsSeparateMessage);
-
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 144;
+            _context.next = 141;
             break;
           }
 
@@ -14447,31 +14556,35 @@ function sendMessage(action) {
           });
           fileType = messageAttachment.url.type.split('/')[0];
 
+          if (messageAttachment.cachedUrl) {
+            _context.next = 30;
+            break;
+          }
+
           if (!(fileType === 'video')) {
-            _context.next = 23;
+            _context.next = 22;
             break;
           }
 
           thumbnailMetas = getVideoThumb(messageAttachment.attachmentId);
-          console.log('thumbnailMetas ... ', thumbnailMetas);
-          _context.next = 30;
+          _context.next = 29;
           break;
 
-        case 23:
+        case 22:
           if (!(fileType === 'image')) {
-            _context.next = 29;
+            _context.next = 28;
             break;
           }
 
-          _context.next = 26;
+          _context.next = 25;
           return effects.call(createImageThumbnail, message.attachments[0].data, undefined, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 26:
+        case 25:
           thumbnailMetas = _context.sent;
-          _context.next = 30;
+          _context.next = 29;
           break;
 
-        case 29:
+        case 28:
           if (fileType === attachmentTypes.voice) {
             thumbnailMetas = {
               duration: 3,
@@ -14479,14 +14592,15 @@ function sendMessage(action) {
             };
           }
 
-        case 30:
+        case 29:
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, thumbnailMetas && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
             szh: thumbnailMetas.imageHeight,
             dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
-          messageAttachment.size = message.attachments[0].data.size;
+
+        case 30:
           setPendingAttachment(messageAttachment.attachmentId, messageAttachment.data);
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments([]).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
@@ -14507,51 +14621,48 @@ function sendMessage(action) {
             createdAt: new Date(Date.now()),
             parentMessage: message.parentMessage
           })));
-          _context.next = 42;
+          _context.next = 40;
           return effects.select(messagesHasNextSelector);
 
-        case 42:
+        case 40:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 51;
-            break;
-          }
-
-          if (!hasNextMessages) {
             _context.next = 49;
             break;
           }
 
-          _context.next = 47;
+          if (!hasNextMessages) {
+            _context.next = 47;
+            break;
+          }
+
+          _context.next = 45;
           return effects.put(getMessagesAC(channel));
 
-        case 47:
-          _context.next = 51;
+        case 45:
+          _context.next = 49;
           break;
 
-        case 49:
-          _context.next = 51;
+        case 47:
+          _context.next = 49;
           return effects.put(addMessageAC(_extends({}, pendingMessage)));
 
-        case 51:
-          console.log('add pending message .. ', pendingMessage);
+        case 49:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          _context.next = 56;
+          _context.next = 53;
           return effects.put(scrollToNewMessageAC(true, true));
 
-        case 56:
-          _context.next = 58;
+        case 53:
+          _context.next = 55;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.attachmentId));
 
-        case 58:
+        case 55:
           if (!customUploader) {
             _context.next = 118;
             break;
           }
-
-          console.log('set uploading progress to 0 ... for attachment ... ', messageAttachment.attachmentId);
 
           handleUploadProgress = function handleUploadProgress(_ref) {
             var loaded = _ref.loaded,
@@ -14589,23 +14700,44 @@ function sendMessage(action) {
             }
           };
 
-          _context.prev = 64;
+          _context.prev = 59;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
             _context.next = 104;
             break;
           }
 
+          if (!messageAttachment.cachedUrl) {
+            _context.next = 66;
+            break;
+          }
+
+          uri = messageAttachment.cachedUrl;
+          store.dispatch({
+            type: UPDATE_UPLOAD_PROGRESS,
+            payload: {
+              uploaded: messageAttachment.data.size,
+              total: messageAttachment.data.size,
+              progress: 1,
+              attachmentId: messageAttachment.attachmentId
+            }
+          });
+          _context.next = 69;
+          break;
+
+        case 66:
           _context.next = 68;
           return effects.call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
         case 68:
           uri = _context.sent;
+
+        case 69:
           _context.next = 71;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
 
         case 71:
-          if (!(messageAttachment.url.type.split('/')[0] === 'image')) {
+          if (!(!messageAttachment.cachedUrl && messageAttachment.url.type.split('/')[0] === 'image')) {
             _context.next = 78;
             break;
           }
@@ -14622,28 +14754,36 @@ function sendMessage(action) {
           thumbnailMetas = _context.sent;
 
         case 78:
-          attachmentMeta = JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
+          attachmentMeta = messageAttachment.cachedUrl ? messageAttachment.metadata : JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
             szh: thumbnailMetas.imageHeight
           }));
           attachmentBuilder = channel.createAttachmentBuilder(uri, messageAttachment.type);
-          attachmentToSend = attachmentBuilder.setName(messageAttachment.name).setMetadata(attachmentMeta).setFileSize(fileSize).setUpload(false).create();
+          attachmentToSend = attachmentBuilder.setName(messageAttachment.name).setMetadata(attachmentMeta).setFileSize(fileSize || messageAttachment.size).setUpload(false).create();
           messageToSend.attachments = [attachmentToSend];
-          console.log('send message .................. ', messageToSend);
-          _context.next = 85;
+          _context.next = 84;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 85:
+        case 84:
           messageResponse = _context.sent;
           messageResponse.attachments[0] = _extends({}, messageResponse.attachments[0], {
+            user: JSON.parse(JSON.stringify(messageResponse.user)),
             attachmentId: messageAttachment.attachmentId,
             attachmentUrl: messageAttachment.attachmentUrl
           });
-          _context.next = 89;
+          pendingAttachment = getPendingAttachment(messageAttachment.attachmentId);
+
+          if (!messageAttachment.cachedUrl) {
+            setDataToDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, [_extends({}, messageResponse.attachments[0], {
+              signature: pendingAttachment.signature
+            })], 'signature');
+          }
+
+          _context.next = 90;
           return effects.put(removeAttachmentProgressAC(messageAttachment.attachmentId));
 
-        case 89:
+        case 90:
           deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
             id: messageResponse.id,
@@ -14655,7 +14795,6 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          console.log('messageUpdateData. .  . . . . .  . ', messageUpdateData);
           _context.next = 94;
           return effects.put(updateMessageAC(messageToSend.tid, messageUpdateData));
 
@@ -14691,7 +14830,7 @@ function sendMessage(action) {
 
         case 107:
           _context.prev = 107;
-          _context.t0 = _context["catch"](64);
+          _context.t0 = _context["catch"](59);
           console.log('Error on uploading attachment', messageAttachment.attachmentId);
           _context.next = 112;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
@@ -14712,11 +14851,10 @@ function sendMessage(action) {
           }));
 
         case 116:
-          _context.next = 142;
+          _context.next = 139;
           break;
 
         case 118:
-          console.log('messageAttachment. . . .. . .  .', messageAttachment);
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
 
@@ -14737,13 +14875,11 @@ function sendMessage(action) {
           _attachmentToSend.attachmentId = messageAttachment.attachmentId;
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
-          console.log('messageToSend, , , ,  ', messageToSend);
-          _context.next = 128;
+          _context.next = 126;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 128:
+        case 126:
           _messageResponse = _context.sent;
-          console.log('message response ... ', _messageResponse);
           deletePendingAttachment(messageAttachment.attachmentId);
           _messageUpdateData = {
             id: _messageResponse.id,
@@ -14755,10 +14891,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 134;
+          _context.next = 131;
           return effects.put(updateMessageAC(messageToSend.tid, _messageUpdateData));
 
-        case 134:
+        case 131:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -14774,14 +14910,14 @@ function sendMessage(action) {
             lastMessage: _messageToUpdate,
             lastReactedMessage: null
           };
-          _context.next = 142;
+          _context.next = 139;
           return effects.put(updateChannelDataAC(channel.id, _channelUpdateParam));
 
-        case 142:
-          _context.next = 190;
+        case 139:
+          _context.next = 187;
           break;
 
-        case 144:
+        case 141:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -14819,7 +14955,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 162;
+            _context.next = 159;
             break;
           }
 
@@ -14869,12 +15005,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 156;
+          _context.next = 153;
           return effects.call(uploadAllAttachments);
 
-        case 156:
+        case 153:
           uploadedAttachments = _context.sent;
-          _context.next = 159;
+          _context.next = 156;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -14917,12 +15053,12 @@ function sendMessage(action) {
             }
           });
 
-        case 159:
+        case 156:
           attachmentsToSend = _context.sent;
-          _context.next = 176;
+          _context.next = 173;
           break;
 
-        case 162:
+        case 159:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -14934,49 +15070,49 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 165;
+          _context.next = 162;
           return effects.select(messagesHasNextSelector);
 
-        case 165:
+        case 162:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 174;
+            _context.next = 171;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 172;
+            _context.next = 169;
             break;
           }
 
-          _context.next = 170;
+          _context.next = 167;
           return effects.put(getMessagesAC(channel));
 
-        case 170:
-          _context.next = 174;
+        case 167:
+          _context.next = 171;
           break;
 
-        case 172:
-          _context.next = 174;
+        case 169:
+          _context.next = 171;
           return effects.put(addMessageAC(_extends({}, _messageCopy2)));
 
-        case 174:
+        case 171:
           addMessageToMap(channelId, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 176:
+        case 173:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 190;
+            _context.next = 187;
             break;
           }
 
-          _context.next = 180;
+          _context.next = 177;
           return effects.call(channel.sendMessage, _messageToSend);
 
-        case 180:
+        case 177:
           _messageResponse2 = _context.sent;
           _messageUpdateData2 = {
             id: _messageResponse2.id,
@@ -14988,10 +15124,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 184;
+          _context.next = 181;
           return effects.put(updateMessageAC(_messageToSend.tid, _messageUpdateData2));
 
-        case 184:
+        case 181:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
@@ -15002,28 +15138,28 @@ function sendMessage(action) {
             lastMessage: _messageToUpdate2,
             lastReactedMessage: null
           };
-          _context.next = 190;
+          _context.next = 187;
           return effects.put(updateChannelDataAC(channel.id, _channelUpdateParam2));
 
-        case 190:
-          _context.next = 192;
+        case 187:
+          _context.next = 189;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 192:
-          _context.next = 197;
+        case 189:
+          _context.next = 194;
           break;
 
-        case 194:
-          _context.prev = 194;
+        case 191:
+          _context.prev = 191;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 197:
+        case 194:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 194], [64, 107]]);
+  }, _marked$2, null, [[0, 191], [59, 107]]);
 }
 
 function sendTextMessage(action) {
@@ -15441,8 +15577,8 @@ function resendMessage(action) {
           }
 
           pendingAttachment = getPendingAttachment(_message2.attachments[0].attachmentId);
-          _messageAttachment.data = pendingAttachment;
-          _messageAttachment.url = pendingAttachment;
+          _messageAttachment.data = pendingAttachment.file;
+          _messageAttachment.url = pendingAttachment.file;
           _fileType = _messageAttachment.data.type.split('/')[0];
           _context4.next = 25;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, _messageAttachment.attachmentId));
@@ -15491,7 +15627,7 @@ function resendMessage(action) {
         case 34:
           delete _messageCopy3.createdAt;
           thumbnailMetas = {};
-          fileSize = pendingAttachment.size;
+          fileSize = pendingAttachment.file.size;
 
           if (!(_messageAttachment.url.type.split('/')[0] === 'image')) {
             _context4.next = 44;
@@ -22980,42 +23116,6 @@ var getFrame3 = function getFrame3(video, time) {
     return Promise.reject(e);
   }
 };
-var getFrame = function getFrame(videoSrc, time) {
-  try {
-    var video = document.createElement('video');
-    video.src = videoSrc;
-    return Promise.resolve(new Promise(function (resolve, reject) {
-      if (videoSrc) {
-        var b = setInterval(function () {
-          if (video.readyState >= 3) {
-            if (time) {
-              video.currentTime = time;
-            }
-
-            var canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            var ctx = canvas.getContext('2d');
-            video.currentTime = 10;
-            ctx.drawImage(video, 0, 0);
-            console.log('canvas.toDataURL() resized ... ', canvas.toDataURL('', 0.7));
-            var thumb = canvas.toDataURL('', 0.7).replace('data:image/jpeg;base64,', '');
-            clearInterval(b);
-            resolve({
-              thumb: thumb,
-              width: video.videoWidth,
-              height: video.videoHeight
-            });
-          }
-        }, 500);
-      } else {
-        reject(new Error('src not found'));
-      }
-    }));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 
 var _templateObject$m, _templateObject2$i, _templateObject3$e, _templateObject4$b, _templateObject5$9, _templateObject6$8, _templateObject7$7;
 var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
@@ -23080,7 +23180,7 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
 
               var _temp6 = function () {
                 if (isPreview) {
-                  return Promise.resolve(getFrame3(videoRef.current, 1)).then(function (thumb) {
+                  return Promise.resolve(getFrame3(videoRef.current, 0)).then(function (thumb) {
                     if (thumb) {
                       setVideoThumb(file.attachmentId, _extends({}, thumb, {
                         duration: videoRef.current.duration
@@ -23753,10 +23853,6 @@ var Attachment = function Attachment(_ref) {
     }
   }, [attachmentUrl]);
   React.useEffect(function () {
-    if (isPreview) {
-      console.log('attachment - - - - -', attachment);
-    }
-
     if (connectionStatus === CONNECTION_STATUS.CONNECTED && attachment.id && !(attachment.type === attachmentTypes.file || attachment.type === attachmentTypes.link)) {
       getAttachmentUrlFromCache(attachment.id).then(function (cachedUrl) {
         try {
@@ -25962,7 +26058,7 @@ var Message = function Message(_ref) {
       messageToResend.attachments = message.attachments.map(function (att) {
         var pendingAttachment = getPendingAttachment(att.attachmentId);
         return _extends({}, att, {
-          data: new File([pendingAttachment], att.data.name)
+          data: new File([pendingAttachment.file], att.data.name)
         });
       });
     }
@@ -28569,7 +28665,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
               name: attachment.data.name,
               data: attachment.data,
               attachmentId: attachment.attachmentId,
-              upload: true,
+              cachedUrl: attachment.cachedUrl,
+              upload: attachment.upload,
               attachmentUrl: attachment.attachmentUrl,
               metadata: attachment.metadata,
               type: attachment.type,
@@ -28786,157 +28883,244 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var customUploader = getCustomUploader();
       var sendAsSeparateMessage = getSendAttachmentsAsSeparateMessages();
       var fileType = file.type.split('/')[0];
+      var attachmentId = uuid.v4();
+      var cachedUrl;
+      var reader = new FileReader();
 
-      var _temp5 = function () {
-        if (customUploader) {
-          if (fileType === 'image') {
-            resizeImage(file).then(function (resizedFile) {
-              try {
-                setAttachments(function (prevState) {
-                  return [].concat(prevState, [{
-                    data: file,
-                    upload: false,
-                    type: isMediaAttachment ? fileType : 'file',
-                    attachmentUrl: URL.createObjectURL(resizedFile.blob),
-                    attachmentId: uuid.v4(),
-                    size: file.size
-                  }]);
-                });
-                return Promise.resolve();
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            });
-          } else if (fileType === 'video') {
-            setAttachments(function (prevState) {
-              return [].concat(prevState, [{
-                data: file,
-                upload: false,
-                type: isMediaAttachment ? fileType : 'file',
-                attachmentUrl: URL.createObjectURL(file),
-                attachmentId: uuid.v4(),
-                size: file.size
-              }]);
-            });
-          } else {
-            setAttachments(function (prevState) {
-              return [].concat(prevState, [{
-                data: file,
-                upload: false,
-                type: 'file',
-                attachmentId: uuid.v4(),
-                size: file.size
-              }]);
-            });
-          }
-        } else {
-          var _temp6 = function () {
-            if (fileType === 'image') {
-              var _temp7 = function () {
-                if (isMediaAttachment) {
-                  return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
-                    var thumbnail = _ref2.thumbnail,
-                        imageWidth = _ref2.imageWidth,
-                        imageHeight = _ref2.imageHeight;
+      reader.onload = function () {
+        try {
+          var length = reader.result && reader.result.length;
+          var firstPart = reader.result && reader.result.slice(0, 100);
+          var middlePart = reader.result && reader.result.slice(length / 2 - 50, length / 2);
+          var lastPart = reader.result && reader.result.slice(length - 100, length);
+          var fileSignature = "" + firstPart + middlePart + lastPart;
+          return Promise.resolve(getDataFromDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, fileSignature)).then(function (dataFromDb) {
+            if (dataFromDb) {
+              cachedUrl = dataFromDb.url;
+            } else {
+              setPendingAttachment(attachmentId, {
+                signature: fileSignature
+              });
+            }
 
-                    if (file.type === 'image/gif') {
+            var _temp7 = function () {
+              if (customUploader) {
+                if (fileType === 'image') {
+                  resizeImage(file).then(function (resizedFile) {
+                    try {
                       setAttachments(function (prevState) {
                         return [].concat(prevState, [{
                           data: file,
-                          attachmentUrl: URL.createObjectURL(file),
-                          attachmentId: uuid.v4(),
-                          type: fileType,
-                          metadata: sendAsSeparateMessage ? '' : JSON.stringify({
-                            tmb: thumbnail,
-                            szw: imageWidth,
-                            szh: imageHeight
-                          })
+                          cachedUrl: cachedUrl,
+                          upload: false,
+                          type: isMediaAttachment ? fileType : 'file',
+                          attachmentUrl: URL.createObjectURL(resizedFile.blob),
+                          attachmentId: attachmentId,
+                          size: dataFromDb ? dataFromDb.size : file.size,
+                          metadata: dataFromDb && dataFromDb.metadata
                         }]);
                       });
-                    } else {
-                      resizeImage(file).then(function (resizedFile) {
-                        try {
-                          setAttachments(function (prevState) {
-                            return [].concat(prevState, [{
-                              data: new File([resizedFile.blob], resizedFile.file.name),
-                              attachmentUrl: URL.createObjectURL(file),
-                              attachmentId: uuid.v4(),
-                              type: fileType,
-                              metadata: sendAsSeparateMessage ? '' : JSON.stringify({
-                                tmb: thumbnail,
-                                szw: resizedFile.newWidth,
-                                szh: resizedFile.newHeight
-                              })
-                            }]);
-                          });
-                          return Promise.resolve();
-                        } catch (e) {
-                          return Promise.reject(e);
-                        }
-                      });
+                      return Promise.resolve();
+                    } catch (e) {
+                      return Promise.reject(e);
                     }
                   });
-                } else {
-                  return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
-                    var thumbnail = _ref3.thumbnail;
-                    setAttachments(function (prevState) {
-                      return [].concat(prevState, [{
-                        data: file,
-                        type: 'file',
-                        attachmentUrl: URL.createObjectURL(file),
-                        attachmentId: uuid.v4(),
-                        metadata: sendAsSeparateMessage ? '' : JSON.stringify({
-                          tmb: thumbnail
-                        })
-                      }]);
-                    });
-                  });
-                }
-              }();
-
-              if (_temp7 && _temp7.then) return _temp7.then(function () {});
-            } else {
-              var _temp8 = function () {
-                if (fileType === 'video') {
-                  return Promise.resolve(getFrame(URL.createObjectURL(file), 1)).then(function (_ref4) {
-                    var thumb = _ref4.thumb,
-                        width = _ref4.width,
-                        height = _ref4.height;
-                    setAttachments(function (prevState) {
-                      return [].concat(prevState, [{
-                        data: file,
-                        type: 'video',
-                        attachmentUrl: URL.createObjectURL(file),
-                        attachmentId: uuid.v4(),
-                        metadata: sendAsSeparateMessage ? '' : JSON.stringify({
-                          tmb: thumb,
-                          szw: width,
-                          szh: height
-                        })
-                      }]);
-                    });
+                } else if (fileType === 'video') {
+                  setAttachments(function (prevState) {
+                    return [].concat(prevState, [{
+                      data: file,
+                      cachedUrl: cachedUrl,
+                      upload: false,
+                      type: isMediaAttachment ? fileType : 'file',
+                      attachmentUrl: URL.createObjectURL(file),
+                      attachmentId: attachmentId,
+                      size: dataFromDb ? dataFromDb.size : file.size,
+                      metadata: dataFromDb && dataFromDb.metadata
+                    }]);
                   });
                 } else {
                   setAttachments(function (prevState) {
                     return [].concat(prevState, [{
                       data: file,
+                      cachedUrl: cachedUrl,
+                      upload: false,
                       type: 'file',
-                      attachmentUrl: URL.createObjectURL(file),
-                      attachmentId: uuid.v4()
+                      attachmentId: attachmentId,
+                      size: dataFromDb ? dataFromDb.size : file.size,
+                      metadata: dataFromDb && dataFromDb.metadata
                     }]);
                   });
                 }
-              }();
+              } else {
+                var _temp8 = function () {
+                  if (fileType === 'image') {
+                    var _temp9 = function () {
+                      if (isMediaAttachment) {
+                        var _temp10 = function _temp10() {
+                          if (file.type === 'image/gif') {
+                            setAttachments(function (prevState) {
+                              return [].concat(prevState, [{
+                                data: file,
+                                cachedUrl: cachedUrl,
+                                upload: !cachedUrl,
+                                attachmentUrl: URL.createObjectURL(file),
+                                attachmentId: attachmentId,
+                                type: fileType,
+                                size: dataFromDb ? dataFromDb.size : file.size,
+                                metadata: dataFromDb ? _metas : JSON.stringify({
+                                  tmb: _metas.thumbnail,
+                                  szw: _metas.imageWidth,
+                                  szh: _metas.imageHeight
+                                })
+                              }]);
+                            });
+                          } else {
+                            if (dataFromDb) {
+                              setAttachments(function (prevState) {
+                                return [].concat(prevState, [{
+                                  data: file,
+                                  cachedUrl: cachedUrl,
+                                  upload: !cachedUrl,
+                                  attachmentUrl: URL.createObjectURL(file),
+                                  attachmentId: attachmentId,
+                                  type: fileType,
+                                  size: dataFromDb ? dataFromDb.size : file.size,
+                                  metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                                    tmb: _metas.thumbnail,
+                                    szw: _metas.imageWidth,
+                                    szh: _metas.imageHeight
+                                  })
+                                }]);
+                              });
+                            } else {
+                              resizeImage(file).then(function (resizedFile) {
+                                try {
+                                  setAttachments(function (prevState) {
+                                    return [].concat(prevState, [{
+                                      data: new File([resizedFile.blob], resizedFile.file.name),
+                                      cachedUrl: cachedUrl,
+                                      upload: !cachedUrl,
+                                      attachmentUrl: URL.createObjectURL(file),
+                                      attachmentId: attachmentId,
+                                      type: fileType,
+                                      size: dataFromDb ? dataFromDb.size : file.size,
+                                      metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                                        tmb: _metas.thumbnail,
+                                        szw: resizedFile.newWidth,
+                                        szh: resizedFile.newHeight
+                                      })
+                                    }]);
+                                  });
+                                  return Promise.resolve();
+                                } catch (e) {
+                                  return Promise.reject(e);
+                                }
+                              });
+                            }
+                          }
+                        };
 
-              if (_temp8 && _temp8.then) return _temp8.then(function () {});
-            }
-          }();
+                        var _metas = {};
 
-          if (_temp6 && _temp6.then) return _temp6.then(function () {});
+                        var _temp11 = function () {
+                          if (dataFromDb) {
+                            _metas = dataFromDb.metadata;
+                          } else {
+                            return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
+                              var thumbnail = _ref2.thumbnail,
+                                  imageWidth = _ref2.imageWidth,
+                                  imageHeight = _ref2.imageHeight;
+                              _metas.imageHeight = imageHeight;
+                              _metas.imageWidth = imageWidth;
+                              _metas.thumbnail = thumbnail;
+                            });
+                          }
+                        }();
+
+                        return _temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11);
+                      } else {
+                        var _temp12 = function _temp12() {
+                          setAttachments(function (prevState) {
+                            return [].concat(prevState, [{
+                              data: file,
+                              type: 'file',
+                              cachedUrl: cachedUrl,
+                              upload: !cachedUrl,
+                              attachmentUrl: URL.createObjectURL(file),
+                              attachmentId: attachmentId,
+                              size: dataFromDb ? dataFromDb.size : file.size,
+                              metadata: dataFromDb ? _metas2.thumbnail : JSON.stringify({
+                                tmb: _metas2.thumbnail
+                              })
+                            }]);
+                          });
+                        };
+
+                        var _metas2 = {};
+
+                        var _temp13 = function () {
+                          if (dataFromDb) {
+                            _metas2 = dataFromDb.metadata;
+                          } else {
+                            return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
+                              var thumbnail = _ref3.thumbnail;
+                              _metas2.thumbnail = thumbnail;
+                            });
+                          }
+                        }();
+
+                        return _temp13 && _temp13.then ? _temp13.then(_temp12) : _temp12(_temp13);
+                      }
+                    }();
+
+                    if (_temp9 && _temp9.then) return _temp9.then(function () {});
+                  } else if (fileType === 'video') {
+                    var _metas3 = {};
+
+                    if (dataFromDb) {
+                      _metas3 = dataFromDb.metadata;
+                    }
+
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        type: 'video',
+                        cachedUrl: cachedUrl,
+                        upload: !cachedUrl,
+                        size: dataFromDb ? dataFromDb.size : file.size,
+                        attachmentUrl: URL.createObjectURL(file),
+                        attachmentId: attachmentId,
+                        metadata: dataFromDb ? _metas3 : ''
+                      }]);
+                    });
+                  } else {
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        cachedUrl: cachedUrl,
+                        upload: !cachedUrl,
+                        type: 'file',
+                        size: dataFromDb ? dataFromDb.size : file.size,
+                        attachmentUrl: URL.createObjectURL(file),
+                        attachmentId: attachmentId
+                      }]);
+                    });
+                  }
+                }();
+
+                if (_temp8 && _temp8.then) return _temp8.then(function () {});
+              }
+            }();
+
+            if (_temp7 && _temp7.then) return _temp7.then(function () {});
+          });
+        } catch (e) {
+          return Promise.reject(e);
         }
-      }();
+      };
 
-      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(function () {}) : void 0);
+      reader.readAsBinaryString(file);
+      return Promise.resolve();
     } catch (e) {
       return Promise.reject(e);
     }

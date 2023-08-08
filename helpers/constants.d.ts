@@ -62,10 +62,13 @@ export declare const channelDetailsTabs: {
     link: string;
     voice: string;
 };
-export declare const DB_NAME = "sceytChatDatabase";
+export declare const DB_NAMES: {
+    FILES_STORAGE: string;
+};
 export declare const DB_STORE_NAMES: {
     CHANNELS: string;
     MESSAGES: string;
+    ATTACHMENTS: string;
 };
 export declare const THEME: {
     DARK: string;
