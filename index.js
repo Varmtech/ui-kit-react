@@ -7892,6 +7892,20 @@ var getEmojisCategoryTitle = function getEmojisCategoryTitle(categoryKey) {
 
   return category;
 };
+var hashString = function hashString(str) {
+  try {
+    var encoder = new TextEncoder();
+    var encodedData = encoder.encode(str);
+    return Promise.resolve(crypto.subtle.digest('SHA-256', encodedData)).then(function (hashBuffer) {
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(function (_byte) {
+        return _byte.toString(16).padStart(2, '0');
+      }).join('');
+    });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
 var MESSAGES_MAX_LENGTH = 60;
 var LOAD_MAX_MESSAGE_COUNT = 20;
@@ -13796,7 +13810,7 @@ function updateChannel(action) {
 }
 
 function checkUsersStatus() {
-  var SceytChatClient, usersForUpdate, updatedUsers, usersToUpdateMap, update;
+  var SceytChatClient, usersForUpdate, activeChannelId, activeChannel, activeChannelUser, updatedUsers, usersToUpdateMap, update;
   return _regeneratorRuntime().wrap(function checkUsersStatus$(_context19) {
     while (1) {
       switch (_context19.prev = _context19.next) {
@@ -13804,14 +13818,27 @@ function checkUsersStatus() {
           _context19.prev = 0;
           SceytChatClient = getClient();
           usersForUpdate = Object.keys(usersMap);
-          _context19.next = 5;
+          activeChannelId = getActiveChannelId();
+          activeChannel = getChannelFromMap(activeChannelId);
+
+          if (activeChannel && activeChannel.type === CHANNEL_TYPE.DIRECT) {
+            activeChannelUser = activeChannel.members.find(function (member) {
+              return member.id !== SceytChatClient.user.id;
+            });
+          }
+
+          _context19.next = 8;
           return effects.call(SceytChatClient.getUsers, usersForUpdate);
 
-        case 5:
+        case 8:
           updatedUsers = _context19.sent;
           usersToUpdateMap = {};
           update = false;
           updatedUsers.forEach(function (updatedUser) {
+            if (activeChannelUser && activeChannelUser.id === updatedUser.id) {
+              console.log('active channel user is updated - ', updatedUser);
+            }
+
             if (updatedUser.presence && (updatedUser.presence.state !== usersMap[updatedUser.id].state || updatedUser.presence.lastActiveAt && new Date(updatedUser.presence.lastActiveAt).getTime() !== new Date(usersMap[updatedUser.id].lastActiveAt).getTime())) {
               updateUserOnMap(updatedUser);
               usersToUpdateMap[updatedUser.id] = updatedUser;
@@ -13820,37 +13847,37 @@ function checkUsersStatus() {
           });
 
           if (!update) {
-            _context19.next = 17;
+            _context19.next = 20;
             break;
           }
 
           console.log('update users presence - - --', usersToUpdateMap);
-          _context19.next = 13;
+          _context19.next = 16;
           return effects.put(updateMembersPresenceAC(Object.values(usersToUpdateMap)));
 
-        case 13:
-          _context19.next = 15;
+        case 16:
+          _context19.next = 18;
           return effects.put(updateUserStatusOnMapAC(usersToUpdateMap));
 
-        case 15:
-          _context19.next = 17;
+        case 18:
+          _context19.next = 20;
           return effects.put(updateUserStatusOnChannelAC(usersToUpdateMap));
 
-        case 17:
-          _context19.next = 22;
+        case 20:
+          _context19.next = 25;
           break;
 
-        case 19:
-          _context19.prev = 19;
+        case 22:
+          _context19.prev = 22;
           _context19.t0 = _context19["catch"](0);
           console.log('ERROR in check user status : ', _context19.t0.message);
 
-        case 22:
+        case 25:
         case "end":
           return _context19.stop();
       }
     }
-  }, _marked19, null, [[0, 19]]);
+  }, _marked19, null, [[0, 22]]);
 }
 
 function sendTyping(action) {
@@ -14425,7 +14452,7 @@ var setDataToDB = function setDataToDB(dbName, storeName, data, keyPath) {
     openRequest.onblocked = function () {};
   }
 };
-var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath) {
+var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath, keyPatName) {
   return new Promise(function (resolve, reject) {
     var openRequest = indexedDB.open(dbName, currentVersion);
 
@@ -14437,13 +14464,20 @@ var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath) {
         var objectStore = transaction.objectStore(storeName);
         resolve(objectStore.get(keyPath));
       } else {
+        db.createObjectStore(storeName, {
+          keyPath: keyPatName
+        });
         resolve('');
       }
     };
 
     openRequest.onerror = function (event) {
-      console.log('Error on get data from db', event);
-      reject(event);
+      if (event.target.error.name === 'VersionError') {
+        currentVersion++;
+        resolve(getDataFromDB(dbName, storeName, keyPath));
+      } else {
+        reject(event);
+      }
     };
 
     openRequest.onsuccess = function (event) {
@@ -14481,11 +14515,9 @@ var getDataFromDB = function getDataFromDB(dbName, storeName, keyPath) {
 
 var addData = function addData(db, storeName, keyPath, data) {
   if (!db.objectStoreNames.contains(storeName)) {
-    console.log('create object store . . . . ', storeName);
     var objectStore = db.createObjectStore(storeName, {
       keyPath: keyPath
     });
-    console.log('objectStore . . . . ', objectStore);
 
     objectStore.transaction.oncomplete = function () {
       var channelObjectStore = db.transaction(storeName, 'readwrite').objectStore(storeName);
@@ -14801,8 +14833,8 @@ function sendMessage(action) {
 
           if (!messageAttachment.cachedUrl) {
             setDataToDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, [_extends({}, messageResponse.attachments[0], {
-              signature: pendingAttachment.signature
-            })], 'signature');
+              checksum: pendingAttachment.checksum
+            })], 'checksum');
           }
 
           _context.next = 90;
@@ -20916,9 +20948,6 @@ var ChannelList = function ChannelList(_ref) {
 
     dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
   }, []);
-  React.useEffect(function () {
-    console.log('channels. ...........................', channels);
-  }, [channels]);
   return /*#__PURE__*/React__default.createElement(Container$6, {
     withCustomList: !!List,
     ref: channelListRef,
@@ -28957,92 +28986,82 @@ var SendMessageInput = function SendMessageInput(_ref) {
       reader.onload = function () {
         try {
           var length = reader.result && reader.result.length;
-          var firstPart = reader.result && reader.result.slice(0, 100);
-          var middlePart = reader.result && reader.result.slice(length / 2 - 50, length / 2);
-          var lastPart = reader.result && reader.result.slice(length - 100, length);
-          var fileSignature = "" + firstPart + middlePart + lastPart;
-          return Promise.resolve(getDataFromDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, fileSignature)).then(function (dataFromDb) {
-            if (dataFromDb) {
-              cachedUrl = dataFromDb.url;
-            } else {
-              setPendingAttachment(attachmentId, {
-                signature: fileSignature
-              });
-            }
+          var fileChecksum = '';
 
-            var _temp7 = function () {
-              if (customUploader) {
-                if (fileType === 'image') {
-                  resizeImage(file).then(function (resizedFile) {
-                    try {
-                      setAttachments(function (prevState) {
-                        return [].concat(prevState, [{
-                          data: file,
-                          cachedUrl: cachedUrl,
-                          upload: false,
-                          type: isMediaAttachment ? fileType : 'file',
-                          attachmentUrl: URL.createObjectURL(resizedFile.blob),
-                          attachmentId: attachmentId,
-                          size: dataFromDb ? dataFromDb.size : file.size,
-                          metadata: dataFromDb && dataFromDb.metadata
-                        }]);
-                      });
-                      return Promise.resolve();
-                    } catch (e) {
-                      return Promise.reject(e);
-                    }
-                  });
-                } else if (fileType === 'video') {
-                  setAttachments(function (prevState) {
-                    return [].concat(prevState, [{
-                      data: file,
-                      cachedUrl: cachedUrl,
-                      upload: false,
-                      type: isMediaAttachment ? fileType : 'file',
-                      attachmentUrl: URL.createObjectURL(file),
-                      attachmentId: attachmentId,
-                      size: dataFromDb ? dataFromDb.size : file.size,
-                      metadata: dataFromDb && dataFromDb.metadata
-                    }]);
-                  });
-                } else {
-                  setAttachments(function (prevState) {
-                    return [].concat(prevState, [{
-                      data: file,
-                      cachedUrl: cachedUrl,
-                      upload: false,
-                      type: 'file',
-                      attachmentId: attachmentId,
-                      size: dataFromDb ? dataFromDb.size : file.size,
-                      metadata: dataFromDb && dataFromDb.metadata
-                    }]);
-                  });
-                }
+          if (length > 500) {
+            var firstPart = reader.result && reader.result.slice(0, 100);
+            var middlePart = reader.result && reader.result.slice(length / 2 - 50, length / 2);
+            var lastPart = reader.result && reader.result.slice(length - 100, length);
+            fileChecksum = "" + firstPart + middlePart + lastPart;
+          } else {
+            fileChecksum = "" + reader.result;
+          }
+
+          return Promise.resolve(hashString(fileChecksum)).then(function (checksumHash) {
+            function _temp9() {
+              if (dataFromDb) {
+                cachedUrl = dataFromDb.url;
               } else {
-                var _temp8 = function () {
+                setPendingAttachment(attachmentId, {
+                  checksum: checksumHash
+                });
+              }
+
+              var _temp7 = function () {
+                if (customUploader) {
                   if (fileType === 'image') {
-                    var _temp9 = function () {
-                      if (isMediaAttachment) {
-                        var _temp10 = function _temp10() {
-                          if (file.type === 'image/gif') {
-                            setAttachments(function (prevState) {
-                              return [].concat(prevState, [{
-                                data: file,
-                                cachedUrl: cachedUrl,
-                                upload: !cachedUrl,
-                                attachmentUrl: URL.createObjectURL(file),
-                                attachmentId: attachmentId,
-                                type: fileType,
-                                size: dataFromDb ? dataFromDb.size : file.size,
-                                metadata: dataFromDb ? _metas : JSON.stringify({
-                                  tmb: _metas.thumbnail,
-                                  szw: _metas.imageWidth,
-                                  szh: _metas.imageHeight
-                                })
-                              }]);
-                            });
-                          } else {
-                            if (dataFromDb) {
+                    resizeImage(file).then(function (resizedFile) {
+                      try {
+                        setAttachments(function (prevState) {
+                          return [].concat(prevState, [{
+                            data: file,
+                            cachedUrl: cachedUrl,
+                            upload: false,
+                            type: isMediaAttachment ? fileType : 'file',
+                            attachmentUrl: URL.createObjectURL(resizedFile.blob),
+                            attachmentId: attachmentId,
+                            size: dataFromDb ? dataFromDb.size : file.size,
+                            metadata: dataFromDb && dataFromDb.metadata
+                          }]);
+                        });
+                        return Promise.resolve();
+                      } catch (e) {
+                        return Promise.reject(e);
+                      }
+                    });
+                  } else if (fileType === 'video') {
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        cachedUrl: cachedUrl,
+                        upload: false,
+                        type: isMediaAttachment ? fileType : 'file',
+                        attachmentUrl: URL.createObjectURL(file),
+                        attachmentId: attachmentId,
+                        size: dataFromDb ? dataFromDb.size : file.size,
+                        metadata: dataFromDb && dataFromDb.metadata
+                      }]);
+                    });
+                  } else {
+                    setAttachments(function (prevState) {
+                      return [].concat(prevState, [{
+                        data: file,
+                        cachedUrl: cachedUrl,
+                        upload: false,
+                        type: 'file',
+                        attachmentId: attachmentId,
+                        size: dataFromDb ? dataFromDb.size : file.size,
+                        metadata: dataFromDb && dataFromDb.metadata
+                      }]);
+                    });
+                  }
+                } else {
+                  var _temp10 = function () {
+                    if (fileType === 'image') {
+                      var _temp11 = function () {
+                        if (isMediaAttachment) {
+                          var _temp12 = function _temp12() {
+                            if (file.type === 'image/gif') {
                               setAttachments(function (prevState) {
                                 return [].concat(prevState, [{
                                   data: file,
@@ -29052,7 +29071,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
                                   attachmentId: attachmentId,
                                   type: fileType,
                                   size: dataFromDb ? dataFromDb.size : file.size,
-                                  metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                                  metadata: dataFromDb ? _metas : JSON.stringify({
                                     tmb: _metas.thumbnail,
                                     szw: _metas.imageWidth,
                                     szh: _metas.imageHeight
@@ -29060,126 +29079,157 @@ var SendMessageInput = function SendMessageInput(_ref) {
                                 }]);
                               });
                             } else {
-                              resizeImage(file).then(function (resizedFile) {
-                                try {
-                                  setAttachments(function (prevState) {
-                                    return [].concat(prevState, [{
-                                      data: new File([resizedFile.blob], resizedFile.file.name),
-                                      cachedUrl: cachedUrl,
-                                      upload: !cachedUrl,
-                                      attachmentUrl: URL.createObjectURL(file),
-                                      attachmentId: attachmentId,
-                                      type: fileType,
-                                      size: dataFromDb ? dataFromDb.size : file.size,
-                                      metadata: sendAsSeparateMessage ? '' : JSON.stringify({
-                                        tmb: _metas.thumbnail,
-                                        szw: resizedFile.newWidth,
-                                        szh: resizedFile.newHeight
-                                      })
-                                    }]);
-                                  });
-                                  return Promise.resolve();
-                                } catch (e) {
-                                  return Promise.reject(e);
-                                }
+                              if (dataFromDb) {
+                                setAttachments(function (prevState) {
+                                  return [].concat(prevState, [{
+                                    data: file,
+                                    cachedUrl: cachedUrl,
+                                    upload: !cachedUrl,
+                                    attachmentUrl: URL.createObjectURL(file),
+                                    attachmentId: attachmentId,
+                                    type: fileType,
+                                    size: dataFromDb ? dataFromDb.size : file.size,
+                                    metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                                      tmb: _metas.thumbnail,
+                                      szw: _metas.imageWidth,
+                                      szh: _metas.imageHeight
+                                    })
+                                  }]);
+                                });
+                              } else {
+                                resizeImage(file).then(function (resizedFile) {
+                                  try {
+                                    setAttachments(function (prevState) {
+                                      return [].concat(prevState, [{
+                                        data: new File([resizedFile.blob], resizedFile.file.name),
+                                        cachedUrl: cachedUrl,
+                                        upload: !cachedUrl,
+                                        attachmentUrl: URL.createObjectURL(file),
+                                        attachmentId: attachmentId,
+                                        type: fileType,
+                                        size: dataFromDb ? dataFromDb.size : file.size,
+                                        metadata: sendAsSeparateMessage ? '' : JSON.stringify({
+                                          tmb: _metas.thumbnail,
+                                          szw: resizedFile.newWidth,
+                                          szh: resizedFile.newHeight
+                                        })
+                                      }]);
+                                    });
+                                    return Promise.resolve();
+                                  } catch (e) {
+                                    return Promise.reject(e);
+                                  }
+                                });
+                              }
+                            }
+                          };
+
+                          var _metas = {};
+
+                          var _temp13 = function () {
+                            if (dataFromDb) {
+                              _metas = dataFromDb.metadata;
+                            } else {
+                              return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
+                                var thumbnail = _ref2.thumbnail,
+                                    imageWidth = _ref2.imageWidth,
+                                    imageHeight = _ref2.imageHeight;
+                                _metas.imageHeight = imageHeight;
+                                _metas.imageWidth = imageWidth;
+                                _metas.thumbnail = thumbnail;
                               });
                             }
-                          }
-                        };
+                          }();
 
-                        var _metas = {};
-
-                        var _temp11 = function () {
-                          if (dataFromDb) {
-                            _metas = dataFromDb.metadata;
-                          } else {
-                            return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
-                              var thumbnail = _ref2.thumbnail,
-                                  imageWidth = _ref2.imageWidth,
-                                  imageHeight = _ref2.imageHeight;
-                              _metas.imageHeight = imageHeight;
-                              _metas.imageWidth = imageWidth;
-                              _metas.thumbnail = thumbnail;
+                          return _temp13 && _temp13.then ? _temp13.then(_temp12) : _temp12(_temp13);
+                        } else {
+                          var _temp14 = function _temp14() {
+                            setAttachments(function (prevState) {
+                              return [].concat(prevState, [{
+                                data: file,
+                                type: 'file',
+                                cachedUrl: cachedUrl,
+                                upload: !cachedUrl,
+                                attachmentUrl: URL.createObjectURL(file),
+                                attachmentId: attachmentId,
+                                size: dataFromDb ? dataFromDb.size : file.size,
+                                metadata: dataFromDb ? _metas2.thumbnail : JSON.stringify({
+                                  tmb: _metas2.thumbnail
+                                })
+                              }]);
                             });
-                          }
-                        }();
+                          };
 
-                        return _temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11);
-                      } else {
-                        var _temp12 = function _temp12() {
-                          setAttachments(function (prevState) {
-                            return [].concat(prevState, [{
-                              data: file,
-                              type: 'file',
-                              cachedUrl: cachedUrl,
-                              upload: !cachedUrl,
-                              attachmentUrl: URL.createObjectURL(file),
-                              attachmentId: attachmentId,
-                              size: dataFromDb ? dataFromDb.size : file.size,
-                              metadata: dataFromDb ? _metas2.thumbnail : JSON.stringify({
-                                tmb: _metas2.thumbnail
-                              })
-                            }]);
-                          });
-                        };
+                          var _metas2 = {};
 
-                        var _metas2 = {};
+                          var _temp15 = function () {
+                            if (dataFromDb) {
+                              _metas2 = dataFromDb.metadata;
+                            } else {
+                              return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
+                                var thumbnail = _ref3.thumbnail;
+                                _metas2.thumbnail = thumbnail;
+                              });
+                            }
+                          }();
 
-                        var _temp13 = function () {
-                          if (dataFromDb) {
-                            _metas2 = dataFromDb.metadata;
-                          } else {
-                            return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
-                              var thumbnail = _ref3.thumbnail;
-                              _metas2.thumbnail = thumbnail;
-                            });
-                          }
-                        }();
+                          return _temp15 && _temp15.then ? _temp15.then(_temp14) : _temp14(_temp15);
+                        }
+                      }();
 
-                        return _temp13 && _temp13.then ? _temp13.then(_temp12) : _temp12(_temp13);
+                      if (_temp11 && _temp11.then) return _temp11.then(function () {});
+                    } else if (fileType === 'video') {
+                      var _metas3 = {};
+
+                      if (dataFromDb) {
+                        _metas3 = dataFromDb.metadata;
                       }
-                    }();
 
-                    if (_temp9 && _temp9.then) return _temp9.then(function () {});
-                  } else if (fileType === 'video') {
-                    var _metas3 = {};
-
-                    if (dataFromDb) {
-                      _metas3 = dataFromDb.metadata;
+                      setAttachments(function (prevState) {
+                        return [].concat(prevState, [{
+                          data: file,
+                          type: 'video',
+                          cachedUrl: cachedUrl,
+                          upload: !cachedUrl,
+                          size: dataFromDb ? dataFromDb.size : file.size,
+                          attachmentUrl: URL.createObjectURL(file),
+                          attachmentId: attachmentId,
+                          metadata: dataFromDb ? _metas3 : ''
+                        }]);
+                      });
+                    } else {
+                      setAttachments(function (prevState) {
+                        return [].concat(prevState, [{
+                          data: file,
+                          cachedUrl: cachedUrl,
+                          upload: !cachedUrl,
+                          type: 'file',
+                          size: dataFromDb ? dataFromDb.size : file.size,
+                          attachmentUrl: URL.createObjectURL(file),
+                          attachmentId: attachmentId
+                        }]);
+                      });
                     }
+                  }();
 
-                    setAttachments(function (prevState) {
-                      return [].concat(prevState, [{
-                        data: file,
-                        type: 'video',
-                        cachedUrl: cachedUrl,
-                        upload: !cachedUrl,
-                        size: dataFromDb ? dataFromDb.size : file.size,
-                        attachmentUrl: URL.createObjectURL(file),
-                        attachmentId: attachmentId,
-                        metadata: dataFromDb ? _metas3 : ''
-                      }]);
-                    });
-                  } else {
-                    setAttachments(function (prevState) {
-                      return [].concat(prevState, [{
-                        data: file,
-                        cachedUrl: cachedUrl,
-                        upload: !cachedUrl,
-                        type: 'file',
-                        size: dataFromDb ? dataFromDb.size : file.size,
-                        attachmentUrl: URL.createObjectURL(file),
-                        attachmentId: attachmentId
-                      }]);
-                    });
-                  }
-                }();
+                  if (_temp10 && _temp10.then) return _temp10.then(function () {});
+                }
+              }();
 
-                if (_temp8 && _temp8.then) return _temp8.then(function () {});
-              }
-            }();
+              if (_temp7 && _temp7.then) return _temp7.then(function () {});
+            }
 
-            if (_temp7 && _temp7.then) return _temp7.then(function () {});
+            var dataFromDb;
+
+            var _temp8 = _catch(function () {
+              return Promise.resolve(getDataFromDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, checksumHash, 'checksum')).then(function (_getDataFromDB) {
+                dataFromDb = _getDataFromDB;
+              });
+            }, function (e) {
+              console.log('error in get data from db . . . . ', e);
+            });
+
+            return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
           });
         } catch (e) {
           return Promise.reject(e);
@@ -29621,7 +29671,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, /*#__PURE__*/React__default.createElement(SvgSend, null)))));
 };
 
-var Container$h = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
+var Container$h = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
   return props.margin || '30px 0 16px';
 }, function (props) {
   return props.border || '';

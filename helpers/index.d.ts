@@ -22,3 +22,4 @@ export declare const placeCaretAtEnd: (el: any) => void;
 export declare const detectOS: () => string | null;
 export declare const detectBrowser: () => string | undefined;
 export declare const getEmojisCategoryTitle: (categoryKey: string) => string;
+export declare const hashString: (str: string) => Promise<string>;
