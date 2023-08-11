@@ -15,6 +15,7 @@ declare type draftMessagesMap = {
     [key: string]: {
         text: string;
         mentionedMembers: any;
+        messageForReply?: IMessage;
     };
 };
 declare type pendingMessagesMap = {
@@ -75,11 +76,13 @@ export declare const draftMessagesMap: draftMessagesMap;
 export declare const getDraftMessageFromMap: (channelId: string) => {
     text: string;
     mentionedMembers: any;
+    messageForReply?: IMessage | undefined;
 };
 export declare const checkDraftMessagesIsEmpty: () => boolean;
 export declare const removeDraftMessageFromMap: (channelId: string) => void;
 export declare const setDraftMessageToMap: (channelId: string, draftMessage: {
     text: string;
     mentionedMembers: any;
+    messageForReply?: IMessage;
 }) => void;
 export {};
