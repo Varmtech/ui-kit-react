@@ -12,5 +12,6 @@ export declare const BLOCK_MEMBER = "BLOCK_MEMBER";
 export declare const REPORT_MEMBER = "REPORT_MEMBER";
 export declare const REMOVE_MEMBER_FROM_LIST = "REMOVE_MEMBER_FROM_LIST";
 export declare const GET_ROLES = "GET_ROLES";
+export declare const GET_ROLES_FAIL = "GET_ROLES_FAIL";
 export declare const GET_ROLES_SUCCESS = "GET_ROLES_SUCCESS";
 export declare const CHANGE_MEMBER_ROLE = "CHANGE_MEMBER_ROLE";

@@ -77,8 +77,19 @@ export declare function removeMemberFromListAC(members: IMember[]): {
         members: IMember[];
     };
 };
-export declare function getRolesAC(): {
+export declare function getRolesAC(timeout?: number, attempts?: number): {
     type: string;
+    payload: {
+        timeout: number | undefined;
+        attempts: number | undefined;
+    };
+};
+export declare function getRolesFailAC(timeout?: number, attempts?: number): {
+    type: string;
+    payload: {
+        timeout: number | undefined;
+        attempts: number | undefined;
+    };
 };
 export declare function getRolesSuccess(roles: IRole[]): {
     type: string;

@@ -6,6 +6,10 @@ export interface IMembersStore {
     rolesMap: {
         [key: string]: IRole;
     };
+    getRolesFail: {
+        attempts: number;
+        timeout: number;
+    } | undefined;
     activeChannelMembers: IMember[] | [];
 }
 declare const _default: (state: IMembersStore | undefined, { type, payload }: IAction) => IMembersStore;

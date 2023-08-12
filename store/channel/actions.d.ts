@@ -173,11 +173,12 @@ export declare function updateChannelAC(channelId: string, config: any): {
         config: any;
     };
 };
-export declare function updateChannelDataAC(channelId: string, config: any): {
+export declare function updateChannelDataAC(channelId: string, config: any, moveUp?: boolean): {
     type: string;
     payload: {
         channelId: string;
         config: any;
+        moveUp: boolean | undefined;
     };
 };
 export declare function updateSearchedChannelDataAC(channelId: string, config: any, groupName: 'groups' | 'directs'): {
