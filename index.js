@@ -8012,6 +8012,9 @@ var getFromAllMessagesByMessageId = function getFromAllMessagesByMessageId(messa
         setHasNextCached(true);
       } else {
         var toMessage = fromMessageIndex + LOAD_MAX_MESSAGE_COUNT + 1;
+        console.log('activeChannelAllMessages .. . .', activeChannelAllMessages);
+        console.log('fromMessageIndex .. . .', fromMessageIndex);
+        console.log('toMessage .. . .', toMessage);
         messagesForAdd = activeChannelAllMessages.slice(fromMessageIndex + 1, toMessage);
 
         if (toMessage > activeChannelAllMessages.length - 1) {
@@ -16189,25 +16192,24 @@ function getMessagesQuery(action) {
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
 
           if (!channel.id) {
-            _context7.next = 116;
+            _context7.next = 111;
             break;
           }
 
-          console.log('getMessagesQuery ... ', action.payload);
           SceytChatClient = getClient();
           messageQueryBuilder = new SceytChatClient.MessageListQueryBuilder(channel.id);
           messageQueryBuilder.limit(limit || MESSAGES_MAX_LENGTH);
           messageQueryBuilder.reverse(true);
-          _context7.next = 10;
+          _context7.next = 9;
           return effects.call(messageQueryBuilder.build);
 
-        case 10:
+        case 9:
           messageQuery = _context7.sent;
           query.messageQuery = messageQuery;
-          _context7.next = 14;
+          _context7.next = 13;
           return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADING));
 
-        case 14:
+        case 13:
           cachedMessages = getMessagesFromMap(channel.id);
           result = {
             messages: [],
@@ -16215,52 +16217,48 @@ function getMessagesQuery(action) {
           };
 
           if (!loadWithLastMessage) {
-            _context7.next = 41;
+            _context7.next = 36;
             break;
           }
 
           if (!(channel.newMessageCount && channel.newMessageCount > 0)) {
-            _context7.next = 34;
+            _context7.next = 31;
             break;
           }
 
           setHasNextCached(false);
           setHasPrevCached(false);
           setAllMessages([]);
-          console.log('loadWith 0  ... ');
-          _context7.next = 24;
+          _context7.next = 22;
           return effects.call(messageQuery.loadPreviousMessageId, '0');
 
-        case 24:
+        case 22:
           result = _context7.sent;
-          console.log('result ... ', result);
           setMessagesToMap(channel.id, result.messages);
           setAllMessages([].concat(result.messages));
-          _context7.next = 30;
+          _context7.next = 27;
           return effects.put(setMessagesHasPrevAC(result.hasNext));
 
-        case 30:
-          _context7.next = 32;
+        case 27:
+          _context7.next = 29;
           return effects.put(markChannelAsReadAC(channel.id));
 
-        case 32:
-          _context7.next = 39;
+        case 29:
+          _context7.next = 34;
           break;
 
-        case 34:
-          console.log('get with last message from cache ...');
+        case 31:
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          console.log('result.messages ... ', result.messages);
-          _context7.next = 39;
+          _context7.next = 34;
           return effects.put(setMessagesHasPrevAC(true));
 
-        case 39:
-          _context7.next = 107;
+        case 34:
+          _context7.next = 102;
           break;
 
-        case 41:
+        case 36:
           if (!messageId) {
-            _context7.next = 70;
+            _context7.next = 65;
             break;
           }
 
@@ -16271,56 +16269,56 @@ function getMessagesQuery(action) {
           maxLengthPart = MESSAGES_MAX_LENGTH / 2;
 
           if (!(messageIndex >= maxLengthPart)) {
-            _context7.next = 53;
+            _context7.next = 48;
             break;
           }
 
           result.messages = allMessages.slice(messageIndex - maxLengthPart, messageIndex + maxLengthPart);
-          _context7.next = 49;
+          _context7.next = 44;
           return effects.put(setMessagesAC(result.messages));
 
-        case 49:
+        case 44:
           setHasPrevCached(messageIndex > maxLengthPart);
           setHasNextCached(allMessages.length > maxLengthPart);
-          _context7.next = 66;
+          _context7.next = 61;
           break;
 
-        case 53:
+        case 48:
           messageQuery.limit = MESSAGES_MAX_LENGTH;
-          _context7.next = 56;
+          _context7.next = 51;
           return effects.call(messageQuery.loadNearMessageId, messageId);
 
-        case 56:
+        case 51:
           result = _context7.sent;
-          _context7.next = 59;
+          _context7.next = 54;
           return effects.put(setMessagesHasNextAC(true));
 
-        case 59:
+        case 54:
           pendingMessages = getPendingMessages(channel.id);
 
           if (pendingMessages && pendingMessages.length) {
             result.messages = [].concat(result.messages, pendingMessages);
           }
 
-          _context7.next = 63;
+          _context7.next = 58;
           return effects.put(setMessagesAC([].concat(result.messages)));
 
-        case 63:
+        case 58:
           setAllMessages([].concat(result.messages));
           setHasPrevCached(false);
           setHasNextCached(false);
 
-        case 66:
-          _context7.next = 68;
+        case 61:
+          _context7.next = 63;
           return effects.put(setScrollToMessagesAC(messageId));
 
-        case 68:
-          _context7.next = 107;
+        case 63:
+          _context7.next = 102;
           break;
 
-        case 70:
+        case 65:
           if (!(channel.newMessageCount && channel.lastDisplayedMsgId)) {
-            _context7.next = 94;
+            _context7.next = 89;
             break;
           }
 
@@ -16328,35 +16326,35 @@ function getMessagesQuery(action) {
           messageQuery.limit = MESSAGES_MAX_LENGTH;
 
           if (!Number(channel.lastDisplayedMsgId)) {
-            _context7.next = 79;
+            _context7.next = 74;
             break;
           }
 
-          _context7.next = 76;
+          _context7.next = 71;
           return effects.call(messageQuery.loadNearMessageId, channel.lastDisplayedMsgId);
+
+        case 71:
+          result = _context7.sent;
+          _context7.next = 77;
+          break;
+
+        case 74:
+          _context7.next = 76;
+          return effects.call(messageQuery.loadPrevious);
 
         case 76:
           result = _context7.sent;
-          _context7.next = 82;
-          break;
 
-        case 79:
-          _context7.next = 81;
-          return effects.call(messageQuery.loadPrevious);
-
-        case 81:
-          result = _context7.sent;
-
-        case 82:
+        case 77:
           setMessagesToMap(channel.id, result.messages);
-          _context7.next = 85;
+          _context7.next = 80;
           return effects.put(setMessagesHasPrevAC(true));
 
-        case 85:
-          _context7.next = 87;
+        case 80:
+          _context7.next = 82;
           return effects.put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
 
-        case 87:
+        case 82:
           _pendingMessages = getPendingMessages(channel.id);
 
           if (_pendingMessages && _pendingMessages.length) {
@@ -16364,30 +16362,30 @@ function getMessagesQuery(action) {
           }
 
           setAllMessages([].concat(result.messages));
-          _context7.next = 92;
+          _context7.next = 87;
           return effects.put(setMessagesAC([].concat(result.messages)));
 
-        case 92:
-          _context7.next = 107;
+        case 87:
+          _context7.next = 102;
           break;
 
-        case 94:
+        case 89:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context7.next = 99;
+            _context7.next = 94;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context7.next = 99;
+          _context7.next = 94;
           return effects.put(setMessagesAC(cachedMessages));
 
-        case 99:
-          _context7.next = 101;
+        case 94:
+          _context7.next = 96;
           return effects.call(messageQuery.loadPrevious);
 
-        case 101:
+        case 96:
           result = _context7.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -16396,16 +16394,16 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context7.next = 105;
+          _context7.next = 100;
           return effects.put(setMessagesHasPrevAC(result.hasNext));
 
-        case 105:
-          _context7.next = 107;
+        case 100:
+          _context7.next = 102;
           return effects.put(setMessagesHasNextAC(false));
 
-        case 107:
+        case 102:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context7.next = 114;
+            _context7.next = 109;
             break;
           }
 
@@ -16417,40 +16415,37 @@ function getMessagesQuery(action) {
             }
           }
 
-          _context7.next = 111;
+          _context7.next = 106;
           return effects.put(setMessagesAC([].concat(result.messages)));
 
-        case 111:
+        case 106:
           setMessagesToMap(channel.id, result.messages);
-
-          if (!loadWithLastMessage) {
-            setAllMessages([].concat(result.messages));
-          }
+          setAllMessages([].concat(result.messages));
 
           if (loadWithLastMessage) {
             setHasPrevCached(false);
             setHasNextCached(false);
           }
 
-        case 114:
-          _context7.next = 116;
+        case 109:
+          _context7.next = 111;
           return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 116:
-          _context7.next = 121;
+        case 111:
+          _context7.next = 116;
           break;
 
-        case 118:
-          _context7.prev = 118;
+        case 113:
+          _context7.prev = 113;
           _context7.t0 = _context7["catch"](0);
           console.log('error in message query', _context7.t0);
 
-        case 121:
+        case 116:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$1, null, [[0, 118]]);
+  }, _marked7$1, null, [[0, 113]]);
 }
 
 function loadMoreMessages(action) {
@@ -27293,6 +27288,7 @@ var MessageList = function MessageList(_ref2) {
       var target = event.target;
 
       if (target.scrollTop === 0 && scrollToNewMessage.scrollToBottom && scrollToNewMessage.updateMessageList && messagesLoading !== LOADING_STATE.LOADING) {
+        console.log('scrollToNewMessage.scrollToBottom. ..  . .. getMessagesAC .. ');
         dispatch(getMessagesAC(channel, true));
       }
 
@@ -27375,6 +27371,7 @@ var MessageList = function MessageList(_ref2) {
         dispatch(loadMoreMessagesAC(channel.id, limit, direction, firstMessageId, hasPrevMessages));
       } else if (direction === MESSAGE_LOAD_DIRECTION.NEXT && lastMessageId && (hasNextMessages || hasNextCached)) {
         loading = true;
+        console.log('load next messages........ hase next cached .... ', hasNextCached);
         dispatch(loadMoreMessagesAC(channel.id, limit, direction, lastMessageId, hasNextMessages));
       }
     }
