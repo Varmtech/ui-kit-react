@@ -7989,9 +7989,6 @@ var getFromAllMessagesByMessageId = function getFromAllMessagesByMessageId(messa
         setHasNextCached(true);
       } else {
         var toMessage = fromMessageIndex + LOAD_MAX_MESSAGE_COUNT + 1;
-        console.log('activeChannelAllMessages .. . .', activeChannelAllMessages);
-        console.log('fromMessageIndex .. . .', fromMessageIndex);
-        console.log('toMessage .. . .', toMessage);
         messagesForAdd = activeChannelAllMessages.slice(fromMessageIndex + 1, toMessage);
 
         if (toMessage > activeChannelAllMessages.length - 1) {
