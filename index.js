@@ -24294,7 +24294,8 @@ var Attachment = function Attachment(_ref) {
     withBorder: !isPreview && !isDetailsView,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
     isDetailsView: isDetailsView,
-    imageMinWidth: imageMinWidth
+    imageMinWidth: imageMinWidth,
+    withPrefix: withPrefix
   }, /*#__PURE__*/React__default.createElement(UploadPercent, {
     isRepliedMessage: isRepliedMessage
   }, isInUploadingState ? /*#__PURE__*/React__default.createElement(CancelResumeWrapper, {
@@ -31271,6 +31272,7 @@ var _templateObject$C, _templateObject2$y;
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
   var attachments = reactRedux.useSelector(activeTabAttachmentsSelector, reactRedux.shallowEqual) || [];
+  console.log('attachments. ... . ', attachments);
 
   var _useState = React.useState(null),
       mediaFile = _useState[0],
