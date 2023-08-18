@@ -8183,6 +8183,13 @@ function removeMessageFromMap(channelId, messageId) {
     return !(msg.id === messageId || msg.tid === messageId);
   });
 }
+function removePendingMessageFromMap(channelId, messageId) {
+  if (pendingMessagesMap[channelId]) {
+    pendingMessagesMap[channelId] = [].concat(pendingMessagesMap[channelId]).filter(function (msg) {
+      return !(msg.id === messageId || msg.tid === messageId);
+    });
+  }
+}
 function clearMessagesMap() {
   messagesMap = {};
 }
@@ -11987,6 +11994,7 @@ function watchForEvents() {
                     updateLastMessage = false;
                     markersMap = {};
                     markerList.messageIds.forEach(function (messageId) {
+                      removePendingMessageFromMap(channel.id, messageId);
                       markersMap[messageId] = true;
 
                       if (channel) {
@@ -15943,12 +15951,12 @@ function resendMessage(action) {
           }));
 
         case 87:
-          _context4.next = 113;
+          _context4.next = 114;
           break;
 
         case 89:
           if (!(_message2.state === MESSAGE_STATUS.FAILED)) {
-            _context4.next = 113;
+            _context4.next = 114;
             break;
           }
 
@@ -15957,7 +15965,7 @@ function resendMessage(action) {
           delete _messageCopy4.createdAt;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 113;
+            _context4.next = 114;
             break;
           }
 
@@ -15978,10 +15986,11 @@ function resendMessage(action) {
             createdAt: _messageResponse3.createdAt
           };
           console.log('messageResponse ... ', _messageResponse3);
-          _context4.next = 101;
+          removePendingMessageFromMap(channel.id, _messageCopy4.tid);
+          _context4.next = 102;
           return put(updateMessageAC(_messageCopy4.tid, _messageUpdateData3));
 
-        case 101:
+        case 102:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
@@ -15989,48 +15998,48 @@ function resendMessage(action) {
           activeChannelId = getActiveChannelId();
 
           if (!(channelId === activeChannelId)) {
-            _context4.next = 108;
+            _context4.next = 109;
             break;
           }
 
-          _context4.next = 106;
+          _context4.next = 107;
           return put(updateMessageAC(_messageCopy4.tid, JSON.parse(JSON.stringify(_messageResponse3))));
 
-        case 106:
+        case 107:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
           });
           updateMessageOnAllMessages(_messageCopy4.tid, _messageUpdateData3);
 
-        case 108:
+        case 109:
           updateChannelOnAllChannels(channel.id, channel);
           _messageToUpdate3 = JSON.parse(JSON.stringify(_messageResponse3));
           updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate3);
-          _context4.next = 113;
+          _context4.next = 114;
           return put(updateChannelLastMessageAC(_messageToUpdate3, {
             id: channel.id
           }));
 
-        case 113:
-          _context4.next = 115;
+        case 114:
+          _context4.next = 116;
           return put(scrollToNewMessageAC(true));
 
-        case 115:
-          _context4.next = 120;
+        case 116:
+          _context4.next = 121;
           break;
 
-        case 117:
-          _context4.prev = 117;
+        case 118:
+          _context4.prev = 118;
           _context4.t1 = _context4["catch"](0);
           console.log('ERROR in resend message', _context4.t1.message);
 
-        case 120:
+        case 121:
         case "end":
           return _context4.stop();
       }
     }
-  }, _marked4$1, null, [[0, 117], [23, 78]]);
+  }, _marked4$1, null, [[0, 118], [23, 78]]);
 }
 
 function deleteMessage(action) {
@@ -19097,7 +19106,7 @@ var ChannelInfo = styled.div(_templateObject2$4 || (_templateObject2$4 = _tagged
 var MutedIcon = styled.span(_templateObject3$3 || (_templateObject3$3 = _taggedTemplateLiteralLoose(["\n  & > svg {\n    height: 16px;\n    width: 16px;\n    margin-left: 5px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || '#818C99';
 });
-var LastMessage = styled.div(_templateObject4$3 || (_templateObject4$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  color: ", ";\n  max-width: ", ";\n"])), colors.textColor1, function (props) {
+var LastMessage = styled.div(_templateObject4$3 || (_templateObject4$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  color: ", ";\n  max-width: ", ";\n\n  height: 20px;\n"])), colors.textColor1, function (props) {
   return props.markedAsUnread || props.unreadMentions ? "calc(100% - " + (props.markedAsUnread && props.unreadMentions ? 48 : 24) + "px)" : '100%';
 });
 var AvatarWrapper = styled.div(_templateObject5$2 || (_templateObject5$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  position: relative;\n"])));
@@ -19114,10 +19123,10 @@ var LastMessageAuthor = styled.div(_templateObject9$1 || (_templateObject9$1 = _
 var Points = styled.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var LastMessageText = styled.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  //transform: ", ";\n  height: 17px;\n  display: flex;\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    //transform: ", ";\n    transform: translate(0px, 1px);\n  }\n"])), colors.textColor2, function (props) {
+var LastMessageText = styled.span(_templateObject11$1 || (_templateObject11$1 = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  color: ", ";\n  font-style: ", ";\n  transform: ", ";\n  //height: 20px;\n\n  > svg {\n    width: 16px;\n    height: 16px;\n    margin-right: 4px;\n    color: ", ";\n    //transform: ", ";\n    transform: translate(0px, 3px);\n  }\n"])), colors.textColor2, function (props) {
   return props.deletedMessage && 'italic';
 }, function (props) {
-  return props.withAttachments && 'translate(0px, -1.5px)';
+  return props.withAttachments && 'translate(0px, -1px)';
 }, colors.textColor2, function (props) {
   return props.withAttachments ? 'translate(0px, 3px)' : 'translate(0px, 2px)';
 });
@@ -26562,7 +26571,7 @@ var Message = function Message(_ref) {
     incomingMessageBackground: incomingMessageBackground,
     borderRadius: borderRadius,
     withAttachments: notLinkAttachment,
-    attachmentWidth: withAttachments ? mediaAttachment ? mediaAttachment.type === attachmentTypes.image ? attachmentMetas && getSendAttachmentsAsSeparateMessages() && attachmentMetas.szw && calculateRenderedImageWidth(attachmentMetas.szw, attachmentMetas.szh, imageAttachmentMaxWidth, imageAttachmentMaxHeight)[0] : mediaAttachment.type === attachmentTypes.video ? videoAttachmentMaxWidth || 420 : undefined : message.attachments[0].type === attachmentTypes.voice ? 254 : message.attachments[0].type === attachmentTypes.file ? fileAttachmentsBoxWidth : undefined : undefined,
+    attachmentWidth: withAttachments ? mediaAttachment ? attachmentMetas && getSendAttachmentsAsSeparateMessages() && attachmentMetas.szw && calculateRenderedImageWidth(attachmentMetas.szw, attachmentMetas.szh, mediaAttachment.type === attachmentTypes.image ? imageAttachmentMaxWidth : videoAttachmentMaxWidth, mediaAttachment.type === attachmentTypes.image ? imageAttachmentMaxHeight : videoAttachmentMaxHeight)[0] : message.attachments[0].type === attachmentTypes.voice ? 254 : message.attachments[0].type === attachmentTypes.file ? fileAttachmentsBoxWidth : undefined : undefined,
     noBody: !message.body && !withAttachments,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave
@@ -28253,10 +28262,6 @@ function MentionMembersPopup(_ref) {
       activeIndex = _useState2[0],
       setActiveIndex = _useState2[1];
 
-  var _useState3 = useState(false),
-      hideMenu = _useState3[0],
-      setHideMenu = _useState3[1];
-
   var membersListRef = useRef();
   var user = getClient().user;
   var membersLoading = useSelector(membersLoadingStateSelector, shallowEqual) || {};
@@ -28375,14 +28380,11 @@ function MentionMembersPopup(_ref) {
   }, [searchMention]);
   useDidUpdate(function () {
     if (filteredMembersLength.current === 0) {
-      setHideMenu(true);
-    } else {
-      setHideMenu(false);
+      handleMentionsPopupClose(true);
     }
   }, [filteredMembersLength.current]);
   return /*#__PURE__*/React__default.createElement(Container$g, {
     className: 'mention_member_popup',
-    hidden: hideMenu,
     height: filteredMembers && filteredMembers.length * 44,
     backgroundColor: theme === THEME$1.DARK ? colors.backgroundColor : colors.white,
     withBorder: theme !== THEME$1.DARK
@@ -28765,7 +28767,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
         setMessageText(e.currentTarget.innerText);
       }
 
-      if (allowMentionUser) {
+      if (allowMentionUser && (activeChannel.type === CHANNEL_TYPE.GROUP || activeChannel.type === CHANNEL_TYPE.PRIVATE)) {
         handleMentionDetect(e);
       }
 
@@ -28799,7 +28801,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     var lastTwoChar = messageInputRef.current.innerText.slice(0, selPos).slice(-2);
 
-    if (lastTwoChar.trimStart() === '@' && !mentionTyping && (activeChannel.type === CHANNEL_TYPE.GROUP || activeChannel.type === CHANNEL_TYPE.PRIVATE)) {
+    if (lastTwoChar.trimStart() === '@' && !mentionTyping) {
       setCurrentMentions({
         start: selPos - 1,
         typed: ''

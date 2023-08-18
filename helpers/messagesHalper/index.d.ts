@@ -54,6 +54,7 @@ export declare function updateMessageStatusOnMap(channelId: string, newMarkers: 
 export declare function getMessagesFromMap(channelId: string): IMessage[];
 export declare function removeMessagesFromMap(channelId: string): void;
 export declare function removeMessageFromMap(channelId: string, messageId: string): void;
+export declare function removePendingMessageFromMap(channelId: string, messageId: string): void;
 export declare function clearMessagesMap(): void;
 export declare function checkChannelExistsOnMessagesMap(channelId: string): boolean;
 export declare function destroyChannelsMap(): void;
