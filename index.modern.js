@@ -11016,20 +11016,27 @@ var getShowOnlyContactUsers = function getShowOnlyContactUsers() {
 var contactsMap = {};
 var logoSrc = '';
 var showNotifications = true;
-var setNotification = function setNotification(body, user, channel, reaction) {
+var setNotification = function setNotification(body, user, channel, reaction, attachment) {
   var getFromContacts = getShowOnlyContactUsers();
+  var attachmentType;
+
+  if (attachment) {
+    var attType = attachment.type;
+    attachmentType = attType === attachmentTypes.voice ? 'Voice' : attType === attachmentTypes.image ? 'Photo' : attType === attachmentTypes.video ? 'Video' : 'File';
+  }
+
   var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
   var notification;
 
   if (showNotifications) {
     if (reaction) {
       notification = new Notification("" + (isDirectChannel ? makeUsername(contactsMap[user.id], user, getFromContacts) : channel.subject), {
-        body: (channel.type !== CHANNEL_TYPE.DIRECT ? makeUsername(contactsMap[user.id], user, getFromContacts) + ': ' : '') + " reacted " + reaction + " to \"" + body + "\"",
+        body: (channel.type !== CHANNEL_TYPE.DIRECT ? makeUsername(contactsMap[user.id], user, getFromContacts) + ': ' : '') + " reacted " + reaction + " to \"" + (attachmentType || '') + (attachmentType && body ? ': ' : '') + body + "\"",
         icon: logoSrc
       });
     } else {
       notification = new Notification("" + (isDirectChannel ? makeUsername(contactsMap[user.id], user, getFromContacts) : channel.subject), {
-        body: isDirectChannel ? body : makeUsername(contactsMap[user.id], user, getFromContacts) + "\n" + body,
+        body: isDirectChannel ? "" + (attachmentType || '') + (attachmentType && body ? ': ' : '') + body : makeUsername(contactsMap[user.id], user, getFromContacts) + "\n" + (attachmentType || '') + (attachmentType && body ? ': ' : '') + body,
         icon: logoSrc
       });
     }
@@ -11217,7 +11224,7 @@ var browserTabIsActiveSelector = function browserTabIsActiveSelector(store) {
 
 var _marked = /*#__PURE__*/_regeneratorRuntime().mark(watchForEvents);
 function watchForEvents() {
-  var SceytChatClient, channelListener, connectionListener, typingUsersTimeout, chan, _yield$take, type, args, createdChannel, getFromContacts, channelExists, channel, _channel, member, _channelExists, _activeChannelId, groupName, _channel2, _channelExists2, _channel3, removedMembers, _activeChannelId2, _channelExists3, activeChannel, _groupName, _channel4, addedMembers, _activeChannelId3, _channelExists4, _groupName2, updatedChannel, _channelExists5, subject, avatarUrl, _groupName3, _channel5, message, messageToHandle, _activeChannelId4, _channelExists6, channelForAdd, _groupName4, showNotifications, contactsMap, _getFromContacts, messageBody, _ret, _ret2, _channel6, from, channelId, _channel7, _channel8, deletedMessage, _activeChannelId5, _channelExists7, _channel9, _message, _activeChannelId6, _channelExists8, _channel10, user, _message2, reaction, isSelf, _activeChannelId7, channelUpdateParams, _channel11, _user, _message3, _reaction, channelFromMap, _isSelf, _activeChannelId8, _channelUpdateParams, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId9, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _groupName5, _channel19, _groupName6, _channel20, members, _activeChannelId10, i, status;
+  var SceytChatClient, channelListener, connectionListener, typingUsersTimeout, chan, _yield$take, type, args, createdChannel, getFromContacts, channelExists, channel, _channel, member, _channelExists, _activeChannelId, groupName, _channel2, _channelExists2, _channel3, removedMembers, _activeChannelId2, _channelExists3, activeChannel, _groupName, _channel4, addedMembers, _activeChannelId3, _channelExists4, _groupName2, updatedChannel, _channelExists5, subject, avatarUrl, _groupName3, _channel5, message, messageToHandle, _activeChannelId4, _channelExists6, channelForAdd, _groupName4, showNotifications, contactsMap, _getFromContacts, messageBody, _ret, _ret2, _channel6, from, channelId, _channel7, _channel8, deletedMessage, _activeChannelId5, _channelExists7, _channel9, _message, _activeChannelId6, _channelExists8, _channel10, user, _message2, reaction, isSelf, _activeChannelId7, _contactsMap, _getFromContacts2, _messageBody, channelUpdateParams, _channel11, _user, _message3, _reaction, channelFromMap, _isSelf, _activeChannelId8, _channelUpdateParams, _channel12, channelUnreadCount, _updatedChannel, _channel13, _activeChannelId9, channelExist, _channel14, _channel15, _channel16, _channel17, _channel18, _groupName5, _channel19, _groupName6, _channel20, members, _activeChannelId10, i, status;
 
   return _regeneratorRuntime().wrap(function watchForEvents$(_context3) {
     while (1) {
@@ -11555,7 +11562,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 28 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 36 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 60 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 67 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 69 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 122 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 133 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 186 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 190 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 199 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 223 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 237 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 254 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 270 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 277 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 295 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 301 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 307 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 312 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 317 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 325 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 333 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 352 : 360;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 28 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 36 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 60 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 67 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 69 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 99 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 122 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 133 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 186 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 190 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 199 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 206 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 223 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 237 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 261 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 277 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 284 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 302 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 308 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 314 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 319 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 324 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 332 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 340 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 359 : 367;
           break;
 
         case 14:
@@ -11587,7 +11594,7 @@ function watchForEvents() {
 
         case 26:
           addChannelToAllChannels(createdChannel);
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 28:
           channel = args.channel;
@@ -11598,7 +11605,7 @@ function watchForEvents() {
         case 32:
 
           addChannelToAllChannels(channel);
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 36:
           _channel = args.channel, member = args.member;
@@ -11658,7 +11665,7 @@ function watchForEvents() {
           });
 
         case 59:
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 60:
           console.log('channel BLOCK ... ');
@@ -11674,11 +11681,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 66:
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 67:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 69:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -11752,7 +11759,7 @@ function watchForEvents() {
           updateChannelOnAllChannels(_channel3.id, {
             memberCount: _channel3.memberCount
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 99:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -11806,7 +11813,7 @@ function watchForEvents() {
           updateChannelOnAllChannels(_channel4.id, {
             memberCount: _channel4.memberCount
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 122:
           updatedChannel = args.updatedChannel;
@@ -11837,7 +11844,7 @@ function watchForEvents() {
             subject: subject,
             avatarUrl: avatarUrl
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 133:
           _channel5 = args.channel, message = args.message;
@@ -11951,7 +11958,9 @@ function watchForEvents() {
             asSampleText: true
           });
           console.log('messageBody. . . . ', messageBody);
-          setNotification(messageBody, message.user, _channel5);
+          setNotification(messageBody, message.user, _channel5, undefined, message.attachments && message.attachments.length ? message.attachments.find(function (att) {
+            return att.type !== attachmentTypes.link;
+          }) : undefined);
 
         case 176:
           if (!(message.repliedInThread && message.parentMessage.id)) {
@@ -11978,7 +11987,7 @@ function watchForEvents() {
           updateChannelLastMessageOnAllChannels(_channel5.id, _channel5.lastMessage);
 
         case 185:
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 186:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -12071,7 +12080,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 190:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -12111,7 +12120,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 194:
           _channel6 = args.channel, from = args.from;
@@ -12124,7 +12133,7 @@ function watchForEvents() {
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 198:
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 199:
           channelId = args.channelId;
@@ -12135,7 +12144,7 @@ function watchForEvents() {
 
         case 204:
           deleteChannelFromAllChannels(channelId);
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 206:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -12181,7 +12190,7 @@ function watchForEvents() {
           updateChannelOnAllChannels(_channel8.id, {
             unreadMessageCount: _channel8.newMessageCount
           }, deletedMessage);
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 223:
           _channel9 = args.channel, _message = args.message;
@@ -12224,7 +12233,7 @@ function watchForEvents() {
           }
 
           updateChannelOnAllChannels(_channel9.id, {}, _message);
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
         case 237:
           _channel10 = args.channel, user = args.user, _message2 = args.message, reaction = args.reaction;
@@ -12245,18 +12254,41 @@ function watchForEvents() {
 
         case 245:
           if (!(_message2.user.id === SceytChatClient.user.id)) {
-            _context3.next = 252;
+            _context3.next = 259;
             break;
           }
 
-          if (!isSelf && Notification.permission === 'granted') {
-            if (document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId7) {
-              setNotification(_message2.body, reaction.user, _channel10, reaction.key);
-            }
+          if (!(!isSelf && Notification.permission === 'granted')) {
+            _context3.next = 254;
+            break;
           }
 
+          if (!(document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId7)) {
+            _context3.next = 254;
+            break;
+          }
+
+          _context3.next = 250;
+          return select(contactsMapSelector);
+
+        case 250:
+          _contactsMap = _context3.sent;
+          _getFromContacts2 = getShowOnlyContactUsers();
+          _messageBody = MessageTextFormat({
+            text: _message2.body,
+            message: _message2,
+            contactsMap: _contactsMap,
+            getFromContacts: _getFromContacts2,
+            isLastMessage: false,
+            asSampleText: true
+          });
+          setNotification(_messageBody, reaction.user, _channel10, reaction.key, _message2.attachments && _message2.attachments.length ? _message2.attachments.find(function (att) {
+            return att.type !== attachmentTypes.link;
+          }) : undefined);
+
+        case 254:
           if (!(_channel10.newReactions && _channel10.newReactions.length)) {
-            _context3.next = 251;
+            _context3.next = 258;
             break;
           }
 
@@ -12265,24 +12297,24 @@ function watchForEvents() {
             lastReactedMessage: _message2,
             newReactions: _channel10.newReactions
           };
-          _context3.next = 251;
+          _context3.next = 258;
           return put(updateChannelDataAC(_channel10.id, channelUpdateParams));
 
-        case 251:
+        case 258:
           updateChannelOnAllChannels(_channel10.id, {
             userMessageReactions: _channel10.newReactions,
             lastReactedMessage: _message2,
             newReactions: _channel10.newReactions
           });
 
-        case 252:
+        case 259:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 254:
+        case 261:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ', _channel11);
           channelFromMap = getChannelFromMap(_channel11.id);
@@ -12290,258 +12322,258 @@ function watchForEvents() {
           _activeChannelId8 = getActiveChannelId();
 
           if (!(_channel11.id === _activeChannelId8)) {
-            _context3.next = 263;
+            _context3.next = 270;
             break;
           }
 
-          _context3.next = 262;
+          _context3.next = 269;
           return put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 262:
+        case 269:
           removeReactionOnAllMessages(_message3, _reaction, true);
 
-        case 263:
+        case 270:
           _channelUpdateParams = JSON.parse(JSON.stringify(_channel11));
 
           if (channelFromMap && channelFromMap.lastReactedMessage && channelFromMap.lastReactedMessage.id === _message3.id) {
             _channelUpdateParams.lastReactedMessage = null;
           }
 
-          _context3.next = 267;
+          _context3.next = 274;
           return put(updateChannelDataAC(_channel11.id, _channelUpdateParams));
 
-        case 267:
+        case 274:
           updateChannelOnAllChannels(_channel11.id, _channelUpdateParams);
 
           if (checkChannelExistsOnMessagesMap(_channel11.id)) {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 270:
+        case 277:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .channelUnreadCount', channelUnreadCount);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 275;
+          _context3.next = 282;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 275:
+        case 282:
           updateChannelOnAllChannels(_channel12.id, _updatedChannel);
-          return _context3.abrupt("break", 361);
-
-        case 277:
-          _channel13 = args.channel;
-          console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 281;
-          return call(getActiveChannelId);
-
-        case 281:
-          _activeChannelId9 = _context3.sent;
-          _context3.next = 284;
-          return call(checkChannelExists, _channel13.id);
+          return _context3.abrupt("break", 368);
 
         case 284:
+          _channel13 = args.channel;
+          console.log('CLEAR_HISTORY: ', _channel13);
+          _context3.next = 288;
+          return call(getActiveChannelId);
+
+        case 288:
+          _activeChannelId9 = _context3.sent;
+          _context3.next = 291;
+          return call(checkChannelExists, _channel13.id);
+
+        case 291:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId9)) {
-            _context3.next = 289;
+            _context3.next = 296;
             break;
           }
 
-          _context3.next = 288;
+          _context3.next = 295;
           return put(clearMessagesAC());
 
-        case 288:
+        case 295:
           removeAllMessages();
 
-        case 289:
+        case 296:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 293;
+            _context3.next = 300;
             break;
           }
 
-          _context3.next = 293;
+          _context3.next = 300;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: null,
             unreadMessageCount: 0
           }));
 
-        case 293:
+        case 300:
           updateChannelOnAllChannels(_channel13.id, {
             lastMessage: null,
             unreadMessageCount: 0
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 295:
+        case 302:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 299;
+          _context3.next = 306;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             mutedTill: _channel14.mutedTill
           }));
 
-        case 299:
+        case 306:
           updateChannelOnAllChannels(_channel14.id, {
             muted: _channel14.muted,
             mutedTill: _channel14.mutedTill
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 301:
+        case 308:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 305;
+          _context3.next = 312;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             mutedTill: _channel15.mutedTill
           }));
 
-        case 305:
+        case 312:
           updateChannelOnAllChannels(_channel15.id, {
             muted: _channel15.muted,
             mutedTill: _channel15.mutedTill
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 307:
+        case 314:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context3.next = 311;
+          _context3.next = 318;
           return put(setChannelToHideAC(_channel16));
 
-        case 311:
-          return _context3.abrupt("break", 361);
+        case 318:
+          return _context3.abrupt("break", 368);
 
-        case 312:
+        case 319:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context3.next = 316;
+          _context3.next = 323;
           return put(setChannelToUnHideAC(_channel17));
 
-        case 316:
-          return _context3.abrupt("break", 361);
+        case 323:
+          return _context3.abrupt("break", 368);
 
-        case 317:
+        case 324:
           _channel18 = args.channel;
-          _context3.next = 320;
+          _context3.next = 327;
           return put(updateChannelDataAC(_channel18.id, {
             unread: _channel18.unread
           }));
 
-        case 320:
+        case 327:
           _groupName5 = _channel18.type === CHANNEL_TYPE.DIRECT ? 'directs' : 'groups';
-          _context3.next = 323;
+          _context3.next = 330;
           return put(updateSearchedChannelDataAC(_channel18.id, {
             unread: _channel18.unread
           }, _groupName5));
 
-        case 323:
+        case 330:
           updateChannelOnAllChannels(_channel18.id, {
             unread: _channel18.unread
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 325:
+        case 332:
           _channel19 = args.channel;
-          _context3.next = 328;
+          _context3.next = 335;
           return put(updateChannelDataAC(_channel19.id, {
             unread: _channel19.unread
           }));
 
-        case 328:
+        case 335:
           _groupName6 = _channel19.type === CHANNEL_TYPE.DIRECT ? 'directs' : 'groups';
-          _context3.next = 331;
+          _context3.next = 338;
           return put(updateSearchedChannelDataAC(_channel19.id, {
             unread: _channel19.unread
           }, _groupName6));
 
-        case 331:
+        case 338:
           updateChannelOnAllChannels(_channel19.id, {
             unread: _channel19.unread
           });
-          return _context3.abrupt("break", 361);
+          return _context3.abrupt("break", 368);
 
-        case 333:
+        case 340:
           _channel20 = args.channel, members = args.members;
           console.log('channel CHANGE_ROLE  channel ... ', _channel20);
           console.log('channel CHANGE_ROLE  member ... ', members);
-          _context3.next = 338;
+          _context3.next = 345;
           return call(getActiveChannelId);
 
-        case 338:
+        case 345:
           _activeChannelId10 = _context3.sent;
 
           if (!(_channel20.id === _activeChannelId10)) {
-            _context3.next = 342;
+            _context3.next = 349;
             break;
           }
 
-          _context3.next = 342;
+          _context3.next = 349;
           return put(updateMembersAC(members));
 
-        case 342:
+        case 349:
           i = 0;
 
-        case 343:
+        case 350:
           if (!(i < members.length)) {
-            _context3.next = 351;
+            _context3.next = 358;
             break;
           }
 
           if (!(members[i].id === SceytChatClient.user.id)) {
-            _context3.next = 348;
+            _context3.next = 355;
             break;
           }
 
-          _context3.next = 347;
+          _context3.next = 354;
           return put(updateChannelDataAC(_channel20.id, {
             userRole: members[i].role
           }));
 
-        case 347:
+        case 354:
           updateChannelOnAllChannels(_channel20.id, {
             userRole: members[i].role
           });
 
-        case 348:
+        case 355:
           i++;
-          _context3.next = 343;
+          _context3.next = 350;
           break;
 
-        case 351:
-          return _context3.abrupt("break", 361);
+        case 358:
+          return _context3.abrupt("break", 368);
 
-        case 352:
+        case 359:
           status = args.status;
           console.log('connection status changed . . . . . ', status);
-          _context3.next = 356;
+          _context3.next = 363;
           return put(setConnectionStatusAC(status));
 
-        case 356:
+        case 363:
           if (!(status === CONNECTION_STATUS.CONNECTED)) {
-            _context3.next = 359;
+            _context3.next = 366;
             break;
           }
 
-          _context3.next = 359;
+          _context3.next = 366;
           return put(getRolesAC());
 
-        case 359:
-          return _context3.abrupt("break", 361);
+        case 366:
+          return _context3.abrupt("break", 368);
 
-        case 360:
+        case 367:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 361:
+        case 368:
           _context3.next = 5;
           break;
 
-        case 363:
+        case 370:
         case "end":
           return _context3.stop();
       }
@@ -14702,12 +14734,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 198;
+            _context.next = 199;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 148;
+            _context.next = 149;
             break;
           }
 
@@ -14821,7 +14853,7 @@ function sendMessage(action) {
 
         case 55:
           if (!customUploader) {
-            _context.next = 121;
+            _context.next = 122;
             break;
           }
 
@@ -14864,7 +14896,7 @@ function sendMessage(action) {
           _context.prev = 59;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 107;
+            _context.next = 108;
             break;
           }
 
@@ -14883,38 +14915,39 @@ function sendMessage(action) {
               attachmentId: messageAttachment.attachmentId
             }
           });
-          _context.next = 69;
+          _context.next = 70;
           break;
 
         case 66:
-          _context.next = 68;
+          console.log('start uploading. .................... ');
+          _context.next = 69;
           return call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 68:
+        case 69:
           uri = _context.sent;
 
-        case 69:
-          _context.next = 71;
+        case 70:
+          _context.next = 72;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.attachmentId));
 
-        case 71:
+        case 72:
           if (!(!messageAttachment.cachedUrl && messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 78;
+            _context.next = 79;
             break;
           }
 
-          _context.next = 74;
+          _context.next = 75;
           return call(getImageSize, filePath);
 
-        case 74:
+        case 75:
           fileSize = _context.sent;
-          _context.next = 77;
+          _context.next = 78;
           return call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 77:
+        case 78:
           thumbnailMetas = _context.sent;
 
-        case 78:
+        case 79:
           attachmentMeta = messageAttachment.cachedUrl ? messageAttachment.metadata : JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -14923,10 +14956,10 @@ function sendMessage(action) {
           attachmentBuilder = channel.createAttachmentBuilder(uri, messageAttachment.type);
           attachmentToSend = attachmentBuilder.setName(messageAttachment.name).setMetadata(attachmentMeta).setFileSize(fileSize || messageAttachment.size).setUpload(false).create();
           messageToSend.attachments = [attachmentToSend];
-          _context.next = 84;
+          _context.next = 85;
           return call(channel.sendMessage, messageToSend);
 
-        case 84:
+        case 85:
           messageResponse = _context.sent;
           messageResponse.attachments[0] = _extends({}, messageResponse.attachments[0], {
             user: JSON.parse(JSON.stringify(messageResponse.user)),
@@ -14941,10 +14974,10 @@ function sendMessage(action) {
             })], 'checksum');
           }
 
-          _context.next = 90;
+          _context.next = 91;
           return put(removeAttachmentProgressAC(messageAttachment.attachmentId));
 
-        case 90:
+        case 91:
           deletePendingAttachment(messageAttachment.attachmentId);
           messageUpdateData = {
             id: messageResponse.id,
@@ -14956,10 +14989,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 94;
+          _context.next = 95;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 94:
+        case 95:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -14977,36 +15010,36 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 103;
+            _context.next = 104;
             break;
           }
 
-          _context.next = 103;
+          _context.next = 104;
           return put(markChannelAsReadAC(channel.id));
 
-        case 103:
-          _context.next = 105;
+        case 104:
+          _context.next = 106;
           return put(updateChannelDataAC(channel.id, channelUpdateParam, true));
 
-        case 105:
-          _context.next = 108;
+        case 106:
+          _context.next = 109;
           break;
-
-        case 107:
-          throw Error('Network error');
 
         case 108:
-          _context.next = 119;
+          throw Error('Network error');
+
+        case 109:
+          _context.next = 120;
           break;
 
-        case 110:
-          _context.prev = 110;
+        case 111:
+          _context.prev = 111;
           _context.t0 = _context["catch"](59);
           console.log('Error on uploading attachment', messageAttachment.attachmentId);
-          _context.next = 115;
+          _context.next = 116;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.attachmentId));
 
-        case 115:
+        case 116:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -15016,16 +15049,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 119;
+          _context.next = 120;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 119:
-          _context.next = 146;
+        case 120:
+          _context.next = 147;
           break;
 
-        case 121:
+        case 122:
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
 
@@ -15046,10 +15079,10 @@ function sendMessage(action) {
           _attachmentToSend.attachmentId = messageAttachment.attachmentId;
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
-          _context.next = 129;
+          _context.next = 130;
           return call(channel.sendMessage, messageToSend);
 
-        case 129:
+        case 130:
           _messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.attachmentId);
           _messageUpdateData = {
@@ -15062,10 +15095,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 134;
+          _context.next = 135;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData))));
 
-        case 134:
+        case 135:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.attachmentId);
           }
@@ -15083,25 +15116,25 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 143;
+            _context.next = 144;
             break;
           }
 
-          _context.next = 143;
+          _context.next = 144;
           return put(markChannelAsReadAC(channel.id));
 
-        case 143:
-          _context.next = 145;
+        case 144:
+          _context.next = 146;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam, true));
 
-        case 145:
+        case 146:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam);
 
-        case 146:
-          _context.next = 198;
+        case 147:
+          _context.next = 199;
           break;
 
-        case 148:
+        case 149:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var attachmentBuilder = channel.createAttachmentBuilder(attachment.data, attachment.type);
             var att = attachmentBuilder.setName(attachment.name).setMetadata(attachment.metadata).setUpload(customUploader ? false : attachment.upload).create();
@@ -15139,7 +15172,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 166;
+            _context.next = 167;
             break;
           }
 
@@ -15189,12 +15222,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 160;
+          _context.next = 161;
           return call(uploadAllAttachments);
 
-        case 160:
+        case 161:
           uploadedAttachments = _context.sent;
-          _context.next = 163;
+          _context.next = 164;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -15237,12 +15270,12 @@ function sendMessage(action) {
             }
           });
 
-        case 163:
+        case 164:
           attachmentsToSend = _context.sent;
-          _context.next = 180;
+          _context.next = 181;
           break;
 
-        case 166:
+        case 167:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -15254,49 +15287,49 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 169;
+          _context.next = 170;
           return select(messagesHasNextSelector);
 
-        case 169:
+        case 170:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 178;
+            _context.next = 179;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 176;
+            _context.next = 177;
             break;
           }
 
-          _context.next = 174;
+          _context.next = 175;
           return put(getMessagesAC(channel));
 
-        case 174:
-          _context.next = 178;
+        case 175:
+          _context.next = 179;
           break;
 
-        case 176:
-          _context.next = 178;
+        case 177:
+          _context.next = 179;
           return put(addMessageAC(_extends({}, _messageCopy2)));
 
-        case 178:
+        case 179:
           addMessageToMap(channelId, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
 
-        case 180:
+        case 181:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 198;
+            _context.next = 199;
             break;
           }
 
-          _context.next = 184;
+          _context.next = 185;
           return call(channel.sendMessage, _messageToSend);
 
-        case 184:
+        case 185:
           _messageResponse2 = _context.sent;
           _messageUpdateData2 = {
             id: _messageResponse2.id,
@@ -15308,10 +15341,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 188;
+          _context.next = 189;
           return put(updateMessageAC(_messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData2))));
 
-        case 188:
+        case 189:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
@@ -15324,39 +15357,39 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 195;
+            _context.next = 196;
             break;
           }
 
-          _context.next = 195;
+          _context.next = 196;
           return put(markChannelAsReadAC(channel.id));
 
-        case 195:
-          _context.next = 197;
+        case 196:
+          _context.next = 198;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam2, true));
 
-        case 197:
+        case 198:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam2);
 
-        case 198:
-          _context.next = 200;
+        case 199:
+          _context.next = 201;
           return put(scrollToNewMessageAC(true));
 
-        case 200:
-          _context.next = 205;
+        case 201:
+          _context.next = 206;
           break;
 
-        case 202:
-          _context.prev = 202;
+        case 203:
+          _context.prev = 203;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 205:
+        case 206:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 202], [59, 110]]);
+  }, _marked$2, null, [[0, 203], [59, 111]]);
 }
 
 function sendTextMessage(action) {
@@ -31528,6 +31561,7 @@ var Files = function Files(_ref) {
       }, formatLargeText(file.name, 32)), /*#__PURE__*/React__default.createElement(FileSizeAndDate, {
         color: filePreviewSizeColor
       }, file.size ? bytesToSize(file.size) : '')), /*#__PURE__*/React__default.createElement(DownloadWrapper, {
+        visible: downloadingFilesMap[file.id],
         onClick: function onClick() {
           return handleDownloadFile(file);
         }
@@ -31558,7 +31592,9 @@ var Files = function Files(_ref) {
   }));
 };
 var Container$l = styled.ul(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled.a(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: hidden;\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])));
+var DownloadWrapper = styled.a(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: ", ";\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])), function (props) {
+  return props.visible ? 'visible' : 'hidden';
+});
 var ProgressWrapper$2 = styled.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
 var FileIconCont = styled.span(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileHoverIconCont = styled.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
