@@ -7,7 +7,7 @@ export interface IUser {
     firstName: string;
     lastName: string;
     avatarUrl?: string;
-    activityState: string;
+    state: string;
     blocked?: boolean;
     presence?: {
         state: string;
@@ -67,8 +67,8 @@ export interface IMessage {
     tid?: string;
     body: string;
     user: IUser;
-    createdAt: Date | number;
-    updatedAt?: Date | number;
+    createdAt: Date;
+    updatedAt?: Date;
     type: string;
     deliveryStatus: string;
     markerTotals: {
@@ -173,10 +173,6 @@ export interface IChannel {
 export interface IMedia extends IAttachment {
     user: IUser;
     updatedAt: Date;
-}
-export interface ICustomChannelItemProps {
-    channel: IChannel;
-    setActiveChannel: (channel: IChannel) => void;
 }
 export interface IMarker {
     messageIds: string[];

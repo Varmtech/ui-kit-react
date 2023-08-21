@@ -11,7 +11,7 @@ export declare const MESSAGE_DELIVERY_STATUS: {
     READ: string;
 };
 export declare const MESSAGE_STATUS: {
-    NONE: string;
+    UNMODIFIED: string;
     EDIT: string;
     DELETE: string;
     FAILED: string;
@@ -33,9 +33,14 @@ export declare const CHANNEL_TYPE: {
     PUBLIC: string;
     PRIVATE: string;
 };
-export declare const PRESENCE_STATUS: {
+export declare const USER_PRESENCE_STATUS: {
     OFFLINE: string;
     ONLINE: string;
+};
+export declare const USER_STATE: {
+    ACTIVE: string;
+    INACTIVE: string;
+    DELETED: string;
 };
 export declare const userSearchMethods: {
     ALL: string;
