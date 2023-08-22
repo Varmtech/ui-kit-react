@@ -13943,7 +13943,7 @@ function updateChannel(action) {
 }
 
 function checkUsersStatus() {
-  var SceytChatClient, usersForUpdate, activeChannelId, activeChannel, activeChannelUser, updatedUsers, usersToUpdateMap, update;
+  var SceytChatClient, usersForUpdate, activeChannelId, activeChannel, activeChannelUser, updatedUsers, usersToUpdateMap, update, updateData;
   return _regeneratorRuntime().wrap(function checkUsersStatus$(_context19) {
     while (1) {
       switch (_context19.prev = _context19.next) {
@@ -13980,37 +13980,38 @@ function checkUsersStatus() {
           });
 
           if (!update) {
-            _context19.next = 20;
+            _context19.next = 21;
             break;
           }
 
           console.log('update users presence - - --', usersToUpdateMap);
-          _context19.next = 16;
-          return put(updateMembersPresenceAC(Object.values(usersToUpdateMap)));
+          updateData = JSON.parse(JSON.stringify(usersToUpdateMap));
+          _context19.next = 17;
+          return put(updateMembersPresenceAC(updateData));
 
-        case 16:
-          _context19.next = 18;
-          return put(updateUserStatusOnMapAC(usersToUpdateMap));
+        case 17:
+          _context19.next = 19;
+          return put(updateUserStatusOnMapAC(updateData));
 
-        case 18:
-          _context19.next = 20;
-          return put(updateUserStatusOnChannelAC(usersToUpdateMap));
+        case 19:
+          _context19.next = 21;
+          return put(updateUserStatusOnChannelAC(updateData));
 
-        case 20:
-          _context19.next = 25;
+        case 21:
+          _context19.next = 26;
           break;
 
-        case 22:
-          _context19.prev = 22;
+        case 23:
+          _context19.prev = 23;
           _context19.t0 = _context19["catch"](0);
           console.log('ERROR in check user status : ', _context19.t0.message);
 
-        case 25:
+        case 26:
         case "end":
           return _context19.stop();
       }
     }
-  }, _marked19, null, [[0, 22]]);
+  }, _marked19, null, [[0, 23]]);
 }
 
 function sendTyping(action) {
@@ -16271,9 +16272,10 @@ function getMessagesQuery(action) {
         case 0:
           _context7.prev = 0;
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
+          console.log('getMessagesQuery ... ', action.payload);
 
           if (!channel.id) {
-            _context7.next = 111;
+            _context7.next = 112;
             break;
           }
 
@@ -16281,16 +16283,16 @@ function getMessagesQuery(action) {
           messageQueryBuilder = new SceytChatClient.MessageListQueryBuilder(channel.id);
           messageQueryBuilder.limit(limit || MESSAGES_MAX_LENGTH);
           messageQueryBuilder.reverse(true);
-          _context7.next = 9;
+          _context7.next = 10;
           return call(messageQueryBuilder.build);
 
-        case 9:
+        case 10:
           messageQuery = _context7.sent;
           query.messageQuery = messageQuery;
-          _context7.next = 13;
+          _context7.next = 14;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADING));
 
-        case 13:
+        case 14:
           cachedMessages = getMessagesFromMap(channel.id);
           result = {
             messages: [],
@@ -16298,48 +16300,48 @@ function getMessagesQuery(action) {
           };
 
           if (!loadWithLastMessage) {
-            _context7.next = 36;
+            _context7.next = 37;
             break;
           }
 
           if (!(channel.newMessageCount && channel.newMessageCount > 0)) {
-            _context7.next = 31;
+            _context7.next = 32;
             break;
           }
 
           setHasNextCached(false);
           setHasPrevCached(false);
           setAllMessages([]);
-          _context7.next = 22;
+          _context7.next = 23;
           return call(messageQuery.loadPreviousMessageId, '0');
 
-        case 22:
+        case 23:
           result = _context7.sent;
           setMessagesToMap(channel.id, result.messages);
           setAllMessages([].concat(result.messages));
-          _context7.next = 27;
+          _context7.next = 28;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 27:
-          _context7.next = 29;
+        case 28:
+          _context7.next = 30;
           return put(markChannelAsReadAC(channel.id));
 
-        case 29:
-          _context7.next = 34;
+        case 30:
+          _context7.next = 35;
           break;
 
-        case 31:
+        case 32:
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          _context7.next = 34;
+          _context7.next = 35;
           return put(setMessagesHasPrevAC(true));
 
-        case 34:
-          _context7.next = 102;
+        case 35:
+          _context7.next = 103;
           break;
 
-        case 36:
+        case 37:
           if (!messageId) {
-            _context7.next = 65;
+            _context7.next = 66;
             break;
           }
 
@@ -16350,31 +16352,31 @@ function getMessagesQuery(action) {
           maxLengthPart = MESSAGES_MAX_LENGTH / 2;
 
           if (!(messageIndex >= maxLengthPart)) {
-            _context7.next = 48;
+            _context7.next = 49;
             break;
           }
 
           result.messages = allMessages.slice(messageIndex - maxLengthPart, messageIndex + maxLengthPart);
-          _context7.next = 44;
+          _context7.next = 45;
           return put(setMessagesAC(result.messages));
 
-        case 44:
+        case 45:
           setHasPrevCached(messageIndex > maxLengthPart);
           setHasNextCached(allMessages.length > maxLengthPart);
-          _context7.next = 61;
+          _context7.next = 62;
           break;
 
-        case 48:
+        case 49:
           messageQuery.limit = MESSAGES_MAX_LENGTH;
-          _context7.next = 51;
+          _context7.next = 52;
           return call(messageQuery.loadNearMessageId, messageId);
 
-        case 51:
+        case 52:
           result = _context7.sent;
-          _context7.next = 54;
+          _context7.next = 55;
           return put(setMessagesHasNextAC(true));
 
-        case 54:
+        case 55:
           pendingMessages = getPendingMessages(channel.id);
 
           if (pendingMessages && pendingMessages.length) {
@@ -16389,25 +16391,25 @@ function getMessagesQuery(action) {
             result.messages = [].concat(result.messages, filteredPendingMessages);
           }
 
-          _context7.next = 58;
+          _context7.next = 59;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 58:
+        case 59:
           setAllMessages([].concat(result.messages));
           setHasPrevCached(false);
           setHasNextCached(false);
 
-        case 61:
-          _context7.next = 63;
+        case 62:
+          _context7.next = 64;
           return put(setScrollToMessagesAC(messageId));
 
-        case 63:
-          _context7.next = 102;
+        case 64:
+          _context7.next = 103;
           break;
 
-        case 65:
+        case 66:
           if (!(channel.newMessageCount && channel.lastDisplayedMsgId)) {
-            _context7.next = 89;
+            _context7.next = 90;
             break;
           }
 
@@ -16415,35 +16417,35 @@ function getMessagesQuery(action) {
           messageQuery.limit = MESSAGES_MAX_LENGTH;
 
           if (!Number(channel.lastDisplayedMsgId)) {
-            _context7.next = 74;
+            _context7.next = 75;
             break;
           }
 
-          _context7.next = 71;
+          _context7.next = 72;
           return call(messageQuery.loadNearMessageId, channel.lastDisplayedMsgId);
 
-        case 71:
+        case 72:
           result = _context7.sent;
-          _context7.next = 77;
+          _context7.next = 78;
           break;
 
-        case 74:
-          _context7.next = 76;
+        case 75:
+          _context7.next = 77;
           return call(messageQuery.loadPrevious);
 
-        case 76:
+        case 77:
           result = _context7.sent;
 
-        case 77:
+        case 78:
           setMessagesToMap(channel.id, result.messages);
-          _context7.next = 80;
+          _context7.next = 81;
           return put(setMessagesHasPrevAC(true));
 
-        case 80:
-          _context7.next = 82;
+        case 81:
+          _context7.next = 83;
           return put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
 
-        case 82:
+        case 83:
           _pendingMessages = getPendingMessages(channel.id);
 
           if (_pendingMessages && _pendingMessages.length) {
@@ -16459,30 +16461,30 @@ function getMessagesQuery(action) {
           }
 
           setAllMessages([].concat(result.messages));
-          _context7.next = 87;
+          _context7.next = 88;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 87:
-          _context7.next = 102;
+        case 88:
+          _context7.next = 103;
           break;
 
-        case 89:
+        case 90:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context7.next = 94;
+            _context7.next = 95;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context7.next = 94;
+          _context7.next = 95;
           return put(setMessagesAC(cachedMessages));
 
-        case 94:
-          _context7.next = 96;
+        case 95:
+          _context7.next = 97;
           return call(messageQuery.loadPrevious);
 
-        case 96:
+        case 97:
           result = _context7.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -16491,16 +16493,16 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context7.next = 100;
+          _context7.next = 101;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 100:
-          _context7.next = 102;
+        case 101:
+          _context7.next = 103;
           return put(setMessagesHasNextAC(false));
 
-        case 102:
+        case 103:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context7.next = 109;
+            _context7.next = 110;
             break;
           }
 
@@ -16520,10 +16522,10 @@ function getMessagesQuery(action) {
             }
           }
 
-          _context7.next = 106;
+          _context7.next = 107;
           return put(setMessagesAC([].concat(result.messages)));
 
-        case 106:
+        case 107:
           setMessagesToMap(channel.id, result.messages);
           setAllMessages([].concat(result.messages));
 
@@ -16532,25 +16534,25 @@ function getMessagesQuery(action) {
             setHasNextCached(false);
           }
 
-        case 109:
-          _context7.next = 111;
+        case 110:
+          _context7.next = 112;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 111:
-          _context7.next = 116;
+        case 112:
+          _context7.next = 117;
           break;
 
-        case 113:
-          _context7.prev = 113;
+        case 114:
+          _context7.prev = 114;
           _context7.t0 = _context7["catch"](0);
           console.log('error in message query', _context7.t0);
 
-        case 116:
+        case 117:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$1, null, [[0, 113]]);
+  }, _marked7$1, null, [[0, 114]]);
 }
 
 function loadMoreMessages(action) {
@@ -16562,131 +16564,132 @@ function loadMoreMessages(action) {
           _context8.prev = 0;
           payload = action.payload;
           limit = payload.limit, direction = payload.direction, channelId = payload.channelId, messageId = payload.messageId, hasNext = payload.hasNext;
+          console.log('loadMoreMessages .. .. ', payload);
           SceytChatClient = getClient();
           messageQueryBuilder = new SceytChatClient.MessageListQueryBuilder(channelId);
           messageQueryBuilder.reverse(true);
-          _context8.next = 8;
+          _context8.next = 9;
           return call(messageQueryBuilder.build);
 
-        case 8:
+        case 9:
           messageQuery = _context8.sent;
           messageQuery.limit = limit || 5;
-          _context8.next = 12;
+          _context8.next = 13;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADING));
 
-        case 12:
+        case 13:
           result = {
             messages: [],
             hasNext: false
           };
 
           if (!(direction === MESSAGE_LOAD_DIRECTION.PREV)) {
-            _context8.next = 27;
+            _context8.next = 28;
             break;
           }
 
           if (!getHasPrevCached()) {
-            _context8.next = 18;
+            _context8.next = 19;
             break;
           }
 
           result.messages = getFromAllMessagesByMessageId(messageId, MESSAGE_LOAD_DIRECTION.PREV);
-          _context8.next = 25;
+          _context8.next = 26;
           break;
 
-        case 18:
+        case 19:
           if (!hasNext) {
-            _context8.next = 25;
+            _context8.next = 26;
             break;
           }
 
-          _context8.next = 21;
+          _context8.next = 22;
           return call(messageQuery.loadPreviousMessageId, messageId);
 
-        case 21:
+        case 22:
           result = _context8.sent;
 
           if (result.messages.length) {
             addAllMessages(result.messages, MESSAGE_LOAD_DIRECTION.PREV);
           }
 
-          _context8.next = 25;
+          _context8.next = 26;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 25:
-          _context8.next = 41;
+        case 26:
+          _context8.next = 42;
           break;
 
-        case 27:
+        case 28:
           if (!getHasNextCached()) {
-            _context8.next = 31;
+            _context8.next = 32;
             break;
           }
 
           result.messages = getFromAllMessagesByMessageId(messageId, MESSAGE_LOAD_DIRECTION.NEXT);
-          _context8.next = 39;
+          _context8.next = 40;
           break;
 
-        case 31:
+        case 32:
           if (!hasNext) {
-            _context8.next = 39;
+            _context8.next = 40;
             break;
           }
 
           messageQuery.reverse = false;
-          _context8.next = 35;
+          _context8.next = 36;
           return call(messageQuery.loadNextMessageId, messageId);
 
-        case 35:
+        case 36:
           result = _context8.sent;
 
           if (result.messages.length) {
             addAllMessages(result.messages, MESSAGE_LOAD_DIRECTION.NEXT);
           }
 
-          _context8.next = 39;
+          _context8.next = 40;
           return put(setMessagesHasNextAC(result.hasNext));
 
-        case 39:
-          _context8.next = 41;
+        case 40:
+          _context8.next = 42;
           return put(setMessagesHasPrevAC(true));
 
-        case 41:
+        case 42:
           if (!(result.messages && result.messages.length && result.messages.length > 0)) {
-            _context8.next = 46;
+            _context8.next = 47;
             break;
           }
 
-          _context8.next = 44;
+          _context8.next = 45;
           return put(addMessagesAC(result.messages, direction));
 
-        case 44:
-          _context8.next = 48;
+        case 45:
+          _context8.next = 49;
           break;
 
-        case 46:
-          _context8.next = 48;
+        case 47:
+          _context8.next = 49;
           return put(addMessagesAC([], direction));
 
-        case 48:
-          _context8.next = 50;
+        case 49:
+          _context8.next = 51;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 50:
-          _context8.next = 55;
+        case 51:
+          _context8.next = 56;
           break;
 
-        case 52:
-          _context8.prev = 52;
+        case 53:
+          _context8.prev = 53;
           _context8.t0 = _context8["catch"](0);
           console.log('error in load more messages', _context8.t0);
 
-        case 55:
+        case 56:
         case "end":
           return _context8.stop();
       }
     }
-  }, _marked8$1, null, [[0, 52]]);
+  }, _marked8$1, null, [[0, 53]]);
 }
 
 function addReaction(action) {
@@ -21282,6 +21285,9 @@ var ChannelList = function ChannelList(_ref) {
 
     dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
   }, []);
+  useEffect(function () {
+    console.log('channels. ...........................', channels);
+  }, [channels]);
   return /*#__PURE__*/React__default.createElement(Container$6, {
     withCustomList: !!List,
     ref: channelListRef,
@@ -29326,10 +29332,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
           var length = reader.result && reader.result.length;
           var fileChecksum;
 
-          if (length > 500) {
-            var firstPart = reader.result && reader.result.slice(0, 100);
-            var middlePart = reader.result && reader.result.slice(length / 2 - 50, length / 2);
-            var lastPart = reader.result && reader.result.slice(length - 100, length);
+          if (length > 3000) {
+            var firstPart = reader.result && reader.result.slice(0, 1000);
+            var middlePart = reader.result && reader.result.slice(length / 2 - 500, length / 2 + 500);
+            var lastPart = reader.result && reader.result.slice(length - 1000, length);
             fileChecksum = "" + firstPart + middlePart + lastPart;
           } else {
             fileChecksum = "" + reader.result;
@@ -32386,7 +32392,7 @@ var EditChannel = function EditChannel(_ref) {
       return onOpenFileUploader();
     },
     iconWidth: '20px'
-  }, /*#__PURE__*/React__default.createElement(SvgPicture, null), /*#__PURE__*/React__default.createElement(UploadFileLabel, null, "Upload Avatar"), /*#__PURE__*/React__default.createElement(UploadFile, {
+  }, /*#__PURE__*/React__default.createElement(SvgPicture, null), /*#__PURE__*/React__default.createElement(UploadFileLabel, null, "Upload image"), /*#__PURE__*/React__default.createElement(UploadFile, {
     ref: fileUploader,
     accept: '.png,.jpeg,.jpg',
     onChange: handleFileUpload,
@@ -32397,7 +32403,7 @@ var EditChannel = function EditChannel(_ref) {
     textColor: colors.red1,
     onClick: handleToggleDeleteAvatarPopup,
     iconWidth: '20px'
-  }, /*#__PURE__*/React__default.createElement(SvgDeleteChannel, null), "Remove Avatar")))), /*#__PURE__*/React__default.createElement(Avatar, {
+  }, /*#__PURE__*/React__default.createElement(SvgDeleteChannel, null), "Delete")))), /*#__PURE__*/React__default.createElement(Avatar, {
     size: 120,
     image: newAvatar.url || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
     name: isDirectChannel && directChannelUser ? directChannelUser.id : channel.subject || channel.id,
