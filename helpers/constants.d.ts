@@ -79,3 +79,7 @@ export declare const THEME: {
     DARK: string;
     LIGHT: string;
 };
+export declare const CHANNEL_GROUP_TYPES: {
+    DIRECT_PRIVATE: string;
+    PUBLIC: string;
+};

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { FC } from 'react';
+import { IChannel, IMessage } from '../../types';
 interface MessagesProps {
     fontFamily?: string;
     ownMessageOnRightSide?: boolean;
@@ -16,6 +17,20 @@ interface MessagesProps {
     showSenderNameOnDirectChannel?: boolean;
     showSenderNameOnOwnMessages?: boolean;
     showSenderNameOnGroupChannel?: boolean;
+    MessageActionsMenu?: FC<{
+        message: IMessage;
+        channel: IChannel;
+        handleSetMessageForEdit?: () => void;
+        handleResendMessage?: () => void;
+        handleOpenDeleteMessage?: () => void;
+        handleOpenForwardMessage?: () => void;
+        handleCopyMessage?: () => void;
+        handleReportMessage?: () => void;
+        handleOpenEmojis?: () => void;
+        handleReplyMessage?: () => void;
+        isThreadMessage?: boolean;
+        rtlDirection?: boolean;
+    }>;
     showOwnAvatar?: boolean;
     messageReaction?: boolean;
     editMessage?: boolean;

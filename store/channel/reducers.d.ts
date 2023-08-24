@@ -1,4 +1,4 @@
-import { IAction, IChannel } from '../../types';
+import { IAction, IChannel, IContact } from '../../types';
 declare const _default: (state?: {
     channelsLoadingState: string | null;
     channelsForForwardLoadingState: string | null;
@@ -7,8 +7,9 @@ declare const _default: (state?: {
     channelsForForwardHasNext: boolean;
     channels: IChannel[];
     searchedChannels: {
-        groups: IChannel[];
-        directs: IChannel[];
+        chats_groups: IChannel[];
+        channels: IChannel[];
+        contacts: IContact[];
     };
     closeSearchChannel: boolean;
     channelsForForward: IChannel[];
@@ -48,8 +49,9 @@ declare const _default: (state?: {
     channelsForForwardHasNext: boolean;
     channels: IChannel[];
     searchedChannels: {
-        groups: IChannel[];
-        directs: IChannel[];
+        chats_groups: IChannel[];
+        channels: IChannel[];
+        contacts: IContact[];
     };
     closeSearchChannel: boolean;
     channelsForForward: IChannel[];

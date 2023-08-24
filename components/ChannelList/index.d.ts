@@ -1,11 +1,12 @@
 import React, { FC } from 'react';
-import { IChannel } from '../../types';
+import { IChannel, IContact } from '../../types';
 interface IChannelListProps {
     List?: FC<{
         channels: IChannel[];
         searchedChannels: {
-            groups: [];
-            directs: [];
+            chats_groups: [];
+            channels: [];
+            contacts: [];
         };
         loadMoreChannels: (count?: number) => void;
         searchValue: string;
@@ -13,7 +14,12 @@ interface IChannelListProps {
         activeChannel?: IChannel;
         setActiveChannel?: (channel: IChannel) => void;
     }>;
-    ListItem?: FC<any>;
+    ListItem?: FC<{
+        channel?: IChannel;
+        contact?: IContact;
+        setActiveChannel?: (channel: IChannel) => void;
+        createChatWithContact?: (contact: IContact) => void;
+    }>;
     Profile?: JSX.Element;
     CreateChannel?: JSX.Element;
     ChannelsTitle?: JSX.Element;
@@ -28,7 +34,7 @@ interface IChannelListProps {
     };
     limit?: number;
     sort?: 'byLastMessage' | 'byCreationDate';
-    avatar?: boolean;
+    showAvatar?: boolean;
     showSearch?: boolean;
     searchOption?: 'custom' | 'default';
     forceUpdateChannelList?: () => void;

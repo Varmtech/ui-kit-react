@@ -38,4 +38,5 @@ export declare function getChannelFromAllChannels(channelId: string): IChannel |
 export declare function deleteChannelFromAllChannels(channelId: string): void;
 export declare function updateChannelLastMessageOnAllChannels(channelId: string, message: IMessage): void;
 export declare function updateChannelOnAllChannels(channelId: string, config: any, messageUpdateData?: any): void;
+export declare const getChannelGroupName: (channel: IChannel) => string;
 export {};

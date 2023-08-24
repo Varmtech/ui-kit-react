@@ -7,8 +7,9 @@ declare const _default: import("redux").Reducer<import("redux").CombinedState<{
         channelsForForwardHasNext: boolean;
         channels: import("../types").IChannel[];
         searchedChannels: {
-            groups: import("../types").IChannel[];
-            directs: import("../types").IChannel[];
+            chats_groups: import("../types").IChannel[];
+            channels: import("../types").IChannel[];
+            contacts: import("../types").IContact[];
         };
         closeSearchChannel: boolean;
         channelsForForward: import("../types").IChannel[];

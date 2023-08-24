@@ -2,7 +2,7 @@ import React from 'react';
 import { IChannel, IContact } from '../../types';
 interface IChannelProps {
     channel: IChannel;
-    avatar?: boolean;
+    showAvatar?: boolean;
     theme?: string;
     notificationsIsMutedIcon?: JSX.Element;
     notificationsIsMutedIconColor?: string;
