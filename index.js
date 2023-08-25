@@ -7740,7 +7740,6 @@ var setCursorPosition = function setCursorPosition(element, position, isAddMenti
   }
 
   try {
-    console.log('attamt ...... ', attempt);
     console.log('set pos ... ', position);
     var range = document.createRange();
     var sel = window.getSelection();
@@ -9971,13 +9970,13 @@ var MessageText = styled__default.pre(_templateObject32 || (_templateObject32 = 
 }, function (props) {
   return props.isRepliedMessage && "\n      display: -webkit-box;\n      -webkit-line-clamp: 1;\n      -webkit-box-orient: vertical;\n      overflow: hidden;\n      text-overflow: ellipsis;\n  ";
 }, colors.blue);
-var ReplyMessageText = styled__default.span(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
+var ReplyMessageText = styled__default.span(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
 }, function (props) {
   return props.fontSize || '15px';
 }, function (props) {
   return props.lineHeight || '20px';
-}, colors.textColor1);
+}, colors.textColor1, colors.blue);
 var CloseIcon = styled__default(SvgClose)(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  box-sizing: content-box;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
@@ -10134,14 +10133,14 @@ var typingTextFormat = function typingTextFormat(_ref) {
 
   return messageText.length > 1 ? messageText : text;
 };
-var makeUsername = function makeUsername(contact, user, fromContact) {
+var makeUsername = function makeUsername(contact, user, fromContact, getFirstNameOnly) {
   var _contact$lastName;
 
   if (hideUserPresence && user && user.id && hideUserPresence(user)) {
     return user.id.charAt(0).toUpperCase() + user.id.slice(1);
   }
 
-  return fromContact && contact ? contact.firstName ? contact.firstName.trim() + " " + ((_contact$lastName = contact.lastName) === null || _contact$lastName === void 0 ? void 0 : _contact$lastName.trim()) : contact.id : user ? user.firstName ? "" + (fromContact ? '~' : '') + user.firstName.trim() + " " + user.lastName.trim() : user.id || 'Deleted user' : 'Deleted user';
+  return fromContact && contact ? contact.firstName ? getFirstNameOnly ? "" + contact.firstName.split(' ')[0] : contact.firstName.trim() + " " + ((_contact$lastName = contact.lastName) === null || _contact$lastName === void 0 ? void 0 : _contact$lastName.trim()) : contact.id : user ? user.firstName ? getFirstNameOnly ? "" + (fromContact ? '~' : '') + user.firstName.split(' ')[0] : "" + (fromContact ? '~' : '') + user.firstName.trim() + " " + user.lastName.trim() : user.id || 'Deleted user' : 'Deleted user';
 };
 var isJSON = function isJSON(str) {
   try {
@@ -12949,7 +12948,7 @@ function searchChannels(action) {
           searchBy = params.search;
 
           if (!searchBy) {
-            _context3.next = 34;
+            _context3.next = 37;
             break;
           }
 
@@ -12982,7 +12981,7 @@ function searchChannels(action) {
               }
             } else {
               if (channel.subject && channel.subject.toLowerCase().includes(lowerCaseSearchBy)) {
-                if (channel.type === CHANNEL_TYPE.PUBLIC && channel.type === CHANNEL_TYPE.BROADCAST) {
+                if (channel.type === CHANNEL_TYPE.PUBLIC || channel.type === CHANNEL_TYPE.BROADCAST) {
                   publicChannels.push(channel);
                 } else {
                   chatsGroups.push(channel);
@@ -13003,55 +13002,56 @@ function searchChannels(action) {
             });
           }
 
-          _context3.next = 21;
+          console.log('put setSearchedChannelsAC - - publicChannels -- ', publicChannels);
+          console.log('put setSearchedChannelsAC - - chatsGroups -- ', chatsGroups);
+          _context3.next = 23;
           return effects.put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
             channels: JSON.parse(JSON.stringify(publicChannels)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 21:
-          _context3.next = 23;
+        case 23:
+          _context3.next = 25;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 23:
+        case 25:
           channelQueryBuilder.subjectContains(searchBy);
           channelQueryBuilder.sortByLastMessage();
           channelQueryBuilder.limit(params.limit || 50);
-          _context3.next = 28;
+          _context3.next = 30;
           return effects.call(channelQueryBuilder.build);
 
-        case 28:
+        case 30:
           channelQuery = _context3.sent;
-          _context3.next = 31;
+          _context3.next = 33;
           return effects.call(channelQuery.loadNextPage);
 
-        case 31:
+        case 33:
           channelsData = _context3.sent;
-          _context3.next = 34;
+          console.log('searched channel data ..... ... ', channelsData);
+          _context3.next = 37;
           return effects.put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
-            channels: JSON.parse(JSON.stringify([].concat(channelsData.channels, publicChannels).sort(function (a, b) {
-              return (a.lastMessage ? a.lastMessage.createdAt : a.createdAt) - (b.lastMessage ? b.lastMessage.createdAt : b.createdAt);
-            }).reverse())),
+            channels: JSON.parse(JSON.stringify(channelsData.channels)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 34:
-          _context3.next = 40;
+        case 37:
+          _context3.next = 43;
           break;
 
-        case 36:
-          _context3.prev = 36;
+        case 39:
+          _context3.prev = 39;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0, 'Error on get channels');
 
-        case 40:
+        case 43:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3, null, [[0, 36]]);
+  }, _marked3, null, [[0, 39]]);
 }
 
 function getChannelsForForward(action) {
@@ -14277,7 +14277,10 @@ function deleteAllMessages(action) {
 
         case 18:
           _context22.next = 20;
-          return effects.put(updateChannelLastMessageAC({}, channel));
+          return effects.put(updateChannelDataAC(channel.id, {
+            lastMessage: null,
+            unreadMessageCount: 0
+          }));
 
         case 20:
           _context22.next = 25;
@@ -19329,15 +19332,15 @@ var Channel = function Channel(_ref) {
     typing: typingIndicator
   }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
-  }, typingIndicator ? getFromContacts ? contactsMap[typingIndicator.from.id] && contactsMap[typingIndicator.from.id].firstName ? contactsMap[typingIndicator.from.id].firstName.split(' ')[0] : typingIndicator.from.id : typingIndicator.from && typingIndicator.from.firstName || typingIndicator.from.id : '')) : null : draftMessageText ? /*#__PURE__*/React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
+  }, makeUsername(contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts, true))) : null : draftMessageText ? /*#__PURE__*/React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
     theme: theme
   }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
-  }, channel.newReactions[0].user.id === user.id ? 'You' : contactsMap[channel.newReactions[0].user.id] && contactsMap[channel.newReactions[0].user.id].firstName ? contactsMap[channel.newReactions[0].user.id].firstName : channel.newReactions[0].user.id || 'Deleted')) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
+  }, channel.newReactions[0].user.id === user.id ? 'You' : makeUsername(contactsMap[channel.newReactions[0].user.id], channel.newReactions[0].user, getFromContacts, true))) : lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (lastMessage.user && lastMessage.user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
     theme: theme
   }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
-  }, lastMessage.user.id === user.id ? 'You' : contactsMap[lastMessage.user.id] && contactsMap[lastMessage.user.id].firstName ? contactsMap[lastMessage.user.id].firstName : lastMessage.user.id || 'Deleted')), (isDirectChannel ? !typingIndicator && (draftMessageText || lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? channel.newReactions[0].user && channel.newReactions[0].user.id === user.id : lastMessage.user.id === user.id)) : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && /*#__PURE__*/React__default.createElement(Points, {
+  }, lastMessage.user.id === user.id ? 'You' : makeUsername(contactsMap[lastMessage.user.id], lastMessage.user, getFromContacts, true))), (isDirectChannel ? !typingIndicator && (draftMessageText || lastMessage.user && lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? channel.newReactions[0].user && channel.newReactions[0].user.id === user.id : lastMessage.user.id === user.id)) : typingIndicator || lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && lastMessage.type !== 'system') && /*#__PURE__*/React__default.createElement(Points, {
     color: draftMessageText && colors.red1
   }, ": "), /*#__PURE__*/React__default.createElement(LastMessageText, {
     withAttachments: !!(lastMessage && lastMessage.attachments && lastMessage.attachments.length && lastMessage.attachments[0].type !== attachmentTypes.link) && !typingIndicator,
@@ -25263,6 +25266,7 @@ function ForwardMessagePopup(_ref) {
     var isSelected = selectedChannels.findIndex(function (chan) {
       return chan.id === channel.id;
     }) >= 0;
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
     var directChannelUser = channel.members.find(function (member) {
       return member.id !== user.id;
     });
@@ -25277,7 +25281,7 @@ function ForwardMessagePopup(_ref) {
       size: 40,
       textSize: 12,
       setDefaultAvatar: true
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User'), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, isDirectChannel ? directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User' : channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
       index: channel.id,
       disabled: selectedChannels.length >= 5 && !isSelected,
       state: isSelected,
@@ -29162,12 +29166,16 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setMentionTyping(false);
 
     if (setPending) {
-      setPendingMentions([].concat(pendingMentions, [_extends({}, currentMentions, {
-        end: currentMentions.start + 1 + currentMentions.typed.length
-      })]));
-      console.log('set pending mentions... .', [].concat(pendingMentions, [_extends({}, currentMentions, {
-        end: currentMentions.start + 1 + currentMentions.typed.length
-      })]));
+      setPendingMentions([].concat(pendingMentions, [{
+        start: currentMentions.start,
+        typed: currentMentions.typed.trim(),
+        end: currentMentions.start + 1 + currentMentions.typed.trim().length
+      }]));
+      console.log('set pending mentions... .', [].concat(pendingMentions, [{
+        start: currentMentions.start,
+        typed: currentMentions.typed.trim(),
+        end: currentMentions.start + 1 + currentMentions.typed.trim().length
+      }]));
     }
 
     setCurrentMentions(undefined);
@@ -29598,7 +29606,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
       if (currentPendingMention) {
         delete currentPendingMention.end;
-        setCurrentMentions(currentPendingMention);
+        setCurrentMentions(_extends({}, currentPendingMention, {
+          typed: currentPendingMention.typed.slice(currentPendingMention.start, selectionPos - 1)
+        }));
         setMentionTyping(true);
         setOpenMention(true);
         setPendingMentions(pendingMentions.filter(function (mention) {
