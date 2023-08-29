@@ -31,6 +31,7 @@ export declare const ChannelInfo: import("styled-components").StyledComponent<"d
     avatar?: boolean | undefined;
     isMuted?: boolean | undefined;
     theme?: string | undefined;
+    uppercase?: boolean | undefined;
 }, never>;
 export declare const MutedIcon: import("styled-components").StyledComponent<"span", any, {}, never>;
 export declare const LastMessage: import("styled-components").StyledComponent<"div", any, {

@@ -77,6 +77,7 @@ export declare const SectionHeader: import("styled-components").StyledComponent<
     color?: string | undefined;
     margin?: string | undefined;
     theme?: string | undefined;
+    uppercase?: boolean | undefined;
 }, never>;
 export declare const ItemNote: import("styled-components").StyledComponent<"div", any, {
     direction: string;

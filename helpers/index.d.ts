@@ -20,6 +20,6 @@ export declare const getCaretPosition: (element: any) => number;
 export declare const setCursorPosition: (element: any, position: number, isAddMention?: boolean | undefined, attempt?: number | undefined) => void;
 export declare const placeCaretAtEnd: (el: any) => void;
 export declare const detectOS: () => string | null;
-export declare const detectBrowser: () => string | undefined;
+export declare const detectBrowser: () => string;
 export declare const getEmojisCategoryTitle: (categoryKey: string) => string;
 export declare const hashString: (str: string) => Promise<string>;
