@@ -30,7 +30,7 @@ var styled__default = _interopDefault(styled);
 var FileSaver = _interopDefault(require('file-saver'));
 var effects = require('redux-saga/effects');
 var LinkifyIt = _interopDefault(require('linkify-it'));
-var ThumbHash = _interopDefault(require('thumbhash'));
+var thumbhash = require('thumbhash');
 var Cropper = _interopDefault(require('react-easy-crop'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
 var reactCircularProgressbar = require('react-circular-progressbar');
@@ -14566,7 +14566,7 @@ var base64ToBinary = function base64ToBinary(base64) {
 };
 
 var binaryThumbHashToDataURL = function binaryThumbHashToDataURL(binaryThumbHash) {
-  return ThumbHash.thumbHashToDataURL(binaryThumbHash);
+  return thumbhash.thumbHashToDataURL(binaryThumbHash);
 };
 
 var base64ToToDataURL = function base64ToToDataURL(base64) {
@@ -14604,7 +14604,7 @@ function createImageThumbnail(file, path, maxWidth, maxHeight) {
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, newWidth, newHeight);
       var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      var binaryThumbHash = ThumbHash.rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
+      var binaryThumbHash = thumbhash.rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
       var thumbHashToBase64 = binaryToBase64(binaryThumbHash);
       resolve({
         thumbnail: thumbHashToBase64,

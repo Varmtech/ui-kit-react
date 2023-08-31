@@ -1,8 +1,8 @@
 {
   "name": "sceyt-ui-kit",
   "version": "1.0.0",
-  "description": "Made with create-react-library",
-  "author": "Varmtech",
+  "description": "Interactive React UI Components for Sceyt Chat.",
+  "author": "Sceyt",
   "license": "MIT",
   "repository": {
     "type": "git",
