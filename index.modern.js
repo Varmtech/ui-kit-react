@@ -6,7 +6,7 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import FileSaver from 'file-saver';
 import { put, call, select, take, takeLatest, takeEvery, all } from 'redux-saga/effects';
 import LinkifyIt from 'linkify-it';
-import { rgbaToThumbHash, thumbHashToDataURL } from 'thumbhash';
+import ThumbHash from 'thumbhash';
 import Cropper from 'react-easy-crop';
 import Carousel from 'react-elastic-carousel';
 import { CircularProgressbar } from 'react-circular-progressbar';
@@ -14543,7 +14543,7 @@ var base64ToBinary = function base64ToBinary(base64) {
 };
 
 var binaryThumbHashToDataURL = function binaryThumbHashToDataURL(binaryThumbHash) {
-  return thumbHashToDataURL(binaryThumbHash);
+  return ThumbHash.thumbHashToDataURL(binaryThumbHash);
 };
 
 var base64ToToDataURL = function base64ToToDataURL(base64) {
@@ -14581,7 +14581,7 @@ function createImageThumbnail(file, path, maxWidth, maxHeight) {
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, newWidth, newHeight);
       var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      var binaryThumbHash = rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
+      var binaryThumbHash = ThumbHash.rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
       var thumbHashToBase64 = binaryToBase64(binaryThumbHash);
       resolve({
         thumbnail: thumbHashToBase64,
