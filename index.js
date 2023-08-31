@@ -29170,7 +29170,6 @@ var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = 
 
 var _templateObject$z, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$c, _templateObject10$a, _templateObject11$7, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
-var browser = detectBrowser();
 
 var SendMessageInput = function SendMessageInput(_ref) {
   var handleAttachmentSelected = _ref.handleAttachmentSelected,
@@ -29283,41 +29282,45 @@ var SendMessageInput = function SendMessageInput(_ref) {
       pendingMentions = _useState12[0],
       setPendingMentions = _useState12[1];
 
-  var _useState13 = React.useState(false),
-      mentionTyping = _useState13[0],
-      setMentionTyping = _useState13[1];
+  var _useState13 = React.useState(''),
+      browser = _useState13[0],
+      setBrowser = _useState13[1];
 
-  var _useState14 = React.useState(),
-      selectionPos = _useState14[0],
-      setSelectionPos = _useState14[1];
+  var _useState14 = React.useState(false),
+      mentionTyping = _useState14[0],
+      setMentionTyping = _useState14[1];
 
   var _useState15 = React.useState(),
-      inputContainerHeight = _useState15[0],
-      setInputContainerHeight = _useState15[1];
+      selectionPos = _useState15[0],
+      setSelectionPos = _useState15[1];
 
   var _useState16 = React.useState(),
-      typingTimout = _useState16[0],
-      setTypingTimout = _useState16[1];
+      inputContainerHeight = _useState16[0],
+      setInputContainerHeight = _useState16[1];
 
   var _useState17 = React.useState(),
-      inTypingStateTimout = _useState17[0],
-      setInTypingStateTimout = _useState17[1];
+      typingTimout = _useState17[0],
+      setTypingTimout = _useState17[1];
 
-  var _useState18 = React.useState(false),
-      inTypingState = _useState18[0],
-      setInTypingState = _useState18[1];
+  var _useState18 = React.useState(),
+      inTypingStateTimout = _useState18[0],
+      setInTypingStateTimout = _useState18[1];
 
   var _useState19 = React.useState(false),
-      sendMessageIsActive = _useState19[0],
-      setSendMessageIsActive = _useState19[1];
+      inTypingState = _useState19[0],
+      setInTypingState = _useState19[1];
 
   var _useState20 = React.useState(false),
-      openMention = _useState20[0],
-      setOpenMention = _useState20[1];
+      sendMessageIsActive = _useState20[0],
+      setSendMessageIsActive = _useState20[1];
 
-  var _useState21 = React.useState([]),
-      attachments = _useState21[0],
-      setAttachments = _useState21[1];
+  var _useState21 = React.useState(false),
+      openMention = _useState21[0],
+      setOpenMention = _useState21[1];
+
+  var _useState22 = React.useState([]),
+      attachments = _useState22[0],
+      setAttachments = _useState22[1];
 
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
@@ -30515,6 +30518,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   }, [messageToEdit]);
   React.useEffect(function () {
+    setBrowser(detectBrowser());
+
     if (handleSendMessage) {
       setSendMessageHandler(handleSendMessage);
     }
