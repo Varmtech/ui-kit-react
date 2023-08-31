@@ -30,7 +30,6 @@ var styled__default = _interopDefault(styled);
 var FileSaver = _interopDefault(require('file-saver'));
 var effects = require('redux-saga/effects');
 var LinkifyIt = _interopDefault(require('linkify-it'));
-var thumbhash = require('thumbhash');
 var Cropper = _interopDefault(require('react-easy-crop'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
 var reactCircularProgressbar = require('react-circular-progressbar');
@@ -14516,6 +14515,280 @@ function ChannelsSaga() {
   }, _marked25);
 }
 
+function rgbaToThumbHash(w, h, rgba) {
+  if (w > 100 || h > 100) throw new Error(w + "x" + h + " doesn't fit in 100x100");
+  var PI = Math.PI,
+      round = Math.round,
+      max = Math.max,
+      cos = Math.cos,
+      abs = Math.abs;
+  var avg_r = 0;
+  var avg_g = 0;
+  var avg_b = 0;
+  var avg_a = 0;
+
+  for (var i = 0, j = 0; i < w * h; i++, j += 4) {
+    var alpha = rgba[j + 3] / 255;
+    avg_r += alpha / 255 * rgba[j];
+    avg_g += alpha / 255 * rgba[j + 1];
+    avg_b += alpha / 255 * rgba[j + 2];
+    avg_a += alpha;
+  }
+
+  if (avg_a) {
+    avg_r /= avg_a;
+    avg_g /= avg_a;
+    avg_b /= avg_a;
+  }
+
+  var hasAlpha = avg_a < w * h;
+  var l_limit = hasAlpha ? 5 : 7;
+  var lx = max(1, round(l_limit * w / max(w, h)));
+  var ly = max(1, round(l_limit * h / max(w, h)));
+  var l = [];
+  var p = [];
+  var q = [];
+  var a = [];
+
+  for (var _i = 0, _j = 0; _i < w * h; _i++, _j += 4) {
+    var _alpha = rgba[_j + 3] / 255;
+
+    var r = avg_r * (1 - _alpha) + _alpha / 255 * rgba[_j];
+    var g = avg_g * (1 - _alpha) + _alpha / 255 * rgba[_j + 1];
+    var b = avg_b * (1 - _alpha) + _alpha / 255 * rgba[_j + 2];
+    l[_i] = (r + g + b) / 3;
+    p[_i] = (r + g) / 2 - b;
+    q[_i] = r - g;
+    a[_i] = _alpha;
+  }
+
+  var encodeChannel = function encodeChannel(channel, nx, ny) {
+    var dc = 0;
+    var ac = [];
+    var scale = 0;
+    var fx = [];
+
+    for (var cy = 0; cy < ny; cy++) {
+      for (var cx = 0; cx * ny < nx * (ny - cy); cx++) {
+        var f = 0;
+
+        for (var x = 0; x < w; x++) {
+          fx[x] = cos(PI / w * cx * (x + 0.5));
+        }
+
+        for (var y = 0; y < h; y++) {
+          for (var _x = 0, fy = cos(PI / h * cy * (y + 0.5)); _x < w; _x++) {
+            f += channel[_x + y * w] * fx[_x] * fy;
+          }
+        }
+
+        f /= w * h;
+
+        if (cx || cy) {
+          ac.push(f);
+          scale = max(scale, abs(f));
+        } else {
+          dc = f;
+        }
+      }
+    }
+
+    if (scale) for (var _i2 = 0; _i2 < ac.length; _i2++) {
+      ac[_i2] = 0.5 + 0.5 / scale * ac[_i2];
+    }
+    return [dc, ac, scale];
+  };
+
+  var _encodeChannel = encodeChannel(l, max(3, lx), max(3, ly)),
+      l_dc = _encodeChannel[0],
+      l_ac = _encodeChannel[1],
+      l_scale = _encodeChannel[2];
+
+  var _encodeChannel2 = encodeChannel(p, 3, 3),
+      p_dc = _encodeChannel2[0],
+      p_ac = _encodeChannel2[1],
+      p_scale = _encodeChannel2[2];
+
+  var _encodeChannel3 = encodeChannel(q, 3, 3),
+      q_dc = _encodeChannel3[0],
+      q_ac = _encodeChannel3[1],
+      q_scale = _encodeChannel3[2];
+
+  var _ref = hasAlpha ? encodeChannel(a, 5, 5) : [],
+      a_dc = _ref[0],
+      a_ac = _ref[1],
+      a_scale = _ref[2];
+
+  var isLandscape = w > h;
+  var header24 = round(63 * l_dc) | round(31.5 + 31.5 * p_dc) << 6 | round(31.5 + 31.5 * q_dc) << 12 | round(31 * l_scale) << 18 | hasAlpha << 23;
+  var header16 = (isLandscape ? ly : lx) | round(63 * p_scale) << 3 | round(63 * q_scale) << 9 | isLandscape << 15;
+  var hash = [header24 & 255, header24 >> 8 & 255, header24 >> 16, header16 & 255, header16 >> 8];
+  var ac_start = hasAlpha ? 6 : 5;
+  var ac_index = 0;
+  if (hasAlpha) hash.push(round(15 * a_dc) | round(15 * a_scale) << 4);
+
+  for (var _i3 = 0, _arr = hasAlpha ? [l_ac, p_ac, q_ac, a_ac] : [l_ac, p_ac, q_ac]; _i3 < _arr.length; _i3++) {
+    var ac = _arr[_i3];
+
+    for (var _iterator = _createForOfIteratorHelperLoose(ac), _step; !(_step = _iterator()).done;) {
+      var f = _step.value;
+      hash[ac_start + (ac_index >> 1)] |= round(15 * f) << ((ac_index++ & 1) << 2);
+    }
+  }
+
+  return new Uint8Array(hash);
+}
+function thumbHashToRGBA(hash) {
+  var PI = Math.PI,
+      min = Math.min,
+      max = Math.max,
+      cos = Math.cos,
+      round = Math.round;
+  var header24 = hash[0] | hash[1] << 8 | hash[2] << 16;
+  var header16 = hash[3] | hash[4] << 8;
+  var l_dc = (header24 & 63) / 63;
+  var p_dc = (header24 >> 6 & 63) / 31.5 - 1;
+  var q_dc = (header24 >> 12 & 63) / 31.5 - 1;
+  var l_scale = (header24 >> 18 & 31) / 31;
+  var hasAlpha = header24 >> 23;
+  var p_scale = (header16 >> 3 & 63) / 63;
+  var q_scale = (header16 >> 9 & 63) / 63;
+  var isLandscape = header16 >> 15;
+  var lx = max(3, isLandscape ? hasAlpha ? 5 : 7 : header16 & 7);
+  var ly = max(3, isLandscape ? header16 & 7 : hasAlpha ? 5 : 7);
+  var a_dc = hasAlpha ? (hash[5] & 15) / 15 : 1;
+  var a_scale = (hash[5] >> 4) / 15;
+  var ac_start = hasAlpha ? 6 : 5;
+  var ac_index = 0;
+
+  var decodeChannel = function decodeChannel(nx, ny, scale) {
+    var ac = [];
+
+    for (var cy = 0; cy < ny; cy++) {
+      for (var cx = cy ? 0 : 1; cx * ny < nx * (ny - cy); cx++) {
+        ac.push(((hash[ac_start + (ac_index >> 1)] >> ((ac_index++ & 1) << 2) & 15) / 7.5 - 1) * scale);
+      }
+    }
+
+    return ac;
+  };
+
+  var l_ac = decodeChannel(lx, ly, l_scale);
+  var p_ac = decodeChannel(3, 3, p_scale * 1.25);
+  var q_ac = decodeChannel(3, 3, q_scale * 1.25);
+  var a_ac = hasAlpha && decodeChannel(5, 5, a_scale);
+  var ratio = thumbHashToApproximateAspectRatio(hash);
+  var w = round(ratio > 1 ? 32 : 32 * ratio);
+  var h = round(ratio > 1 ? 32 / ratio : 32);
+  var rgba = new Uint8Array(w * h * 4);
+  var fx = [];
+  var fy = [];
+
+  for (var y = 0, i = 0; y < h; y++) {
+    for (var x = 0; x < w; x++, i += 4) {
+      var l = l_dc;
+      var p = p_dc;
+      var q = q_dc;
+      var a = a_dc;
+
+      for (var cx = 0, n = max(lx, hasAlpha ? 5 : 3); cx < n; cx++) {
+        fx[cx] = cos(PI / w * (x + 0.5) * cx);
+      }
+
+      for (var cy = 0, _n = max(ly, hasAlpha ? 5 : 3); cy < _n; cy++) {
+        fy[cy] = cos(PI / h * (y + 0.5) * cy);
+      }
+
+      for (var _cy = 0, j = 0; _cy < ly; _cy++) {
+        for (var _cx = _cy ? 0 : 1, fy2 = fy[_cy] * 2; _cx * ly < lx * (ly - _cy); _cx++, j++) {
+          l += l_ac[j] * fx[_cx] * fy2;
+        }
+      }
+
+      for (var _cy2 = 0, _j2 = 0; _cy2 < 3; _cy2++) {
+        for (var _cx2 = _cy2 ? 0 : 1, _fy = fy[_cy2] * 2; _cx2 < 3 - _cy2; _cx2++, _j2++) {
+          var f = fx[_cx2] * _fy;
+          p += p_ac[_j2] * f;
+          q += q_ac[_j2] * f;
+        }
+      }
+
+      if (hasAlpha) for (var _cy3 = 0, _j3 = 0; _cy3 < 5; _cy3++) {
+        for (var _cx3 = _cy3 ? 0 : 1, _fy2 = fy[_cy3] * 2; _cx3 < 5 - _cy3; _cx3++, _j3++) {
+          a += a_ac[_j3] * fx[_cx3] * _fy2;
+        }
+      }
+      var b = l - 2 / 3 * p;
+      var r = (3 * l - b + q) / 2;
+      var g = r - q;
+      rgba[i] = max(0, 255 * min(1, r));
+      rgba[i + 1] = max(0, 255 * min(1, g));
+      rgba[i + 2] = max(0, 255 * min(1, b));
+      rgba[i + 3] = max(0, 255 * min(1, a));
+    }
+  }
+
+  return {
+    w: w,
+    h: h,
+    rgba: rgba
+  };
+}
+function thumbHashToApproximateAspectRatio(hash) {
+  var header = hash[3];
+  var hasAlpha = hash[2] & 0x80;
+  var isLandscape = hash[4] & 0x80;
+  var lx = isLandscape ? hasAlpha ? 5 : 7 : header & 7;
+  var ly = isLandscape ? header & 7 : hasAlpha ? 5 : 7;
+  return lx / ly;
+}
+function rgbaToDataURL(w, h, rgba) {
+  var row = w * 4 + 1;
+  var idat = 6 + h * (5 + row);
+  var bytes = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, w >> 8, w & 255, 0, 0, h >> 8, h & 255, 8, 6, 0, 0, 0, 0, 0, 0, 0, idat >>> 24, idat >> 16 & 255, idat >> 8 & 255, idat & 255, 73, 68, 65, 84, 120, 1];
+  var table = [0, 498536548, 997073096, 651767980, 1994146192, 1802195444, 1303535960, 1342533948, -306674912, -267414716, -690576408, -882789492, -1687895376, -2032938284, -1609899400, -1111625188];
+  var a = 1;
+  var b = 0;
+
+  for (var y = 0, i = 0, end = row - 1; y < h; y++, end += row - 1) {
+    bytes.push(y + 1 < h ? 0 : 1, row & 255, row >> 8, ~row & 255, row >> 8 ^ 255, 0);
+
+    for (b = (b + a) % 65521; i < end; i++) {
+      var u = rgba[i] & 255;
+      bytes.push(u);
+      a = (a + u) % 65521;
+      b = (b + a) % 65521;
+    }
+  }
+
+  bytes.push(b >> 8, b & 255, a >> 8, a & 255, 0, 0, 0, 0, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130);
+
+  for (var _i4 = 0, _arr2 = [[12, 29], [37, 41 + idat]]; _i4 < _arr2.length; _i4++) {
+    var _arr2$_i = _arr2[_i4],
+        start = _arr2$_i[0],
+        _end = _arr2$_i[1];
+    var c = ~0;
+
+    for (var _i5 = start; _i5 < _end; _i5++) {
+      c ^= bytes[_i5];
+      c = c >>> 4 ^ table[c & 15];
+      c = c >>> 4 ^ table[c & 15];
+    }
+
+    c = ~c;
+    bytes[_end++] = c >>> 24;
+    bytes[_end++] = c >> 16 & 255;
+    bytes[_end++] = c >> 8 & 255;
+    bytes[_end++] = c & 255;
+  }
+
+  return 'data:image/png;base64,' + btoa(String.fromCharCode.apply(String, bytes));
+}
+function thumbHashToDataURL(hash) {
+  var image = thumbHashToRGBA(hash);
+  return rgbaToDataURL(image.w, image.h, image.rgba);
+}
+
 var MAX_WIDTH = 1280;
 var MAX_HEIGHT = 1080;
 var MIME_TYPE = 'image/jpeg';
@@ -14566,7 +14839,7 @@ var base64ToBinary = function base64ToBinary(base64) {
 };
 
 var binaryThumbHashToDataURL = function binaryThumbHashToDataURL(binaryThumbHash) {
-  return thumbhash.thumbHashToDataURL(binaryThumbHash);
+  return thumbHashToDataURL(binaryThumbHash);
 };
 
 var base64ToToDataURL = function base64ToToDataURL(base64) {
@@ -14604,7 +14877,7 @@ function createImageThumbnail(file, path, maxWidth, maxHeight) {
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, newWidth, newHeight);
       var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      var binaryThumbHash = thumbhash.rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
+      var binaryThumbHash = rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
       var thumbHashToBase64 = binaryToBase64(binaryThumbHash);
       resolve({
         thumbnail: thumbHashToBase64,
