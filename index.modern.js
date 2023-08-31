@@ -30161,7 +30161,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
                           upload: !cachedUrl,
                           type: 'file',
                           size: dataFromDb ? dataFromDb.size : file.size,
-                          attachmentUrl: URL.createObjectURL(file),
+                          metadata: dataFromDb && dataFromDb.metadata,
                           attachmentId: attachmentId
                         }]);
                       });
