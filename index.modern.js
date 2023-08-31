@@ -7896,14 +7896,29 @@ var getEmojisCategoryTitle = function getEmojisCategoryTitle(categoryKey) {
 };
 var hashString = function hashString(str) {
   try {
-    var encoder = new TextEncoder();
-    var encodedData = encoder.encode(str);
-    return Promise.resolve(crypto.subtle.digest('SHA-256', encodedData)).then(function (hashBuffer) {
+    var _temp4 = function _temp4(_result) {
+      if (_exit2) return _result;
       var hashArray = Array.from(new Uint8Array(hashBuffer));
       return hashArray.map(function (_byte) {
         return _byte.toString(16).padStart(2, '0');
       }).join('');
+    };
+
+    var _exit2 = false;
+    var encoder = new TextEncoder();
+    var encodedData = encoder.encode(str);
+    var hashBuffer;
+
+    var _temp5 = _catch(function () {
+      return Promise.resolve(crypto.subtle.digest('SHA-256', encodedData)).then(function (_crypto$subtle$digest) {
+        hashBuffer = _crypto$subtle$digest;
+      });
+    }, function () {
+      _exit2 = true;
+      return '';
     });
+
+    return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
   } catch (e) {
     return Promise.reject(e);
   }
