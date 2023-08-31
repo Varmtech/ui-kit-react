@@ -31163,7 +31163,7 @@ var Actions$1 = function Actions(_ref) {
   var directChannelUser = isDirectChannel && channel.members.find(function (member) {
     return member.id !== user.id;
   });
-  var disableAction = directChannelUser && hideUserPresence(directChannelUser);
+  var disableAction = directChannelUser && hideUserPresence && hideUserPresence(directChannelUser);
   var otherMembers = isDirectChannel && channel.members.filter(function (member) {
     return member.id && member.id !== user.id;
   }) || [];
