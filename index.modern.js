@@ -23914,7 +23914,7 @@ function SvgCancel(props) {
   })));
 }
 
-var _path$M, _path2$5, _path3$2;
+var _rect$1, _path$M;
 
 function _extends$N() {
   _extends$N = Object.assign ? Object.assign.bind() : function (target) {
@@ -23937,25 +23937,17 @@ function SvgFileIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$N({
     width: 40,
     height: 40,
+    viewBox: "0 0 40.01 40.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
-    d: "M19.5 3H9a3 3 0 00-3 3v24a3 3 0 003 3h18a3 3 0 003-3V13.5L19.5 3z",
-    stroke: "#2F81FF",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
-    d: "M19.5 3v10.5H30",
-    stroke: "#2F81FF",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })), _path3$2 || (_path3$2 = /*#__PURE__*/createElement("path", {
-    d: "M12 19h12M12 23h8",
-    stroke: "#2F81FF",
-    strokeWidth: 1.4,
-    strokeLinecap: "round"
+  }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 20,
+    fill: "Transparent"
+  })), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
+    d: "M22.48 10.097c.298.068.56.177.819.338.258.162.468.332 1.015.88l3.372 3.37c.547.548.717.758.879 1.016.161.258.27.521.338.818.069.297.097.565.097 1.34v7.295c0 1.337-.14 1.822-.4 2.311a2.726 2.726 0 01-1.135 1.134c-.489.262-.974.401-2.31.401h-9.31c-1.337 0-1.821-.14-2.31-.4a2.726 2.726 0 01-1.134-1.135c-.262-.489-.401-.974-.401-2.31v-11.31c0-1.337.14-1.821.4-2.31a2.726 2.726 0 011.135-1.134c.489-.262.973-.401 2.31-.401h5.296c.775 0 1.043.028 1.34.097zm-.68 1.827a.3.3 0 00-.3.3V16a.5.5 0 00.5.5h3.776a.3.3 0 00.212-.512l-3.976-3.976a.3.3 0 00-.212-.088z",
+    fill: "#fff"
   })));
 }
 
@@ -25929,7 +25921,7 @@ function SvgEmojiAnimalIcon(props) {
   })));
 }
 
-var _path$T, _path2$6, _path3$3;
+var _path$T, _path2$5, _path3$2;
 
 function _extends$U() {
   _extends$U = Object.assign ? Object.assign.bind() : function (target) {
@@ -25960,12 +25952,12 @@ function SvgEmojiFoodIcon(props) {
     clipRule: "evenodd",
     d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
     fill: "CurrentColor"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
+  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M10.083 2.222c-.616.616-.81 1.522-.797 2.367a6.008 6.008 0 00-1.905-.306c-3.438 0-5.952 2.45-5.952 5.858 0 1.644.588 3.698 1.574 5.35.968 1.622 2.465 3.08 4.378 3.08a5.98 5.98 0 002.62-.596 5.98 5.98 0 002.618.597c1.914 0 3.41-1.46 4.378-3.081.986-1.652 1.574-3.706 1.574-5.35 0-3.208-2.229-5.568-5.36-5.833.223-.434.307-.893.34-1.244.049-.518-.016-1.016-.09-1.528-.513-.072-1.01-.14-1.528-.09-.524.048-1.288.213-1.85.776zM7.38 5.712c-2.674 0-4.524 1.835-4.524 4.43 0 1.356.503 3.16 1.372 4.616.887 1.486 2.01 2.385 3.152 2.385.758 0 1.454-.178 2.075-.492a1.206 1.206 0 011.088 0 4.55 4.55 0 002.075.492c1.142 0 2.265-.899 3.152-2.385.869-1.456 1.372-3.26 1.372-4.617 0-2.594-1.85-4.43-4.524-4.43a4.57 4.57 0 00-2.073.493 1.206 1.206 0 01-1.09 0 4.551 4.551 0 00-2.075-.492zm3.341-1.437c.362-.026.776-.105 1.043-.37.265-.267.344-.682.37-1.043-.361.026-.776.104-1.042.37-.266.267-.345.681-.37 1.043z",
     fill: "CurrentColor"
-  })), _path3$3 || (_path3$3 = /*#__PURE__*/createElement("path", {
+  })), _path3$2 || (_path3$2 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M12.857 7.14a.714.714 0 000 1.43c.458 0 .807.15 1.037.374.227.221.392.565.392 1.054a.714.714 0 101.428 0c0-.83-.289-1.557-.824-2.078-.532-.518-1.254-.78-2.033-.78z",
@@ -30784,7 +30776,7 @@ function SvgBottom(props) {
   })));
 }
 
-var _path$11, _path2$7;
+var _path$11, _path2$6;
 
 function _extends$13() {
   _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30813,7 +30805,7 @@ function SvgMarkAsUnRead(props) {
   }, props), _path$11 || (_path$11 = /*#__PURE__*/createElement("path", {
     d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
     fill: "currentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
     d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
     fill: "currentColor"
   })));
@@ -30949,7 +30941,7 @@ function SvgBlockChannel(props) {
   })));
 }
 
-var _path$16, _path2$8;
+var _path$16, _path2$7;
 
 function _extends$18() {
   _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30977,7 +30969,7 @@ function SvgReport(props) {
   }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
     d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
     fill: "CurrentColor"
-  })), _path2$8 || (_path2$8 = /*#__PURE__*/createElement("path", {
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
@@ -31517,7 +31509,7 @@ var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _tagged
   return props.hoverColor || colors.blue;
 });
 
-var _rect$1, _rect2, _path$19;
+var _rect$2, _rect2, _path$19;
 
 function _extends$1b() {
   _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
@@ -31543,7 +31535,7 @@ function SvgAddMember(props) {
     viewBox: "0 0 40.01 40.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 20,
@@ -32040,7 +32032,7 @@ var Media = function Media(_ref) {
 var Container$l = styled.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$1b, _path2$9, _path3$4;
+var _path$1b, _path2$8, _path3$3;
 
 function _extends$1d() {
   _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
@@ -32072,13 +32064,13 @@ function SvgFileIcon$1(props) {
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path2$9 || (_path2$9 = /*#__PURE__*/createElement("path", {
+  })), _path2$8 || (_path2$8 = /*#__PURE__*/createElement("path", {
     d: "M16.25 2.5v8.75H25",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path3$4 || (_path3$4 = /*#__PURE__*/createElement("path", {
+  })), _path3$3 || (_path3$3 = /*#__PURE__*/createElement("path", {
     d: "M10 15.834h10M10 19.166h6.667",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -32086,7 +32078,7 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$1c, _path2$a;
+var _path$1c, _path2$9;
 
 function _extends$1e() {
   _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
@@ -32117,7 +32109,7 @@ function SvgDownloadFile(props) {
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path2$a || (_path2$a = /*#__PURE__*/createElement("path", {
+  })), _path2$9 || (_path2$9 = /*#__PURE__*/createElement("path", {
     d: "M4.833 7.334L9 11.501l4.167-4.167M9 11.5v-10",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -32251,7 +32243,7 @@ var FileSizeAndDate = styled.span(_templateObject8$f || (_templateObject8$f = _t
   return props.color || colors.textColor1;
 });
 
-var _rect$2, _rect2$1, _g$1, _defs$1;
+var _rect$3, _rect2$1, _g$1, _defs$1;
 
 function _extends$1f() {
   _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
@@ -32276,7 +32268,7 @@ function SvgLinkIcon(props) {
     height: 42,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$2 || (_rect$2 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/createElement("rect", {
     width: 42,
     height: 42,
     rx: 6,
@@ -32372,7 +32364,7 @@ var Links = function Links(_ref) {
 };
 var Container$n = styled.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$3, _circle$6, _path$1d;
+var _rect$4, _circle$6, _path$1d;
 
 function _extends$1g() {
   _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
@@ -32397,7 +32389,7 @@ function SvgVoicePreview(props) {
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$3 || (_rect$3 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
@@ -32413,7 +32405,7 @@ function SvgVoicePreview(props) {
   })));
 }
 
-var _rect$4, _circle$7, _path$1e;
+var _rect$5, _circle$7, _path$1e;
 
 function _extends$1h() {
   _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
@@ -32438,7 +32430,7 @@ function SvgVoicePreviewPause(props) {
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
@@ -32454,7 +32446,7 @@ function SvgVoicePreviewPause(props) {
   })));
 }
 
-var _rect$5, _circle$8, _path$1f;
+var _rect$6, _circle$8, _path$1f;
 
 function _extends$1i() {
   _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
@@ -32479,7 +32471,7 @@ function SvgVoicePreviewHoverIcon(props) {
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$6 || (_rect$6 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
@@ -32495,7 +32487,7 @@ function SvgVoicePreviewHoverIcon(props) {
   })));
 }
 
-var _rect$6, _circle$9, _path$1g;
+var _rect$7, _circle$9, _path$1g;
 
 function _extends$1j() {
   _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
@@ -32520,7 +32512,7 @@ function SvgVoicePreviewPauseHover(props) {
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$6 || (_rect$6 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$7 || (_rect$7 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
