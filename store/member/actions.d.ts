@@ -1,4 +1,4 @@
-import { IAddMember, IMember, IRole } from '../../types';
+import { IAddMember, IMember, IRole, IUser } from '../../types';
 export declare function getMembersAC(channelId: string): {
     type: string;
     payload: {
@@ -23,10 +23,14 @@ export declare function updateMembersAC(members: IMember[]): {
         members: IMember[];
     };
 };
-export declare function updateMembersPresenceAC(members: IMember[]): {
+export declare function updateMembersPresenceAC(usersMap: {
+    [key: string]: IUser;
+}): {
     type: string;
     payload: {
-        members: IMember[];
+        usersMap: {
+            [key: string]: IUser;
+        };
     };
 };
 export declare function loadMoreMembersAC(limit: number): {

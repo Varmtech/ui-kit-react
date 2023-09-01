@@ -37,7 +37,7 @@ export interface IAttachment {
     createdAt: Date;
     upload: boolean;
     user?: IUser;
-    attachmentId?: string;
+    tid?: string;
     attachmentUrl: string;
     data: any;
 }
