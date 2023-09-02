@@ -24180,6 +24180,42 @@ var getFrame3 = function getFrame3(video, time) {
     return Promise.reject(e);
   }
 };
+var getFrame = function getFrame(videoSrc, time) {
+  try {
+    var video = document.createElement('video');
+    video.src = videoSrc;
+    return Promise.resolve(new Promise(function (resolve, reject) {
+      if (videoSrc) {
+        var b = setInterval(function () {
+          if (video.readyState >= 3) {
+            if (time) {
+              video.currentTime = time;
+            }
+
+            var canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            var ctx = canvas.getContext('2d');
+            video.currentTime = 10;
+            ctx.drawImage(video, 0, 0);
+            console.log('canvas.toDataURL() resized ... ', canvas.toDataURL('', 0.7));
+            var thumb = canvas.toDataURL('', 0.7).replace('data:image/jpeg;base64,', '');
+            clearInterval(b);
+            resolve({
+              thumb: thumb,
+              width: video.videoWidth,
+              height: video.videoHeight
+            });
+          }
+        }, 500);
+      } else {
+        reject(new Error('src not found'));
+      }
+    }));
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
 var _templateObject$n, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$9, _templateObject6$8, _templateObject7$7;
 var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
@@ -24740,13 +24776,6 @@ var Attachment = function Attachment(_ref) {
   console.log('attachment.metadata.szh .  .. . . ', attachment.metadata.szh);
   console.log('renderWidth .  .. . . ', renderWidth);
   console.log('renderHeight .  .. . . ', renderHeight);
-
-  if (!renderHeight && !renderWidth && attachment.type !== attachmentTypes.image) {
-    console.log('set default renderHeight and renderWidth ,, , ,,  ', [420, 240]);
-    renderHeight = 240;
-    renderWidth = 420;
-  }
-
   var isInUploadingState = attachmentCompilationState[attachment.tid] && (attachmentCompilationState[attachment.tid] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.tid] === UPLOAD_STATE.PAUSED);
   var attachmentThumb;
   var withPrefix = true;
@@ -25132,8 +25161,8 @@ var Attachment = function Attachment(_ref) {
     }
   })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, /*#__PURE__*/React__default.createElement(VideoPreview, {
     theme: theme,
-    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : renderWidth + "px",
-    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : renderHeight + "px",
+    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderWidth || 420) + "px",
+    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderHeight || 240) + "px",
     file: attachment,
     src: attachmentUrl,
     isCachedFile: isCached,
@@ -30062,7 +30091,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
           }
 
           return Promise.resolve(hashString(fileChecksum || '')).then(function (checksumHash) {
-            function _temp9() {
+            function _temp12() {
               if (dataFromDb) {
                 cachedUrl = dataFromDb.url;
                 setPendingAttachment(tid, {
@@ -30075,7 +30104,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
                 });
               }
 
-              var _temp7 = function () {
+              var _temp10 = function () {
                 if (customUploader) {
                   if (fileType === 'image') {
                     resizeImage(file).then(function (resizedFile) {
@@ -30134,11 +30163,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
                     });
                   }
                 } else {
-                  var _temp10 = function () {
+                  var _temp13 = function () {
                     if (fileType === 'image') {
-                      var _temp11 = function () {
+                      var _temp14 = function () {
                         if (isMediaAttachment) {
-                          var _temp12 = function _temp12() {
+                          var _temp15 = function _temp15() {
                             if (file.type === 'image/gif') {
                               setAttachments(function (prevState) {
                                 return [].concat(prevState, [{
@@ -30201,7 +30230,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
                           var _metas = {};
 
-                          var _temp13 = function () {
+                          var _temp16 = function () {
                             if (dataFromDb) {
                               _metas = dataFromDb.metadata;
                             } else {
@@ -30216,9 +30245,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
                             }
                           }();
 
-                          return _temp13 && _temp13.then ? _temp13.then(_temp12) : _temp12(_temp13);
+                          return _temp16 && _temp16.then ? _temp16.then(_temp15) : _temp15(_temp16);
                         } else {
-                          var _temp14 = function _temp14() {
+                          var _temp17 = function _temp17() {
                             setAttachments(function (prevState) {
                               return [].concat(prevState, [{
                                 data: file,
@@ -30237,7 +30266,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
                           var _metas2 = {};
 
-                          var _temp15 = function () {
+                          var _temp18 = function () {
                             if (dataFromDb) {
                               _metas2 = dataFromDb.metadata;
                             } else {
@@ -30248,55 +30277,77 @@ var SendMessageInput = function SendMessageInput(_ref) {
                             }
                           }();
 
-                          return _temp15 && _temp15.then ? _temp15.then(_temp14) : _temp14(_temp15);
+                          return _temp18 && _temp18.then ? _temp18.then(_temp17) : _temp17(_temp18);
                         }
                       }();
 
-                      if (_temp11 && _temp11.then) return _temp11.then(function () {});
-                    } else if (fileType === 'video') {
-                      var _metas3 = {};
-
-                      if (dataFromDb) {
-                        _metas3 = dataFromDb.metadata;
-                      }
-
-                      setAttachments(function (prevState) {
-                        return [].concat(prevState, [{
-                          data: file,
-                          type: 'video',
-                          cachedUrl: cachedUrl,
-                          upload: !cachedUrl,
-                          size: dataFromDb ? dataFromDb.size : file.size,
-                          attachmentUrl: URL.createObjectURL(file),
-                          tid: tid,
-                          metadata: dataFromDb ? _metas3 : ''
-                        }]);
-                      });
+                      if (_temp14 && _temp14.then) return _temp14.then(function () {});
                     } else {
-                      setAttachments(function (prevState) {
-                        return [].concat(prevState, [{
-                          data: file,
-                          cachedUrl: cachedUrl,
-                          upload: !cachedUrl,
-                          type: 'file',
-                          size: dataFromDb ? dataFromDb.size : file.size,
-                          metadata: dataFromDb && dataFromDb.metadata,
-                          tid: tid
-                        }]);
-                      });
+                      var _temp19 = function () {
+                        if (fileType === 'video') {
+                          var _temp20 = function _temp20() {
+                            console.log('metas ...... ', _metas3);
+                            setAttachments(function (prevState) {
+                              return [].concat(prevState, [{
+                                data: file,
+                                type: 'video',
+                                cachedUrl: cachedUrl,
+                                upload: !cachedUrl,
+                                size: dataFromDb ? dataFromDb.size : file.size,
+                                attachmentUrl: URL.createObjectURL(file),
+                                tid: tid,
+                                metadata: _metas3
+                              }]);
+                            });
+                          };
+
+                          var _metas3 = {};
+
+                          var _temp21 = function () {
+                            if (dataFromDb) {
+                              _metas3 = dataFromDb.metadata;
+                            } else {
+                              return Promise.resolve(getFrame(URL.createObjectURL(file), 0)).then(function (_ref4) {
+                                var thumb = _ref4.thumb,
+                                    width = _ref4.width,
+                                    height = _ref4.height;
+                                _metas3.thumb = thumb;
+                                _metas3.width = width;
+                                _metas3.height = height;
+                              });
+                            }
+                          }();
+
+                          return _temp21 && _temp21.then ? _temp21.then(_temp20) : _temp20(_temp21);
+                        } else {
+                          setAttachments(function (prevState) {
+                            return [].concat(prevState, [{
+                              data: file,
+                              cachedUrl: cachedUrl,
+                              upload: !cachedUrl,
+                              type: 'file',
+                              size: dataFromDb ? dataFromDb.size : file.size,
+                              metadata: dataFromDb && dataFromDb.metadata,
+                              tid: tid
+                            }]);
+                          });
+                        }
+                      }();
+
+                      if (_temp19 && _temp19.then) return _temp19.then(function () {});
                     }
                   }();
 
-                  if (_temp10 && _temp10.then) return _temp10.then(function () {});
+                  if (_temp13 && _temp13.then) return _temp13.then(function () {});
                 }
               }();
 
-              if (_temp7 && _temp7.then) return _temp7.then(function () {});
+              if (_temp10 && _temp10.then) return _temp10.then(function () {});
             }
 
             var dataFromDb;
 
-            var _temp8 = _catch(function () {
+            var _temp11 = _catch(function () {
               return Promise.resolve(getDataFromDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, checksumHash, 'checksum')).then(function (_getDataFromDB) {
                 dataFromDb = _getDataFromDB;
                 console.log('data from db . . . . ', dataFromDb);
@@ -30305,7 +30356,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
               console.log('error in get data from db . . . . ', e);
             });
 
-            return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
+            return _temp11 && _temp11.then ? _temp11.then(_temp12) : _temp12(_temp11);
           });
         } catch (e) {
           return Promise.reject(e);
