@@ -24740,6 +24740,13 @@ var Attachment = function Attachment(_ref) {
   console.log('attachment.metadata.szh .  .. . . ', attachment.metadata.szh);
   console.log('renderWidth .  .. . . ', renderWidth);
   console.log('renderHeight .  .. . . ', renderHeight);
+
+  if (!renderHeight && !renderWidth && attachment.type !== attachmentTypes.image) {
+    console.log('set default renderHeight and renderWidth ,, , ,,  ', [420, 240]);
+    renderHeight = 240;
+    renderWidth = 420;
+  }
+
   var isInUploadingState = attachmentCompilationState[attachment.tid] && (attachmentCompilationState[attachment.tid] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.tid] === UPLOAD_STATE.PAUSED);
   var attachmentThumb;
   var withPrefix = true;
@@ -25125,8 +25132,8 @@ var Attachment = function Attachment(_ref) {
     }
   })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, /*#__PURE__*/React__default.createElement(VideoPreview, {
     theme: theme,
-    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderWidth || 420) + "px",
-    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderHeight || 240) + "px",
+    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : renderWidth + "px",
+    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : renderHeight + "px",
     file: attachment,
     src: attachmentUrl,
     isCachedFile: isCached,
