@@ -24772,8 +24772,8 @@ var Attachment = function Attachment(_ref) {
       renderWidth = _ref2[0],
       renderHeight = _ref2[1];
 
-  console.log('attachment.metadata.szw .  .. . . ', attachment.metadata.szw);
-  console.log('attachment.metadata.szh .  .. . . ', attachment.metadata.szh);
+  console.log('attachment.metadata.szw .  .. . . ', attachment.metadata && attachment.metadata.szw);
+  console.log('attachment.metadata.szh .  .. . . ', attachment.metadata && attachment.metadata.szh);
   console.log('renderWidth .  .. . . ', renderWidth);
   console.log('renderHeight .  .. . . ', renderHeight);
   var isInUploadingState = attachmentCompilationState[attachment.tid] && (attachmentCompilationState[attachment.tid] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.tid] === UPLOAD_STATE.PAUSED);
@@ -25161,8 +25161,8 @@ var Attachment = function Attachment(_ref) {
     }
   })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, /*#__PURE__*/React__default.createElement(VideoPreview, {
     theme: theme,
-    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderWidth || 420) + "px",
-    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderHeight || 240) + "px",
+    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderWidth || videoAttachmentMaxWidth || 420) + "px",
+    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderHeight || videoAttachmentMaxHeight || 240) + "px",
     file: attachment,
     src: attachmentUrl,
     isCachedFile: isCached,
@@ -30314,6 +30314,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
                                 _metas3.thumb = thumb;
                                 _metas3.width = width;
                                 _metas3.height = height;
+                                _metas3 = JSON.stringify(_metas3);
                               });
                             }
                           }();
