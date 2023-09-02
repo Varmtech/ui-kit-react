@@ -8480,12 +8480,16 @@ var MessageReducer = (function (state, _temp) {
     case UPDATE_MESSAGE:
       {
         var messageId = payload.messageId,
-            params = payload.params;
+            params = payload.params,
+            addIfNotExists = payload.addIfNotExists;
 
         var _messagesCopy3 = [].concat(newState.activeChannelMessages);
 
+        var messageFound = false;
         newState.activeChannelMessages = _messagesCopy3.map(function (message) {
           if (message.tid === messageId || message.id === messageId) {
+            messageFound = true;
+
             if (params.state === MESSAGE_STATUS.DELETE) {
               return _extends({}, params);
             } else {
@@ -8495,6 +8499,12 @@ var MessageReducer = (function (state, _temp) {
 
           return message;
         });
+
+        if (!messageFound && addIfNotExists) {
+          console.log('message not found on update message, add message to list .. ...', params);
+          newState.activeChannelMessages = [].concat(newState.activeChannelMessages, [params]);
+        }
+
         return newState;
       }
 
@@ -10773,12 +10783,13 @@ function setMessagesHasNextAC(hasNext) {
     }
   };
 }
-function updateMessageAC(messageId, params) {
+function updateMessageAC(messageId, params, addIfNotExists) {
   return {
     type: UPDATE_MESSAGE,
     payload: {
       messageId: messageId,
-      params: params
+      params: params,
+      addIfNotExists: addIfNotExists
     }
   };
 }
@@ -15279,7 +15290,7 @@ function sendMessage(action) {
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           messagesToAdd = getFromAllMessagesByMessageId('', '', true);
           _context.next = 56;
-          return effects.put(setMessagesAC(messagesToAdd));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
 
         case 56:
           _context.next = 58;
@@ -15817,7 +15828,7 @@ function sendMessage(action) {
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
           _messagesToAdd = getFromAllMessagesByMessageId('', '', true);
           _context.next = 189;
-          return effects.put(setMessagesAC(_messagesToAdd));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(_messagesToAdd))));
 
         case 189:
           _context.next = 191;
@@ -16004,7 +16015,7 @@ function sendTextMessage(action) {
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           messagesToAdd = getFromAllMessagesByMessageId('', '', true);
           _context2.next = 36;
-          return effects.put(setMessagesAC(messagesToAdd));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
 
         case 36:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
@@ -16337,7 +16348,6 @@ function resendMessage(action) {
           }));
 
         case 13:
-          console.log('channel . . . . .', channel);
           updateMessageOnMap(channel.id, {
             messageId: message.tid,
             params: {
@@ -16349,14 +16359,14 @@ function resendMessage(action) {
           });
 
           if (!(message.attachments && message.attachments.length && message.state === MESSAGE_STATUS.FAILED)) {
-            _context4.next = 94;
+            _context4.next = 93;
             break;
           }
 
-          _context4.next = 19;
+          _context4.next = 18;
           return effects.select(attachmentCompilationStateSelector);
 
-        case 19:
+        case 18:
           attachmentCompilation = _context4.sent;
           _messageAttachment = _extends({}, message.attachments[0]);
           _messageCopy3 = _extends({}, message, {
@@ -16365,16 +16375,16 @@ function resendMessage(action) {
           console.log('attachmentCompilation. .. . .', attachmentCompilation);
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED && attachmentCompilation[_messageAttachment.tid] && attachmentCompilation[_messageAttachment.tid] === UPLOAD_STATE.FAIL)) {
-            _context4.next = 92;
+            _context4.next = 91;
             break;
           }
 
-          _context4.next = 26;
+          _context4.next = 25;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, _messageAttachment.tid));
 
-        case 26:
+        case 25:
           if (!customUploader) {
-            _context4.next = 92;
+            _context4.next = 91;
             break;
           }
 
@@ -16384,7 +16394,7 @@ function resendMessage(action) {
             console.log('progress ... ', loaded / total);
           };
 
-          _context4.prev = 28;
+          _context4.prev = 27;
 
           handleUpdateLocalPath = function handleUpdateLocalPath(updatedLink) {
             _filePath = updatedLink;
@@ -16409,51 +16419,51 @@ function resendMessage(action) {
           console.log('pendingAttachment ... ', pendingAttachment);
 
           if (!_messageAttachment.cachedUrl) {
-            _context4.next = 36;
+            _context4.next = 35;
             break;
           }
 
           uri = pendingAttachment.file;
-          _context4.next = 41;
+          _context4.next = 40;
           break;
 
-        case 36:
+        case 35:
           _messageAttachment.data = pendingAttachment.file;
           _messageAttachment.url = pendingAttachment.file;
-          _context4.next = 40;
+          _context4.next = 39;
           return effects.call(customUpload, _messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 40:
+        case 39:
           uri = _context4.sent;
 
-        case 41:
+        case 40:
           console.log('messageAttachment ... ', _messageAttachment);
-          _context4.next = 44;
+          _context4.next = 43;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, _messageAttachment.tid));
 
-        case 44:
+        case 43:
           delete _messageCopy3.createdAt;
           thumbnailMetas = {};
           fileSize = _messageAttachment.cachedUrl ? _messageAttachment.size : pendingAttachment.file.size;
           console.log('uri ... ', uri);
 
           if (!(!_messageAttachment.cachedUrl && _messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context4.next = 55;
+            _context4.next = 54;
             break;
           }
 
-          _context4.next = 51;
+          _context4.next = 50;
           return effects.call(getImageSize, _filePath);
 
-        case 51:
+        case 50:
           fileSize = _context4.sent;
-          _context4.next = 54;
+          _context4.next = 53;
           return effects.call(createImageThumbnail, null, _filePath, _messageAttachment.type === 'file' ? 50 : undefined, _messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 54:
+        case 53:
           thumbnailMetas = _context4.sent;
 
-        case 55:
+        case 54:
           if (_messageAttachment.cachedUrl) {
             attachmentMeta = _messageAttachment.metadata;
           } else {
@@ -16470,27 +16480,28 @@ function resendMessage(action) {
           console.log('attachmentToSend ... ', attachmentToSend);
           attachmentToSend.tid = _messageAttachment.tid;
           attachmentToSend.attachmentUrl = _messageAttachment.attachmentUrl;
-          _context4.next = 64;
+          _context4.next = 63;
           return effects.put(updateMessageAC(_messageCopy3.tid, JSON.parse(JSON.stringify(_extends({}, _messageCopy3, {
             attachments: [attachmentToSend]
           })))));
 
-        case 64:
+        case 63:
           _messageCopy3.attachments = [attachmentToSend];
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 81;
+            _context4.next = 80;
             break;
           }
 
-          _context4.next = 68;
+          _context4.next = 67;
           return effects.call(channel.sendMessage, _messageCopy3);
 
-        case 68:
+        case 67:
           messageResponse = _context4.sent;
           deletePendingAttachment(_messageAttachment.tid);
           messageUpdateData = {
             id: messageResponse.id,
+            body: messageResponse.body,
             deliveryStatus: messageResponse.deliveryStatus,
             attachments: [_extends({}, messageResponse.attachments[0], {
               attachmentUrl: attachmentToSend.attachmentUrl,
@@ -16503,10 +16514,10 @@ function resendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context4.next = 73;
+          _context4.next = 72;
           return effects.put(updateMessageAC(_messageCopy3.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 73:
+        case 72:
           _fileType = _messageAttachment.data && _messageAttachment.data.type ? _messageAttachment.data.type.split('/')[0] : _messageAttachment.type;
 
           if (_fileType === 'video') {
@@ -16520,23 +16531,23 @@ function resendMessage(action) {
           updateMessageOnAllMessages(_messageCopy3.tid, messageUpdateData);
           messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
           updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
-          _context4.next = 81;
+          _context4.next = 80;
           return effects.put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 81:
-          _context4.next = 92;
+        case 80:
+          _context4.next = 91;
           break;
 
-        case 83:
-          _context4.prev = 83;
-          _context4.t0 = _context4["catch"](28);
+        case 82:
+          _context4.prev = 82;
+          _context4.t0 = _context4["catch"](27);
           console.log('fail upload attachment on resend message ... ', _context4.t0);
-          _context4.next = 88;
+          _context4.next = 87;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, _messageAttachment.tid));
 
-        case 88:
+        case 87:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy3.tid,
             params: {
@@ -16546,18 +16557,18 @@ function resendMessage(action) {
           updateMessageOnAllMessages(_messageCopy3.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context4.next = 92;
+          _context4.next = 91;
           return effects.put(updateMessageAC(_messageCopy3.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 92:
-          _context4.next = 119;
+        case 91:
+          _context4.next = 118;
           break;
 
-        case 94:
+        case 93:
           if (!(message.state === MESSAGE_STATUS.FAILED)) {
-            _context4.next = 119;
+            _context4.next = 118;
             break;
           }
 
@@ -16566,14 +16577,14 @@ function resendMessage(action) {
           delete _messageCopy4.createdAt;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 119;
+            _context4.next = 118;
             break;
           }
 
-          _context4.next = 101;
+          _context4.next = 100;
           return effects.call(channel.sendMessage, _messageCopy4);
 
-        case 101:
+        case 100:
           _messageResponse3 = _context4.sent;
           console.log('resend message response ... ', _messageResponse3);
           _messageUpdateData3 = {
@@ -16588,10 +16599,10 @@ function resendMessage(action) {
             createdAt: _messageResponse3.createdAt
           };
           removePendingMessageFromMap(channel.id, _messageCopy4.tid);
-          _context4.next = 107;
+          _context4.next = 106;
           return effects.put(updateMessageAC(_messageCopy4.tid, _messageUpdateData3));
 
-        case 107:
+        case 106:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
@@ -16599,47 +16610,47 @@ function resendMessage(action) {
           activeChannelId = getActiveChannelId();
 
           if (!(channelId === activeChannelId)) {
-            _context4.next = 114;
+            _context4.next = 113;
             break;
           }
 
-          _context4.next = 112;
+          _context4.next = 111;
           return effects.put(updateMessageAC(_messageCopy4.tid, JSON.parse(JSON.stringify(_messageResponse3))));
 
-        case 112:
+        case 111:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
           });
           updateMessageOnAllMessages(_messageCopy4.tid, _messageUpdateData3);
 
-        case 114:
+        case 113:
           updateChannelOnAllChannels(channel.id, channel);
           _messageToUpdate3 = JSON.parse(JSON.stringify(_messageResponse3));
           updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate3);
-          _context4.next = 119;
+          _context4.next = 118;
           return effects.put(updateChannelLastMessageAC(_messageToUpdate3, {
             id: channel.id
           }));
 
-        case 119:
-          _context4.next = 121;
+        case 118:
+          _context4.next = 120;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 121:
-          _context4.next = 130;
+        case 120:
+          _context4.next = 129;
           break;
 
-        case 123:
-          _context4.prev = 123;
+        case 122:
+          _context4.prev = 122;
           _context4.t1 = _context4["catch"](5);
           console.log('ERROR in resend message', _context4.t1.message, 'channel.. . ', channel);
-          _context4.next = 128;
+          _context4.next = 127;
           return effects.put(updateMessageAC(message.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 128:
+        case 127:
           updateMessageOnMap(channel.id, {
             messageId: message.tid,
             params: {
@@ -16650,12 +16661,12 @@ function resendMessage(action) {
             state: MESSAGE_STATUS.FAILED
           });
 
-        case 130:
+        case 129:
         case "end":
           return _context4.stop();
       }
     }
-  }, _marked4$1, null, [[5, 123], [28, 83]]);
+  }, _marked4$1, null, [[5, 122], [27, 82]]);
 }
 
 function deleteMessage(action) {
@@ -16892,7 +16903,7 @@ function getMessagesQuery(action) {
 
           result.messages = allMessages.slice(messageIndex - maxLengthPart, messageIndex + maxLengthPart);
           _context7.next = 45;
-          return effects.put(setMessagesAC(result.messages));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
         case 45:
           setHasPrevCached(messageIndex > maxLengthPart);
@@ -16926,7 +16937,7 @@ function getMessagesQuery(action) {
           }
 
           _context7.next = 59;
-          return effects.put(setMessagesAC([].concat(result.messages)));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
         case 59:
           setAllMessages([].concat(result.messages));
@@ -16996,7 +17007,7 @@ function getMessagesQuery(action) {
 
           setAllMessages([].concat(result.messages));
           _context7.next = 88;
-          return effects.put(setMessagesAC([].concat(result.messages)));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
         case 88:
           _context7.next = 103;
@@ -17012,7 +17023,7 @@ function getMessagesQuery(action) {
 
           setAllMessages([].concat(cachedMessages));
           _context7.next = 95;
-          return effects.put(setMessagesAC(cachedMessages));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(cachedMessages))));
 
         case 95:
           _context7.next = 97;
@@ -17057,7 +17068,7 @@ function getMessagesQuery(action) {
           }
 
           _context7.next = 107;
-          return effects.put(setMessagesAC([].concat(result.messages)));
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
         case 107:
           setMessagesToMap(channel.id, result.messages);
@@ -28381,13 +28392,6 @@ var MessageList = function MessageList(_ref2) {
       setIsDragging(false);
     }
   }, [draggingSelector]);
-  useDidUpdate(function () {
-    if (connectionStatus !== CONNECTION_STATUS.CONNECTED) {
-      loading = false;
-      prevDisable = false;
-      nextDisable = false;
-    }
-  }, [connectionStatus]);
   React.useEffect(function () {
     setHasNextCached(false);
     setHasPrevCached(false);
@@ -28461,6 +28465,9 @@ var MessageList = function MessageList(_ref2) {
     console.log('connection status is changed.. .... ', connectionStatus, 'channel  ... ', channel);
 
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
+      loading = false;
+      prevDisable = false;
+      nextDisable = false;
       clearMessagesMap();
       removeAllMessages();
 

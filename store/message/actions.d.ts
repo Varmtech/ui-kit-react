@@ -241,11 +241,12 @@ export declare function setMessagesHasNextAC(hasNext: boolean): {
         hasNext: boolean;
     };
 };
-export declare function updateMessageAC(messageId: string, params: any): {
+export declare function updateMessageAC(messageId: string, params: any, addIfNotExists?: boolean): {
     type: string;
     payload: {
         messageId: string;
         params: any;
+        addIfNotExists: boolean | undefined;
     };
 };
 export declare function updateMessagesStatusAC(name: string, markersMap: {
