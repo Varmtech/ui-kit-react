@@ -24194,6 +24194,8 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
       backgroundColor = _ref.backgroundColor,
       isDetailsView = _ref.isDetailsView,
       setVideoIsReadyToSend = _ref.setVideoIsReadyToSend;
+  console.log('video preview max width ... .', maxWidth);
+  console.log('video preview max height ... .', maxHeight);
 
   var _useState = useState(0),
       videoDuration = _useState[0],
@@ -24734,6 +24736,10 @@ var Attachment = function Attachment(_ref) {
       renderWidth = _ref2[0],
       renderHeight = _ref2[1];
 
+  console.log('attachment.metadata.szw .  .. . . ', attachment.metadata.szw);
+  console.log('attachment.metadata.szh .  .. . . ', attachment.metadata.szh);
+  console.log('renderWidth .  .. . . ', renderWidth);
+  console.log('renderHeight .  .. . . ', renderHeight);
   var isInUploadingState = attachmentCompilationState[attachment.tid] && (attachmentCompilationState[attachment.tid] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.tid] === UPLOAD_STATE.PAUSED);
   var attachmentThumb;
   var withPrefix = true;
