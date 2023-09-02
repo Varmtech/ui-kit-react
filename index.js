@@ -24221,8 +24221,10 @@ var getFrame = function getFrame(videoSrc, time) {
             var ctx = canvas.getContext('2d');
             video.currentTime = 10;
             ctx.drawImage(video, 0, 0);
-            console.log('canvas.toDataURL() resized ... ', canvas.toDataURL('', 0.7));
-            var thumb = canvas.toDataURL('', 0.7).replace('data:image/jpeg;base64,', '');
+            var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var binaryThumbHash = rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
+            var thumb = binaryToBase64(binaryThumbHash);
+            console.log('generated thumb hash ... ', thumb);
             clearInterval(b);
             resolve({
               thumb: thumb,
