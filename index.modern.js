@@ -24192,12 +24192,16 @@ var getFrame = function getFrame(videoSrc, time) {
               video.currentTime = time;
             }
 
+            var _calculateSize = calculateSize(video.videoWidth, video.videoHeight, 50, 50),
+                newWidth = _calculateSize[0],
+                newHeight = _calculateSize[1];
+
             var canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            canvas.width = newWidth;
+            canvas.height = newHeight;
             var ctx = canvas.getContext('2d');
             video.currentTime = 10;
-            ctx.drawImage(video, 0, 0);
+            ctx.drawImage(video, 0, 0, newWidth, newHeight);
             var pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
             var binaryThumbHash = rgbaToThumbHash(pixels.width, pixels.height, pixels.data);
             var thumb = binaryToBase64(binaryThumbHash);
