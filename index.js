@@ -7635,22 +7635,15 @@ var cancelDownloadFile = function cancelDownloadFile(attachmentId) {
 var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, height, maxWidth, maxHeight) {
   var maxWdt = maxWidth || 420;
   var maxHg = maxHeight || 400;
-  console.log('width', width);
-  console.log('height', height);
-  console.log('max width', maxWdt);
-  console.log('max height', maxHg);
   var minWidth = 130;
   var aspectRatio = width / height;
 
   if (aspectRatio >= maxWdt / maxHg) {
-    console.log('calculated...........', [Math.max(minWidth, Math.min(maxWdt, width)), Math.min(maxHg, height, maxWdt / aspectRatio) + 2]);
     return [Math.max(minWidth, Math.min(maxWdt, width)), Math.min(maxHg, height, maxWdt / aspectRatio) + 2];
   } else {
     if (maxHg <= height) {
-      console.log('calculated ......... 2 ..  ', [Math.min(maxWdt, maxHg * aspectRatio), Math.min(maxHg, height)]);
       return [Math.min(maxWdt, maxHg * aspectRatio), Math.min(maxHg, height)];
     } else {
-      console.log('calculated. ...... 3 .. ', [Math.min(maxWdt, height * aspectRatio), Math.min(maxHg, height)]);
       return [Math.min(maxWdt, height * aspectRatio), Math.min(maxHg, height)];
     }
   }
@@ -23989,12 +23982,12 @@ var MessageActionsWrapper = styled__default.div(_templateObject$m || (_templateO
 }, function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var EditMessageContainer = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  padding: 8px 2px;\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, function (props) {
   return props.backgroundColor;
 });
-var Action = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 0 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+var Action = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:first-child {\n    margin-left: 8px;\n  }\n  &:last-child {\n    margin-right: 8px;\n  }\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.order || 1;
 }, function (props) {
   return props.iconColor || colors.textColor2;
@@ -24259,8 +24252,6 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
       backgroundColor = _ref.backgroundColor,
       isDetailsView = _ref.isDetailsView,
       setVideoIsReadyToSend = _ref.setVideoIsReadyToSend;
-  console.log('video preview max width ... .', maxWidth);
-  console.log('video preview max height ... .', maxHeight);
 
   var _useState = React.useState(0),
       videoDuration = _useState[0],
@@ -24801,10 +24792,6 @@ var Attachment = function Attachment(_ref) {
       renderWidth = _ref2[0],
       renderHeight = _ref2[1];
 
-  console.log('attachment.metadata.szw .  .. . . ', attachment.metadata && attachment.metadata.szw);
-  console.log('attachment.metadata.szh .  .. . . ', attachment.metadata && attachment.metadata.szh);
-  console.log('renderWidth .  .. . . ', renderWidth);
-  console.log('renderHeight .  .. . . ', renderHeight);
   var isInUploadingState = attachmentCompilationState[attachment.tid] && (attachmentCompilationState[attachment.tid] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.tid] === UPLOAD_STATE.PAUSED);
   var attachmentThumb;
   var withPrefix = true;
