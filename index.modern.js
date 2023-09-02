@@ -1470,7 +1470,9 @@ var ChannelReducer = (function (state, _temp) {
 
     case DESTROY_SESSION:
       {
-        newState = initialState;
+        newState = _extends({}, initialState, {
+          channelListWidth: newState.channelListWidth
+        });
         return newState;
       }
 
@@ -7610,15 +7612,22 @@ var cancelDownloadFile = function cancelDownloadFile(attachmentId) {
 var calculateRenderedImageWidth = function calculateRenderedImageWidth(width, height, maxWidth, maxHeight) {
   var maxWdt = maxWidth || 420;
   var maxHg = maxHeight || 400;
+  console.log('width', width);
+  console.log('height', height);
+  console.log('max width', maxWdt);
+  console.log('max height', maxHg);
   var minWidth = 130;
   var aspectRatio = width / height;
 
   if (aspectRatio >= maxWdt / maxHg) {
+    console.log('calculated...........', [Math.max(minWidth, Math.min(maxWdt, width)), Math.min(maxHg, height, maxWdt / aspectRatio) + 2]);
     return [Math.max(minWidth, Math.min(maxWdt, width)), Math.min(maxHg, height, maxWdt / aspectRatio) + 2];
   } else {
     if (maxHg <= height) {
+      console.log('calculated ......... 2 ..  ', [Math.min(maxWdt, maxHg * aspectRatio), Math.min(maxHg, height)]);
       return [Math.min(maxWdt, maxHg * aspectRatio), Math.min(maxHg, height)];
     } else {
+      console.log('calculated. ...... 3 .. ', [Math.min(maxWdt, height * aspectRatio), Math.min(maxHg, height)]);
       return [Math.min(maxWdt, height * aspectRatio), Math.min(maxHg, height)];
     }
   }
@@ -21880,9 +21889,15 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, []);
   useDidUpdate(function () {
-    if (channels && channels.length && !listWidthIsSet) {
-      dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
-      setListWidthIsSet(true);
+    if (channels && channels.length) {
+      if (!listWidthIsSet) {
+        console.log('set channels width ..... ', channelListRef.current && channelListRef.current.clientWidth);
+        dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
+        setListWidthIsSet(true);
+      }
+    } else {
+      console.log('set channels width is set ..... ', false);
+      setListWidthIsSet(false);
     }
 
     console.log('channels. ...........................', channels);
