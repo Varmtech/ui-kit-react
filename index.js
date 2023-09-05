@@ -13837,7 +13837,7 @@ function leaveChannel(action) {
           }
 
           if (!channel) {
-            _context15.next = 23;
+            _context15.next = 24;
             break;
           }
 
@@ -13864,24 +13864,25 @@ function leaveChannel(action) {
           return effects.put(removeChannelAC(channelId));
 
         case 21:
-          _context15.next = 23;
+          deleteChannelFromAllChannels(channelId);
+          _context15.next = 24;
           return effects.put(removeChannelCachesAC(channelId));
 
-        case 23:
-          _context15.next = 28;
+        case 24:
+          _context15.next = 29;
           break;
 
-        case 25:
-          _context15.prev = 25;
+        case 26:
+          _context15.prev = 26;
           _context15.t0 = _context15["catch"](0);
           console.log('ERROR in leave channel - ', _context15.t0.message);
 
-        case 28:
+        case 29:
         case "end":
           return _context15.stop();
       }
     }
-  }, _marked15, null, [[0, 25]]);
+  }, _marked15, null, [[0, 26]]);
 }
 
 function deleteChannel(action) {
@@ -21823,10 +21824,8 @@ var ChannelList = function ChannelList(_ref) {
       }
 
       dispatch(setChannelToRemoveAC(null));
-      console.log('channel deleted... .searchValue .,. . ', searchValue);
 
       if (searchValue) {
-        console.log('should get my channel s.s.> .. >>>> >>');
         getMyChannels();
       }
     }
@@ -21901,8 +21900,6 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, [visibleChannel]);
   useDidUpdate(function () {
-    console.log('searchValue', searchValue);
-
     if (searchValue) {
       dispatch(searchChannelsAC({
         filter: filter,
@@ -21911,7 +21908,6 @@ var ChannelList = function ChannelList(_ref) {
         search: searchValue
       }, contactsMap));
     } else {
-      console.log('should be empty....... . ... ');
       dispatch(setSearchedChannelsAC({
         chats_groups: [],
         channels: [],
@@ -28166,7 +28162,6 @@ var MessageList = function MessageList(_ref2) {
       renderTopDate();
       var target = event.target;
       var forceLoadPrevMessages = false;
-      console.log('target.scrollTop . . . .   ', target.scrollTop);
 
       if (-target.scrollTop + target.offsetHeight + 30 > target.scrollHeight) {
         scrollToLastVisible = true;
@@ -28442,12 +28437,6 @@ var MessageList = function MessageList(_ref2) {
     if (loading) {
       if (loadDirection !== 'next') {
         var lastVisibleMessage = document.getElementById(lastVisibleMessageId);
-
-        if (lastVisibleMessage && lastVisibleMessage.offsetTop >= scrollRef.current.scrollTop) {
-          console.log('lastVisibleMessage >>>>>>>>>>>>>>>>>>>>>>>>. ', lastVisibleMessage);
-          console.log('set scroll top .>>>>>>>>>>>>>>>>>>>>>>>>>. ', lastVisibleMessage.offsetTop);
-          scrollRef.current.scrollTop = -lastVisibleMessage.offsetTop;
-        }
 
         if (prevMessageId) {
           if (lastVisibleMessage && scrollToLastVisible) {
@@ -30578,7 +30567,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setSendMessageIsActive(false);
     }
 
-    if (messageText) {
+    if (messageText.trim()) {
       setDraftMessageToMap(activeChannel.id, {
         text: messageText,
         mentionedMembers: mentionedMembers,
