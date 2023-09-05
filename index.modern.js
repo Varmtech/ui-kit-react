@@ -12214,7 +12214,7 @@ function watchForEvents() {
 
           _context3.next = 222;
           return put(updateChannelDataAC(_channel8.id, {
-            unreadMessageCount: _channel8.newMessageCount
+            newMessageCount: _channel8.newMessageCount
           }));
 
         case 222:
@@ -12228,7 +12228,7 @@ function watchForEvents() {
 
         case 225:
           updateChannelOnAllChannels(_channel8.id, {
-            unreadMessageCount: _channel8.newMessageCount
+            newMessageCount: _channel8.newMessageCount
           }, deletedMessage);
           return _context3.abrupt("break", 372);
 
@@ -12438,13 +12438,15 @@ function watchForEvents() {
           _context3.next = 304;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: null,
-            unreadMessageCount: 0
+            newMessageCount: 0,
+            newMentionCount: 0
           }));
 
         case 304:
           updateChannelOnAllChannels(_channel13.id, {
             lastMessage: null,
-            unreadMessageCount: 0
+            newMessageCount: 0,
+            newMentionCount: 0
           });
           return _context3.abrupt("break", 372);
 
@@ -12947,7 +12949,7 @@ function getChannels(action) {
 }
 
 function searchChannels(action) {
-  var payload, params, contactsMap, SceytChatClient, getFromContacts, searchBy, channelQueryBuilder, allChannels, publicChannels, chatsGroups, contactsList, contactsWithChannelsMap, lowerCaseSearchBy, channelQuery, channelsData;
+  var payload, params, contactsMap, SceytChatClient, getFromContacts, searchBy, channelQueryBuilder, allChannels, publicChannels, chatsGroups, contactsList, contactsWithChannelsMap, lowerCaseSearchBy, channelQuery, channelsData, channelsToAdd;
   return _regeneratorRuntime().wrap(function searchChannels$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
@@ -12964,7 +12966,7 @@ function searchChannels(action) {
           searchBy = params.search;
 
           if (!searchBy) {
-            _context3.next = 37;
+            _context3.next = 36;
             break;
           }
 
@@ -13018,56 +13020,57 @@ function searchChannels(action) {
             });
           }
 
-          console.log('put setSearchedChannelsAC - - publicChannels -- ', publicChannels);
-          console.log('put setSearchedChannelsAC - - chatsGroups -- ', chatsGroups);
-          _context3.next = 23;
+          _context3.next = 21;
           return put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
             channels: JSON.parse(JSON.stringify(publicChannels)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 23:
-          _context3.next = 25;
+        case 21:
+          _context3.next = 23;
           return put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 25:
+        case 23:
           channelQueryBuilder.subjectContains(searchBy);
           channelQueryBuilder.sortByLastMessage();
           channelQueryBuilder.limit(params.limit || 50);
-          _context3.next = 30;
+          _context3.next = 28;
           return call(channelQueryBuilder.build);
 
-        case 30:
+        case 28:
           channelQuery = _context3.sent;
-          _context3.next = 33;
+          _context3.next = 31;
           return call(channelQuery.loadNextPage);
 
-        case 33:
+        case 31:
           channelsData = _context3.sent;
-          console.log('searched channel data ..... ... ', channelsData);
-          _context3.next = 37;
+          channelsToAdd = channelsData.channels.filter(function (channel) {
+            return channel.type === CHANNEL_TYPE.PUBLIC || channel.type === CHANNEL_TYPE.BROADCAST;
+          });
+          console.log('searched channel data ..... ... ', channelsToAdd);
+          _context3.next = 36;
           return put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
-            channels: JSON.parse(JSON.stringify(channelsData.channels)),
+            channels: JSON.parse(JSON.stringify(channelsToAdd)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 37:
-          _context3.next = 43;
+        case 36:
+          _context3.next = 42;
           break;
 
-        case 39:
-          _context3.prev = 39;
+        case 38:
+          _context3.prev = 38;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0, 'Error on get channels');
 
-        case 43:
+        case 42:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3, null, [[0, 39]]);
+  }, _marked3, null, [[0, 38]]);
 }
 
 function getChannelsForForward(action) {
@@ -13404,7 +13407,7 @@ function markMessagesRead(action) {
           return put(updateChannelDataAC(channel.id, {
             unread: channel.unread,
             lastReadMessageId: channel.lastDisplayedMsgId,
-            unreadMessageCount: channel.newMessageCount
+            newMessageCount: channel.newMessageCount
           }));
 
         case 13:
@@ -13653,7 +13656,7 @@ function notificationsTurnOn() {
 }
 
 function markChannelAsRead(action) {
-  var channelId, channel, updatedChannel;
+  var channelId, channel;
   return _regeneratorRuntime().wrap(function markChannelAsRead$(_context12) {
     while (1) {
       switch (_context12.prev = _context12.next) {
@@ -13674,30 +13677,33 @@ function markChannelAsRead(action) {
           return call(channel.markAsRead);
 
         case 8:
-          updatedChannel = _context12.sent;
-          updateChannelOnAllChannels(channel.id, _extends({}, updatedChannel));
-          _context12.next = 12;
-          return put(updateChannelDataAC(channel.id, _extends({}, updatedChannel)));
+          updateChannelOnAllChannels(channel.id, {
+            unread: false
+          });
+          _context12.next = 11;
+          return put(updateChannelDataAC(channel.id, {
+            unread: false
+          }));
 
-        case 12:
-          _context12.next = 17;
+        case 11:
+          _context12.next = 16;
           break;
 
-        case 14:
-          _context12.prev = 14;
+        case 13:
+          _context12.prev = 13;
           _context12.t0 = _context12["catch"](0);
           console.log(_context12.t0, 'Error in set channel unread');
 
-        case 17:
+        case 16:
         case "end":
           return _context12.stop();
       }
     }
-  }, _marked12, null, [[0, 14]]);
+  }, _marked12, null, [[0, 13]]);
 }
 
 function markChannelAsUnRead(action) {
-  var channelId, channel, updatedChannel;
+  var channelId, channel;
   return _regeneratorRuntime().wrap(function markChannelAsUnRead$(_context13) {
     while (1) {
       switch (_context13.prev = _context13.next) {
@@ -13718,26 +13724,29 @@ function markChannelAsUnRead(action) {
           return call(channel.markAsUnRead);
 
         case 8:
-          updatedChannel = _context13.sent;
-          updateChannelOnAllChannels(channel.id, _extends({}, updatedChannel));
-          _context13.next = 12;
-          return put(updateChannelDataAC(channel.id, _extends({}, updatedChannel)));
+          updateChannelOnAllChannels(channel.id, {
+            unread: true
+          });
+          _context13.next = 11;
+          return put(updateChannelDataAC(channel.id, {
+            unread: true
+          }));
 
-        case 12:
-          _context13.next = 17;
+        case 11:
+          _context13.next = 16;
           break;
 
-        case 14:
-          _context13.prev = 14;
+        case 13:
+          _context13.prev = 13;
           _context13.t0 = _context13["catch"](0);
           console.log(_context13.t0, 'Error in set channel unread');
 
-        case 17:
+        case 16:
         case "end":
           return _context13.stop();
       }
     }
-  }, _marked13, null, [[0, 14]]);
+  }, _marked13, null, [[0, 13]]);
 }
 
 function removeChannelCaches(action) {
@@ -14224,7 +14233,8 @@ function clearHistory(action) {
           _context21.next = 19;
           return put(updateChannelDataAC(channel.id, {
             lastMessage: null,
-            unreadMessageCount: 0
+            newMessageCount: 0,
+            newMentionCount: 0
           }));
 
         case 19:
@@ -14295,7 +14305,8 @@ function deleteAllMessages(action) {
           _context22.next = 20;
           return put(updateChannelDataAC(channel.id, {
             lastMessage: null,
-            unreadMessageCount: 0
+            newMessageCount: 0,
+            newMentionCount: 0
           }));
 
         case 20:
@@ -15119,7 +15130,7 @@ var _marked$2 = /*#__PURE__*/_regeneratorRuntime().mark(sendMessage),
     _marked17$1 = /*#__PURE__*/_regeneratorRuntime().mark(MessageSaga);
 
 function sendMessage(action) {
-  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, messagesToAdd, filePath, handleUploadProgress, fileSize, handleUpdateLocalPath, uri, attachmentMeta, attachmentBuilder, attachmentToSend, messageResponse, pendingAttachment, messageUpdateData, messageToUpdate, channelUpdateParam, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, _channelUpdateParam, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messagesToAdd, _messageResponse2, attachmentsToUpdate, currentAttachmentsMap, _messageUpdateData2, _messageToUpdate2, _channelUpdateParam2;
+  var payload, message, connectionState, channelId, sendAttachmentsAsSeparateMessage, channel, mentionedUserIds, customUploader, thumbnailMetas, linkAttachment, messageAttachment, fileType, messageBuilder, messageToSend, messageCopy, pendingMessage, hasNextMessages, messagesToAdd, filePath, handleUploadProgress, fileSize, handleUpdateLocalPath, uri, attachmentMeta, attachmentBuilder, attachmentToSend, linkAttachmentToSend, linkAttachmentBuilder, messageResponse, pendingAttachment, messageUpdateData, messageToUpdate, channelUpdateParam, _attachmentBuilder, _attachmentToSend, _messageResponse, _messageUpdateData, _messageToUpdate, _channelUpdateParam, attachmentsToSend, _messageBuilder, _messageToSend, attachmentsLocalPaths, receivedPaths, uploadAllAttachments, uploadedAttachments, _messageCopy2, _hasNextMessages, _messagesToAdd, _messageResponse2, attachmentsToUpdate, currentAttachmentsMap, _messageUpdateData2, _messageToUpdate2, _channelUpdateParam2;
 
   return _regeneratorRuntime().wrap(function sendMessage$(_context) {
     while (1) {
@@ -15153,52 +15164,55 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 211;
+            _context.next = 213;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 154;
+            _context.next = 156;
             break;
           }
 
           thumbnailMetas = {};
+          linkAttachment = message.attachments.find(function (a) {
+            return a.type === attachmentTypes.link;
+          });
           messageAttachment = _extends({}, message.attachments[0], {
             url: message.attachments[0].data
           });
           fileType = messageAttachment.url.type.split('/')[0];
 
           if (messageAttachment.cachedUrl) {
-            _context.next = 32;
+            _context.next = 33;
             break;
           }
 
           if (!(fileType === 'video')) {
-            _context.next = 24;
+            _context.next = 25;
             break;
           }
 
           console.log('get video thumb . . ..  . . . .');
           thumbnailMetas = getVideoThumb(messageAttachment.tid);
           console.log('get video thumbnailMetas . . ..  . . . .', thumbnailMetas);
-          _context.next = 31;
+          _context.next = 32;
           break;
 
-        case 24:
+        case 25:
           if (!(fileType === 'image')) {
-            _context.next = 30;
+            _context.next = 31;
             break;
           }
 
-          _context.next = 27;
+          _context.next = 28;
           return call(createImageThumbnail, message.attachments[0].data, undefined, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 27:
+        case 28:
           thumbnailMetas = _context.sent;
-          _context.next = 31;
+          _context.next = 32;
           break;
 
-        case 30:
+        case 31:
           if (fileType === attachmentTypes.voice) {
             thumbnailMetas = {
               duration: 3,
@@ -15206,7 +15220,7 @@ function sendMessage(action) {
             };
           }
 
-        case 31:
+        case 32:
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, thumbnailMetas && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -15214,7 +15228,7 @@ function sendMessage(action) {
             dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
 
-        case 32:
+        case 33:
           setPendingAttachment(messageAttachment.tid, messageAttachment.data);
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments([]).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
@@ -15235,56 +15249,56 @@ function sendMessage(action) {
             createdAt: new Date(Date.now()),
             parentMessage: message.parentMessage
           })));
-          _context.next = 42;
+          _context.next = 43;
           return select(messagesHasNextSelector);
 
-        case 42:
+        case 43:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 51;
+            _context.next = 52;
             break;
           }
 
           if (!hasNextMessages) {
-            _context.next = 49;
+            _context.next = 50;
             break;
           }
 
-          _context.next = 47;
+          _context.next = 48;
           return put(getMessagesAC(channel));
 
-        case 47:
-          _context.next = 51;
+        case 48:
+          _context.next = 52;
           break;
 
-        case 49:
-          _context.next = 51;
+        case 50:
+          _context.next = 52;
           return put(addMessageAC(JSON.parse(JSON.stringify(pendingMessage))));
 
-        case 51:
+        case 52:
           addMessageToMap(channelId, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context.next = 56;
+          _context.next = 57;
           return put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
 
-        case 56:
-          _context.next = 58;
+        case 57:
+          _context.next = 59;
           return put(scrollToNewMessageAC(true));
 
-        case 58:
+        case 59:
           if (messageAttachment.cachedUrl) {
-            _context.next = 61;
+            _context.next = 62;
             break;
           }
 
-          _context.next = 61;
+          _context.next = 62;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.tid));
 
-        case 61:
+        case 62:
           if (!customUploader) {
-            _context.next = 127;
+            _context.next = 129;
             break;
           }
 
@@ -15297,7 +15311,7 @@ function sendMessage(action) {
                 uploaded: loaded,
                 total: total,
                 progress: loaded / total,
-                tid: messageAttachment.tid
+                attachmentId: messageAttachment.tid
               }
             });
           };
@@ -15324,15 +15338,15 @@ function sendMessage(action) {
             }
           };
 
-          _context.prev = 65;
+          _context.prev = 66;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 113;
+            _context.next = 115;
             break;
           }
 
           if (!messageAttachment.cachedUrl) {
-            _context.next = 72;
+            _context.next = 73;
             break;
           }
 
@@ -15346,38 +15360,38 @@ function sendMessage(action) {
               attachmentId: messageAttachment.tid
             }
           });
-          _context.next = 75;
+          _context.next = 76;
           break;
 
-        case 72:
-          _context.next = 74;
+        case 73:
+          _context.next = 75;
           return call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 74:
+        case 75:
           uri = _context.sent;
 
-        case 75:
-          _context.next = 77;
+        case 76:
+          _context.next = 78;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.tid));
 
-        case 77:
+        case 78:
           if (!(!messageAttachment.cachedUrl && messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 84;
+            _context.next = 85;
             break;
           }
 
-          _context.next = 80;
+          _context.next = 81;
           return call(getImageSize, filePath);
 
-        case 80:
+        case 81:
           fileSize = _context.sent;
-          _context.next = 83;
+          _context.next = 84;
           return call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 83:
+        case 84:
           thumbnailMetas = _context.sent;
 
-        case 84:
+        case 85:
           attachmentMeta = messageAttachment.cachedUrl ? messageAttachment.metadata : JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -15385,11 +15399,22 @@ function sendMessage(action) {
           }));
           attachmentBuilder = channel.createAttachmentBuilder(uri, messageAttachment.type);
           attachmentToSend = attachmentBuilder.setName(messageAttachment.name).setMetadata(attachmentMeta).setFileSize(fileSize || messageAttachment.size).setUpload(false).create();
-          messageToSend.attachments = [attachmentToSend];
-          _context.next = 90;
+
+          if (linkAttachment) {
+            linkAttachmentBuilder = channel.createAttachmentBuilder(linkAttachment.data, linkAttachment.type);
+            linkAttachmentToSend = linkAttachmentBuilder.setName(linkAttachment.name).setUpload(linkAttachment.upload).create();
+          }
+
+          if (linkAttachmentToSend) {
+            messageToSend.attachments = [attachmentToSend, linkAttachmentToSend];
+          } else {
+            messageToSend.attachments = [attachmentToSend];
+          }
+
+          _context.next = 92;
           return call(channel.sendMessage, messageToSend);
 
-        case 90:
+        case 92:
           messageResponse = _context.sent;
           messageResponse.attachments[0] = _extends({}, messageResponse.attachments[0], {
             user: JSON.parse(JSON.stringify(messageResponse.user)),
@@ -15404,10 +15429,10 @@ function sendMessage(action) {
             })], 'checksum');
           }
 
-          _context.next = 96;
+          _context.next = 98;
           return put(removeAttachmentProgressAC(messageAttachment.tid));
 
-        case 96:
+        case 98:
           deletePendingAttachment(messageAttachment.tid);
           messageUpdateData = {
             id: messageResponse.id,
@@ -15419,10 +15444,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 100;
+          _context.next = 102;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 100:
+        case 102:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.tid);
           }
@@ -15440,36 +15465,36 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 109;
+            _context.next = 111;
             break;
           }
 
-          _context.next = 109;
+          _context.next = 111;
           return put(markChannelAsReadAC(channel.id));
 
-        case 109:
-          _context.next = 111;
+        case 111:
+          _context.next = 113;
           return put(updateChannelDataAC(channel.id, channelUpdateParam, true));
 
-        case 111:
-          _context.next = 114;
+        case 113:
+          _context.next = 116;
           break;
 
-        case 113:
+        case 115:
           throw Error('Network error');
 
-        case 114:
-          _context.next = 125;
+        case 116:
+          _context.next = 127;
           break;
 
-        case 116:
-          _context.prev = 116;
-          _context.t0 = _context["catch"](65);
+        case 118:
+          _context.prev = 118;
+          _context.t0 = _context["catch"](66);
           console.log('Error on uploading attachment', messageAttachment.tid);
-          _context.next = 121;
+          _context.next = 123;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.tid));
 
-        case 121:
+        case 123:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -15479,16 +15504,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 125;
+          _context.next = 127;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 125:
-          _context.next = 152;
+        case 127:
+          _context.next = 154;
           break;
 
-        case 127:
+        case 129:
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
 
@@ -15509,10 +15534,10 @@ function sendMessage(action) {
           _attachmentToSend.tid = messageAttachment.tid;
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
-          _context.next = 135;
+          _context.next = 137;
           return call(channel.sendMessage, messageToSend);
 
-        case 135:
+        case 137:
           _messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.tid);
           _messageUpdateData = {
@@ -15525,10 +15550,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 140;
+          _context.next = 142;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData))));
 
-        case 140:
+        case 142:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.tid);
           }
@@ -15546,25 +15571,25 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 149;
+            _context.next = 151;
             break;
           }
 
-          _context.next = 149;
+          _context.next = 151;
           return put(markChannelAsReadAC(channel.id));
 
-        case 149:
-          _context.next = 151;
+        case 151:
+          _context.next = 153;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam, true));
 
-        case 151:
+        case 153:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam);
 
-        case 152:
-          _context.next = 211;
+        case 154:
+          _context.next = 213;
           break;
 
-        case 154:
+        case 156:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var uri;
 
@@ -15658,7 +15683,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 172;
+            _context.next = 174;
             break;
           }
 
@@ -15708,12 +15733,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 166;
+          _context.next = 168;
           return call(uploadAllAttachments);
 
-        case 166:
+        case 168:
           uploadedAttachments = _context.sent;
-          _context.next = 169;
+          _context.next = 171;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -15756,12 +15781,12 @@ function sendMessage(action) {
             }
           });
 
-        case 169:
+        case 171:
           attachmentsToSend = _context.sent;
-          _context.next = 191;
+          _context.next = 193;
           break;
 
-        case 172:
+        case 174:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -15773,56 +15798,56 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 175;
+          _context.next = 177;
           return select(messagesHasNextSelector);
 
-        case 175:
+        case 177:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 184;
+            _context.next = 186;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 182;
+            _context.next = 184;
             break;
           }
 
-          _context.next = 180;
+          _context.next = 182;
           return put(getMessagesAC(channel));
 
-        case 180:
-          _context.next = 184;
+        case 182:
+          _context.next = 186;
           break;
 
-        case 182:
-          _context.next = 184;
+        case 184:
+          _context.next = 186;
           return put(addMessageAC(JSON.parse(JSON.stringify(_messageCopy2))));
 
-        case 184:
+        case 186:
           addMessageToMap(channelId, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
           _messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context.next = 189;
+          _context.next = 191;
           return put(setMessagesAC(JSON.parse(JSON.stringify(_messagesToAdd))));
 
-        case 189:
-          _context.next = 191;
+        case 191:
+          _context.next = 193;
           return put(scrollToNewMessageAC(true));
 
-        case 191:
+        case 193:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 211;
+            _context.next = 213;
             break;
           }
 
-          _context.next = 195;
+          _context.next = 197;
           return call(channel.sendMessage, _messageToSend);
 
-        case 195:
+        case 197:
           _messageResponse2 = _context.sent;
           attachmentsToUpdate = [];
 
@@ -15853,10 +15878,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 201;
+          _context.next = 203;
           return put(updateMessageAC(_messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData2))));
 
-        case 201:
+        case 203:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
@@ -15869,35 +15894,35 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 208;
+            _context.next = 210;
             break;
           }
 
-          _context.next = 208;
+          _context.next = 210;
           return put(markChannelAsReadAC(channel.id));
 
-        case 208:
-          _context.next = 210;
+        case 210:
+          _context.next = 212;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam2, true));
 
-        case 210:
+        case 212:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam2);
 
-        case 211:
-          _context.next = 216;
+        case 213:
+          _context.next = 218;
           break;
 
-        case 213:
-          _context.prev = 213;
+        case 215:
+          _context.prev = 215;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 216:
+        case 218:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 213], [65, 116]]);
+  }, _marked$2, null, [[0, 215], [66, 118]]);
 }
 
 function sendTextMessage(action) {
@@ -16794,10 +16819,9 @@ function getMessagesQuery(action) {
         case 0:
           _context7.prev = 0;
           _action$payload = action.payload, channel = _action$payload.channel, loadWithLastMessage = _action$payload.loadWithLastMessage, messageId = _action$payload.messageId, limit = _action$payload.limit;
-          console.log('getMessagesQuery ... ', action.payload);
 
           if (!channel.id) {
-            _context7.next = 112;
+            _context7.next = 111;
             break;
           }
 
@@ -16805,16 +16829,16 @@ function getMessagesQuery(action) {
           messageQueryBuilder = new SceytChatClient.MessageListQueryBuilder(channel.id);
           messageQueryBuilder.limit(limit || MESSAGES_MAX_LENGTH);
           messageQueryBuilder.reverse(true);
-          _context7.next = 10;
+          _context7.next = 9;
           return call(messageQueryBuilder.build);
 
-        case 10:
+        case 9:
           messageQuery = _context7.sent;
           query.messageQuery = messageQuery;
-          _context7.next = 14;
+          _context7.next = 13;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADING));
 
-        case 14:
+        case 13:
           cachedMessages = getMessagesFromMap(channel.id);
           result = {
             messages: [],
@@ -16822,48 +16846,48 @@ function getMessagesQuery(action) {
           };
 
           if (!loadWithLastMessage) {
-            _context7.next = 37;
+            _context7.next = 36;
             break;
           }
 
           if (!(channel.newMessageCount && channel.newMessageCount > 0)) {
-            _context7.next = 32;
+            _context7.next = 31;
             break;
           }
 
           setHasNextCached(false);
           setHasPrevCached(false);
           setAllMessages([]);
-          _context7.next = 23;
+          _context7.next = 22;
           return call(messageQuery.loadPreviousMessageId, '0');
 
-        case 23:
+        case 22:
           result = _context7.sent;
           setMessagesToMap(channel.id, result.messages);
           setAllMessages([].concat(result.messages));
-          _context7.next = 28;
+          _context7.next = 27;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 28:
-          _context7.next = 30;
+        case 27:
+          _context7.next = 29;
           return put(markChannelAsReadAC(channel.id));
 
-        case 30:
-          _context7.next = 35;
+        case 29:
+          _context7.next = 34;
           break;
 
-        case 32:
+        case 31:
           result.messages = getFromAllMessagesByMessageId('', '', true);
-          _context7.next = 35;
+          _context7.next = 34;
           return put(setMessagesHasPrevAC(true));
 
-        case 35:
-          _context7.next = 103;
+        case 34:
+          _context7.next = 102;
           break;
 
-        case 37:
+        case 36:
           if (!messageId) {
-            _context7.next = 66;
+            _context7.next = 65;
             break;
           }
 
@@ -16874,31 +16898,31 @@ function getMessagesQuery(action) {
           maxLengthPart = MESSAGES_MAX_LENGTH / 2;
 
           if (!(messageIndex >= maxLengthPart)) {
-            _context7.next = 49;
+            _context7.next = 48;
             break;
           }
 
           result.messages = allMessages.slice(messageIndex - maxLengthPart, messageIndex + maxLengthPart);
-          _context7.next = 45;
+          _context7.next = 44;
           return put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
-        case 45:
+        case 44:
           setHasPrevCached(messageIndex > maxLengthPart);
           setHasNextCached(allMessages.length > maxLengthPart);
-          _context7.next = 62;
+          _context7.next = 61;
           break;
 
-        case 49:
+        case 48:
           messageQuery.limit = MESSAGES_MAX_LENGTH;
-          _context7.next = 52;
+          _context7.next = 51;
           return call(messageQuery.loadNearMessageId, messageId);
 
-        case 52:
+        case 51:
           result = _context7.sent;
-          _context7.next = 55;
+          _context7.next = 54;
           return put(setMessagesHasNextAC(true));
 
-        case 55:
+        case 54:
           pendingMessages = getPendingMessages(channel.id);
 
           if (pendingMessages && pendingMessages.length) {
@@ -16913,25 +16937,25 @@ function getMessagesQuery(action) {
             result.messages = [].concat(result.messages, filteredPendingMessages);
           }
 
-          _context7.next = 59;
+          _context7.next = 58;
           return put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
-        case 59:
+        case 58:
           setAllMessages([].concat(result.messages));
           setHasPrevCached(false);
           setHasNextCached(false);
 
-        case 62:
-          _context7.next = 64;
+        case 61:
+          _context7.next = 63;
           return put(setScrollToMessagesAC(messageId));
 
-        case 64:
-          _context7.next = 103;
+        case 63:
+          _context7.next = 102;
           break;
 
-        case 66:
+        case 65:
           if (!(channel.newMessageCount && channel.lastDisplayedMsgId)) {
-            _context7.next = 90;
+            _context7.next = 89;
             break;
           }
 
@@ -16939,35 +16963,35 @@ function getMessagesQuery(action) {
           messageQuery.limit = MESSAGES_MAX_LENGTH;
 
           if (!Number(channel.lastDisplayedMsgId)) {
-            _context7.next = 75;
+            _context7.next = 74;
             break;
           }
 
-          _context7.next = 72;
+          _context7.next = 71;
           return call(messageQuery.loadNearMessageId, channel.lastDisplayedMsgId);
 
-        case 72:
+        case 71:
           result = _context7.sent;
-          _context7.next = 78;
+          _context7.next = 77;
           break;
 
-        case 75:
-          _context7.next = 77;
+        case 74:
+          _context7.next = 76;
           return call(messageQuery.loadPrevious);
 
-        case 77:
+        case 76:
           result = _context7.sent;
 
-        case 78:
+        case 77:
           setMessagesToMap(channel.id, result.messages);
-          _context7.next = 81;
+          _context7.next = 80;
           return put(setMessagesHasPrevAC(true));
 
-        case 81:
-          _context7.next = 83;
+        case 80:
+          _context7.next = 82;
           return put(setMessagesHasNextAC(channel.lastMessage && result.messages.length > 0 && channel.lastMessage.id !== result.messages[result.messages.length - 1].id));
 
-        case 83:
+        case 82:
           _pendingMessages = getPendingMessages(channel.id);
 
           if (_pendingMessages && _pendingMessages.length) {
@@ -16983,30 +17007,30 @@ function getMessagesQuery(action) {
           }
 
           setAllMessages([].concat(result.messages));
-          _context7.next = 88;
+          _context7.next = 87;
           return put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
-        case 88:
-          _context7.next = 103;
+        case 87:
+          _context7.next = 102;
           break;
 
-        case 90:
+        case 89:
           setAllMessages([]);
 
           if (!(cachedMessages && cachedMessages.length)) {
-            _context7.next = 95;
+            _context7.next = 94;
             break;
           }
 
           setAllMessages([].concat(cachedMessages));
-          _context7.next = 95;
+          _context7.next = 94;
           return put(setMessagesAC(JSON.parse(JSON.stringify(cachedMessages))));
 
-        case 95:
-          _context7.next = 97;
+        case 94:
+          _context7.next = 96;
           return call(messageQuery.loadPrevious);
 
-        case 97:
+        case 96:
           result = _context7.sent;
           result.messages.forEach(function (msg) {
             updateMessageOnMap(channel.id, {
@@ -17015,16 +17039,16 @@ function getMessagesQuery(action) {
             });
             updateMessageOnAllMessages(msg.id, msg);
           });
-          _context7.next = 101;
+          _context7.next = 100;
           return put(setMessagesHasPrevAC(result.hasNext));
 
-        case 101:
-          _context7.next = 103;
+        case 100:
+          _context7.next = 102;
           return put(setMessagesHasNextAC(false));
 
-        case 103:
+        case 102:
           if (!(!(cachedMessages && cachedMessages.length) || loadWithLastMessage)) {
-            _context7.next = 110;
+            _context7.next = 109;
             break;
           }
 
@@ -17044,10 +17068,10 @@ function getMessagesQuery(action) {
             }
           }
 
-          _context7.next = 107;
+          _context7.next = 106;
           return put(setMessagesAC(JSON.parse(JSON.stringify(result.messages))));
 
-        case 107:
+        case 106:
           setMessagesToMap(channel.id, result.messages);
           setAllMessages([].concat(result.messages));
 
@@ -17056,25 +17080,25 @@ function getMessagesQuery(action) {
             setHasNextCached(false);
           }
 
-        case 110:
-          _context7.next = 112;
+        case 109:
+          _context7.next = 111;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 112:
-          _context7.next = 117;
+        case 111:
+          _context7.next = 116;
           break;
 
-        case 114:
-          _context7.prev = 114;
+        case 113:
+          _context7.prev = 113;
           _context7.t0 = _context7["catch"](0);
           console.log('error in message query', _context7.t0);
 
-        case 117:
+        case 116:
         case "end":
           return _context7.stop();
       }
     }
-  }, _marked7$1, null, [[0, 114]]);
+  }, _marked7$1, null, [[0, 113]]);
 }
 
 function loadMoreMessages(action) {
@@ -18199,37 +18223,35 @@ function getRoles(action) {
           _action$payload = action.payload, timeout = _action$payload.timeout, attempts = _action$payload.attempts;
           _context8.prev = 1;
           SceytChatClient = getClient();
-          console.log('Get roles .. .. attempts', attempts || 0);
-          _context8.next = 6;
+          _context8.next = 5;
           return call(SceytChatClient.getRoles);
 
-        case 6:
+        case 5:
           roles = _context8.sent;
-          console.log('roles. . . . . ', roles);
-          _context8.next = 10;
+          _context8.next = 8;
           return put(getRolesSuccess(roles));
 
-        case 10:
-          _context8.next = 12;
+        case 8:
+          _context8.next = 10;
           return put(getRolesFailAC());
 
-        case 12:
-          _context8.next = 19;
+        case 10:
+          _context8.next = 17;
           break;
 
-        case 14:
-          _context8.prev = 14;
+        case 12:
+          _context8.prev = 12;
           _context8.t0 = _context8["catch"](1);
           console.log('ERROR get roles', _context8.t0);
-          _context8.next = 19;
+          _context8.next = 17;
           return put(getRolesFailAC((timeout || 0) + 300, (attempts || 0) + 1));
 
-        case 19:
+        case 17:
         case "end":
           return _context8.stop();
       }
     }
-  }, _marked8$2, null, [[1, 14]]);
+  }, _marked8$2, null, [[1, 12]]);
 }
 
 function MembersSaga() {
@@ -19730,7 +19752,9 @@ var Channel = function Channel(_ref) {
     isLastMessage: true
   }), channel.lastReactedMessage && '"')))), /*#__PURE__*/React__default.createElement(ChannelStatus, {
     ref: messageTimeAndStatusRef
-  }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && /*#__PURE__*/React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, 'ticks', undefined, colors.primary)), /*#__PURE__*/React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), /*#__PURE__*/React__default.createElement(UnreadInfo, null, !!(channel.newMentionCount && channel.newMentionCount > 0) && /*#__PURE__*/React__default.createElement(UnreadMentionIconWrapper, {
+  }, lastMessage && lastMessage.state !== MESSAGE_STATUS.DELETE && /*#__PURE__*/React__default.createElement(DeliveryIconCont, null, lastMessage && lastMessage.user && lastMessage.user.id === user.id && lastMessage.type !== 'system' && messageStatusIcon(lastMessage.deliveryStatus, 'ticks', undefined, colors.primary)), /*#__PURE__*/React__default.createElement(LastMessageDate, null, lastMessage && lastMessage.createdAt && lastMessageDateFormat(lastMessage.createdAt))), /*#__PURE__*/React__default.createElement(UnreadInfo, {
+    bottom: !(lastMessage || !!typingIndicator || draftMessageText) ? '5px' : ''
+  }, !!(channel.newMentionCount && channel.newMentionCount > 0) && /*#__PURE__*/React__default.createElement(UnreadMentionIconWrapper, {
     iconColor: colors.primary,
     rightMargin: !!(channel.newMessageCount || channel.unread)
   }, /*#__PURE__*/React__default.createElement(SvgUnreadMention, null)), !!(channel.newMessageCount || channel.unread) && /*#__PURE__*/React__default.createElement(UnreadCount, {
@@ -19752,7 +19776,7 @@ var Container$2 = styled.div(_templateObject$4 || (_templateObject$4 = _taggedTe
 var ChannelInfo = styled.div(_templateObject2$4 || (_templateObject2$4 = _taggedTemplateLiteralLoose(["\n  text-align: left;\n  margin-left: ", ";\n  width: 100%;\n  max-width: calc(100% - 62px);\n\n  h3 {\n    display: inline-block;\n    margin: 0;\n    font-size: 15px;\n    font-weight: 500;\n    text-overflow: ellipsis;\n    line-height: 18px;\n    letter-spacing: -0.2px;%;\n    max-width: ", ";\n    overflow: hidden;\n    white-space: nowrap;\n    color: ", ";\n    text-transform: ", ";\n  }\n"])), function (props) {
   return props.avatar && '12px';
 }, function (props) {
-  return "calc(100% - " + (props.statusWidth + (props.isMuted ? 28 : 0) + 2) + "px)";
+  return "calc(100% - " + (props.statusWidth + (props.isMuted ? 28 : 4) + 2) + "px)";
 }, function (props) {
   return props.theme === THEME.DARK ? colors.darkModeTextColor1 : colors.textColor1;
 }, function (props) {
@@ -19795,7 +19819,9 @@ var UnreadMentionIconWrapper = styled.span(_templateObject15$1 || (_templateObje
 });
 var TypingIndicator = styled.span(_templateObject16$1 || (_templateObject16$1 = _taggedTemplateLiteralLoose(["\n  font-style: italic;\n"])));
 var ReactionItem = styled.span(_templateObject17$1 || (_templateObject17$1 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  padding: 0 3px;\n"])));
-var UnreadInfo = styled.span(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  display: flex;\n  margin-top: 7px;\n  align-items: center;\n  flex: 0 0 auto;\n  margin-left: auto;\n"])));
+var UnreadInfo = styled.span(_templateObject18$1 || (_templateObject18$1 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: 16px;\n  display: flex;\n  margin-top: 7px;\n  align-items: center;\n  flex: 0 0 auto;\n  margin-left: auto;\n"])), function (props) {
+  return props.bottom || '11px';
+});
 var UnreadCount = styled.span(_templateObject19$1 || (_templateObject19$1 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
@@ -21895,17 +21921,19 @@ var ChannelList = function ChannelList(_ref) {
   useDidUpdate(function () {
     if (channels && channels.length) {
       if (!listWidthIsSet) {
-        console.log('set channels width ..... ', channelListRef.current && channelListRef.current.clientWidth);
         dispatch(setChannelListWithAC(channelListRef.current && channelListRef.current.clientWidth || 0));
         setListWidthIsSet(true);
       }
     } else {
-      console.log('set channels width is set ..... ', false);
       setListWidthIsSet(false);
     }
 
     console.log('channels. ...........................', channels);
   }, [channels]);
+  useDidUpdate(function () {
+
+    console.log('searchedChannels. ...........................', searchedChannels);
+  }, [searchedChannels]);
   return /*#__PURE__*/React__default.createElement(Container$7, {
     withCustomList: !!List,
     ref: channelListRef,
@@ -22147,8 +22175,6 @@ function Chat(_ref) {
       setChannelDetailsWidth = _useState[1];
 
   useEffect(function () {
-    console.log('channelListWidth.  ... . . . ', channelListWidth);
-
     if (hideChannelList && !channelListWidth) {
       dispatch(setHideChannelListAC(true));
       dispatch(getChannelsAC({
@@ -24229,8 +24255,8 @@ var getFrame = function getFrame(videoSrc, time) {
 
 var _templateObject$n, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$9, _templateObject6$8, _templateObject7$7;
 var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
-  var maxWidth = _ref.maxWidth,
-      maxHeight = _ref.maxHeight,
+  var width = _ref.width,
+      height = _ref.height,
       src = _ref.src,
       file = _ref.file,
       borderRadius = _ref.borderRadius,
@@ -24333,8 +24359,8 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
     });
   }, [src]);
   return /*#__PURE__*/React__default.createElement(Component$1, {
-    maxWidth: maxWidth,
-    maxHeight: maxHeight,
+    width: width,
+    height: height,
     borderRadius: borderRadius,
     isRepliedMessage: isRepliedMessage,
     isPreview: isPreview,
@@ -24374,26 +24400,18 @@ var VideoTime = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTe
 var VideoPlayButton = styled.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
   return props.showOnHover && 'hidden';
 });
-var Component$1 = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: ", ";\n  max-height: ", ";\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: ", ";\n    max-height: ", ";\n    width: ", ";\n    height: ", ";\n    min-height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
-  return props.maxWidth || '100%';
+var Component$1 = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: 100%;\n  max-height: 100%;\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: 100%;\n    max-height: 100%;\n    width: ", ";\n    height: ", ";\n    min-height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
+  return props.width;
 }, function (props) {
-  return props.maxHeight || '100%';
+  return props.height;
 }, function (props) {
-  return props.maxWidth;
-}, function (props) {
-  return props.maxHeight;
-}, function (props) {
-  return !props.isRepliedMessage && !props.isPreview && '130px';
+  return !props.isRepliedMessage && !props.isPreview && !props.isDetailsView && '130px';
 }, function (props) {
   return props.isRepliedMessage && 'margin-right: 8px';
 }, function (props) {
-  return props.maxWidth || '100%';
+  return props.width;
 }, function (props) {
-  return props.maxHeight || '100%';
-}, function (props) {
-  return props.maxWidth;
-}, function (props) {
-  return props.maxHeight;
+  return props.height;
 }, function (props) {
   return !props.isRepliedMessage && !props.isPreview && '130px';
 }, function (props) {
@@ -25067,7 +25085,7 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     fitTheContainer: isDetailsView,
     width: !isPreview && !isRepliedMessage ? renderWidth : undefined,
-    height: !isPreview && !isRepliedMessage ? renderHeight : undefined
+    height: !isPreview && !isRepliedMessage && !isDetailsView ? renderHeight : undefined
   }, /*#__PURE__*/React__default.createElement(AttachmentImg$1, {
     draggable: false,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
@@ -25125,7 +25143,7 @@ var Attachment = function Attachment(_ref) {
     }
   })) : attachment.type === 'video' ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !isPreview ? /*#__PURE__*/React__default.createElement(VideoCont, {
     onClick: function onClick() {
-      return handleMediaItemClick && !downloadingFile && (attachmentCompilationState[attachment.tid] ? attachmentCompilationState[attachment.tid] !== UPLOAD_STATE.FAIL || attachmentCompilationState[attachment.tid] !== UPLOAD_STATE.UPLOADING : true) && handleMediaItemClick(attachment);
+      return handleMediaItemClick && !downloadingFile && !isInUploadingState && (attachmentCompilationState[attachment.tid] ? attachmentCompilationState[attachment.tid] !== UPLOAD_STATE.FAIL || attachmentCompilationState[attachment.tid] !== UPLOAD_STATE.UPLOADING : true) && handleMediaItemClick(attachment);
     },
     isDetailsView: isDetailsView
   }, isInUploadingState || downloadingFile ? /*#__PURE__*/React__default.createElement(UploadProgress, {
@@ -25163,10 +25181,10 @@ var Attachment = function Attachment(_ref) {
         transformOrigin: 'center center'
       }
     }
-  })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, /*#__PURE__*/React__default.createElement(VideoPreview, {
+  })), sizeProgress && !isRepliedMessage && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, /*#__PURE__*/React__default.createElement(VideoPreview, {
     theme: theme,
-    maxWidth: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderWidth || videoAttachmentMaxWidth || 420) + "px",
-    maxHeight: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderHeight || videoAttachmentMaxHeight || 240) + "px",
+    width: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderWidth || videoAttachmentMaxWidth || 420) + "px",
+    height: isRepliedMessage ? '40px' : isDetailsView ? '100%' : (renderHeight || videoAttachmentMaxHeight || 240) + "px",
     file: attachment,
     src: attachmentUrl,
     isCachedFile: isCached,
@@ -25179,8 +25197,8 @@ var Attachment = function Attachment(_ref) {
     isPreview: isPreview,
     backgroundColor: colors.defaultAvatarBackground
   }, /*#__PURE__*/React__default.createElement(VideoPreview, {
-    maxWidth: '48px',
-    maxHeight: '48px',
+    width: '48px',
+    height: '48px',
     file: attachment,
     src: attachment.attachmentUrl || attachmentUrl,
     borderRadius: borderRadius,
@@ -25216,8 +25234,8 @@ var Attachment = function Attachment(_ref) {
   }, previewFileType && previewFileType === 'video' ? /*#__PURE__*/React__default.createElement(VideoPreview, {
     file: attachment,
     backgroundColor: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
-    maxWidth: '40px',
-    maxHeight: '40px',
+    width: '40px',
+    height: '40px',
     src: attachment.attachmentUrl,
     setVideoIsReadyToSend: setVideoIsReadyToSend,
     isPreview: true
@@ -25282,7 +25300,7 @@ var Attachment$1 = /*#__PURE__*/React__default.memo(Attachment, function (prevPr
   return prevProps.attachment.url === nextProps.attachment.url && prevProps.attachment.id === nextProps.attachment.id && prevProps.attachment.attachmentUrl === nextProps.attachment.attachmentUrl;
 });
 var DownloadImage = styled.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+var AttachmentImgCont = styled.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  max-width: 100%;\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPreview ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
@@ -25700,7 +25718,7 @@ function ForwardMessagePopup(_ref) {
       return chan.id === channel.id;
     }) >= 0;
     var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = channel.members.find(function (member) {
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
       return member.id !== user.id;
     });
     return /*#__PURE__*/React__default.createElement(ChannelItem, {
@@ -25709,8 +25727,8 @@ function ForwardMessagePopup(_ref) {
         return handleChoseChannel(e, channel.id);
       }
     }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : '',
-      image: directChannelUser && directChannelUser.avatarUrl,
+      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : channel.subject || '',
+      image: directChannelUser ? directChannelUser.avatarUrl : channel.avatarUrl,
       size: 40,
       textSize: 12,
       setDefaultAvatar: true
@@ -29825,21 +29843,24 @@ var SendMessageInput = function SendMessageInput(_ref) {
           messageToSend.parentMessage = messageForReply;
         }
 
-        if (messageTexToSend && !attachments.length) {
+        var linkAttachment;
+
+        if (messageTexToSend) {
           var linkify = new LinkifyIt();
           var match = linkify.match(messageTexToSend);
-          var firstUrl;
 
           if (match) {
-            firstUrl = match[0].url;
-          }
-
-          if (firstUrl) {
-            messageToSend.attachments = [{
+            linkAttachment = {
               type: attachmentTypes.link,
-              data: firstUrl,
+              data: match[0].url,
               upload: false
-            }];
+            };
+          }
+        }
+
+        if (messageTexToSend && !attachments.length) {
+          if (linkAttachment) {
+            messageToSend.attachments = [linkAttachment];
           }
 
           dispatch(sendTextMessageAC(messageToSend, activeChannel.id, connectionStatus));
@@ -29869,7 +29890,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
               }
 
               dispatch(sendMessageAC(_extends({}, messageToSend, {
-                attachments: [attachmentToSend]
+                attachments: [attachmentToSend, linkAttachment]
               }), activeChannel.id, connectionStatus, true));
             }
 
@@ -29877,7 +29898,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
           });
 
           if (!sendAsSeparateMessage) {
-            dispatch(sendMessageAC(messageToSend, activeChannel.id, connectionStatus, false));
+            dispatch(sendMessageAC(_extends({}, messageToSend, {
+              attachments: [].concat(messageToSend.attachments, [linkAttachment])
+            }), activeChannel.id, connectionStatus, false));
           }
         }
 
@@ -30522,9 +30545,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
       }
     } else if (getDraftMessageFromMap(activeChannel.id)) {
       removeDraftMessageFromMap(activeChannel.id);
+      dispatch(setChannelDraftMessageIsRemovedAC(activeChannel.id));
 
       if (checkDraftMessagesIsEmpty() && listenerIsAdded) {
-        dispatch(setChannelDraftMessageIsRemovedAC(activeChannel.id));
         setListenerIsAdded(false);
         document.body.removeAttribute('onbeforeunload');
       }

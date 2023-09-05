@@ -1,8 +1,8 @@
 import React from 'react';
 import { IAttachment } from '../../types';
 interface IVideoPreviewProps {
-    maxWidth?: string;
-    maxHeight?: string;
+    width?: string;
+    height?: string;
     theme?: string;
     file: IAttachment;
     borderRadius?: string;
