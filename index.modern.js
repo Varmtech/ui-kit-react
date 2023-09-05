@@ -15438,6 +15438,7 @@ function sendMessage(action) {
           deletePendingAttachment(messageAttachment.tid);
           messageUpdateData = {
             id: messageResponse.id,
+            body: messageResponse.body,
             deliveryStatus: messageResponse.deliveryStatus,
             attachments: messageResponse.attachments,
             mentionedUsers: messageResponse.mentionedUsers,
@@ -15544,6 +15545,7 @@ function sendMessage(action) {
           deletePendingAttachment(messageAttachment.tid);
           _messageUpdateData = {
             id: _messageResponse.id,
+            body: _messageResponse.body,
             deliveryStatus: _messageResponse.deliveryStatus,
             attachments: _messageResponse.attachments,
             mentionedUsers: _messageResponse.mentionedUsers,
@@ -15872,6 +15874,7 @@ function sendMessage(action) {
 
           _messageUpdateData2 = {
             id: _messageResponse2.id,
+            body: _messageResponse2.body,
             deliveryStatus: _messageResponse2.deliveryStatus,
             attachments: attachmentsToUpdate,
             mentionedUsers: _messageResponse2.mentionedUsers,
@@ -16050,6 +16053,7 @@ function sendTextMessage(action) {
         case 46:
           messageUpdateData = {
             id: messageResponse.id,
+            body: messageResponse.body,
             deliveryStatus: messageResponse.deliveryStatus,
             attachments: messageResponse.attachments,
             mentionedUsers: messageResponse.mentionedUsers,
@@ -16593,6 +16597,7 @@ function resendMessage(action) {
           console.log('resend message response ... ', _messageResponse3);
           _messageUpdateData3 = {
             id: _messageResponse3.id,
+            body: _messageResponse3.body,
             deliveryStatus: _messageResponse3.deliveryStatus,
             attachments: [],
             mentionedUsers: _messageResponse3.mentionedUsers,
@@ -28138,6 +28143,7 @@ var MessageList = function MessageList(_ref2) {
       renderTopDate();
       var target = event.target;
       var forceLoadPrevMessages = false;
+      console.log('target.scrollTop . . . .   ', target.scrollTop);
 
       if (-target.scrollTop + target.offsetHeight + 30 > target.scrollHeight) {
         scrollToLastVisible = true;
@@ -28414,14 +28420,18 @@ var MessageList = function MessageList(_ref2) {
       if (loadDirection !== 'next') {
         var lastVisibleMessage = document.getElementById(lastVisibleMessageId);
 
+        if (lastVisibleMessage && lastVisibleMessage.offsetTop >= scrollRef.current.scrollTop) {
+          console.log('lastVisibleMessage >>>>>>>>>>>>>>>>>>>>>>>>. ', lastVisibleMessage);
+          console.log('set scroll top .>>>>>>>>>>>>>>>>>>>>>>>>>. ', lastVisibleMessage.offsetTop);
+          scrollRef.current.scrollTop = -lastVisibleMessage.offsetTop;
+        }
+
         if (prevMessageId) {
-          scrollRef.current.style.scrollBehavior = 'inherit';
-
           if (lastVisibleMessage && scrollToLastVisible) {
+            scrollRef.current.style.scrollBehavior = 'inherit';
             scrollRef.current.scrollTop = lastVisibleMessage.offsetTop;
+            scrollRef.current.style.scrollBehavior = 'smooth';
           }
-
-          scrollRef.current.style.scrollBehavior = 'smooth';
         }
 
         if (loadFromServer) {
