@@ -12957,16 +12957,17 @@ function searchChannels(action) {
           _context3.prev = 0;
           payload = action.payload;
           params = payload.params, contactsMap = payload.contactsMap;
+          console.log('search channel payload: ', payload);
           SceytChatClient = getClient();
           getFromContacts = getShowOnlyContactUsers();
-          _context3.next = 7;
+          _context3.next = 8;
           return put(setChannelsLoadingStateAC(LOADING_STATE.LOADING));
 
-        case 7:
+        case 8:
           searchBy = params.search;
 
           if (!searchBy) {
-            _context3.next = 36;
+            _context3.next = 38;
             break;
           }
 
@@ -13020,57 +13021,58 @@ function searchChannels(action) {
             });
           }
 
-          _context3.next = 21;
+          _context3.next = 22;
           return put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
             channels: JSON.parse(JSON.stringify(publicChannels)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 21:
-          _context3.next = 23;
+        case 22:
+          _context3.next = 24;
           return put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 23:
+        case 24:
           channelQueryBuilder.subjectContains(searchBy);
           channelQueryBuilder.sortByLastMessage();
           channelQueryBuilder.limit(params.limit || 50);
-          _context3.next = 28;
+          _context3.next = 29;
           return call(channelQueryBuilder.build);
 
-        case 28:
+        case 29:
           channelQuery = _context3.sent;
-          _context3.next = 31;
+          console.log('searched channel query ..... ... ', channelQuery);
+          _context3.next = 33;
           return call(channelQuery.loadNextPage);
 
-        case 31:
+        case 33:
           channelsData = _context3.sent;
           channelsToAdd = channelsData.channels.filter(function (channel) {
             return channel.type === CHANNEL_TYPE.PUBLIC || channel.type === CHANNEL_TYPE.BROADCAST;
           });
           console.log('searched channel data ..... ... ', channelsToAdd);
-          _context3.next = 36;
+          _context3.next = 38;
           return put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
             channels: JSON.parse(JSON.stringify(channelsToAdd)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 36:
-          _context3.next = 42;
+        case 38:
+          _context3.next = 44;
           break;
 
-        case 38:
-          _context3.prev = 38;
+        case 40:
+          _context3.prev = 40;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0, 'Error on get channels');
 
-        case 42:
+        case 44:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3, null, [[0, 38]]);
+  }, _marked3, null, [[0, 40]]);
 }
 
 function getChannelsForForward(action) {
@@ -21931,7 +21933,6 @@ var ChannelList = function ChannelList(_ref) {
     console.log('channels. ...........................', channels);
   }, [channels]);
   useDidUpdate(function () {
-
     console.log('searchedChannels. ...........................', searchedChannels);
   }, [searchedChannels]);
   return /*#__PURE__*/React__default.createElement(Container$7, {
@@ -29889,8 +29890,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
                 delete messageToSend.mentionedMembers;
               }
 
+              var attachmentsToSent = [attachmentToSend];
+
+              if (linkAttachment) {
+                attachmentsToSent.push(linkAttachment);
+              }
+
               dispatch(sendMessageAC(_extends({}, messageToSend, {
-                attachments: [attachmentToSend, linkAttachment]
+                attachments: attachmentsToSent
               }), activeChannel.id, connectionStatus, true));
             }
 
@@ -29898,8 +29905,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
           });
 
           if (!sendAsSeparateMessage) {
+            var attachmentsToSent = [].concat(messageToSend.attachments);
+
+            if (linkAttachment) {
+              attachmentsToSent.push(linkAttachment);
+            }
+
             dispatch(sendMessageAC(_extends({}, messageToSend, {
-              attachments: [].concat(messageToSend.attachments, [linkAttachment])
+              attachments: attachmentsToSent
             }), activeChannel.id, connectionStatus, false));
           }
         }
