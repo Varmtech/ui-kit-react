@@ -142,3 +142,9 @@ export declare const MessageWrapper: import("styled-components").StyledComponent
 export declare const NoMessagesContainer: import("styled-components").StyledComponent<"div", any, {
     color?: string | undefined;
 }, never>;
+export declare const NoMessagesTitle: import("styled-components").StyledComponent<"h4", any, {
+    color?: string | undefined;
+}, never>;
+export declare const NoMessagesText: import("styled-components").StyledComponent<"p", any, {
+    color?: string | undefined;
+}, never>;

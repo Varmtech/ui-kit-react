@@ -1301,9 +1301,11 @@ var ChannelReducer = (function (state, _temp) {
         });
 
         if (activeChannelUser && usersMap[activeChannelUser.id]) {
+          console.log('red: update active channel user . . .');
           newState.activeChannel = _extends({}, newState.activeChannel, {
             members: newState.activeChannel.members.map(function (member) {
               if (member.id !== user.id) {
+                console.log('red: user to update . . .', _extends({}, member, usersMap[activeChannelUser.id]));
                 return _extends({}, member, usersMap[activeChannelUser.id]);
               } else {
                 return member;
@@ -15209,7 +15211,7 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 215;
+            _context.next = 216;
             break;
           }
 
@@ -15639,7 +15641,7 @@ function sendMessage(action) {
           updateChannelOnAllChannels(channel.id, _channelUpdateParam);
 
         case 156:
-          _context.next = 215;
+          _context.next = 216;
           break;
 
         case 158:
@@ -15893,7 +15895,7 @@ function sendMessage(action) {
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 215;
+            _context.next = 216;
             break;
           }
 
@@ -15943,6 +15945,7 @@ function sendMessage(action) {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
           });
+          updateMessageOnAllMessages(_messageToSend.tid, _messageUpdateData2);
           _messageToUpdate2 = JSON.parse(JSON.stringify(_messageResponse2));
           updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate2);
           _channelUpdateParam2 = {
@@ -15951,35 +15954,35 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 212;
+            _context.next = 213;
             break;
           }
 
-          _context.next = 212;
+          _context.next = 213;
           return put(markChannelAsReadAC(channel.id));
 
-        case 212:
-          _context.next = 214;
+        case 213:
+          _context.next = 215;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam2, true));
 
-        case 214:
+        case 215:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam2);
 
-        case 215:
-          _context.next = 220;
+        case 216:
+          _context.next = 221;
           break;
 
-        case 217:
-          _context.prev = 217;
+        case 218:
+          _context.prev = 218;
           _context.t1 = _context["catch"](0);
           console.log('error on send message ... ', _context.t1);
 
-        case 220:
+        case 221:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[0, 217], [68, 120]]);
+  }, _marked$2, null, [[0, 218], [68, 120]]);
 }
 
 function sendTextMessage(action) {
@@ -23563,7 +23566,7 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _path$B, _path2$3;
+var _path$B, _defs;
 
 function _extends$C() {
   _extends$C = Object.assign ? Object.assign.bind() : function (target) {
@@ -23582,27 +23585,33 @@ function _extends$C() {
   return _extends$C.apply(this, arguments);
 }
 
-function SvgForward(props) {
+function SvgNoMessagesIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$C({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
+    width: 49,
+    height: 49,
     fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
+    xmlns: "http://www.w3.org/2000/svg",
+    xmlnsXlink: "http://www.w3.org/1999/xlink"
   }, props), _path$B || (_path$B = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
-    fill: "CurrentColor"
-  })), _path2$3 || (_path2$3 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
-    fill: "CurrentColor"
-  })));
+    d: "M.5 48.36h48v-48H.5v48z",
+    fill: "url(#noMessagesIcon_svg__pattern0)"
+  })), _defs || (_defs = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("pattern", {
+    id: "noMessagesIcon_svg__pattern0",
+    patternContentUnits: "objectBoundingBox",
+    width: 1,
+    height: 1
+  }, /*#__PURE__*/createElement("use", {
+    xlinkHref: "#noMessagesIcon_svg__image0_2070_42990",
+    transform: "scale(.00625)"
+  })), /*#__PURE__*/createElement("image", {
+    id: "noMessagesIcon_svg__image0_2070_42990",
+    width: 160,
+    height: 160,
+    xlinkHref: "data:image/png;base64,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"
+  }))));
 }
 
-var _circle, _path$C;
+var _path$C, _path2$3;
 
 function _extends$D() {
   _extends$D = Object.assign ? Object.assign.bind() : function (target) {
@@ -23621,28 +23630,27 @@ function _extends$D() {
   return _extends$D.apply(this, arguments);
 }
 
-function SvgErrorIcon(props) {
+function SvgForward(props) {
   return /*#__PURE__*/createElement("svg", _extends$D({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle || (_circle = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 12,
-    stroke: "#FA4C56",
-    strokeWidth: 2
-  })), _path$C || (_path$C = /*#__PURE__*/createElement("path", {
+  }, props), _path$C || (_path$C = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
-    fill: "#ED4D60"
+    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
+    fill: "CurrentColor"
+  })), _path2$3 || (_path2$3 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$D;
+var _circle, _path$D;
 
 function _extends$E() {
   _extends$E = Object.assign ? Object.assign.bind() : function (target) {
@@ -23661,15 +23669,24 @@ function _extends$E() {
   return _extends$E.apply(this, arguments);
 }
 
-function SvgDeleteIcon(props) {
+function SvgErrorIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$E({
-    width: 20,
-    height: 20,
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$D || (_path$D = /*#__PURE__*/createElement("path", {
-    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
-    fill: "#FA4C56"
+  }, props), _circle || (_circle = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 12,
+    stroke: "#FA4C56",
+    strokeWidth: 2
+  })), _path$D || (_path$D = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
+    fill: "#ED4D60"
   })));
 }
 
@@ -23692,17 +23709,15 @@ function _extends$F() {
   return _extends$F.apply(this, arguments);
 }
 
-function SvgReportIcon(props) {
+function SvgDeleteIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$F({
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$E || (_path$E = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.623 1.5h4.754c.51-.001.908.16 1.274.528l3.321 3.32c.362.361.53.756.528 1.275v4.754c.001.519-.166.914-.528 1.274l-3.32 3.321c-.36.362-.756.53-1.275.528H6.623a1.675 1.675 0 01-1.274-.528l-3.321-3.32a1.675 1.675 0 01-.528-1.275V6.623a1.675 1.675 0 01.528-1.274l3.32-3.321A1.675 1.675 0 016.624 1.5zm-.337 1.52L3.02 6.285c-.136.136-.155.183-.155.375v4.678c0 .19.019.239.155.375l3.267 3.267c.136.136.183.155.375.155h4.678c.192 0 .239-.019.375-.155l3.267-3.267c.136-.136.155-.186.155-.375V6.66c0-.192-.02-.24-.155-.375L11.714 3.02c-.137-.136-.184-.155-.375-.155H6.66c-.192 0-.241.021-.375.155zm3.472 9.01a.758.758 0 11-1.516 0 .758.758 0 011.516 0zm-.076-6.136a.682.682 0 00-1.364 0v3.94a.682.682 0 001.364 0v-3.94z",
-    fill: "currentColor"
+    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
+    fill: "#FA4C56"
   })));
 }
 
@@ -23725,18 +23740,17 @@ function _extends$G() {
   return _extends$G.apply(this, arguments);
 }
 
-function SvgEditIcon(props) {
+function SvgReportIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$G({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 18,
+    height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$F || (_path$F = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
-    fill: "CurrentColor"
+    d: "M6.623 1.5h4.754c.51-.001.908.16 1.274.528l3.321 3.32c.362.361.53.756.528 1.275v4.754c.001.519-.166.914-.528 1.274l-3.32 3.321c-.36.362-.756.53-1.275.528H6.623a1.675 1.675 0 01-1.274-.528l-3.321-3.32a1.675 1.675 0 01-.528-1.275V6.623a1.675 1.675 0 01.528-1.274l3.32-3.321A1.675 1.675 0 016.624 1.5zm-.337 1.52L3.02 6.285c-.136.136-.155.183-.155.375v4.678c0 .19.019.239.155.375l3.267 3.267c.136.136.183.155.375.155h4.678c.192 0 .239-.019.375-.155l3.267-3.267c.136-.136.155-.186.155-.375V6.66c0-.192-.02-.24-.155-.375L11.714 3.02c-.137-.136-.184-.155-.375-.155H6.66c-.192 0-.241.021-.375.155zm3.472 9.01a.758.758 0 11-1.516 0 .758.758 0 011.516 0zm-.076-6.136a.682.682 0 00-1.364 0v3.94a.682.682 0 001.364 0v-3.94z",
+    fill: "currentColor"
   })));
 }
 
@@ -23759,20 +23773,22 @@ function _extends$H() {
   return _extends$H.apply(this, arguments);
 }
 
-function SvgResend(props) {
+function SvgEditIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$H({
-    width: 17,
-    height: 15,
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$G || (_path$G = /*#__PURE__*/createElement("path", {
-    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
-    stroke: "currentColor",
-    strokeWidth: 1.4
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$H, _path2$4;
+var _path$H;
 
 function _extends$I() {
   _extends$I = Object.assign ? Object.assign.bind() : function (target) {
@@ -23791,27 +23807,20 @@ function _extends$I() {
   return _extends$I.apply(this, arguments);
 }
 
-function SvgEmojiSmileIcon(props) {
+function SvgResend(props) {
   return /*#__PURE__*/createElement("svg", _extends$I({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 17,
+    height: 15,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$H || (_path$H = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
-    fill: "CurrentColor"
-  })), _path2$4 || (_path2$4 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
-    fill: "CurrentColor"
+    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
+    stroke: "currentColor",
+    strokeWidth: 1.4
   })));
 }
 
-var _path$I;
+var _path$I, _path2$4;
 
 function _extends$J() {
   _extends$J = Object.assign ? Object.assign.bind() : function (target) {
@@ -23830,7 +23839,7 @@ function _extends$J() {
   return _extends$J.apply(this, arguments);
 }
 
-function SvgReplyIcon(props) {
+function SvgEmojiSmileIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$J({
     width: 20,
     height: 20,
@@ -23840,7 +23849,12 @@ function SvgReplyIcon(props) {
   }, props), _path$I || (_path$I = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
+    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
+    fill: "CurrentColor"
+  })), _path2$4 || (_path2$4 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
     fill: "CurrentColor"
   })));
 }
@@ -23864,7 +23878,7 @@ function _extends$K() {
   return _extends$K.apply(this, arguments);
 }
 
-function SvgCopyIcon(props) {
+function SvgReplyIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$K({
     width: 20,
     height: 20,
@@ -23874,7 +23888,7 @@ function SvgCopyIcon(props) {
   }, props), _path$J || (_path$J = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
+    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
     fill: "CurrentColor"
   })));
 }
@@ -23898,7 +23912,7 @@ function _extends$L() {
   return _extends$L.apply(this, arguments);
 }
 
-function SvgReplyInThreadIcon(props) {
+function SvgCopyIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$L({
     width: 20,
     height: 20,
@@ -23906,6 +23920,40 @@ function SvgReplyInThreadIcon(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$K || (_path$K = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$L;
+
+function _extends$M() {
+  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$M.apply(this, arguments);
+}
+
+function SvgReplyInThreadIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$M({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$L || (_path$L = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
@@ -24119,39 +24167,7 @@ var Action = styled.div(_templateObject3$e || (_templateObject3$e = _taggedTempl
   return props.hoverBackgroundColor || colors.backgroundColor;
 }, ItemNote);
 
-var _path$L;
-
-function _extends$M() {
-  _extends$M = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$M.apply(this, arguments);
-}
-
-function SvgCancel(props) {
-  return /*#__PURE__*/createElement("svg", _extends$M({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$L || (_path$L = /*#__PURE__*/createElement("path", {
-    d: "M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$1, _path$M;
+var _path$M;
 
 function _extends$N() {
   _extends$N = Object.assign ? Object.assign.bind() : function (target) {
@@ -24170,25 +24186,20 @@ function _extends$N() {
   return _extends$N.apply(this, arguments);
 }
 
-function SvgFileIcon(props) {
+function SvgCancel(props) {
   return /*#__PURE__*/createElement("svg", _extends$N({
-    width: 40,
-    height: 40,
-    viewBox: "0 0 40.01 40.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 20,
-    fill: "Transparent"
-  })), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
-    d: "M22.48 10.097c.298.068.56.177.819.338.258.162.468.332 1.015.88l3.372 3.37c.547.548.717.758.879 1.016.161.258.27.521.338.818.069.297.097.565.097 1.34v7.295c0 1.337-.14 1.822-.4 2.311a2.726 2.726 0 01-1.135 1.134c-.489.262-.974.401-2.31.401h-9.31c-1.337 0-1.821-.14-2.31-.4a2.726 2.726 0 01-1.134-1.135c-.262-.489-.401-.974-.401-2.31v-11.31c0-1.337.14-1.821.4-2.31a2.726 2.726 0 011.135-1.134c.489-.262.973-.401 2.31-.401h5.296c.775 0 1.043.028 1.34.097zm-.68 1.827a.3.3 0 00-.3.3V16a.5.5 0 00.5.5h3.776a.3.3 0 00.212-.512l-3.976-3.976a.3.3 0 00-.212-.088z",
+  }, props), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
+    d: "M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z",
     fill: "#fff"
   })));
 }
 
-var _circle$1, _path$N;
+var _rect$1, _path$N;
 
 function _extends$O() {
   _extends$O = Object.assign ? Object.assign.bind() : function (target) {
@@ -24207,30 +24218,25 @@ function _extends$O() {
   return _extends$O.apply(this, arguments);
 }
 
-function SvgDeleteUpload(props) {
+function SvgFileIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$O({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 40,
+    height: 40,
+    viewBox: "0 0 40.01 40.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$1 || (_circle$1 = /*#__PURE__*/createElement("circle", {
-    cx: 10,
-    cy: 10,
-    r: 9.3,
-    fill: "CurrentColor",
-    stroke: "#fff",
-    strokeWidth: 1.4
+  }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 20,
+    fill: "Transparent"
   })), _path$N || (_path$N = /*#__PURE__*/createElement("path", {
-    d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
-    stroke: "#fff",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    d: "M22.48 10.097c.298.068.56.177.819.338.258.162.468.332 1.015.88l3.372 3.37c.547.548.717.758.879 1.016.161.258.27.521.338.818.069.297.097.565.097 1.34v7.295c0 1.337-.14 1.822-.4 2.311a2.726 2.726 0 01-1.135 1.134c-.489.262-.974.401-2.31.401h-9.31c-1.337 0-1.821-.14-2.31-.4a2.726 2.726 0 01-1.134-1.135c-.262-.489-.401-.974-.401-2.31v-11.31c0-1.337.14-1.821.4-2.31a2.726 2.726 0 011.135-1.134c.489-.262.973-.401 2.31-.401h5.296c.775 0 1.043.028 1.34.097zm-.68 1.827a.3.3 0 00-.3.3V16a.5.5 0 00.5.5h3.776a.3.3 0 00.212-.512l-3.976-3.976a.3.3 0 00-.212-.088z",
+    fill: "#fff"
   })));
 }
 
-var _path$O;
+var _circle$1, _path$O;
 
 function _extends$P() {
   _extends$P = Object.assign ? Object.assign.bind() : function (target) {
@@ -24249,22 +24255,30 @@ function _extends$P() {
   return _extends$P.apply(this, arguments);
 }
 
-function SvgUpload(props) {
+function SvgDeleteUpload(props) {
   return /*#__PURE__*/createElement("svg", _extends$P({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$O || (_path$O = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
-    fill: "#fff"
+  }, props), _circle$1 || (_circle$1 = /*#__PURE__*/createElement("circle", {
+    cx: 10,
+    cy: 10,
+    r: 9.3,
+    fill: "CurrentColor",
+    stroke: "#fff",
+    strokeWidth: 1.4
+  })), _path$O || (_path$O = /*#__PURE__*/createElement("path", {
+    d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
+    stroke: "#fff",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _circle$2, _path$P;
+var _path$P;
 
 function _extends$Q() {
   _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
@@ -24283,8 +24297,42 @@ function _extends$Q() {
   return _extends$Q.apply(this, arguments);
 }
 
-function SvgPlayVideo(props) {
+function SvgUpload(props) {
   return /*#__PURE__*/createElement("svg", _extends$Q({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$P || (_path$P = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
+    fill: "#fff"
+  })));
+}
+
+var _circle$2, _path$Q;
+
+function _extends$R() {
+  _extends$R = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$R.apply(this, arguments);
+}
+
+function SvgPlayVideo(props) {
+  return /*#__PURE__*/createElement("svg", _extends$R({
     width: 56,
     height: 56,
     fill: "none",
@@ -24295,7 +24343,7 @@ function SvgPlayVideo(props) {
     r: 28,
     fill: "#17191C",
     fillOpacity: 0.4
-  })), _path$P || (_path$P = /*#__PURE__*/createElement("path", {
+  })), _path$Q || (_path$Q = /*#__PURE__*/createElement("path", {
     d: "M38.048 26.262c1.27.767 1.27 2.706 0 3.473l-13.224 7.996c-1.258.76-2.824-.202-2.824-1.737V20.003c0-1.535 1.566-2.498 2.824-1.737l13.224 7.996z",
     fill: "#fff"
   })));
@@ -24543,44 +24591,7 @@ var AttachmentImg = styled.img(_templateObject7$7 || (_templateObject7$7 = _tagg
   return props.borderRadius || '6px';
 });
 
-var _circle$3, _path$Q;
-
-function _extends$R() {
-  _extends$R = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$R.apply(this, arguments);
-}
-
-function SvgPlay(props) {
-  return /*#__PURE__*/createElement("svg", _extends$R({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 33 33",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$3 || (_circle$3 = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "#0DBD8B"
-  })), _path$Q || (_path$Q = /*#__PURE__*/createElement("path", {
-    d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
-    fill: "#fff"
-  })));
-}
-
-var _circle$4, _path$R;
+var _circle$3, _path$R;
 
 function _extends$S() {
   _extends$S = Object.assign ? Object.assign.bind() : function (target) {
@@ -24599,8 +24610,45 @@ function _extends$S() {
   return _extends$S.apply(this, arguments);
 }
 
-function SvgPause(props) {
+function SvgPlay(props) {
   return /*#__PURE__*/createElement("svg", _extends$S({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 33 33",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$3 || (_circle$3 = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "#0DBD8B"
+  })), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
+    d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
+    fill: "#fff"
+  })));
+}
+
+var _circle$4, _path$S;
+
+function _extends$T() {
+  _extends$T = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$T.apply(this, arguments);
+}
+
+function SvgPause(props) {
+  return /*#__PURE__*/createElement("svg", _extends$T({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -24611,7 +24659,7 @@ function SvgPause(props) {
     cy: 16,
     r: 16,
     fill: "#0DBD8B"
-  })), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
+  })), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
     d: "M13.721 10.375c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12h-1.067c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067zm5.625 0c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12H18.28c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067z",
     fill: "#fff"
   })));
@@ -26158,41 +26206,7 @@ var ReactionScoreItem = styled.div(_templateObject8$9 || (_templateObject8$9 = _
 var ReactionKey = styled.span(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
 var ReactionItem$1 = styled.li(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
-var _path$S;
-
-function _extends$T() {
-  _extends$T = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$T.apply(this, arguments);
-}
-
-function SvgEmojiAnimalIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$T({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M7.188 3.875a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm7.938-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zM3.437 7.624a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.312.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm15.438-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm-6.393-.359a3.563 3.563 0 015.567 1.862c.193.672.643 1.24 1.252 1.582a3.25 3.25 0 01-1.548 6.102h-.002c-.435 0-.864-.086-1.265-.253a4.859 4.859 0 00-3.722 0h.001a3.28 3.28 0 01-1.265.253h-.003a3.25 3.25 0 01-1.548-6.101A2.657 2.657 0 006.576 9.94a3.563 3.563 0 011.28-1.862zM10 8.863a2.062 2.062 0 00-1.982 1.493 4.156 4.156 0 01-1.964 2.478l-.008.004a1.75 1.75 0 001.517 3.15l.001-.001a6.358 6.358 0 014.872 0h.001a1.75 1.75 0 001.516-3.15l-.007-.003a4.156 4.156 0 01-1.964-2.478A2.062 2.062 0 0010 8.863z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$T, _path2$5, _path3$2;
+var _path$T;
 
 function _extends$U() {
   _extends$U = Object.assign ? Object.assign.bind() : function (target) {
@@ -26211,7 +26225,7 @@ function _extends$U() {
   return _extends$U.apply(this, arguments);
 }
 
-function SvgEmojiFoodIcon(props) {
+function SvgEmojiAnimalIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$U({
     width: 20,
     height: 20,
@@ -26221,22 +26235,12 @@ function SvgEmojiFoodIcon(props) {
   }, props), _path$T || (_path$T = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
-    fill: "CurrentColor"
-  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10.083 2.222c-.616.616-.81 1.522-.797 2.367a6.008 6.008 0 00-1.905-.306c-3.438 0-5.952 2.45-5.952 5.858 0 1.644.588 3.698 1.574 5.35.968 1.622 2.465 3.08 4.378 3.08a5.98 5.98 0 002.62-.596 5.98 5.98 0 002.618.597c1.914 0 3.41-1.46 4.378-3.081.986-1.652 1.574-3.706 1.574-5.35 0-3.208-2.229-5.568-5.36-5.833.223-.434.307-.893.34-1.244.049-.518-.016-1.016-.09-1.528-.513-.072-1.01-.14-1.528-.09-.524.048-1.288.213-1.85.776zM7.38 5.712c-2.674 0-4.524 1.835-4.524 4.43 0 1.356.503 3.16 1.372 4.616.887 1.486 2.01 2.385 3.152 2.385.758 0 1.454-.178 2.075-.492a1.206 1.206 0 011.088 0 4.55 4.55 0 002.075.492c1.142 0 2.265-.899 3.152-2.385.869-1.456 1.372-3.26 1.372-4.617 0-2.594-1.85-4.43-4.524-4.43a4.57 4.57 0 00-2.073.493 1.206 1.206 0 01-1.09 0 4.551 4.551 0 00-2.075-.492zm3.341-1.437c.362-.026.776-.105 1.043-.37.265-.267.344-.682.37-1.043-.361.026-.776.104-1.042.37-.266.267-.345.681-.37 1.043z",
-    fill: "CurrentColor"
-  })), _path3$2 || (_path3$2 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12.857 7.14a.714.714 0 000 1.43c.458 0 .807.15 1.037.374.227.221.392.565.392 1.054a.714.714 0 101.428 0c0-.83-.289-1.557-.824-2.078-.532-.518-1.254-.78-2.033-.78z",
+    d: "M7.188 3.875a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm7.938-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zM3.437 7.624a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.312.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm15.438-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm-6.393-.359a3.563 3.563 0 015.567 1.862c.193.672.643 1.24 1.252 1.582a3.25 3.25 0 01-1.548 6.102h-.002c-.435 0-.864-.086-1.265-.253a4.859 4.859 0 00-3.722 0h.001a3.28 3.28 0 01-1.265.253h-.003a3.25 3.25 0 01-1.548-6.101A2.657 2.657 0 006.576 9.94a3.563 3.563 0 011.28-1.862zM10 8.863a2.062 2.062 0 00-1.982 1.493 4.156 4.156 0 01-1.964 2.478l-.008.004a1.75 1.75 0 001.517 3.15l.001-.001a6.358 6.358 0 014.872 0h.001a1.75 1.75 0 001.516-3.15l-.007-.003a4.156 4.156 0 01-1.964-2.478A2.062 2.062 0 0010 8.863z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$U;
+var _path$U, _path2$5, _path3$2;
 
 function _extends$V() {
   _extends$V = Object.assign ? Object.assign.bind() : function (target) {
@@ -26255,7 +26259,7 @@ function _extends$V() {
   return _extends$V.apply(this, arguments);
 }
 
-function SvgEmojiTravelIcon(props) {
+function SvgEmojiFoodIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$V({
     width: 20,
     height: 20,
@@ -26265,12 +26269,22 @@ function SvgEmojiTravelIcon(props) {
   }, props), _path$U || (_path$U = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M13.763 2.458a2.6 2.6 0 013.748 3.604l-2.135 2.236a5.065 5.065 0 00-.188.204.076.076 0 00-.004.017l.004.03c.008.05.024.116.053.241l1.327 5.754.012.05c.044.189.096.412.079.639-.015.197-.07.39-.162.564-.106.202-.268.364-.406.5l-.036.037-.306.306c-.215.215-.409.408-.58.55-.175.147-.406.309-.705.362a1.46 1.46 0 01-1.124-.266c-.244-.18-.378-.429-.47-.638-.089-.204-.175-.464-.272-.752l-1.2-3.6-1.779 1.78a4.815 4.815 0 00-.172.178.076.076 0 00-.005.015l.001.027c.003.045.01.105.022.22l.141 1.27.005.045c.02.168.042.368.01.567a1.46 1.46 0 01-.172.49c-.1.176-.242.317-.362.437l-.032.032-.152.151-.018.019c-.166.166-.32.32-.46.438-.15.125-.338.258-.583.322a1.46 1.46 0 01-1.007-.1 1.49 1.49 0 01-.508-.43c-.114-.142-.236-.325-.366-.52l-1.22-1.83a4.929 4.929 0 00-.063-.09l-.009-.006a4.655 4.655 0 00-.077-.052l-1.829-1.22a7.783 7.783 0 01-.52-.365 1.492 1.492 0 01-.43-.509 1.46 1.46 0 01-.1-1.006c.065-.245.197-.434.323-.584.117-.14.272-.294.438-.46l.018-.018.152-.152.031-.032c.12-.12.262-.262.437-.362.152-.086.318-.145.49-.172a2.09 2.09 0 01.568.01l.044.005 1.27.141a4.747 4.747 0 00.247.023.075.075 0 00.015-.005 4.867 4.867 0 00.178-.172l1.78-1.78-3.6-1.199a9.48 9.48 0 01-.752-.272c-.209-.092-.457-.226-.638-.47a1.46 1.46 0 01-.265-1.124c.053-.298.215-.53.36-.705.143-.171.337-.365.552-.58l.02-.02.285-.285.037-.037c.136-.137.298-.3.5-.406a1.46 1.46 0 01.564-.161c.228-.018.45.034.64.078l.05.012 5.731 1.323a5.096 5.096 0 00.275.057.075.075 0 00.019-.005 5.146 5.146 0 00.199-.197l2.082-2.152zm2.728.948a1.216 1.216 0 00-1.734.014l-2.082 2.151-.036.037c-.132.137-.288.3-.483.407a1.46 1.46 0 01-.602.178c-.223.016-.442-.036-.627-.079l-.05-.011L5.146 4.78a5.06 5.06 0 00-.279-.059.077.077 0 00-.017.005 5.065 5.065 0 00-.205.197l-.285.285c-.243.243-.39.392-.487.508a.915.915 0 00-.063.083c0 .006.002.012.004.018.016.01.045.025.094.046.138.06.337.128.662.236l4.633 1.544a.692.692 0 01.27 1.146l-2.57 2.57-.032.032c-.12.12-.261.262-.436.362a1.459 1.459 0 01-.492.172 2.09 2.09 0 01-.567-.01l-.044-.005-1.27-.141a4.747 4.747 0 00-.247-.023.075.075 0 00-.015.005 4.867 4.867 0 00-.178.172l-.152.152c-.19.19-.301.302-.375.39a.735.735 0 00-.045.058c0 .008 0 .015.002.023.01.009.027.025.056.048.09.072.22.16.444.309l1.808 1.205.015.01a1.466 1.466 0 01.507.507l.01.016 1.206 1.807c.15.225.237.355.308.444.024.03.04.047.049.056a.076.076 0 00.022.002.723.723 0 00.059-.045c.087-.073.199-.184.39-.375l.151-.151a4.89 4.89 0 00.172-.178.077.077 0 00.005-.016v-.026a4.94 4.94 0 00-.023-.22l-.14-1.27-.006-.045a2.091 2.091 0 01-.01-.567 1.46 1.46 0 01.172-.491c.1-.175.242-.317.363-.437l.031-.031 2.57-2.57a.692.692 0 011.146.27L13.9 15.43c.109.325.175.523.236.662a.9.9 0 00.046.093.073.073 0 00.019.004.917.917 0 00.083-.063c.116-.096.264-.244.507-.486l.285-.285a5.078 5.078 0 00.197-.206.073.073 0 00.005-.017 5.042 5.042 0 00-.058-.279l-1.328-5.753-.011-.049c-.044-.184-.095-.401-.079-.624a1.46 1.46 0 01.152-.553c.1-.199.255-.36.386-.496l.034-.037 2.136-2.236a1.216 1.216 0 00-.02-1.7z",
+    d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
+    fill: "CurrentColor"
+  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10.083 2.222c-.616.616-.81 1.522-.797 2.367a6.008 6.008 0 00-1.905-.306c-3.438 0-5.952 2.45-5.952 5.858 0 1.644.588 3.698 1.574 5.35.968 1.622 2.465 3.08 4.378 3.08a5.98 5.98 0 002.62-.596 5.98 5.98 0 002.618.597c1.914 0 3.41-1.46 4.378-3.081.986-1.652 1.574-3.706 1.574-5.35 0-3.208-2.229-5.568-5.36-5.833.223-.434.307-.893.34-1.244.049-.518-.016-1.016-.09-1.528-.513-.072-1.01-.14-1.528-.09-.524.048-1.288.213-1.85.776zM7.38 5.712c-2.674 0-4.524 1.835-4.524 4.43 0 1.356.503 3.16 1.372 4.616.887 1.486 2.01 2.385 3.152 2.385.758 0 1.454-.178 2.075-.492a1.206 1.206 0 011.088 0 4.55 4.55 0 002.075.492c1.142 0 2.265-.899 3.152-2.385.869-1.456 1.372-3.26 1.372-4.617 0-2.594-1.85-4.43-4.524-4.43a4.57 4.57 0 00-2.073.493 1.206 1.206 0 01-1.09 0 4.551 4.551 0 00-2.075-.492zm3.341-1.437c.362-.026.776-.105 1.043-.37.265-.267.344-.682.37-1.043-.361.026-.776.104-1.042.37-.266.267-.345.681-.37 1.043z",
+    fill: "CurrentColor"
+  })), _path3$2 || (_path3$2 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12.857 7.14a.714.714 0 000 1.43c.458 0 .807.15 1.037.374.227.221.392.565.392 1.054a.714.714 0 101.428 0c0-.83-.289-1.557-.824-2.078-.532-.518-1.254-.78-2.033-.78z",
     fill: "CurrentColor"
   })));
 }
 
-var _g, _defs;
+var _path$V;
 
 function _extends$W() {
   _extends$W = Object.assign ? Object.assign.bind() : function (target) {
@@ -26289,29 +26303,22 @@ function _extends$W() {
   return _extends$W.apply(this, arguments);
 }
 
-function SvgEmojiObjectIcon(props) {
+function SvgEmojiTravelIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$W({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _g || (_g = /*#__PURE__*/createElement("g", {
-    clipPath: "url(#emojiObjectIcon_svg__clip0_1048_8610)"
-  }, /*#__PURE__*/createElement("path", {
+  }, props), _path$V || (_path$V = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M10 .917a.75.75 0 01.75.75V2.5a.75.75 0 01-1.5 0v-.833a.75.75 0 01.75-.75zM3.553 3.553a.75.75 0 011.06 0l.5.5a.75.75 0 11-1.06 1.061l-.5-.5a.75.75 0 010-1.06zm12.894 0a.75.75 0 010 1.061l-.5.5a.75.75 0 11-1.06-1.06l.5-.5a.75.75 0 011.06 0zM10 5.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM4.25 10a5.75 5.75 0 118.167 5.22v1.447a2.417 2.417 0 01-4.834 0v-1.448A5.75 5.75 0 014.25 10zm4.833 5.678v.989a.917.917 0 101.834 0v-.99a5.795 5.795 0 01-1.834 0zM.917 10a.75.75 0 01.75-.75H2.5a.75.75 0 110 1.5h-.833a.75.75 0 01-.75-.75zm15.833 0a.75.75 0 01.75-.75h.833a.75.75 0 110 1.5H17.5a.75.75 0 01-.75-.75z",
+    d: "M13.763 2.458a2.6 2.6 0 013.748 3.604l-2.135 2.236a5.065 5.065 0 00-.188.204.076.076 0 00-.004.017l.004.03c.008.05.024.116.053.241l1.327 5.754.012.05c.044.189.096.412.079.639-.015.197-.07.39-.162.564-.106.202-.268.364-.406.5l-.036.037-.306.306c-.215.215-.409.408-.58.55-.175.147-.406.309-.705.362a1.46 1.46 0 01-1.124-.266c-.244-.18-.378-.429-.47-.638-.089-.204-.175-.464-.272-.752l-1.2-3.6-1.779 1.78a4.815 4.815 0 00-.172.178.076.076 0 00-.005.015l.001.027c.003.045.01.105.022.22l.141 1.27.005.045c.02.168.042.368.01.567a1.46 1.46 0 01-.172.49c-.1.176-.242.317-.362.437l-.032.032-.152.151-.018.019c-.166.166-.32.32-.46.438-.15.125-.338.258-.583.322a1.46 1.46 0 01-1.007-.1 1.49 1.49 0 01-.508-.43c-.114-.142-.236-.325-.366-.52l-1.22-1.83a4.929 4.929 0 00-.063-.09l-.009-.006a4.655 4.655 0 00-.077-.052l-1.829-1.22a7.783 7.783 0 01-.52-.365 1.492 1.492 0 01-.43-.509 1.46 1.46 0 01-.1-1.006c.065-.245.197-.434.323-.584.117-.14.272-.294.438-.46l.018-.018.152-.152.031-.032c.12-.12.262-.262.437-.362.152-.086.318-.145.49-.172a2.09 2.09 0 01.568.01l.044.005 1.27.141a4.747 4.747 0 00.247.023.075.075 0 00.015-.005 4.867 4.867 0 00.178-.172l1.78-1.78-3.6-1.199a9.48 9.48 0 01-.752-.272c-.209-.092-.457-.226-.638-.47a1.46 1.46 0 01-.265-1.124c.053-.298.215-.53.36-.705.143-.171.337-.365.552-.58l.02-.02.285-.285.037-.037c.136-.137.298-.3.5-.406a1.46 1.46 0 01.564-.161c.228-.018.45.034.64.078l.05.012 5.731 1.323a5.096 5.096 0 00.275.057.075.075 0 00.019-.005 5.146 5.146 0 00.199-.197l2.082-2.152zm2.728.948a1.216 1.216 0 00-1.734.014l-2.082 2.151-.036.037c-.132.137-.288.3-.483.407a1.46 1.46 0 01-.602.178c-.223.016-.442-.036-.627-.079l-.05-.011L5.146 4.78a5.06 5.06 0 00-.279-.059.077.077 0 00-.017.005 5.065 5.065 0 00-.205.197l-.285.285c-.243.243-.39.392-.487.508a.915.915 0 00-.063.083c0 .006.002.012.004.018.016.01.045.025.094.046.138.06.337.128.662.236l4.633 1.544a.692.692 0 01.27 1.146l-2.57 2.57-.032.032c-.12.12-.261.262-.436.362a1.459 1.459 0 01-.492.172 2.09 2.09 0 01-.567-.01l-.044-.005-1.27-.141a4.747 4.747 0 00-.247-.023.075.075 0 00-.015.005 4.867 4.867 0 00-.178.172l-.152.152c-.19.19-.301.302-.375.39a.735.735 0 00-.045.058c0 .008 0 .015.002.023.01.009.027.025.056.048.09.072.22.16.444.309l1.808 1.205.015.01a1.466 1.466 0 01.507.507l.01.016 1.206 1.807c.15.225.237.355.308.444.024.03.04.047.049.056a.076.076 0 00.022.002.723.723 0 00.059-.045c.087-.073.199-.184.39-.375l.151-.151a4.89 4.89 0 00.172-.178.077.077 0 00.005-.016v-.026a4.94 4.94 0 00-.023-.22l-.14-1.27-.006-.045a2.091 2.091 0 01-.01-.567 1.46 1.46 0 01.172-.491c.1-.175.242-.317.363-.437l.031-.031 2.57-2.57a.692.692 0 011.146.27L13.9 15.43c.109.325.175.523.236.662a.9.9 0 00.046.093.073.073 0 00.019.004.917.917 0 00.083-.063c.116-.096.264-.244.507-.486l.285-.285a5.078 5.078 0 00.197-.206.073.073 0 00.005-.017 5.042 5.042 0 00-.058-.279l-1.328-5.753-.011-.049c-.044-.184-.095-.401-.079-.624a1.46 1.46 0 01.152-.553c.1-.199.255-.36.386-.496l.034-.037 2.136-2.236a1.216 1.216 0 00-.02-1.7z",
     fill: "CurrentColor"
-  }))), _defs || (_defs = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("clipPath", {
-    id: "emojiObjectIcon_svg__clip0_1048_8610"
-  }, /*#__PURE__*/createElement("path", {
-    fill: "CurrentColor",
-    d: "M0 0h20v20H0z"
-  })))));
+  })));
 }
 
-var _path$V;
+var _g, _defs$1;
 
 function _extends$X() {
   _extends$X = Object.assign ? Object.assign.bind() : function (target) {
@@ -26330,19 +26337,26 @@ function _extends$X() {
   return _extends$X.apply(this, arguments);
 }
 
-function SvgEmojiSymbolsIcon(props) {
+function SvgEmojiObjectIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$X({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$V || (_path$V = /*#__PURE__*/createElement("path", {
+  }, props), _g || (_g = /*#__PURE__*/createElement("g", {
+    clipPath: "url(#emojiObjectIcon_svg__clip0_1048_8610)"
+  }, /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M8.04 1.76a.75.75 0 01.616.863l-.548 3.294h5.146l.59-3.54a.75.75 0 111.48.246l-.55 3.294h2.31a.75.75 0 010 1.5h-2.56l-.86 5.167h2.586a.75.75 0 110 1.5h-2.837l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H6.745l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H2.083a.75.75 0 010-1.5h3.393l.86-5.167h-3.42a.75.75 0 110-1.5h3.67l.59-3.54a.75.75 0 01.864-.617zm-.182 5.657l-.862 5.167h5.146l.862-5.167H7.858z",
+    d: "M10 .917a.75.75 0 01.75.75V2.5a.75.75 0 01-1.5 0v-.833a.75.75 0 01.75-.75zM3.553 3.553a.75.75 0 011.06 0l.5.5a.75.75 0 11-1.06 1.061l-.5-.5a.75.75 0 010-1.06zm12.894 0a.75.75 0 010 1.061l-.5.5a.75.75 0 11-1.06-1.06l.5-.5a.75.75 0 011.06 0zM10 5.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM4.25 10a5.75 5.75 0 118.167 5.22v1.447a2.417 2.417 0 01-4.834 0v-1.448A5.75 5.75 0 014.25 10zm4.833 5.678v.989a.917.917 0 101.834 0v-.99a5.795 5.795 0 01-1.834 0zM.917 10a.75.75 0 01.75-.75H2.5a.75.75 0 110 1.5h-.833a.75.75 0 01-.75-.75zm15.833 0a.75.75 0 01.75-.75h.833a.75.75 0 110 1.5H17.5a.75.75 0 01-.75-.75z",
     fill: "CurrentColor"
-  })));
+  }))), _defs$1 || (_defs$1 = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("clipPath", {
+    id: "emojiObjectIcon_svg__clip0_1048_8610"
+  }, /*#__PURE__*/createElement("path", {
+    fill: "CurrentColor",
+    d: "M0 0h20v20H0z"
+  })))));
 }
 
 var _path$W;
@@ -26364,7 +26378,7 @@ function _extends$Y() {
   return _extends$Y.apply(this, arguments);
 }
 
-function SvgEmojiFlagicon(props) {
+function SvgEmojiSymbolsIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$Y({
     width: 20,
     height: 20,
@@ -26372,6 +26386,40 @@ function SvgEmojiFlagicon(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$W || (_path$W = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M8.04 1.76a.75.75 0 01.616.863l-.548 3.294h5.146l.59-3.54a.75.75 0 111.48.246l-.55 3.294h2.31a.75.75 0 010 1.5h-2.56l-.86 5.167h2.586a.75.75 0 110 1.5h-2.837l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H6.745l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H2.083a.75.75 0 010-1.5h3.393l.86-5.167h-3.42a.75.75 0 110-1.5h3.67l.59-3.54a.75.75 0 01.864-.617zm-.182 5.657l-.862 5.167h5.146l.862-5.167H7.858z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$X;
+
+function _extends$Z() {
+  _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$Z.apply(this, arguments);
+}
+
+function SvgEmojiFlagicon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$Z({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$X || (_path$X = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M4.167 3.25a.917.917 0 00-.917.917v7.764c.288-.118.6-.181.917-.181h5.416a.75.75 0 01.53.22l.614.613h5.56L14.329 8.67a.75.75 0 010-.671l1.957-3.915H10.75V7.5a.75.75 0 01-1.5 0V3.25H4.167zm6.56-.667l-.613-.613a.75.75 0 00-.53-.22H4.166A2.417 2.417 0 001.75 4.167V17.5a.75.75 0 001.5 0v-3.333a.917.917 0 01.917-.917h5.106l.613.614c.141.14.332.22.53.22H17.5a.75.75 0 00.67-1.086l-2.332-4.665 2.333-4.664a.75.75 0 00-.671-1.086h-6.773z",
@@ -26873,10 +26921,10 @@ var Emoji = styled.li(_templateObject8$a || (_templateObject8$a = _taggedTemplat
   return props.hoverBackgroundColor || colors.backgroundColor;
 });
 
-var _path$X;
+var _path$Y;
 
-function _extends$Z() {
-  _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$_() {
+  _extends$_ = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -26889,17 +26937,17 @@ function _extends$Z() {
 
     return target;
   };
-  return _extends$Z.apply(this, arguments);
+  return _extends$_.apply(this, arguments);
 }
 
 function SvgPlus(props) {
-  return /*#__PURE__*/createElement("svg", _extends$Z({
+  return /*#__PURE__*/createElement("svg", _extends$_({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$X || (_path$X = /*#__PURE__*/createElement("path", {
+  }, props), _path$Y || (_path$Y = /*#__PURE__*/createElement("path", {
     d: "M10 3.778c.43 0 .778.348.778.778v4.666h4.666a.778.778 0 110 1.556h-4.666v4.666a.778.778 0 11-1.556 0v-4.666H4.556a.778.778 0 110-1.556h4.666V4.556c0-.43.348-.778.778-.778z",
     fill: "#818C99"
   })));
@@ -27988,7 +28036,7 @@ var FrequentlyEmojisContainer = styled.div(_templateObject23$1 || (_templateObje
   return props.rtlDirection && '0';
 });
 
-var _templateObject$x, _templateObject2$t, _templateObject3$n, _templateObject4$j, _templateObject5$g, _templateObject6$f, _templateObject7$d, _templateObject8$c, _templateObject9$b;
+var _templateObject$x, _templateObject2$t, _templateObject3$n, _templateObject4$j, _templateObject5$g, _templateObject6$f, _templateObject7$d, _templateObject8$c, _templateObject9$b, _templateObject10$a, _templateObject11$7;
 var loading = false;
 var loadFromServer = false;
 var loadDirection = '';
@@ -28826,7 +28874,11 @@ var MessageList = function MessageList(_ref2) {
     }) : null);
   })) : messagesLoading === LOADING_STATE.LOADED && /*#__PURE__*/React__default.createElement(NoMessagesContainer, {
     color: colors.textColor1
-  }, "No messages in this", channel.type === CHANNEL_TYPE.DIRECT ? ' chat' : channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? ' group chat' : ' channel'), attachmentsPreview && mediaFile && /*#__PURE__*/React__default.createElement(SliderPopup, {
+  }, /*#__PURE__*/React__default.createElement(SvgNoMessagesIcon, null), /*#__PURE__*/React__default.createElement(NoMessagesTitle, {
+    color: colors.textColor1
+  }, "No Messages yet"), /*#__PURE__*/React__default.createElement(NoMessagesText, {
+    color: colors.textColor2
+  }, "No messages yet, start the chat")), attachmentsPreview && mediaFile && /*#__PURE__*/React__default.createElement(SliderPopup, {
     channelId: channel.id,
     setIsSliderOpen: setMediaFile,
     currentMediaFile: mediaFile
@@ -28875,6 +28927,12 @@ var DropAttachmentArea = styled.div(_templateObject7$d || (_templateObject7$d = 
 }, colors.textColor1, colors.backgroundColor, IconWrapper, colors.white);
 var MessageWrapper = styled.div(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
 var NoMessagesContainer = styled.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
+var NoMessagesTitle = styled.h4(_templateObject10$a || (_templateObject10$a = _taggedTemplateLiteralLoose(["\n  margin: 12px 0 8px;\n  font-family: Inter, sans-serif;\n  text-align: center;\n  font-size: 20px;\n  font-style: normal;\n  font-weight: 500;\n  line-height: 24px;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
+var NoMessagesText = styled.p(_templateObject11$7 || (_templateObject11$7 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  text-align: center;\n  font-feature-settings: 'clig' off, 'liga' off;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-style: normal;\n  font-weight: 400;\n  line-height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
@@ -29115,43 +29173,7 @@ var MessagesContainer = function MessagesContainer(_ref) {
   }));
 };
 
-var _circle$5, _path$Y;
-
-function _extends$_() {
-  _extends$_ = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$_.apply(this, arguments);
-}
-
-function SvgSend(props) {
-  return /*#__PURE__*/createElement("svg", _extends$_({
-    width: 32,
-    height: 32,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$Y || (_path$Y = /*#__PURE__*/createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
-  })));
-}
-
-var _path$Z;
+var _circle$5, _path$Z;
 
 function _extends$$() {
   _extends$$ = Object.assign ? Object.assign.bind() : function (target) {
@@ -29170,15 +29192,20 @@ function _extends$$() {
   return _extends$$.apply(this, arguments);
 }
 
-function SvgEye(props) {
+function SvgSend(props) {
   return /*#__PURE__*/createElement("svg", _extends$$({
-    width: 25,
-    height: 24,
+    width: 32,
+    height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$Z || (_path$Z = /*#__PURE__*/createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
-    fill: "CurrentColor"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$Z || (_path$Z = /*#__PURE__*/createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
   })));
 }
 
@@ -29201,15 +29228,14 @@ function _extends$10() {
   return _extends$10.apply(this, arguments);
 }
 
-function SvgAddAttachment(props) {
+function SvgEye(props) {
   return /*#__PURE__*/createElement("svg", _extends$10({
-    width: 24,
+    width: 25,
     height: 24,
-    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$_ || (_path$_ = /*#__PURE__*/createElement("path", {
-    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
     fill: "CurrentColor"
   })));
 }
@@ -29233,13 +29259,45 @@ function _extends$11() {
   return _extends$11.apply(this, arguments);
 }
 
-function SvgErrorCircle(props) {
+function SvgAddAttachment(props) {
   return /*#__PURE__*/createElement("svg", _extends$11({
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24.01 24.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$$ || (_path$$ = /*#__PURE__*/createElement("path", {
+    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$10;
+
+function _extends$12() {
+  _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$12.apply(this, arguments);
+}
+
+function SvgErrorCircle(props) {
+  return /*#__PURE__*/createElement("svg", _extends$12({
     width: 25,
     height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$$ || (_path$$ = /*#__PURE__*/createElement("path", {
+  }, props), _path$10 || (_path$10 = /*#__PURE__*/createElement("path", {
     d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
     fill: "#FFB73D"
   })));
@@ -29436,7 +29494,7 @@ var MemberItem = styled.li(_templateObject6$g || (_templateObject6$g = _taggedTe
   return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$z, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$c, _templateObject10$a, _templateObject11$7, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$z, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$i, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$1, _templateObject25$1, _templateObject26$1, _templateObject27$1, _templateObject28$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -31021,7 +31079,7 @@ var MessageInputWrapper = styled.div(_templateObject9$c || (_templateObject9$c =
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var MessageInput = styled.div(_templateObject10$a || (_templateObject10$a = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  color: ", ";\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: ", ";\n  }\n\n  //caret-color: #000;\n"])), function (props) {
+var MessageInput = styled.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  color: ", ";\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: ", ";\n  }\n\n  //caret-color: #000;\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.borderRadius;
@@ -31036,7 +31094,7 @@ var MessageInput = styled.div(_templateObject10$a || (_templateObject10$a = _tag
 }, function (props) {
   return props.isChrome && 'read-only';
 });
-var EmojiButton = styled.span(_templateObject11$7 || (_templateObject11$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var EmojiButton = styled.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 2;
@@ -31077,41 +31135,7 @@ var ReplyIconWrapper = styled.span(_templateObject28$1 || (_templateObject28$1 =
   return props.backgroundColor || colors.primary;
 }, colors.white);
 
-var _path$10;
-
-function _extends$12() {
-  _extends$12 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$12.apply(this, arguments);
-}
-
-function SvgBottom(props) {
-  return /*#__PURE__*/createElement("svg", _extends$12({
-    width: 12,
-    height: 7,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$10 || (_path$10 = /*#__PURE__*/createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _path$11, _path2$6;
+var _path$11;
 
 function _extends$13() {
   _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31130,23 +31154,22 @@ function _extends$13() {
   return _extends$13.apply(this, arguments);
 }
 
-function SvgMarkAsUnRead(props) {
+function SvgBottom(props) {
   return /*#__PURE__*/createElement("svg", _extends$13({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 12,
+    height: 7,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$11 || (_path$11 = /*#__PURE__*/createElement("path", {
-    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
-    fill: "currentColor"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
-    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
-    fill: "currentColor"
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$12;
+var _path$12, _path2$6;
 
 function _extends$14() {
   _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31165,7 +31188,7 @@ function _extends$14() {
   return _extends$14.apply(this, arguments);
 }
 
-function SvgMarkAsRead(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$14({
     width: 20,
     height: 20,
@@ -31173,9 +31196,10 @@ function SvgMarkAsRead(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$12 || (_path$12 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
+    fill: "currentColor"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
+    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
     fill: "currentColor"
   })));
 }
@@ -31199,15 +31223,18 @@ function _extends$15() {
   return _extends$15.apply(this, arguments);
 }
 
-function SvgDeleteChannel(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$15({
     width: 20,
-    height: 21,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$13 || (_path$13 = /*#__PURE__*/createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    fill: "currentColor"
   })));
 }
 
@@ -31230,17 +31257,15 @@ function _extends$16() {
   return _extends$16.apply(this, arguments);
 }
 
-function SvgClear(props) {
+function SvgDeleteChannel(props) {
   return /*#__PURE__*/createElement("svg", _extends$16({
     width: 20,
     height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$14 || (_path$14 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
-    fill: "#FA4C56"
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -31263,20 +31288,21 @@ function _extends$17() {
   return _extends$17.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgClear(props) {
   return /*#__PURE__*/createElement("svg", _extends$17({
     width: 20,
     height: 21,
-    viewBox: "0 0 20.01 21.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$15 || (_path$15 = /*#__PURE__*/createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
+    fill: "#FA4C56"
   })));
 }
 
-var _path$16, _path2$7;
+var _path$16;
 
 function _extends$18() {
   _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31295,24 +31321,20 @@ function _extends$18() {
   return _extends$18.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgBlockChannel(props) {
   return /*#__PURE__*/createElement("svg", _extends$18({
     width: 20,
     height: 21,
+    viewBox: "0 0 20.01 21.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$17;
+var _path$17, _path2$7;
 
 function _extends$19() {
   _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31331,15 +31353,20 @@ function _extends$19() {
   return _extends$19.apply(this, arguments);
 }
 
-function SvgStar(props) {
+function SvgReport(props) {
   return /*#__PURE__*/createElement("svg", _extends$19({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -31362,13 +31389,44 @@ function _extends$1a() {
   return _extends$1a.apply(this, arguments);
 }
 
-function SvgPin(props) {
+function SvgStar(props) {
   return /*#__PURE__*/createElement("svg", _extends$1a({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
+  })));
+}
+
+var _path$19;
+
+function _extends$1b() {
+  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1b.apply(this, arguments);
+}
+
+function SvgPin(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1b({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
@@ -31844,10 +31902,10 @@ var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _tagged
   return props.hoverColor || colors.blue;
 });
 
-var _rect$2, _rect2, _path$19;
+var _rect$2, _rect2, _path$1a;
 
-function _extends$1b() {
-  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -31860,11 +31918,11 @@ function _extends$1b() {
 
     return target;
   };
-  return _extends$1b.apply(this, arguments);
+  return _extends$1c.apply(this, arguments);
 }
 
 function SvgAddMember(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1b({
+  return /*#__PURE__*/createElement("svg", _extends$1c({
     width: 40,
     height: 40,
     viewBox: "0 0 40.01 40.01",
@@ -31884,16 +31942,16 @@ function SvgAddMember(props) {
     stroke: "#000",
     strokeOpacity: 0.08,
     strokeWidth: 0.5
-  })), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
+  })), _path$1a || (_path$1a = /*#__PURE__*/createElement("path", {
     d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$1a;
+var _path$1b;
 
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -31906,16 +31964,16 @@ function _extends$1c() {
 
     return target;
   };
-  return _extends$1c.apply(this, arguments);
+  return _extends$1d.apply(this, arguments);
 }
 
 function SvgMoreVert(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1c({
+  return /*#__PURE__*/createElement("svg", _extends$1d({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1a || (_path$1a = /*#__PURE__*/createElement("path", {
+  }, props), _path$1b || (_path$1b = /*#__PURE__*/createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
@@ -32367,10 +32425,10 @@ var Media = function Media(_ref) {
 var Container$l = styled.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
 var MediaItem = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$1b, _path2$8, _path3$3;
+var _path$1c, _path2$8, _path3$3;
 
-function _extends$1d() {
-  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32383,17 +32441,17 @@ function _extends$1d() {
 
     return target;
   };
-  return _extends$1d.apply(this, arguments);
+  return _extends$1e.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1d({
+  return /*#__PURE__*/createElement("svg", _extends$1e({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1b || (_path$1b = /*#__PURE__*/createElement("path", {
+  }, props), _path$1c || (_path$1c = /*#__PURE__*/createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -32413,10 +32471,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$1c, _path2$9;
+var _path$1d, _path2$9;
 
-function _extends$1e() {
-  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1f() {
+  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32429,16 +32487,16 @@ function _extends$1e() {
 
     return target;
   };
-  return _extends$1e.apply(this, arguments);
+  return _extends$1f.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1e({
+  return /*#__PURE__*/createElement("svg", _extends$1f({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1c || (_path$1c = /*#__PURE__*/createElement("path", {
+  }, props), _path$1d || (_path$1d = /*#__PURE__*/createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -32578,10 +32636,10 @@ var FileSizeAndDate = styled.span(_templateObject8$f || (_templateObject8$f = _t
   return props.color || colors.textColor1;
 });
 
-var _rect$3, _rect2$1, _g$1, _defs$1;
+var _rect$3, _rect2$1, _g$1, _defs$2;
 
-function _extends$1f() {
-  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1g() {
+  _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32594,11 +32652,11 @@ function _extends$1f() {
 
     return target;
   };
-  return _extends$1f.apply(this, arguments);
+  return _extends$1g.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1f({
+  return /*#__PURE__*/createElement("svg", _extends$1g({
     width: 42,
     height: 42,
     fill: "none",
@@ -32622,7 +32680,7 @@ function SvgLinkIcon(props) {
   }, /*#__PURE__*/createElement("path", {
     d: "M20.314 20.973a.984.984 0 11-1.754.895 3.939 3.939 0 01.724-4.574l2.088-2.088a3.938 3.938 0 115.569 5.569.984.984 0 01-1.392-1.393 1.969 1.969 0 00-2.785-2.784l-2.088 2.088a1.97 1.97 0 00-.362 2.287zm1.522.198a.984.984 0 111.754-.895 3.939 3.939 0 01-.724 4.574l-2.089 2.088a3.938 3.938 0 01-5.568-5.569.984.984 0 011.392 1.392 1.969 1.969 0 002.784 2.785l2.088-2.089a1.97 1.97 0 00.363-2.286z",
     fill: "#95A6FF"
-  }))), _defs$1 || (_defs$1 = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("clipPath", {
+  }))), _defs$2 || (_defs$2 = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("clipPath", {
     id: "linkIcon_svg__clip0"
   }, /*#__PURE__*/createElement("path", {
     fill: "#fff",
@@ -32699,48 +32757,7 @@ var Links = function Links(_ref) {
 };
 var Container$n = styled.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$4, _circle$6, _path$1d;
-
-function _extends$1g() {
-  _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1g.apply(this, arguments);
-}
-
-function SvgVoicePreview(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1g({
-    width: 40,
-    height: 40,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 8,
-    fill: "#F3F5F7"
-  })), _circle$6 || (_circle$6 = /*#__PURE__*/createElement("circle", {
-    cx: 20,
-    cy: 20,
-    r: 14,
-    fill: "#0DBD8B"
-  })), _path$1d || (_path$1d = /*#__PURE__*/createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$5, _circle$7, _path$1e;
+var _rect$4, _circle$6, _path$1e;
 
 function _extends$1h() {
   _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
@@ -32759,29 +32776,29 @@ function _extends$1h() {
   return _extends$1h.apply(this, arguments);
 }
 
-function SvgVoicePreviewPause(props) {
+function SvgVoicePreview(props) {
   return /*#__PURE__*/createElement("svg", _extends$1h({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$4 || (_rect$4 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
     fill: "#F3F5F7"
-  })), _circle$7 || (_circle$7 = /*#__PURE__*/createElement("circle", {
+  })), _circle$6 || (_circle$6 = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
   })), _path$1e || (_path$1e = /*#__PURE__*/createElement("path", {
-    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$6, _circle$8, _path$1f;
+var _rect$5, _circle$7, _path$1f;
 
 function _extends$1i() {
   _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
@@ -32800,29 +32817,29 @@ function _extends$1i() {
   return _extends$1i.apply(this, arguments);
 }
 
-function SvgVoicePreviewHoverIcon(props) {
+function SvgVoicePreviewPause(props) {
   return /*#__PURE__*/createElement("svg", _extends$1i({
     width: 40,
     height: 40,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$6 || (_rect$6 = /*#__PURE__*/createElement("rect", {
+  }, props), _rect$5 || (_rect$5 = /*#__PURE__*/createElement("rect", {
     width: 40,
     height: 40,
     rx: 8,
-    fill: "#fff"
-  })), _circle$8 || (_circle$8 = /*#__PURE__*/createElement("circle", {
+    fill: "#F3F5F7"
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
   })), _path$1f || (_path$1f = /*#__PURE__*/createElement("path", {
-    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
 
-var _rect$7, _circle$9, _path$1g;
+var _rect$6, _circle$8, _path$1g;
 
 function _extends$1j() {
   _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
@@ -32841,8 +32858,49 @@ function _extends$1j() {
   return _extends$1j.apply(this, arguments);
 }
 
-function SvgVoicePreviewPauseHover(props) {
+function SvgVoicePreviewHoverIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$1j({
+    width: 40,
+    height: 40,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _rect$6 || (_rect$6 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 8,
+    fill: "#fff"
+  })), _circle$8 || (_circle$8 = /*#__PURE__*/createElement("circle", {
+    cx: 20,
+    cy: 20,
+    r: 14,
+    fill: "#0DBD8B"
+  })), _path$1g || (_path$1g = /*#__PURE__*/createElement("path", {
+    d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
+    fill: "#fff"
+  })));
+}
+
+var _rect$7, _circle$9, _path$1h;
+
+function _extends$1k() {
+  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1k.apply(this, arguments);
+}
+
+function SvgVoicePreviewPauseHover(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1k({
     width: 40,
     height: 40,
     fill: "none",
@@ -32857,7 +32915,7 @@ function SvgVoicePreviewPauseHover(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1g || (_path$1g = /*#__PURE__*/createElement("path", {
+  })), _path$1h || (_path$1h = /*#__PURE__*/createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
@@ -33393,7 +33451,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$L, _templateObject2$F, _templateObject3$x, _templateObject4$s, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$h, _templateObject9$e, _templateObject10$b, _templateObject11$8;
+var _templateObject$L, _templateObject2$F, _templateObject3$x, _templateObject4$s, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$h, _templateObject9$e, _templateObject10$c, _templateObject11$9;
 
 var Details = function Details(_ref) {
   var size = _ref.size,
@@ -33724,12 +33782,12 @@ var DetailsHeader = styled.div(_templateObject8$h || (_templateObject8$h = _tagg
 var ChannelAvatarAndName = styled.div(_templateObject9$e || (_templateObject9$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  flex-direction: ", ";\n"])), function (props) {
   return props.direction;
 });
-var ChannelName$1 = styled(SectionHeader)(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n  text-transform: ", ";\n"])), function (props) {
+var ChannelName$1 = styled(SectionHeader)(_templateObject10$c || (_templateObject10$c = _taggedTemplateLiteralLoose(["\n  white-space: nowrap;\n  max-width: ", ";\n  text-overflow: ellipsis;\n  overflow: hidden;\n  text-transform: ", ";\n"])), function (props) {
   return props.isDirect ? '200px' : '168px';
 }, function (props) {
   return props.uppercase && 'uppercase';
 });
-var EditButton = styled.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
+var EditButton = styled.span(_templateObject11$9 || (_templateObject11$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
 var _templateObject$M;
 
@@ -33899,10 +33957,10 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
 
 var DetailsWrapper = styled.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose([""])));
 
-var _path$1h;
+var _path$1i;
 
-function _extends$1k() {
-  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1l() {
+  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33915,16 +33973,16 @@ function _extends$1k() {
 
     return target;
   };
-  return _extends$1k.apply(this, arguments);
+  return _extends$1l.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1k({
+  return /*#__PURE__*/createElement("svg", _extends$1l({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1h || (_path$1h = /*#__PURE__*/createElement("path", {
+  }, props), _path$1i || (_path$1i = /*#__PURE__*/createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
