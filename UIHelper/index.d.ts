@@ -90,7 +90,12 @@ export declare const MentionedUser: import("styled-components").StyledComponent<
     color?: string | undefined;
     isLastMessage?: boolean | undefined;
 }, never>;
-export declare const MessageOwner: import("styled-components").StyledComponent<"h3", any, any, never>;
+export declare const MessageOwner: import("styled-components").StyledComponent<"h3", any, {
+    color?: string | undefined;
+    rtlDirection?: boolean | undefined;
+    fontSize?: string | undefined;
+    clickable?: boolean | undefined;
+}, never>;
 export declare const MessageText: import("styled-components").StyledComponent<"pre", any, {
     fontFamily?: string | undefined;
     color?: string | undefined;

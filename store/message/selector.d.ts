@@ -29,3 +29,4 @@ export declare const reactionsListSelector: (store: any) => any;
 export declare const reactionsHasNextSelector: (store: any) => any;
 export declare const reactionsLoadingStateSelector: (store: any) => any;
 export declare const openedMessageMenuSelector: (store: any) => any;
+export declare const playingAudioIdSelector: (store: any) => any;

@@ -44,6 +44,7 @@ export interface IMessageStore {
             progress?: number;
         };
     };
+    playingAudioId: string | null;
 }
 declare const _default: (state?: IMessageStore, { type, payload }?: IAction) => IMessageStore;
 export default _default;

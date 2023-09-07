@@ -8,6 +8,7 @@ interface IProps {
     setDefaultAvatar?: boolean;
     DeletedIcon?: JSX.Element;
     border?: string;
+    handleAvatarClick?: () => void;
 }
 declare const Avatar: React.FC<IProps>;
 export default Avatar;
@@ -18,6 +19,7 @@ interface ContainerProps {
     isImage?: boolean;
     marginAuto?: boolean;
     border?: string;
+    cursorPointer?: boolean;
 }
 interface AvatarImageProps {
     showImage: boolean;

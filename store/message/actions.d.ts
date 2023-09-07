@@ -347,3 +347,9 @@ export declare function setMessageForReplyAC(message: IMessage | null): {
         message: IMessage | null;
     };
 };
+export declare function setPlayingAudioIdAC(id: string | null): {
+    type: string;
+    payload: {
+        id: string | null;
+    };
+};

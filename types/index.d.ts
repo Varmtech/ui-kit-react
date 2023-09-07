@@ -75,7 +75,7 @@ export interface IMessage {
         name: string;
         count: number;
     }[];
-    userMarkers?: {
+    userMarkers: {
         name: string;
         messageId: string;
         createdAt: Date;
