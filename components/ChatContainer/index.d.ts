@@ -1,5 +1,4 @@
 /// <reference types="react" />
-import SceytChatClient from 'sceyt-chat';
 import { ICustomAvatarColors } from '../Channel/types';
 import { IAttachment, IChannel, IMessage, IUser } from '../../types';
 export interface IProgress {
@@ -21,7 +20,7 @@ export interface ICustomUploader {
     cancelRequest: (requestPromise: any) => void;
 }
 export interface IChatClientProps {
-    client: SceytChatClient;
+    client: any;
     theme?: 'dark' | 'light';
     avatarColors?: ICustomAvatarColors;
     hideUserPresence?: (user: IUser) => boolean;

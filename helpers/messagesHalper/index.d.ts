@@ -18,6 +18,11 @@ declare type draftMessagesMap = {
         messageForReply?: IMessage;
     };
 };
+declare type visibleMessagesMap = {
+    [key: string]: {
+        id: string;
+    };
+};
 declare type pendingMessagesMap = {
     [key: string]: IMessage[];
 };
@@ -87,4 +92,9 @@ export declare const setDraftMessageToMap: (channelId: string, draftMessage: {
     mentionedMembers: any;
     messageForReply?: IMessage;
 }) => void;
+declare let visibleMessagesMap: visibleMessagesMap;
+export declare const getVisibleMessagesMap: () => visibleMessagesMap;
+export declare const clearVisibleMessagesMap: () => void;
+export declare const setMessageToVisibleMessagesMap: (message: IMessage) => void;
+export declare const removeMessageFromVisibleMessagesMap: (message: IMessage) => void;
 export {};

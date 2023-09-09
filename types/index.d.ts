@@ -136,6 +136,10 @@ export interface IChannel {
     lastReceivedMsgId: string;
     lastDisplayedMsgId: string;
     messageRetentionPeriod?: number;
+    isMockChannel?: boolean;
+    isLinkedChannel?: boolean;
+    backToLinkedChannel?: boolean;
+    linkedFrom?: string;
     lastMessage: IMessage;
     messages: IMessage[];
     members: IMember[];

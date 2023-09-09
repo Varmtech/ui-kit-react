@@ -1,9 +1,10 @@
 import { ChannelQueryParams } from '../../components/Channel/types';
 import { IChannel, IContact, IContactsMap, ICreateChannel, IMessage, IUser } from '../../types';
-export declare function createChannelAC(channelData: ICreateChannel): {
+export declare function createChannelAC(channelData: ICreateChannel, dontCreateIfNotExists?: boolean): {
     type: string;
     payload: {
         channelData: ICreateChannel;
+        dontCreateIfNotExists: boolean | undefined;
     };
 };
 export declare function getChannelsAC(params: ChannelQueryParams, isJoinChannel?: boolean): {

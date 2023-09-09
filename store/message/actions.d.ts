@@ -206,11 +206,12 @@ export declare function addMessageAC(message: IMessage): {
         message: IMessage;
     };
 };
-export declare function scrollToNewMessageAC(scrollToBottom: boolean, updateMessageList?: boolean): {
+export declare function scrollToNewMessageAC(scrollToBottom: boolean, updateMessageList?: boolean, isIncomingMessage?: boolean): {
     type: string;
     payload: {
         scrollToBottom: boolean;
         updateMessageList: boolean | undefined;
+        isIncomingMessage: boolean | undefined;
     };
 };
 export declare function showScrollToNewMessageButtonAC(state: boolean): {
