@@ -1038,6 +1038,21 @@ var getClient = function getClient() {
   return SceytChatClient;
 };
 
+var hideUserPresence;
+var setHideUserPresence = function setHideUserPresence(callback) {
+  hideUserPresence = callback;
+};
+var usersMap = {};
+var updateUserOnMap = function updateUserOnMap(user) {
+  usersMap[user.id] = user;
+};
+var setUserToMap = function setUserToMap(user) {
+  usersMap[user.id] = user;
+};
+var deleteUserFromMap = function deleteUserFromMap(userId) {
+  delete usersMap[userId];
+};
+
 var initialState = {
   channelsLoadingState: null,
   channelsForForwardLoadingState: null,
@@ -1225,6 +1240,19 @@ var ChannelReducer = (function (state, _temp) {
     case SET_ACTIVE_CHANNEL:
       {
         newState.activeChannel = payload.channel || {};
+
+        if (payload.channel.type === CHANNEL_TYPE.DIRECT) {
+          var ChatClient = getClient();
+          var user = ChatClient.user;
+          var directChannelUser = payload.channel.members.find(function (member) {
+            return member.id !== user.id;
+          });
+
+          if (directChannelUser) {
+            setUserToMap(directChannelUser);
+          }
+        }
+
         return newState;
       }
 
@@ -1291,13 +1319,15 @@ var ChannelReducer = (function (state, _temp) {
     case UPDATE_USER_STATUS_ON_CHANNEL:
       {
         var usersMap = payload.usersMap;
-        var ChatClient = getClient();
-        var user = ChatClient.user;
+
+        var _ChatClient = getClient();
+
+        var _user = _ChatClient.user;
 
         var _updatedChannels = newState.channels.map(function (channel) {
           var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
           var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-            return member.id !== user.id;
+            return member.id !== _user.id;
           });
 
           if (isDirectChannel && directChannelUser && usersMap[directChannelUser.id]) {
@@ -1317,15 +1347,13 @@ var ChannelReducer = (function (state, _temp) {
         });
 
         var activeChannelUser = newState.activeChannel.type === CHANNEL_TYPE.DIRECT && newState.activeChannel.members.find(function (member) {
-          return member.id !== user.id;
+          return member.id !== _user.id;
         });
 
         if (activeChannelUser && usersMap[activeChannelUser.id]) {
-          console.log('red: update active channel user . . .');
           newState.activeChannel = _extends({}, newState.activeChannel, {
             members: newState.activeChannel.members.map(function (member) {
-              if (member.id !== user.id) {
-                console.log('red: user to update . . .', _extends({}, member, usersMap[activeChannelUser.id]));
+              if (member.id !== _user.id) {
                 return _extends({}, member, usersMap[activeChannelUser.id]);
               } else {
                 return member;
@@ -10162,21 +10190,6 @@ var AttachmentPreviewTitle = styled__default.span(_templateObject44 || (_templat
   return props.color || colors.textColor1;
 });
 
-var hideUserPresence;
-var setHideUserPresence = function setHideUserPresence(callback) {
-  hideUserPresence = callback;
-};
-var usersMap = {};
-var updateUserOnMap = function updateUserOnMap(user) {
-  usersMap[user.id] = user;
-};
-var setUserToMap = function setUserToMap(user) {
-  usersMap[user.id] = user;
-};
-var deleteUserFromMap = function deleteUserFromMap(userId) {
-  delete usersMap[userId];
-};
-
 var typingTextFormat = function typingTextFormat(_ref) {
   var text = _ref.text,
       mentionedMembers = _ref.mentionedMembers,
@@ -10431,11 +10444,9 @@ function getLastChannelFromMap() {
   return Object.values(channelsMap)[0];
 }
 function removeChannelFromMap(channelId) {
-  console.log('remove channel from map >> >> > > ', channelId);
   delete channelsMap[channelId];
 }
 function checkChannelExists(channelId) {
-  console.log('channelsMap. . . .  . ..  .', channelsMap);
   return !!channelsMap[channelId];
 }
 function destroyChannelsMap() {
@@ -14300,7 +14311,7 @@ function updateChannel(action) {
 }
 
 function checkUsersStatus() {
-  var SceytChatClient, usersForUpdate, activeChannelId, activeChannel, activeChannelUser, updatedUsers, usersToUpdateMap, update, updateData;
+  var SceytChatClient, usersForUpdate, updatedUsers, usersToUpdateMap, update, updateData;
   return _regeneratorRuntime().wrap(function checkUsersStatus$(_context19) {
     while (1) {
       switch (_context19.prev = _context19.next) {
@@ -14308,27 +14319,14 @@ function checkUsersStatus() {
           _context19.prev = 0;
           SceytChatClient = getClient();
           usersForUpdate = Object.keys(usersMap);
-          activeChannelId = getActiveChannelId();
-          activeChannel = getChannelFromMap(activeChannelId);
-
-          if (activeChannel && activeChannel.type === CHANNEL_TYPE.DIRECT) {
-            activeChannelUser = activeChannel.members.find(function (member) {
-              return member.id !== SceytChatClient.user.id;
-            });
-          }
-
-          _context19.next = 8;
+          _context19.next = 5;
           return effects.call(SceytChatClient.getUsers, usersForUpdate);
 
-        case 8:
+        case 5:
           updatedUsers = _context19.sent;
           usersToUpdateMap = {};
           update = false;
           updatedUsers.forEach(function (updatedUser) {
-            if (activeChannelUser && activeChannelUser.id === updatedUser.id) {
-              console.log('active channel user is updated - ', updatedUser);
-            }
-
             if (updatedUser.presence && (updatedUser.presence.state !== usersMap[updatedUser.id].presence.state || updatedUser.presence.status !== usersMap[updatedUser.id].presence.status || updatedUser.presence.lastActiveAt && new Date(updatedUser.presence.lastActiveAt).getTime() !== new Date(usersMap[updatedUser.id].presence.lastActiveAt).getTime() || updatedUser.avatarUrl !== usersMap[updatedUser.id].avatarUrl || updatedUser.firstName !== usersMap[updatedUser.id].firstName || updatedUser.lastName !== usersMap[updatedUser.id].lastName)) {
               updateUserOnMap(updatedUser);
               usersToUpdateMap[updatedUser.id] = updatedUser;
@@ -14337,38 +14335,37 @@ function checkUsersStatus() {
           });
 
           if (!update) {
-            _context19.next = 21;
+            _context19.next = 17;
             break;
           }
 
           updateData = JSON.parse(JSON.stringify(usersToUpdateMap));
-          console.log('update users presence - - --', updateData);
-          _context19.next = 17;
+          _context19.next = 13;
           return effects.put(updateMembersPresenceAC(updateData));
 
-        case 17:
-          _context19.next = 19;
+        case 13:
+          _context19.next = 15;
           return effects.put(updateUserStatusOnMapAC(updateData));
 
-        case 19:
-          _context19.next = 21;
+        case 15:
+          _context19.next = 17;
           return effects.put(updateUserStatusOnChannelAC(updateData));
 
-        case 21:
-          _context19.next = 26;
+        case 17:
+          _context19.next = 22;
           break;
 
-        case 23:
-          _context19.prev = 23;
+        case 19:
+          _context19.prev = 19;
           _context19.t0 = _context19["catch"](0);
           console.log('ERROR in check user status : ', _context19.t0.message);
 
-        case 26:
+        case 22:
         case "end":
           return _context19.stop();
       }
     }
-  }, _marked19, null, [[0, 23]]);
+  }, _marked19, null, [[0, 19]]);
 }
 
 function sendTyping(action) {
@@ -22527,6 +22524,7 @@ function Chat(_ref) {
   }, [activeChannel]);
   useDidUpdate(function () {
     if (hideChannelList && (!activeChannel || !activeChannel.id) && addedChannel && addedChannel.id) {
+      console.log('call set active channel. ... ', addedChannel);
       dispatch(setActiveChannelAC(addedChannel));
     }
   }, [addedChannel]);
@@ -23102,28 +23100,6 @@ var DeleteMessageOptions = styled__default.div(_templateObject$k || (_templateOb
 var DeleteOptionItem = styled__default.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
 
 var _templateObject$l, _templateObject2$i, _templateObject3$c, _templateObject4$a, _templateObject5$8, _templateObject6$7, _templateObject7$6, _templateObject8$6;
-var Container$9 = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n"])), function (props) {
-  return props.borderColor || colors.backgroundColor;
-}, function (props) {
-  return props.background;
-});
-var ChannelInfo$3 = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n  cursor: ", ";\n  margin-right: auto;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
-  return props.clickable && 'pointer';
-}, UserStatus);
-var ChannelName = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n  width: 100%;\n\n  & > ", " {\n    max-width: calc(100% - 8px);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), SectionHeader);
-var ChanelInfo = styled__default.span(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  > svg {\n    color: ", ";\n  }\n"])), function (props) {
-  return props.infoIconColor;
-});
-var BackButtonWrapper = styled__default.span(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-right: 16px;\n"])));
-var SelectedMessagesWrapper = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 100%;\n  padding: 0 16px;\n"])));
-var CloseIconWrapper = styled__default.span(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
-var CustomButton = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
-  return props.color || colors.textColor1;
-}, function (props) {
-  return props.backgroundColor || colors.primaryLight;
-}, function (props) {
-  return props.marginLeft || '8px';
-});
 function ChatHeader(_ref) {
   var infoIcon = _ref.infoIcon,
       backgroundColor = _ref.backgroundColor,
@@ -23298,6 +23274,28 @@ function ChatHeader(_ref) {
     title: "Delete message" + (selectedMessagesMap.size > 1 ? 's' : '')
   }));
 }
+var Container$9 = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n"])), function (props) {
+  return props.borderColor || colors.backgroundColor;
+}, function (props) {
+  return props.background;
+});
+var ChannelInfo$3 = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n  cursor: ", ";\n  margin-right: auto;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+  return props.clickable && 'pointer';
+}, UserStatus);
+var ChannelName = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n  width: 100%;\n\n  & > ", " {\n    max-width: calc(100% - 8px);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), SectionHeader);
+var ChanelInfo = styled__default.span(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  > svg {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.infoIconColor;
+});
+var BackButtonWrapper = styled__default.span(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-right: 16px;\n"])));
+var SelectedMessagesWrapper = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 100%;\n  padding: 0 16px;\n"])));
+var CloseIconWrapper = styled__default.span(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
+var CustomButton = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
+  return props.backgroundColor || colors.primaryLight;
+}, function (props) {
+  return props.marginLeft || '8px';
+});
 
 var _templateObject$m;
 var Container$a = styled__default.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  margin-bottom: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 25px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -12px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n    }\n  }\n"])), function (props) {
@@ -25980,7 +25978,6 @@ var Attachment = function Attachment(_ref) {
           if (attachment.type === 'image' && !isPreview) {
             if (cachedUrl) {
               setAttachmentUrl(cachedUrl);
-              console.log('cachedUrl.  ...  . . . ', cachedUrl);
               setIsCached(true);
             } else {
               setIsCached(false);
