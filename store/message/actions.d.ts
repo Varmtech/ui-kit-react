@@ -354,3 +354,18 @@ export declare function setPlayingAudioIdAC(id: string | null): {
         id: string | null;
     };
 };
+export declare function addSelectedMessageAC(message: IMessage): {
+    type: string;
+    payload: {
+        message: IMessage;
+    };
+};
+export declare function removeSelectedMessageAC(messageId: string): {
+    type: string;
+    payload: {
+        messageId: string;
+    };
+};
+export declare function clearSelectedMessagesAC(): {
+    type: string;
+};

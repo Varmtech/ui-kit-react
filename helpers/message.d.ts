@@ -21,3 +21,5 @@ export declare const getFileExtension: (filename: string) => string | undefined;
 export declare const getAttachmentType: (dataName: string) => string;
 export declare const lastMessageDateFormat: (date: Date | number) => string;
 export declare const getDuplicateMentionsFromMeta: (mentionsMetas: any[], mentionedMembers: any[]) => any[];
+export declare const setAllowEditDeleteIncomingMessage: (allow: boolean) => void;
+export declare const getAllowEditDeleteIncomingMessage: () => boolean;

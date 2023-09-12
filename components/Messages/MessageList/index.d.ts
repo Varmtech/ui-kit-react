@@ -40,6 +40,7 @@ interface MessagesProps {
     replyMessageInThread?: boolean;
     forwardMessage?: boolean;
     deleteMessage?: boolean;
+    selectMessage?: boolean;
     reportMessage?: boolean;
     reactionIcon?: JSX.Element;
     editIcon?: JSX.Element;
@@ -48,6 +49,7 @@ interface MessagesProps {
     replyInThreadIcon?: JSX.Element;
     forwardIcon?: JSX.Element;
     deleteIcon?: JSX.Element;
+    selectIcon?: JSX.Element;
     starIcon?: JSX.Element;
     staredIcon?: JSX.Element;
     reportIcon?: JSX.Element;
@@ -62,6 +64,7 @@ interface MessagesProps {
     replyInThreadIconOrder?: number;
     forwardIconOrder?: number;
     deleteIconOrder?: number;
+    selectIconOrder?: number;
     allowEditDeleteIncomingMessage?: boolean;
     starIconOrder?: number;
     reportIconOrder?: number;
@@ -72,6 +75,7 @@ interface MessagesProps {
     replyInThreadIconTooltipText?: string;
     forwardIconTooltipText?: string;
     deleteIconTooltipText?: string;
+    selectIconTooltipText?: string;
     starIconTooltipText?: string;
     reportIconTooltipText?: string;
     messageActionIconsColor?: string;

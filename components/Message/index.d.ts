@@ -13,6 +13,7 @@ interface IMessageProps {
         handleCopyMessage?: () => void;
         handleReportMessage?: () => void;
         handleOpenEmojis?: () => void;
+        handleSelectMessage?: () => void;
         handleReplyMessage?: () => void;
         isThreadMessage?: boolean;
         rtlDirection?: boolean;
@@ -51,6 +52,7 @@ interface IMessageProps {
     replyMessageInThread?: boolean;
     forwardMessage?: boolean;
     deleteMessage?: boolean;
+    selectMessage?: boolean;
     allowEditDeleteIncomingMessage?: boolean;
     reportMessage?: boolean;
     reactionIcon?: JSX.Element;
@@ -60,6 +62,7 @@ interface IMessageProps {
     replyInThreadIcon?: JSX.Element;
     forwardIcon?: JSX.Element;
     deleteIcon?: JSX.Element;
+    selectIcon?: JSX.Element;
     starIcon?: JSX.Element;
     staredIcon?: JSX.Element;
     reportIcon?: JSX.Element;
@@ -74,6 +77,7 @@ interface IMessageProps {
     replyInThreadIconOrder?: number;
     forwardIconOrder?: number;
     deleteIconOrder?: number;
+    selectIconOrder?: number;
     starIconOrder?: number;
     reportIconOrder?: number;
     reactionIconTooltipText?: string;
@@ -83,6 +87,7 @@ interface IMessageProps {
     replyInThreadIconTooltipText?: string;
     forwardIconTooltipText?: string;
     deleteIconTooltipText?: string;
+    selectIconTooltipText?: string;
     starIconTooltipText?: string;
     reportIconTooltipText?: string;
     messageActionIconsColor?: string;
@@ -116,8 +121,15 @@ interface IMessageProps {
     videoAttachmentMaxHeight?: number;
     sameUserMessageSpacing?: string;
     differentUserMessageSpacing?: string;
+    selectedMessagesMap?: Map<string, IMessage>;
+    contactsMap: {
+        [key: string]: any;
+    };
+    openedMessageMenuId?: string;
+    tabIsActive?: boolean;
+    connectionStatus: string;
 }
-declare const _default: React.MemoExoticComponent<({ message, channel, MessageActionsMenu, handleScrollToRepliedMessage, handleMediaItemClick, stopScrolling, prevMessage, nextMessage, setLastVisibleMessageId, isUnreadMessage, unreadMessageId, isThreadMessage, fontFamily, ownMessageOnRightSide, messageWidthPercent, showSenderNameOnDirectChannel, showSenderNameOnGroupChannel, showSenderNameOnOwnMessages, messageStatusAndTimePosition, messageStatusDisplayingType, ownMessageBackground, incomingMessageBackground, showOwnAvatar, showMessageStatus, showMessageTimeAndStatusOnlyOnHover, showMessageTime, showMessageStatusForEachMessage, showMessageTimeForEachMessage, hoverBackground, messageReaction, editMessage, copyMessage, replyMessage, replyMessageInThread, deleteMessage, allowEditDeleteIncomingMessage, forwardMessage, reportMessage, reactionIcon, editIcon, copyIcon, replyIcon, replyInThreadIcon, forwardIcon, deleteIcon, starIcon, staredIcon, reportIcon, reactionIconOrder, openFrequentlyUsedReactions, editIconOrder, copyIconOrder, replyIconOrder, replyInThreadIconOrder, forwardIconOrder, deleteIconOrder, starIconOrder, reportIconOrder, reactionIconTooltipText, editIconTooltipText, copyIconTooltipText, replyIconTooltipText, replyInThreadIconTooltipText, forwardIconTooltipText, deleteIconTooltipText, starIconTooltipText, reportIconTooltipText, messageActionIconsColor, fileAttachmentsIcon, reactionsDisplayCount, showEachReactionCount, showTotalReactionCount, reactionItemBorder, reactionItemBorderRadius, reactionItemBackground, reactionItemPadding, reactionItemMargin, reactionsFontSize, reactionsContainerBoxShadow, reactionsContainerBorder, reactionsContainerBorderRadius, reactionsContainerBackground, reactionsContainerPadding, reactionsContainerTopPosition, reactionsDetailsPopupBorderRadius, reactionsDetailsPopupHeaderItemsStyle, fileAttachmentsBoxWidth, fileAttachmentsBoxBorder, fileAttachmentsTitleColor, fileAttachmentsSizeColor, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight, emojisCategoryIconsPosition, emojisContainerBorderRadius, fixEmojiCategoriesTitleOnTop, sameUserMessageSpacing, differentUserMessageSpacing }: IMessageProps) => JSX.Element>;
+declare const _default: React.MemoExoticComponent<({ message, channel, MessageActionsMenu, handleScrollToRepliedMessage, handleMediaItemClick, stopScrolling, prevMessage, nextMessage, setLastVisibleMessageId, isUnreadMessage, unreadMessageId, isThreadMessage, fontFamily, ownMessageOnRightSide, messageWidthPercent, showSenderNameOnDirectChannel, showSenderNameOnGroupChannel, showSenderNameOnOwnMessages, messageStatusAndTimePosition, messageStatusDisplayingType, ownMessageBackground, incomingMessageBackground, showOwnAvatar, showMessageStatus, showMessageTimeAndStatusOnlyOnHover, showMessageTime, showMessageStatusForEachMessage, showMessageTimeForEachMessage, hoverBackground, messageReaction, editMessage, copyMessage, replyMessage, replyMessageInThread, deleteMessage, selectMessage, allowEditDeleteIncomingMessage, forwardMessage, reportMessage, reactionIcon, editIcon, copyIcon, replyIcon, replyInThreadIcon, forwardIcon, deleteIcon, selectIcon, starIcon, staredIcon, reportIcon, reactionIconOrder, openFrequentlyUsedReactions, editIconOrder, copyIconOrder, replyIconOrder, replyInThreadIconOrder, forwardIconOrder, deleteIconOrder, selectIconOrder, starIconOrder, reportIconOrder, reactionIconTooltipText, editIconTooltipText, copyIconTooltipText, replyIconTooltipText, replyInThreadIconTooltipText, forwardIconTooltipText, deleteIconTooltipText, selectIconTooltipText, starIconTooltipText, reportIconTooltipText, messageActionIconsColor, fileAttachmentsIcon, reactionsDisplayCount, showEachReactionCount, showTotalReactionCount, reactionItemBorder, reactionItemBorderRadius, reactionItemBackground, reactionItemPadding, reactionItemMargin, reactionsFontSize, reactionsContainerBoxShadow, reactionsContainerBorder, reactionsContainerBorderRadius, reactionsContainerBackground, reactionsContainerPadding, reactionsContainerTopPosition, reactionsDetailsPopupBorderRadius, reactionsDetailsPopupHeaderItemsStyle, fileAttachmentsBoxWidth, fileAttachmentsBoxBorder, fileAttachmentsTitleColor, fileAttachmentsSizeColor, imageAttachmentMaxWidth, imageAttachmentMaxHeight, videoAttachmentMaxWidth, videoAttachmentMaxHeight, emojisCategoryIconsPosition, emojisContainerBorderRadius, fixEmojiCategoriesTitleOnTop, sameUserMessageSpacing, differentUserMessageSpacing, selectedMessagesMap, contactsMap, openedMessageMenuId, tabIsActive, connectionStatus }: IMessageProps) => JSX.Element>;
 export default _default;
 export declare const MessageStatusAndTime: import("styled-components").StyledComponent<"div", any, {
     withAttachment?: boolean | undefined;

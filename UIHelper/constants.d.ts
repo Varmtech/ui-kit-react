@@ -18,6 +18,7 @@ export declare const colors: {
     gray0: string;
     gray1: string;
     borderColor: string;
+    borderColor2: string;
     primary: string;
     primaryLight: string;
     darkModePrimary: string;
