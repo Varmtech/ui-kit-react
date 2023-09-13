@@ -139,6 +139,7 @@ export declare const CancelResumeWrapper: import("styled-components").StyledComp
 }, never>;
 export declare const UploadPercent: import("styled-components").StyledComponent<"span", any, {
     fileAttachment?: boolean | undefined;
+    isDetailsView?: boolean | undefined;
     isRepliedMessage?: boolean | undefined;
     borderRadius?: string | undefined;
     backgroundColor?: string | undefined;
