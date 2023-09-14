@@ -11,6 +11,11 @@ declare const store: import("@reduxjs/toolkit").EnhancedStore<import("redux").Co
             channels: import("../types").IChannel[];
             contacts: import("../types").IContact[];
         };
+        searchedChannelsForForward: {
+            chats_groups: import("../types").IChannel[];
+            channels: import("../types").IChannel[];
+            contacts: import("../types").IContact[];
+        };
         closeSearchChannel: boolean;
         channelsForForward: import("../types").IChannel[];
         activeChannel: {} | import("../types").IChannel;

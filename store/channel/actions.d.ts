@@ -53,10 +53,57 @@ export declare function getChannelsForForwardAC(searchValue?: string): {
         searchValue: string | undefined;
     };
 };
+export declare function addChannelsForForwardAC(channels: IChannel[]): {
+    type: string;
+    payload: {
+        channels: IChannel[];
+    };
+};
+export declare function setChannelsForForwardAC(channels: IChannel[]): {
+    type: string;
+    payload: {
+        channels: IChannel[];
+    };
+};
+export declare function setChannelsLoadingStateAC(state: number, forForward?: boolean): {
+    type: string;
+    payload: {
+        state: number;
+        forForward: boolean | undefined;
+    };
+};
+export declare function channelHasNextAC(hasNext: boolean, forForward?: boolean): {
+    type: string;
+    payload: {
+        hasNext: boolean;
+        forForward: boolean | undefined;
+    };
+};
 export declare function loadMoreChannelsForForward(limit?: number): {
     type: string;
     payload: {
         limit: number | undefined;
+    };
+};
+export declare function searchChannelsForForwardAC(params: ChannelQueryParams, contactsMap: IContactsMap): {
+    type: string;
+    payload: {
+        params: ChannelQueryParams;
+        contactsMap: IContactsMap;
+    };
+};
+export declare function setSearchedChannelsForForwardAC(searchedChannels: {
+    chats_groups: IChannel[];
+    channels: IChannel[];
+    contacts: IContact[];
+}): {
+    type: string;
+    payload: {
+        searchedChannels: {
+            chats_groups: IChannel[];
+            channels: IChannel[];
+            contacts: IContact[];
+        };
     };
 };
 export declare function addChannelAC(channel: IChannel): {
@@ -66,12 +113,6 @@ export declare function addChannelAC(channel: IChannel): {
     };
 };
 export declare function addChannelsAC(channels: IChannel[]): {
-    type: string;
-    payload: {
-        channels: IChannel[];
-    };
-};
-export declare function addChannelsForForwardAC(channels: IChannel[]): {
     type: string;
     payload: {
         channels: IChannel[];
@@ -135,26 +176,6 @@ export declare function setChannelsAC(channels: IChannel[]): {
     type: string;
     payload: {
         channels: IChannel[];
-    };
-};
-export declare function setChannelsFroForwardAC(channels: IChannel[]): {
-    type: string;
-    payload: {
-        channels: IChannel[];
-    };
-};
-export declare function setChannelsLoadingStateAC(state: number, forForward?: boolean): {
-    type: string;
-    payload: {
-        state: number;
-        forForward: boolean | undefined;
-    };
-};
-export declare function channelHasNextAC(hasNext: boolean, forForward?: boolean): {
-    type: string;
-    payload: {
-        hasNext: boolean;
-        forForward: boolean | undefined;
     };
 };
 export declare function setActiveChannelAC(channel: IChannel): {

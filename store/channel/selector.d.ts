@@ -1,5 +1,6 @@
 export declare const channelsSelector: (store: any) => any;
 export declare const searchedChannelsSelector: (store: any) => any;
+export declare const searchedChannelsForForwardSelector: (store: any) => any;
 export declare const closeSearchChannelSelector: (store: any) => any;
 export declare const channelsForForwardSelector: (store: any) => any;
 export declare const deletedChannelSelector: (store: any) => any;
@@ -9,6 +10,7 @@ export declare const hiddenChannelSelector: (store: any) => any;
 export declare const visibleChannelSelector: (store: any) => any;
 export declare const activeChannelSelector: (store: any) => any;
 export declare const channelsLoadingState: (store: any) => any;
+export declare const channelsLoadingStateForForwardSelector: (store: any) => any;
 export declare const channelsHasNextSelector: (store: any) => any;
 export declare const channelsForForwardHasNextSelector: (store: any) => any;
 export declare const searchValueSelector: (store: any) => any;

@@ -11,6 +11,11 @@ declare const _default: (state?: {
         channels: IChannel[];
         contacts: IContact[];
     };
+    searchedChannelsForForward: {
+        chats_groups: IChannel[];
+        channels: IChannel[];
+        contacts: IContact[];
+    };
     closeSearchChannel: boolean;
     channelsForForward: IChannel[];
     activeChannel: {} | IChannel;
@@ -49,6 +54,11 @@ declare const _default: (state?: {
     channelsForForwardHasNext: boolean;
     channels: IChannel[];
     searchedChannels: {
+        chats_groups: IChannel[];
+        channels: IChannel[];
+        contacts: IContact[];
+    };
+    searchedChannelsForForward: {
         chats_groups: IChannel[];
         channels: IChannel[];
         contacts: IContact[];

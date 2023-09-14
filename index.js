@@ -877,8 +877,10 @@ var CREATE_CHANNEL = 'CREATE_CHANNEL';
 var GET_CHANNELS = 'GET_CHANNELS';
 var SEARCH_CHANNELS = 'SEARCH_CHANNELS';
 var SET_SEARCHED_CHANNELS = 'SET_SEARCHED_CHANNELS';
+var SET_SEARCHED_CHANNELS_FOR_FORWARD = 'SET_SEARCHED_CHANNELS_FOR_FORWARD';
 var SET_CLOSE_SEARCH_CHANNELS = 'SET_CLOSE_SEARCH_CHANNELS';
 var GET_CHANNELS_FOR_FORWARD = 'GET_CHANNELS_FOR_FORWARD';
+var SEARCH_CHANNELS_FOR_FORWARD = 'SEARCH_CHANNELS_FOR_FORWARD';
 var LOAD_MORE_CHANNEL = 'LOAD_MORE_CHANNEL';
 var LOAD_MORE_CHANNELS_FOR_FORWARD = 'LOAD_MORE_CHANNELS_FOR_FORWARD';
 var ADD_CHANNEL = 'ADD_CHANNEL';
@@ -1065,6 +1067,11 @@ var initialState = {
     channels: [],
     contacts: []
   },
+  searchedChannelsForForward: {
+    chats_groups: [],
+    channels: [],
+    contacts: []
+  },
   closeSearchChannel: false,
   channelsForForward: [],
   activeChannel: {},
@@ -1122,6 +1129,12 @@ var ChannelReducer = (function (state, _temp) {
     case SET_SEARCHED_CHANNELS:
       {
         newState.searchedChannels = payload.searchedChannels;
+        return newState;
+      }
+
+    case SET_SEARCHED_CHANNELS_FOR_FORWARD:
+      {
+        newState.searchedChannelsForForward = payload.searchedChannels;
         return newState;
       }
 
@@ -9266,11 +9279,62 @@ function getChannelsForForwardAC(searchValue) {
     }
   };
 }
+function addChannelsForForwardAC(channels) {
+  return {
+    type: ADD_CHANNELS_FOR_FORWARD,
+    payload: {
+      channels: channels
+    }
+  };
+}
+function setChannelsForForwardAC(channels) {
+  return {
+    type: SET_CHANNELS_FOR_FORWARD,
+    payload: {
+      channels: channels
+    }
+  };
+}
+function setChannelsLoadingStateAC(state, forForward) {
+  return {
+    type: SET_CHANNELS_LOADING_STATE,
+    payload: {
+      state: state,
+      forForward: forForward
+    }
+  };
+}
+function channelHasNextAC(hasNext, forForward) {
+  return {
+    type: CHANNELS_HAS_NEXT,
+    payload: {
+      hasNext: hasNext,
+      forForward: forForward
+    }
+  };
+}
 function loadMoreChannelsForForward(limit) {
   return {
     type: LOAD_MORE_CHANNELS_FOR_FORWARD,
     payload: {
       limit: limit
+    }
+  };
+}
+function searchChannelsForForwardAC(params, contactsMap) {
+  return {
+    type: SEARCH_CHANNELS_FOR_FORWARD,
+    payload: {
+      params: params,
+      contactsMap: contactsMap
+    }
+  };
+}
+function setSearchedChannelsForForwardAC(searchedChannels) {
+  return {
+    type: SET_SEARCHED_CHANNELS_FOR_FORWARD,
+    payload: {
+      searchedChannels: searchedChannels
     }
   };
 }
@@ -9285,14 +9349,6 @@ function addChannelAC(channel) {
 function addChannelsAC(channels) {
   return {
     type: ADD_CHANNELS,
-    payload: {
-      channels: channels
-    }
-  };
-}
-function addChannelsForForwardAC(channels) {
-  return {
-    type: ADD_CHANNELS_FOR_FORWARD,
     payload: {
       channels: channels
     }
@@ -9375,32 +9431,6 @@ function setChannelsAC(channels) {
     type: SET_CHANNELS,
     payload: {
       channels: channels
-    }
-  };
-}
-function setChannelsFroForwardAC(channels) {
-  return {
-    type: SET_CHANNELS_FOR_FORWARD,
-    payload: {
-      channels: channels
-    }
-  };
-}
-function setChannelsLoadingStateAC(state, forForward) {
-  return {
-    type: SET_CHANNELS_LOADING_STATE,
-    payload: {
-      state: state,
-      forForward: forForward
-    }
-  };
-}
-function channelHasNextAC(hasNext, forForward) {
-  return {
-    type: CHANNELS_HAS_NEXT,
-    payload: {
-      hasNext: hasNext,
-      forForward: forForward
     }
   };
 }
@@ -12904,30 +12934,32 @@ var _marked$1 = /*#__PURE__*/_regeneratorRuntime().mark(createChannel),
     _marked2 = /*#__PURE__*/_regeneratorRuntime().mark(getChannels),
     _marked3 = /*#__PURE__*/_regeneratorRuntime().mark(searchChannels),
     _marked4 = /*#__PURE__*/_regeneratorRuntime().mark(getChannelsForForward),
-    _marked5 = /*#__PURE__*/_regeneratorRuntime().mark(channelsLoadMore),
-    _marked6 = /*#__PURE__*/_regeneratorRuntime().mark(channelsForForwardLoadMore),
-    _marked7 = /*#__PURE__*/_regeneratorRuntime().mark(markMessagesRead),
-    _marked8 = /*#__PURE__*/_regeneratorRuntime().mark(markMessagesDelivered),
-    _marked9 = /*#__PURE__*/_regeneratorRuntime().mark(switchChannel),
-    _marked10 = /*#__PURE__*/_regeneratorRuntime().mark(notificationsTurnOff),
-    _marked11 = /*#__PURE__*/_regeneratorRuntime().mark(notificationsTurnOn),
-    _marked12 = /*#__PURE__*/_regeneratorRuntime().mark(markChannelAsRead),
-    _marked13 = /*#__PURE__*/_regeneratorRuntime().mark(markChannelAsUnRead),
-    _marked14 = /*#__PURE__*/_regeneratorRuntime().mark(removeChannelCaches),
-    _marked15 = /*#__PURE__*/_regeneratorRuntime().mark(leaveChannel),
-    _marked16 = /*#__PURE__*/_regeneratorRuntime().mark(deleteChannel),
-    _marked17 = /*#__PURE__*/_regeneratorRuntime().mark(blockChannel),
-    _marked18 = /*#__PURE__*/_regeneratorRuntime().mark(updateChannel),
-    _marked19 = /*#__PURE__*/_regeneratorRuntime().mark(checkUsersStatus),
-    _marked20 = /*#__PURE__*/_regeneratorRuntime().mark(sendTyping),
-    _marked21 = /*#__PURE__*/_regeneratorRuntime().mark(clearHistory),
-    _marked22 = /*#__PURE__*/_regeneratorRuntime().mark(deleteAllMessages),
-    _marked23 = /*#__PURE__*/_regeneratorRuntime().mark(joinChannel),
-    _marked24 = /*#__PURE__*/_regeneratorRuntime().mark(watchForChannelEvents),
-    _marked25 = /*#__PURE__*/_regeneratorRuntime().mark(ChannelsSaga);
+    _marked5 = /*#__PURE__*/_regeneratorRuntime().mark(searchChannelsForForward),
+    _marked6 = /*#__PURE__*/_regeneratorRuntime().mark(channelsLoadMore),
+    _marked7 = /*#__PURE__*/_regeneratorRuntime().mark(channelsForForwardLoadMore),
+    _marked8 = /*#__PURE__*/_regeneratorRuntime().mark(markMessagesRead),
+    _marked9 = /*#__PURE__*/_regeneratorRuntime().mark(markMessagesDelivered),
+    _marked10 = /*#__PURE__*/_regeneratorRuntime().mark(switchChannel),
+    _marked11 = /*#__PURE__*/_regeneratorRuntime().mark(notificationsTurnOff),
+    _marked12 = /*#__PURE__*/_regeneratorRuntime().mark(notificationsTurnOn),
+    _marked13 = /*#__PURE__*/_regeneratorRuntime().mark(markChannelAsRead),
+    _marked14 = /*#__PURE__*/_regeneratorRuntime().mark(markChannelAsUnRead),
+    _marked15 = /*#__PURE__*/_regeneratorRuntime().mark(removeChannelCaches),
+    _marked16 = /*#__PURE__*/_regeneratorRuntime().mark(leaveChannel),
+    _marked17 = /*#__PURE__*/_regeneratorRuntime().mark(deleteChannel),
+    _marked18 = /*#__PURE__*/_regeneratorRuntime().mark(blockChannel),
+    _marked19 = /*#__PURE__*/_regeneratorRuntime().mark(updateChannel),
+    _marked20 = /*#__PURE__*/_regeneratorRuntime().mark(checkUsersStatus),
+    _marked21 = /*#__PURE__*/_regeneratorRuntime().mark(sendTyping),
+    _marked22 = /*#__PURE__*/_regeneratorRuntime().mark(clearHistory),
+    _marked23 = /*#__PURE__*/_regeneratorRuntime().mark(deleteAllMessages),
+    _marked24 = /*#__PURE__*/_regeneratorRuntime().mark(joinChannel),
+    _marked25 = /*#__PURE__*/_regeneratorRuntime().mark(watchForChannelEvents),
+    _marked26 = /*#__PURE__*/_regeneratorRuntime().mark(ChannelsSaga);
 
 function createChannel(action) {
-  var payload, channelData, dontCreateIfNotExists, SceytChatClient, createChannelData, fileToUpload, channelIsExistOnAllChannels, createdChannel, allChannels, memberId, checkChannelExist, messageToSend;
+  var payload, channelData, dontCreateIfNotExists, SceytChatClient, createChannelData, fileToUpload, channelIsExistOnAllChannels, createdChannel, allChannels, memberId, checkChannelExist, messageToSend, _allChannels, _memberId;
+
   return _regeneratorRuntime().wrap(function createChannel$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
@@ -13074,30 +13106,49 @@ function createChannel(action) {
           })))));
 
         case 45:
-          if (!(!dontCreateIfNotExists || channelIsExistOnAllChannels)) {
-            _context.next = 49;
-            break;
+          if (dontCreateIfNotExists) {
+            if (!channelIsExistOnAllChannels) {
+              addChannelsToAllChannels(createdChannel);
+            }
+          } else {
+            _allChannels = getAllChannels();
+            _memberId = channelData.members[0].id;
+
+            _allChannels.forEach(function (channel) {
+              if (channel.type === CHANNEL_TYPE.DIRECT) {
+                var directChannelUser = channel.members.find(function (member) {
+                  return member.id === _memberId;
+                });
+
+                if (directChannelUser) {
+                  channelIsExistOnAllChannels = true;
+                }
+              }
+            });
+
+            if (!channelIsExistOnAllChannels) {
+              addChannelsToAllChannels(createdChannel);
+            }
           }
 
-          addChannelsToAllChannels(createdChannel);
-          _context.next = 49;
+          _context.next = 48;
           return effects.call(setActiveChannelId, createdChannel.id);
 
-        case 49:
-          _context.next = 54;
+        case 48:
+          _context.next = 53;
           break;
 
-        case 51:
-          _context.prev = 51;
+        case 50:
+          _context.prev = 50;
           _context.t0 = _context["catch"](0);
           console.log(_context.t0, 'Error on create channel');
 
-        case 54:
+        case 53:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$1, null, [[0, 51]]);
+  }, _marked$1, null, [[0, 50]]);
 }
 
 function getChannels(action) {
@@ -13315,7 +13366,7 @@ function searchChannels(action) {
           searchBy = params.search;
 
           if (!searchBy) {
-            _context3.next = 40;
+            _context3.next = 38;
             break;
           }
 
@@ -13391,38 +13442,36 @@ function searchChannels(action) {
 
         case 31:
           channelQuery = _context3.sent;
-          console.log('searched channel query ..... ... ', channelQuery);
-          _context3.next = 35;
+          _context3.next = 34;
           return effects.call(channelQuery.loadNextPage);
 
-        case 35:
+        case 34:
           channelsData = _context3.sent;
           channelsToAdd = channelsData.channels.filter(function (channel) {
             return channel.type === CHANNEL_TYPE.PUBLIC || channel.type === CHANNEL_TYPE.BROADCAST;
           });
-          console.log('searched channel data ..... ... ', channelsToAdd);
-          _context3.next = 40;
+          _context3.next = 38;
           return effects.put(setSearchedChannelsAC({
             chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
             channels: JSON.parse(JSON.stringify(channelsToAdd)),
             contacts: JSON.parse(JSON.stringify(contactsList))
           }));
 
-        case 40:
-          _context3.next = 46;
+        case 38:
+          _context3.next = 44;
           break;
 
-        case 42:
-          _context3.prev = 42;
+        case 40:
+          _context3.prev = 40;
           _context3.t0 = _context3["catch"](0);
           console.log(_context3.t0, 'Error on get channels');
 
-        case 46:
+        case 44:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3, null, [[0, 42]]);
+  }, _marked3, null, [[0, 40]]);
 }
 
 function getChannelsForForward() {
@@ -13467,7 +13516,7 @@ function getChannelsForForward() {
           _yield$call2 = _context4.sent;
           mappedChannels = _yield$call2.channels;
           _context4.next = 22;
-          return effects.put(setChannelsFroForwardAC(mappedChannels));
+          return effects.put(setChannelsForForwardAC(mappedChannels));
 
         case 22:
           query.channelQueryForward = channelQuery;
@@ -13491,14 +13540,140 @@ function getChannelsForForward() {
   }, _marked4, null, [[0, 27]]);
 }
 
-function channelsLoadMore(action) {
-  var payload, limit, channelQuery, channelsData, _yield$call3, mappedChannels, channelsForUpdateLastReactionMessage, channelMessageMap;
-
-  return _regeneratorRuntime().wrap(function channelsLoadMore$(_context5) {
+function searchChannelsForForward(action) {
+  var payload, params, contactsMap, SceytChatClient, getFromContacts, searchBy, channelQueryBuilder, allChannels, publicChannels, chatsGroups, contactsList, contactsWithChannelsMap, lowerCaseSearchBy, channelQuery, channelsData, channelsToAdd;
+  return _regeneratorRuntime().wrap(function searchChannelsForForward$(_context5) {
     while (1) {
       switch (_context5.prev = _context5.next) {
         case 0:
           _context5.prev = 0;
+          payload = action.payload;
+          params = payload.params, contactsMap = payload.contactsMap;
+          SceytChatClient = getClient();
+          getFromContacts = getShowOnlyContactUsers();
+          _context5.next = 7;
+          return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADING, true));
+
+        case 7:
+          searchBy = params.search;
+
+          if (!searchBy) {
+            _context5.next = 37;
+            break;
+          }
+
+          channelQueryBuilder = new SceytChatClient.ChannelListQueryBuilder();
+
+          if (params.filter && params.filter.channelType) {
+            channelQueryBuilder.types(params.filter.channelType);
+          }
+
+          allChannels = getAllChannels();
+          publicChannels = [];
+          chatsGroups = [];
+          contactsList = [];
+          contactsWithChannelsMap = {};
+          lowerCaseSearchBy = searchBy.toLowerCase();
+          allChannels.forEach(function (channel) {
+            if (channel.type === CHANNEL_TYPE.DIRECT) {
+              var directChannelUser = channel.members.find(function (member) {
+                return member.id !== SceytChatClient.user.id;
+              });
+
+              if (directChannelUser && contactsMap[directChannelUser.id]) {
+                contactsWithChannelsMap[directChannelUser.id] = true;
+              }
+
+              var userName = makeUsername(directChannelUser && contactsMap[directChannelUser.id], directChannelUser, getFromContacts).toLowerCase();
+
+              if (userName.includes(lowerCaseSearchBy)) {
+                chatsGroups.push(channel);
+              }
+            } else {
+              if (channel.subject && channel.subject.toLowerCase().includes(lowerCaseSearchBy)) {
+                if (channel.type === CHANNEL_TYPE.PUBLIC || channel.type === CHANNEL_TYPE.BROADCAST) {
+                  publicChannels.push(channel);
+                } else {
+                  chatsGroups.push(channel);
+                }
+              }
+            }
+          });
+
+          if (getFromContacts) {
+            Object.values(contactsMap).forEach(function (contact) {
+              if (!contactsWithChannelsMap[contact.id]) {
+                var userName = makeUsername(contact, undefined, true).toLowerCase();
+
+                if (userName.includes(lowerCaseSearchBy)) {
+                  contactsList.push(contact);
+                }
+              }
+            });
+          }
+
+          _context5.next = 21;
+          return effects.put(setSearchedChannelsForForwardAC({
+            chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
+            channels: JSON.parse(JSON.stringify(publicChannels)),
+            contacts: JSON.parse(JSON.stringify(contactsList))
+          }));
+
+        case 21:
+          _context5.next = 23;
+          return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED, true));
+
+        case 23:
+          channelQueryBuilder.query(lowerCaseSearchBy);
+          channelQueryBuilder.limit(params.limit || 50);
+          channelQueryBuilder.order('lastMessage');
+          channelQueryBuilder.filterKey(['subject']);
+          channelQueryBuilder.searchOperator('contains');
+          _context5.next = 30;
+          return effects.call(channelQueryBuilder.build);
+
+        case 30:
+          channelQuery = _context5.sent;
+          _context5.next = 33;
+          return effects.call(channelQuery.loadNextPage);
+
+        case 33:
+          channelsData = _context5.sent;
+          channelsToAdd = channelsData.channels.filter(function (channel) {
+            return channel.type === CHANNEL_TYPE.PUBLIC || channel.type === CHANNEL_TYPE.BROADCAST;
+          });
+          _context5.next = 37;
+          return effects.put(setSearchedChannelsForForwardAC({
+            chats_groups: JSON.parse(JSON.stringify(chatsGroups)),
+            channels: JSON.parse(JSON.stringify(channelsToAdd)),
+            contacts: JSON.parse(JSON.stringify(contactsList))
+          }));
+
+        case 37:
+          _context5.next = 43;
+          break;
+
+        case 39:
+          _context5.prev = 39;
+          _context5.t0 = _context5["catch"](0);
+          console.log(_context5.t0, 'Error on get channels');
+
+        case 43:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, _marked5, null, [[0, 39]]);
+}
+
+function channelsLoadMore(action) {
+  var payload, limit, channelQuery, channelsData, _yield$call3, mappedChannels, channelsForUpdateLastReactionMessage, channelMessageMap;
+
+  return _regeneratorRuntime().wrap(function channelsLoadMore$(_context6) {
+    while (1) {
+      switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.prev = 0;
           payload = action.payload;
           limit = payload.limit;
           channelQuery = query.channelQuery;
@@ -13507,34 +13682,34 @@ function channelsLoadMore(action) {
             channelQuery.limit = limit;
           }
 
-          _context5.next = 7;
+          _context6.next = 7;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADING));
 
         case 7:
-          _context5.next = 9;
+          _context6.next = 9;
           return effects.call(channelQuery.loadNextPage);
 
         case 9:
-          channelsData = _context5.sent;
-          _context5.next = 12;
+          channelsData = _context6.sent;
+          _context6.next = 12;
           return effects.put(channelHasNextAC(channelsData.hasNext));
 
         case 12:
-          _context5.next = 14;
+          _context6.next = 14;
           return effects.call(setChannelsInMap, channelsData.channels);
 
         case 14:
-          _yield$call3 = _context5.sent;
+          _yield$call3 = _context6.sent;
           mappedChannels = _yield$call3.channels;
           channelsForUpdateLastReactionMessage = _yield$call3.channelsForUpdateLastReactionMessage;
 
           if (!channelsForUpdateLastReactionMessage.length) {
-            _context5.next = 22;
+            _context6.next = 22;
             break;
           }
 
           channelMessageMap = {};
-          _context5.next = 21;
+          _context6.next = 21;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(channelsForUpdateLastReactionMessage.map(function (channel) {
@@ -13567,38 +13742,38 @@ function channelsLoadMore(action) {
           });
 
         case 22:
-          _context5.next = 24;
+          _context6.next = 24;
           return effects.put(addChannelsAC(mappedChannels));
 
         case 24:
-          _context5.next = 26;
+          _context6.next = 26;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
         case 26:
-          _context5.next = 31;
+          _context6.next = 31;
           break;
 
         case 28:
-          _context5.prev = 28;
-          _context5.t0 = _context5["catch"](0);
-          console.log(_context5.t0, 'Error in load more channels');
+          _context6.prev = 28;
+          _context6.t0 = _context6["catch"](0);
+          console.log(_context6.t0, 'Error in load more channels');
 
         case 31:
         case "end":
-          return _context5.stop();
+          return _context6.stop();
       }
     }
-  }, _marked5, null, [[0, 28]]);
+  }, _marked6, null, [[0, 28]]);
 }
 
 function channelsForForwardLoadMore(action) {
   var payload, limit, SceytChatClient, channelQueryForward, channelsData, channelsToAdd, _yield$call4, mappedChannels;
 
-  return _regeneratorRuntime().wrap(function channelsForForwardLoadMore$(_context6) {
+  return _regeneratorRuntime().wrap(function channelsForForwardLoadMore$(_context7) {
     while (1) {
-      switch (_context6.prev = _context6.next) {
+      switch (_context7.prev = _context7.next) {
         case 0:
-          _context6.prev = 0;
+          _context7.prev = 0;
           payload = action.payload;
           limit = payload.limit;
           SceytChatClient = getClient();
@@ -13608,16 +13783,16 @@ function channelsForForwardLoadMore(action) {
             channelQueryForward.limit = limit;
           }
 
-          _context6.next = 8;
+          _context7.next = 8;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADING));
 
         case 8:
-          _context6.next = 10;
+          _context7.next = 10;
           return effects.call(channelQueryForward.loadNextPage);
 
         case 10:
-          channelsData = _context6.sent;
-          _context6.next = 13;
+          channelsData = _context7.sent;
+          _context7.next = 13;
           return effects.put(channelHasNextAC(channelsData.hasNext, true));
 
         case 13:
@@ -13626,51 +13801,51 @@ function channelsForForwardLoadMore(action) {
               return member.id && member.id !== SceytChatClient.user.id;
             }) : true;
           });
-          _context6.next = 16;
+          _context7.next = 16;
           return effects.call(setChannelsInMap, channelsToAdd);
 
         case 16:
-          _yield$call4 = _context6.sent;
+          _yield$call4 = _context7.sent;
           mappedChannels = _yield$call4.channels;
-          _context6.next = 20;
+          _context7.next = 20;
           return effects.put(addChannelsForForwardAC(mappedChannels));
 
         case 20:
-          _context6.next = 22;
+          _context7.next = 22;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
         case 22:
-          _context6.next = 27;
+          _context7.next = 27;
           break;
 
         case 24:
-          _context6.prev = 24;
-          _context6.t0 = _context6["catch"](0);
-          console.log(_context6.t0, 'Error in load more channels for forward');
+          _context7.prev = 24;
+          _context7.t0 = _context7["catch"](0);
+          console.log(_context7.t0, 'Error in load more channels for forward');
 
         case 27:
         case "end":
-          return _context6.stop();
+          return _context7.stop();
       }
     }
-  }, _marked6, null, [[0, 24]]);
+  }, _marked7, null, [[0, 24]]);
 }
 
 function markMessagesRead(action) {
   var payload, channelId, messageIds, channel, messageListMarker, _iterator, _step, messageId, updateParams;
 
-  return _regeneratorRuntime().wrap(function markMessagesRead$(_context7) {
+  return _regeneratorRuntime().wrap(function markMessagesRead$(_context8) {
     while (1) {
-      switch (_context7.prev = _context7.next) {
+      switch (_context8.prev = _context8.next) {
         case 0:
           payload = action.payload;
           channelId = payload.channelId, messageIds = payload.messageIds;
-          _context7.next = 4;
+          _context8.next = 4;
           return effects.call(getChannelFromMap, channelId);
 
         case 4:
-          channel = _context7.sent;
-          _context7.prev = 5;
+          channel = _context8.sent;
+          _context8.prev = 5;
 
           if (!channel) {
             channel = getChannelFromAllChannels(channelId);
@@ -13681,16 +13856,16 @@ function markMessagesRead(action) {
           }
 
           if (!channel) {
-            _context7.next = 23;
+            _context8.next = 23;
             break;
           }
 
-          _context7.next = 10;
+          _context8.next = 10;
           return effects.call(channel.markMessagesAsDisplayed, messageIds);
 
         case 10:
-          messageListMarker = _context7.sent;
-          _context7.next = 13;
+          messageListMarker = _context8.sent;
+          _context8.next = 13;
           return effects.put(updateChannelDataAC(channel.id, {
             unread: channel.unread,
             lastReadMessageId: channel.lastDisplayedMsgId,
@@ -13702,7 +13877,7 @@ function markMessagesRead(action) {
 
         case 14:
           if ((_step = _iterator()).done) {
-            _context7.next = 23;
+            _context8.next = 23;
             break;
           }
 
@@ -13716,7 +13891,7 @@ function markMessagesRead(action) {
               name: MESSAGE_DELIVERY_STATUS.READ
             }]
           };
-          _context7.next = 19;
+          _context8.next = 19;
           return effects.put(updateMessageAC(messageId, updateParams));
 
         case 19:
@@ -13727,40 +13902,40 @@ function markMessagesRead(action) {
           updateMessageOnAllMessages(messageId, updateParams);
 
         case 21:
-          _context7.next = 14;
+          _context8.next = 14;
           break;
 
         case 23:
-          _context7.next = 28;
+          _context8.next = 28;
           break;
 
         case 25:
-          _context7.prev = 25;
-          _context7.t0 = _context7["catch"](5);
-          console.log(_context7.t0, 'Error on mark messages read');
+          _context8.prev = 25;
+          _context8.t0 = _context8["catch"](5);
+          console.log(_context8.t0, 'Error on mark messages read');
 
         case 28:
         case "end":
-          return _context7.stop();
+          return _context8.stop();
       }
     }
-  }, _marked7, null, [[5, 25]]);
+  }, _marked8, null, [[5, 25]]);
 }
 
 function markMessagesDelivered(action) {
   var payload, channelId, messageIds, channel;
-  return _regeneratorRuntime().wrap(function markMessagesDelivered$(_context8) {
+  return _regeneratorRuntime().wrap(function markMessagesDelivered$(_context9) {
     while (1) {
-      switch (_context8.prev = _context8.next) {
+      switch (_context9.prev = _context9.next) {
         case 0:
           payload = action.payload;
           channelId = payload.channelId, messageIds = payload.messageIds;
-          _context8.prev = 2;
-          _context8.next = 5;
+          _context9.prev = 2;
+          _context9.next = 5;
           return effects.call(getChannelFromMap, channelId);
 
         case 5:
-          channel = _context8.sent;
+          channel = _context9.sent;
 
           if (!channel) {
             channel = getChannelFromAllChannels(channelId);
@@ -13771,37 +13946,37 @@ function markMessagesDelivered(action) {
           }
 
           if (!channel) {
-            _context8.next = 10;
+            _context9.next = 10;
             break;
           }
 
-          _context8.next = 10;
+          _context9.next = 10;
           return effects.call(channel.markMessagesAsReceived, messageIds);
 
         case 10:
-          _context8.next = 15;
+          _context9.next = 15;
           break;
 
         case 12:
-          _context8.prev = 12;
-          _context8.t0 = _context8["catch"](2);
-          console.log(_context8.t0, 'Error on mark messages delivered');
+          _context9.prev = 12;
+          _context9.t0 = _context9["catch"](2);
+          console.log(_context9.t0, 'Error on mark messages delivered');
 
         case 15:
         case "end":
-          return _context8.stop();
+          return _context9.stop();
       }
     }
-  }, _marked8, null, [[2, 12]]);
+  }, _marked9, null, [[2, 12]]);
 }
 
 function switchChannel(action) {
   var payload, channel, existingChannel, addChannel, currentActiveChannel, channelToSwitch;
-  return _regeneratorRuntime().wrap(function switchChannel$(_context9) {
+  return _regeneratorRuntime().wrap(function switchChannel$(_context10) {
     while (1) {
-      switch (_context9.prev = _context9.next) {
+      switch (_context10.prev = _context10.next) {
         case 0:
-          _context9.prev = 0;
+          _context10.prev = 0;
           payload = action.payload;
           channel = payload.channel;
           existingChannel = checkChannelExists(channel.id);
@@ -13815,11 +13990,11 @@ function switchChannel(action) {
           }
 
           currentActiveChannel = getChannelFromMap(getActiveChannelId());
-          _context9.next = 8;
+          _context10.next = 8;
           return effects.call(setUnreadScrollTo, true);
 
         case 8:
-          _context9.next = 10;
+          _context10.next = 10;
           return effects.call(setActiveChannelId, channel && channel.id);
 
         case 10:
@@ -13829,177 +14004,130 @@ function switchChannel(action) {
             channelToSwitch.linkedFrom = currentActiveChannel;
           }
 
-          _context9.next = 14;
+          _context10.next = 14;
           return effects.put(setActiveChannelAC(_extends({}, channelToSwitch)));
 
         case 14:
 
-          _context9.next = 20;
-          break;
-
-        case 17:
-          _context9.prev = 17;
-          _context9.t0 = _context9["catch"](0);
-          console.log('error in switch channel');
-
-        case 20:
-        case "end":
-          return _context9.stop();
-      }
-    }
-  }, _marked9, null, [[0, 17]]);
-}
-
-function notificationsTurnOff(action) {
-  var expireTime, activeChannelId, channel, updatedChannel;
-  return _regeneratorRuntime().wrap(function notificationsTurnOff$(_context10) {
-    while (1) {
-      switch (_context10.prev = _context10.next) {
-        case 0:
-          expireTime = action.payload.expireTime;
-          _context10.next = 3;
-          return effects.call(getActiveChannelId);
-
-        case 3:
-          activeChannelId = _context10.sent;
-          _context10.next = 6;
-          return effects.call(getChannelFromMap, activeChannelId);
-
-        case 6:
-          channel = _context10.sent;
-          _context10.prev = 7;
-          _context10.next = 10;
-          return effects.call(channel.mute, expireTime);
-
-        case 10:
-          updatedChannel = _context10.sent;
-          console.log('updatedChannel. . . . . .. ', updatedChannel);
-          updateChannelOnAllChannels(channel.id, {
-            muted: updatedChannel.muted,
-            mutedTill: updatedChannel.mutedTill
-          });
-          _context10.next = 15;
-          return effects.put(updateChannelDataAC(updatedChannel.id, {
-            muted: updatedChannel.muted,
-            mutedTill: updatedChannel.mutedTill
-          }));
-
-        case 15:
           _context10.next = 20;
           break;
 
         case 17:
           _context10.prev = 17;
-          _context10.t0 = _context10["catch"](7);
-          console.log('ERROR turn off notifications', _context10.t0.message);
+          _context10.t0 = _context10["catch"](0);
+          console.log('error in switch channel');
 
         case 20:
         case "end":
           return _context10.stop();
       }
     }
-  }, _marked10, null, [[7, 17]]);
+  }, _marked10, null, [[0, 17]]);
 }
 
-function notificationsTurnOn() {
-  var activeChannelId, channel, updatedChannel;
-  return _regeneratorRuntime().wrap(function notificationsTurnOn$(_context11) {
+function notificationsTurnOff(action) {
+  var expireTime, activeChannelId, channel, updatedChannel;
+  return _regeneratorRuntime().wrap(function notificationsTurnOff$(_context11) {
     while (1) {
       switch (_context11.prev = _context11.next) {
         case 0:
-          _context11.next = 2;
+          expireTime = action.payload.expireTime;
+          _context11.next = 3;
           return effects.call(getActiveChannelId);
 
-        case 2:
+        case 3:
           activeChannelId = _context11.sent;
-          _context11.next = 5;
+          _context11.next = 6;
           return effects.call(getChannelFromMap, activeChannelId);
 
-        case 5:
+        case 6:
           channel = _context11.sent;
-          _context11.prev = 6;
-          _context11.next = 9;
-          return effects.call(channel.unmute);
+          _context11.prev = 7;
+          _context11.next = 10;
+          return effects.call(channel.mute, expireTime);
 
-        case 9:
+        case 10:
           updatedChannel = _context11.sent;
+          console.log('updatedChannel. . . . . .. ', updatedChannel);
           updateChannelOnAllChannels(channel.id, {
             muted: updatedChannel.muted,
             mutedTill: updatedChannel.mutedTill
           });
-          _context11.next = 13;
+          _context11.next = 15;
+          return effects.put(updateChannelDataAC(updatedChannel.id, {
+            muted: updatedChannel.muted,
+            mutedTill: updatedChannel.mutedTill
+          }));
+
+        case 15:
+          _context11.next = 20;
+          break;
+
+        case 17:
+          _context11.prev = 17;
+          _context11.t0 = _context11["catch"](7);
+          console.log('ERROR turn off notifications', _context11.t0.message);
+
+        case 20:
+        case "end":
+          return _context11.stop();
+      }
+    }
+  }, _marked11, null, [[7, 17]]);
+}
+
+function notificationsTurnOn() {
+  var activeChannelId, channel, updatedChannel;
+  return _regeneratorRuntime().wrap(function notificationsTurnOn$(_context12) {
+    while (1) {
+      switch (_context12.prev = _context12.next) {
+        case 0:
+          _context12.next = 2;
+          return effects.call(getActiveChannelId);
+
+        case 2:
+          activeChannelId = _context12.sent;
+          _context12.next = 5;
+          return effects.call(getChannelFromMap, activeChannelId);
+
+        case 5:
+          channel = _context12.sent;
+          _context12.prev = 6;
+          _context12.next = 9;
+          return effects.call(channel.unmute);
+
+        case 9:
+          updatedChannel = _context12.sent;
+          updateChannelOnAllChannels(channel.id, {
+            muted: updatedChannel.muted,
+            mutedTill: updatedChannel.mutedTill
+          });
+          _context12.next = 13;
           return effects.put(updateChannelDataAC(updatedChannel.id, {
             muted: updatedChannel.muted,
             mutedTill: updatedChannel.mutedTill
           }));
 
         case 13:
-          _context11.next = 18;
+          _context12.next = 18;
           break;
 
         case 15:
-          _context11.prev = 15;
-          _context11.t0 = _context11["catch"](6);
-          console.log('ERROR turn on notifications: ', _context11.t0.message);
+          _context12.prev = 15;
+          _context12.t0 = _context12["catch"](6);
+          console.log('ERROR turn on notifications: ', _context12.t0.message);
 
         case 18:
-        case "end":
-          return _context11.stop();
-      }
-    }
-  }, _marked11, null, [[6, 15]]);
-}
-
-function markChannelAsRead(action) {
-  var channelId, channel;
-  return _regeneratorRuntime().wrap(function markChannelAsRead$(_context12) {
-    while (1) {
-      switch (_context12.prev = _context12.next) {
-        case 0:
-          _context12.prev = 0;
-          channelId = action.payload.channelId;
-          _context12.next = 4;
-          return effects.call(getChannelFromMap, channelId);
-
-        case 4:
-          channel = _context12.sent;
-
-          if (!channel) {
-            channel = getChannelFromAllChannels(channelId);
-          }
-
-          _context12.next = 8;
-          return effects.call(channel.markAsRead);
-
-        case 8:
-          updateChannelOnAllChannels(channel.id, {
-            unread: false
-          });
-          _context12.next = 11;
-          return effects.put(updateChannelDataAC(channel.id, {
-            unread: false
-          }));
-
-        case 11:
-          _context12.next = 16;
-          break;
-
-        case 13:
-          _context12.prev = 13;
-          _context12.t0 = _context12["catch"](0);
-          console.log(_context12.t0, 'Error in set channel unread');
-
-        case 16:
         case "end":
           return _context12.stop();
       }
     }
-  }, _marked12, null, [[0, 13]]);
+  }, _marked12, null, [[6, 15]]);
 }
 
-function markChannelAsUnRead(action) {
+function markChannelAsRead(action) {
   var channelId, channel;
-  return _regeneratorRuntime().wrap(function markChannelAsUnRead$(_context13) {
+  return _regeneratorRuntime().wrap(function markChannelAsRead$(_context13) {
     while (1) {
       switch (_context13.prev = _context13.next) {
         case 0:
@@ -14016,15 +14144,15 @@ function markChannelAsUnRead(action) {
           }
 
           _context13.next = 8;
-          return effects.call(channel.markAsUnRead);
+          return effects.call(channel.markAsRead);
 
         case 8:
           updateChannelOnAllChannels(channel.id, {
-            unread: true
+            unread: false
           });
           _context13.next = 11;
           return effects.put(updateChannelDataAC(channel.id, {
-            unread: true
+            unread: false
           }));
 
         case 11:
@@ -14044,120 +14172,99 @@ function markChannelAsUnRead(action) {
   }, _marked13, null, [[0, 13]]);
 }
 
-function removeChannelCaches(action) {
-  var payload, channelId, activeChannelId, activeChannel;
-  return _regeneratorRuntime().wrap(function removeChannelCaches$(_context14) {
+function markChannelAsUnRead(action) {
+  var channelId, channel;
+  return _regeneratorRuntime().wrap(function markChannelAsUnRead$(_context14) {
     while (1) {
       switch (_context14.prev = _context14.next) {
         case 0:
-          payload = action.payload;
-          channelId = payload.channelId;
+          _context14.prev = 0;
+          channelId = action.payload.channelId;
           _context14.next = 4;
-          return effects.call(getActiveChannelId);
-
-        case 4:
-          activeChannelId = _context14.sent;
-          removeChannelFromMap(channelId);
-          removeMessagesFromMap(channelId);
-
-          if (!(activeChannelId === channelId)) {
-            _context14.next = 14;
-            break;
-          }
-
-          _context14.next = 10;
-          return effects.call(getLastChannelFromMap);
-
-        case 10:
-          activeChannel = _context14.sent;
-
-          if (!activeChannel) {
-            _context14.next = 14;
-            break;
-          }
-
-          _context14.next = 14;
-          return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(activeChannel))));
-
-        case 14:
-        case "end":
-          return _context14.stop();
-      }
-    }
-  }, _marked14);
-}
-
-function leaveChannel(action) {
-  var payload, channelId, channel, messageBuilder, messageToSend;
-  return _regeneratorRuntime().wrap(function leaveChannel$(_context15) {
-    while (1) {
-      switch (_context15.prev = _context15.next) {
-        case 0:
-          _context15.prev = 0;
-          payload = action.payload;
-          channelId = payload.channelId;
-          _context15.next = 5;
           return effects.call(getChannelFromMap, channelId);
 
-        case 5:
-          channel = _context15.sent;
+        case 4:
+          channel = _context14.sent;
 
           if (!channel) {
             channel = getChannelFromAllChannels(channelId);
           }
 
-          if (!channel) {
-            _context15.next = 24;
-            break;
-          }
+          _context14.next = 8;
+          return effects.call(channel.markAsUnRead);
 
-          if (!(channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE)) {
-            _context15.next = 16;
-            break;
-          }
+        case 8:
+          updateChannelOnAllChannels(channel.id, {
+            unread: true
+          });
+          _context14.next = 11;
+          return effects.put(updateChannelDataAC(channel.id, {
+            unread: true
+          }));
 
-          messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody('LG').setType('system').setDisplayCount(0).setSilent(true);
-          messageToSend = messageBuilder.create();
-
-          console.log('send message for left');
-          _context15.next = 16;
-          return effects.call(channel.sendMessage, messageToSend);
-
-        case 16:
-          console.log('leave');
-          _context15.next = 19;
-          return effects.call(channel.leave);
-
-        case 19:
-          _context15.next = 21;
-          return effects.put(removeChannelAC(channelId));
-
-        case 21:
-          deleteChannelFromAllChannels(channelId);
-          _context15.next = 24;
-          return effects.put(removeChannelCachesAC(channelId));
-
-        case 24:
-          _context15.next = 29;
+        case 11:
+          _context14.next = 16;
           break;
 
-        case 26:
-          _context15.prev = 26;
-          _context15.t0 = _context15["catch"](0);
-          console.log('ERROR in leave channel - ', _context15.t0.message);
+        case 13:
+          _context14.prev = 13;
+          _context14.t0 = _context14["catch"](0);
+          console.log(_context14.t0, 'Error in set channel unread');
 
-        case 29:
+        case 16:
+        case "end":
+          return _context14.stop();
+      }
+    }
+  }, _marked14, null, [[0, 13]]);
+}
+
+function removeChannelCaches(action) {
+  var payload, channelId, activeChannelId, activeChannel;
+  return _regeneratorRuntime().wrap(function removeChannelCaches$(_context15) {
+    while (1) {
+      switch (_context15.prev = _context15.next) {
+        case 0:
+          payload = action.payload;
+          channelId = payload.channelId;
+          _context15.next = 4;
+          return effects.call(getActiveChannelId);
+
+        case 4:
+          activeChannelId = _context15.sent;
+          removeChannelFromMap(channelId);
+          removeMessagesFromMap(channelId);
+
+          if (!(activeChannelId === channelId)) {
+            _context15.next = 14;
+            break;
+          }
+
+          _context15.next = 10;
+          return effects.call(getLastChannelFromMap);
+
+        case 10:
+          activeChannel = _context15.sent;
+
+          if (!activeChannel) {
+            _context15.next = 14;
+            break;
+          }
+
+          _context15.next = 14;
+          return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(activeChannel))));
+
+        case 14:
         case "end":
           return _context15.stop();
       }
     }
-  }, _marked15, null, [[0, 26]]);
+  }, _marked15);
 }
 
-function deleteChannel(action) {
-  var payload, channelId, channel;
-  return _regeneratorRuntime().wrap(function deleteChannel$(_context16) {
+function leaveChannel(action) {
+  var payload, channelId, channel, messageBuilder, messageToSend;
+  return _regeneratorRuntime().wrap(function leaveChannel$(_context16) {
     while (1) {
       switch (_context16.prev = _context16.next) {
         case 0:
@@ -14175,45 +14282,57 @@ function deleteChannel(action) {
           }
 
           if (!channel) {
+            _context16.next = 24;
+            break;
+          }
+
+          if (!(channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE)) {
             _context16.next = 16;
             break;
           }
 
-          _context16.next = 10;
-          return effects.call(channel["delete"]);
+          messageBuilder = channel.createMessageBuilder();
+          messageBuilder.setBody('LG').setType('system').setDisplayCount(0).setSilent(true);
+          messageToSend = messageBuilder.create();
 
-        case 10:
-          _context16.next = 12;
-          return effects.put(setChannelToRemoveAC(channel));
-
-        case 12:
-          _context16.next = 14;
-          return effects.put(removeChannelAC(channelId));
-
-        case 14:
+          console.log('send message for left');
           _context16.next = 16;
-          return effects.put(removeChannelCachesAC(channelId));
+          return effects.call(channel.sendMessage, messageToSend);
 
         case 16:
-          _context16.next = 21;
-          break;
+          console.log('leave');
+          _context16.next = 19;
+          return effects.call(channel.leave);
 
-        case 18:
-          _context16.prev = 18;
-          _context16.t0 = _context16["catch"](0);
-          console.log('ERROR in delete channel');
+        case 19:
+          _context16.next = 21;
+          return effects.put(removeChannelAC(channelId));
 
         case 21:
+          deleteChannelFromAllChannels(channelId);
+          _context16.next = 24;
+          return effects.put(removeChannelCachesAC(channelId));
+
+        case 24:
+          _context16.next = 29;
+          break;
+
+        case 26:
+          _context16.prev = 26;
+          _context16.t0 = _context16["catch"](0);
+          console.log('ERROR in leave channel - ', _context16.t0.message);
+
+        case 29:
         case "end":
           return _context16.stop();
       }
     }
-  }, _marked16, null, [[0, 18]]);
+  }, _marked16, null, [[0, 26]]);
 }
 
-function blockChannel(action) {
+function deleteChannel(action) {
   var payload, channelId, channel;
-  return _regeneratorRuntime().wrap(function blockChannel$(_context17) {
+  return _regeneratorRuntime().wrap(function deleteChannel$(_context17) {
     while (1) {
       switch (_context17.prev = _context17.next) {
         case 0:
@@ -14231,54 +14350,110 @@ function blockChannel(action) {
           }
 
           if (!channel) {
-            _context17.next = 14;
+            _context17.next = 16;
             break;
           }
 
           _context17.next = 10;
-          return effects.call(channel.block);
+          return effects.call(channel["delete"]);
 
         case 10:
           _context17.next = 12;
-          return effects.put(removeChannelAC(channelId));
+          return effects.put(setChannelToRemoveAC(channel));
 
         case 12:
           _context17.next = 14;
-          return effects.put(removeChannelCachesAC(channelId));
+          return effects.put(removeChannelAC(channelId));
 
         case 14:
-          _context17.next = 19;
-          break;
+          _context17.next = 16;
+          return effects.put(removeChannelCachesAC(channelId));
 
         case 16:
-          _context17.prev = 16;
-          _context17.t0 = _context17["catch"](0);
-          console.log('ERROR in block channel - ', _context17.t0.message);
+          _context17.next = 21;
+          break;
 
-        case 19:
+        case 18:
+          _context17.prev = 18;
+          _context17.t0 = _context17["catch"](0);
+          console.log('ERROR in delete channel');
+
+        case 21:
         case "end":
           return _context17.stop();
       }
     }
-  }, _marked17, null, [[0, 16]]);
+  }, _marked17, null, [[0, 18]]);
 }
 
-function updateChannel(action) {
-  var payload, channelId, config, SceytChatClient, channel, paramsToUpdate, fileToUpload, _yield$call5, subject, avatarUrl, metadata;
-
-  return _regeneratorRuntime().wrap(function updateChannel$(_context18) {
+function blockChannel(action) {
+  var payload, channelId, channel;
+  return _regeneratorRuntime().wrap(function blockChannel$(_context18) {
     while (1) {
       switch (_context18.prev = _context18.next) {
         case 0:
           _context18.prev = 0;
           payload = action.payload;
+          channelId = payload.channelId;
+          _context18.next = 5;
+          return effects.call(getChannelFromMap, channelId);
+
+        case 5:
+          channel = _context18.sent;
+
+          if (!channel) {
+            channel = getChannelFromAllChannels(channelId);
+          }
+
+          if (!channel) {
+            _context18.next = 14;
+            break;
+          }
+
+          _context18.next = 10;
+          return effects.call(channel.block);
+
+        case 10:
+          _context18.next = 12;
+          return effects.put(removeChannelAC(channelId));
+
+        case 12:
+          _context18.next = 14;
+          return effects.put(removeChannelCachesAC(channelId));
+
+        case 14:
+          _context18.next = 19;
+          break;
+
+        case 16:
+          _context18.prev = 16;
+          _context18.t0 = _context18["catch"](0);
+          console.log('ERROR in block channel - ', _context18.t0.message);
+
+        case 19:
+        case "end":
+          return _context18.stop();
+      }
+    }
+  }, _marked18, null, [[0, 16]]);
+}
+
+function updateChannel(action) {
+  var payload, channelId, config, SceytChatClient, channel, paramsToUpdate, fileToUpload, _yield$call5, subject, avatarUrl, metadata;
+
+  return _regeneratorRuntime().wrap(function updateChannel$(_context19) {
+    while (1) {
+      switch (_context19.prev = _context19.next) {
+        case 0:
+          _context19.prev = 0;
+          payload = action.payload;
           channelId = payload.channelId, config = payload.config;
           SceytChatClient = getClient();
-          _context18.next = 6;
+          _context19.next = 6;
           return effects.call(getChannelFromMap, channelId);
 
         case 6:
-          channel = _context18.sent;
+          channel = _context19.sent;
 
           if (!channel) {
             channel = getChannelFromAllChannels(channelId);
@@ -14292,7 +14467,7 @@ function updateChannel(action) {
           };
 
           if (!config.avatar) {
-            _context18.next = 14;
+            _context19.next = 14;
             break;
           }
 
@@ -14302,11 +14477,11 @@ function updateChannel(action) {
               console.log('upload percent - ', progressPercent);
             }
           };
-          _context18.next = 13;
+          _context19.next = 13;
           return effects.call(SceytChatClient.uploadFile, fileToUpload);
 
         case 13:
-          paramsToUpdate.avatarUrl = _context18.sent;
+          paramsToUpdate.avatarUrl = _context19.sent;
 
         case 14:
           if (config.subject) {
@@ -14321,15 +14496,15 @@ function updateChannel(action) {
             paramsToUpdate.avatarUrl = '';
           }
 
-          _context18.next = 19;
+          _context19.next = 19;
           return effects.call(channel.update, paramsToUpdate);
 
         case 19:
-          _yield$call5 = _context18.sent;
+          _yield$call5 = _context19.sent;
           subject = _yield$call5.subject;
           avatarUrl = _yield$call5.avatarUrl;
           metadata = _yield$call5.metadata;
-          _context18.next = 25;
+          _context19.next = 25;
           return effects.put(updateChannelDataAC(channelId, {
             subject: subject,
             avatarUrl: avatarUrl,
@@ -14337,36 +14512,36 @@ function updateChannel(action) {
           }));
 
         case 25:
-          _context18.next = 30;
+          _context19.next = 30;
           break;
 
         case 27:
-          _context18.prev = 27;
-          _context18.t0 = _context18["catch"](0);
-          console.log('ERROR in update channel', _context18.t0.message);
+          _context19.prev = 27;
+          _context19.t0 = _context19["catch"](0);
+          console.log('ERROR in update channel', _context19.t0.message);
 
         case 30:
         case "end":
-          return _context18.stop();
+          return _context19.stop();
       }
     }
-  }, _marked18, null, [[0, 27]]);
+  }, _marked19, null, [[0, 27]]);
 }
 
 function checkUsersStatus() {
   var SceytChatClient, usersForUpdate, updatedUsers, usersToUpdateMap, update, updateData;
-  return _regeneratorRuntime().wrap(function checkUsersStatus$(_context19) {
+  return _regeneratorRuntime().wrap(function checkUsersStatus$(_context20) {
     while (1) {
-      switch (_context19.prev = _context19.next) {
+      switch (_context20.prev = _context20.next) {
         case 0:
-          _context19.prev = 0;
+          _context20.prev = 0;
           SceytChatClient = getClient();
           usersForUpdate = Object.keys(usersMap);
-          _context19.next = 5;
+          _context20.next = 5;
           return effects.call(SceytChatClient.getUsers, usersForUpdate);
 
         case 5:
-          updatedUsers = _context19.sent;
+          updatedUsers = _context20.sent;
           usersToUpdateMap = {};
           update = false;
           updatedUsers.forEach(function (updatedUser) {
@@ -14378,180 +14553,99 @@ function checkUsersStatus() {
           });
 
           if (!update) {
-            _context19.next = 17;
+            _context20.next = 17;
             break;
           }
 
           updateData = JSON.parse(JSON.stringify(usersToUpdateMap));
-          _context19.next = 13;
+          _context20.next = 13;
           return effects.put(updateMembersPresenceAC(updateData));
 
         case 13:
-          _context19.next = 15;
+          _context20.next = 15;
           return effects.put(updateUserStatusOnMapAC(updateData));
 
         case 15:
-          _context19.next = 17;
+          _context20.next = 17;
           return effects.put(updateUserStatusOnChannelAC(updateData));
 
         case 17:
-          _context19.next = 22;
+          _context20.next = 22;
           break;
 
         case 19:
-          _context19.prev = 19;
-          _context19.t0 = _context19["catch"](0);
-          console.log('ERROR in check user status : ', _context19.t0.message);
+          _context20.prev = 19;
+          _context20.t0 = _context20["catch"](0);
+          console.log('ERROR in check user status : ', _context20.t0.message);
 
         case 22:
-        case "end":
-          return _context19.stop();
-      }
-    }
-  }, _marked19, null, [[0, 19]]);
-}
-
-function sendTyping(action) {
-  var state, activeChannelId, channel;
-  return _regeneratorRuntime().wrap(function sendTyping$(_context20) {
-    while (1) {
-      switch (_context20.prev = _context20.next) {
-        case 0:
-          state = action.payload.state;
-          _context20.next = 3;
-          return effects.call(getActiveChannelId);
-
-        case 3:
-          activeChannelId = _context20.sent;
-          _context20.next = 6;
-          return effects.call(getChannelFromMap, activeChannelId);
-
-        case 6:
-          channel = _context20.sent;
-          _context20.prev = 7;
-
-          if (!channel) {
-            _context20.next = 16;
-            break;
-          }
-
-          if (!state) {
-            _context20.next = 14;
-            break;
-          }
-
-          _context20.next = 12;
-          return effects.call(channel.startTyping);
-
-        case 12:
-          _context20.next = 16;
-          break;
-
-        case 14:
-          _context20.next = 16;
-          return effects.call(channel.stopTyping);
-
-        case 16:
-          _context20.next = 21;
-          break;
-
-        case 18:
-          _context20.prev = 18;
-          _context20.t0 = _context20["catch"](7);
-          console.log('ERROR in send typing');
-
-        case 21:
         case "end":
           return _context20.stop();
       }
     }
-  }, _marked20, null, [[7, 18]]);
+  }, _marked20, null, [[0, 19]]);
 }
 
-function clearHistory(action) {
-  var payload, channelId, channel, activeChannelId, groupName;
-  return _regeneratorRuntime().wrap(function clearHistory$(_context21) {
+function sendTyping(action) {
+  var state, activeChannelId, channel;
+  return _regeneratorRuntime().wrap(function sendTyping$(_context21) {
     while (1) {
       switch (_context21.prev = _context21.next) {
         case 0:
-          _context21.prev = 0;
-          payload = action.payload;
-          channelId = payload.channelId;
-          _context21.next = 5;
-          return effects.call(getChannelFromMap, channelId);
-
-        case 5:
-          channel = _context21.sent;
-
-          if (!channel) {
-            channel = getChannelFromAllChannels(channelId);
-          }
-
-          _context21.next = 9;
+          state = action.payload.state;
+          _context21.next = 3;
           return effects.call(getActiveChannelId);
 
-        case 9:
+        case 3:
           activeChannelId = _context21.sent;
+          _context21.next = 6;
+          return effects.call(getChannelFromMap, activeChannelId);
+
+        case 6:
+          channel = _context21.sent;
+          _context21.prev = 7;
 
           if (!channel) {
-            _context21.next = 24;
+            _context21.next = 16;
             break;
           }
 
-          _context21.next = 13;
-          return effects.call(channel.deleteAllMessages);
-
-        case 13:
-          _context21.next = 15;
-          return effects.put(clearMessagesAC());
-
-        case 15:
-          removeMessagesFromMap(channelId);
-
-          if (channelId === activeChannelId) {
-            removeAllMessages();
+          if (!state) {
+            _context21.next = 14;
+            break;
           }
 
-          _context21.next = 19;
-          return effects.put(clearSelectedMessagesAC());
+          _context21.next = 12;
+          return effects.call(channel.startTyping);
 
-        case 19:
-          _context21.next = 21;
-          return effects.put(updateChannelDataAC(channel.id, {
-            lastMessage: null,
-            newMessageCount: 0,
-            newMentionCount: 0
-          }));
-
-        case 21:
-          groupName = getChannelGroupName(channel);
-          _context21.next = 24;
-          return effects.put(updateSearchedChannelDataAC(channel.id, {
-            lastMessage: null,
-            newMessageCount: 0,
-            newMentionCount: 0
-          }, groupName));
-
-        case 24:
-          _context21.next = 29;
+        case 12:
+          _context21.next = 16;
           break;
 
-        case 26:
-          _context21.prev = 26;
-          _context21.t0 = _context21["catch"](0);
-          console.log('ERROR in clear history');
+        case 14:
+          _context21.next = 16;
+          return effects.call(channel.stopTyping);
 
-        case 29:
+        case 16:
+          _context21.next = 21;
+          break;
+
+        case 18:
+          _context21.prev = 18;
+          _context21.t0 = _context21["catch"](7);
+          console.log('ERROR in send typing');
+
+        case 21:
         case "end":
           return _context21.stop();
       }
     }
-  }, _marked21, null, [[0, 26]]);
+  }, _marked21, null, [[7, 18]]);
 }
 
-function deleteAllMessages(action) {
+function clearHistory(action) {
   var payload, channelId, channel, activeChannelId, groupName;
-  return _regeneratorRuntime().wrap(function deleteAllMessages$(_context22) {
+  return _regeneratorRuntime().wrap(function clearHistory$(_context22) {
     while (1) {
       switch (_context22.prev = _context22.next) {
         case 0:
@@ -14575,33 +14669,114 @@ function deleteAllMessages(action) {
           activeChannelId = _context22.sent;
 
           if (!channel) {
-            _context22.next = 25;
+            _context22.next = 24;
             break;
           }
 
           _context22.next = 13;
+          return effects.call(channel.deleteAllMessages);
+
+        case 13:
+          _context22.next = 15;
+          return effects.put(clearMessagesAC());
+
+        case 15:
+          removeMessagesFromMap(channelId);
+
+          if (channelId === activeChannelId) {
+            removeAllMessages();
+          }
+
+          _context22.next = 19;
+          return effects.put(clearSelectedMessagesAC());
+
+        case 19:
+          _context22.next = 21;
+          return effects.put(updateChannelDataAC(channel.id, {
+            lastMessage: null,
+            newMessageCount: 0,
+            newMentionCount: 0
+          }));
+
+        case 21:
+          groupName = getChannelGroupName(channel);
+          _context22.next = 24;
+          return effects.put(updateSearchedChannelDataAC(channel.id, {
+            lastMessage: null,
+            newMessageCount: 0,
+            newMentionCount: 0
+          }, groupName));
+
+        case 24:
+          _context22.next = 29;
+          break;
+
+        case 26:
+          _context22.prev = 26;
+          _context22.t0 = _context22["catch"](0);
+          console.log('ERROR in clear history');
+
+        case 29:
+        case "end":
+          return _context22.stop();
+      }
+    }
+  }, _marked22, null, [[0, 26]]);
+}
+
+function deleteAllMessages(action) {
+  var payload, channelId, channel, activeChannelId, groupName;
+  return _regeneratorRuntime().wrap(function deleteAllMessages$(_context23) {
+    while (1) {
+      switch (_context23.prev = _context23.next) {
+        case 0:
+          _context23.prev = 0;
+          payload = action.payload;
+          channelId = payload.channelId;
+          _context23.next = 5;
+          return effects.call(getChannelFromMap, channelId);
+
+        case 5:
+          channel = _context23.sent;
+
+          if (!channel) {
+            channel = getChannelFromAllChannels(channelId);
+          }
+
+          _context23.next = 9;
+          return effects.call(getActiveChannelId);
+
+        case 9:
+          activeChannelId = _context23.sent;
+
+          if (!channel) {
+            _context23.next = 25;
+            break;
+          }
+
+          _context23.next = 13;
           return effects.call(channel.deleteAllMessages, true);
 
         case 13:
           removeMessagesFromMap(channelId);
 
           if (!(channelId === activeChannelId)) {
-            _context22.next = 18;
+            _context23.next = 18;
             break;
           }
 
-          _context22.next = 17;
+          _context23.next = 17;
           return effects.put(clearMessagesAC());
 
         case 17:
           removeAllMessages();
 
         case 18:
-          _context22.next = 20;
+          _context23.next = 20;
           return effects.put(clearSelectedMessagesAC());
 
         case 20:
-          _context22.next = 22;
+          _context23.next = 22;
           return effects.put(updateChannelDataAC(channel.id, {
             lastMessage: null,
             newMessageCount: 0,
@@ -14610,7 +14785,7 @@ function deleteAllMessages(action) {
 
         case 22:
           groupName = getChannelGroupName(channel);
-          _context22.next = 25;
+          _context23.next = 25;
           return effects.put(updateSearchedChannelDataAC(channel.id, {
             lastMessage: null,
             newMessageCount: 0,
@@ -14618,214 +14793,219 @@ function deleteAllMessages(action) {
           }, groupName));
 
         case 25:
-          _context22.next = 30;
+          _context23.next = 30;
           break;
 
         case 27:
-          _context22.prev = 27;
-          _context22.t0 = _context22["catch"](0);
+          _context23.prev = 27;
+          _context23.t0 = _context23["catch"](0);
           console.log('ERROR in clear history');
 
         case 30:
         case "end":
-          return _context22.stop();
+          return _context23.stop();
       }
     }
-  }, _marked22, null, [[0, 27]]);
+  }, _marked23, null, [[0, 27]]);
 }
 
 function joinChannel(action) {
   var payload, channelId, SceytChatClient, channel, joinedChannel;
-  return _regeneratorRuntime().wrap(function joinChannel$(_context23) {
+  return _regeneratorRuntime().wrap(function joinChannel$(_context24) {
     while (1) {
-      switch (_context23.prev = _context23.next) {
+      switch (_context24.prev = _context24.next) {
         case 0:
-          _context23.prev = 0;
+          _context24.prev = 0;
           payload = action.payload;
           channelId = payload.channelId;
           SceytChatClient = getClient();
-          _context23.next = 6;
+          _context24.next = 6;
           return effects.call(getChannelFromMap, channelId);
 
         case 6:
-          channel = _context23.sent;
+          channel = _context24.sent;
 
           if (!channel) {
             channel = getChannelFromAllChannels(channelId);
           }
 
           if (channel) {
-            _context23.next = 12;
+            _context24.next = 12;
             break;
           }
 
-          _context23.next = 11;
+          _context24.next = 11;
           return effects.call(SceytChatClient.getChannel, channelId);
 
         case 11:
-          channel = _context23.sent;
+          channel = _context24.sent;
 
         case 12:
-          _context23.next = 14;
+          _context24.next = 14;
           return effects.call(channel.join);
 
         case 14:
-          joinedChannel = _context23.sent;
-          _context23.next = 17;
+          joinedChannel = _context24.sent;
+          console.log('set close search channels. . ` . .', true);
+          _context24.next = 18;
           return effects.put(setCloseSearchChannelsAC(true));
 
-        case 17:
-          _context23.next = 19;
+        case 18:
+          _context24.next = 20;
           return effects.put(setChannelToAddAC(JSON.parse(JSON.stringify(joinedChannel))));
 
-        case 19:
-          _context23.next = 21;
+        case 20:
+          _context24.next = 22;
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(joinedChannel))));
 
-        case 21:
+        case 22:
           addChannelsToAllChannels(joinedChannel);
-          _context23.next = 24;
+          _context24.next = 25;
           return effects.call(setActiveChannelId, joinedChannel.id);
 
-        case 24:
-          _context23.next = 29;
+        case 25:
+          _context24.next = 30;
           break;
 
-        case 26:
-          _context23.prev = 26;
-          _context23.t0 = _context23["catch"](0);
-          console.log(_context23.t0, 'Error in join to channel');
+        case 27:
+          _context24.prev = 27;
+          _context24.t0 = _context24["catch"](0);
+          console.log(_context24.t0, 'Error in join to channel');
 
-        case 29:
-        case "end":
-          return _context23.stop();
-      }
-    }
-  }, _marked23, null, [[0, 26]]);
-}
-
-function watchForChannelEvents() {
-  return _regeneratorRuntime().wrap(function watchForChannelEvents$(_context24) {
-    while (1) {
-      switch (_context24.prev = _context24.next) {
-        case 0:
-          _context24.next = 2;
-          return effects.call(watchForEvents);
-
-        case 2:
+        case 30:
         case "end":
           return _context24.stop();
       }
     }
-  }, _marked24);
+  }, _marked24, null, [[0, 27]]);
 }
 
-function ChannelsSaga() {
-  return _regeneratorRuntime().wrap(function ChannelsSaga$(_context25) {
+function watchForChannelEvents() {
+  return _regeneratorRuntime().wrap(function watchForChannelEvents$(_context25) {
     while (1) {
       switch (_context25.prev = _context25.next) {
         case 0:
           _context25.next = 2;
-          return effects.takeLatest(CREATE_CHANNEL, createChannel);
+          return effects.call(watchForEvents);
 
         case 2:
-          _context25.next = 4;
-          return effects.takeLatest(GET_CHANNELS, getChannels);
-
-        case 4:
-          _context25.next = 6;
-          return effects.takeLatest(SEARCH_CHANNELS, searchChannels);
-
-        case 6:
-          _context25.next = 8;
-          return effects.takeLatest(GET_CHANNELS_FOR_FORWARD, getChannelsForForward);
-
-        case 8:
-          _context25.next = 10;
-          return effects.takeLatest(LOAD_MORE_CHANNEL, channelsLoadMore);
-
-        case 10:
-          _context25.next = 12;
-          return effects.takeLatest(LOAD_MORE_CHANNELS_FOR_FORWARD, channelsForForwardLoadMore);
-
-        case 12:
-          _context25.next = 14;
-          return effects.takeEvery(SWITCH_CHANNEL, switchChannel);
-
-        case 14:
-          _context25.next = 16;
-          return effects.takeLatest(LEAVE_CHANNEL, leaveChannel);
-
-        case 16:
-          _context25.next = 18;
-          return effects.takeLatest(DELETE_CHANNEL, deleteChannel);
-
-        case 18:
-          _context25.next = 20;
-          return effects.takeLatest(BLOCK_CHANNEL, blockChannel);
-
-        case 20:
-          _context25.next = 22;
-          return effects.takeLatest(UPDATE_CHANNEL, updateChannel);
-
-        case 22:
-          _context25.next = 24;
-          return effects.takeEvery(MARK_MESSAGES_AS_READ, markMessagesRead);
-
-        case 24:
-          _context25.next = 26;
-          return effects.takeLatest(MARK_MESSAGES_AS_DELIVERED, markMessagesDelivered);
-
-        case 26:
-          _context25.next = 28;
-          return effects.takeLatest(WATCH_FOR_EVENTS, watchForChannelEvents);
-
-        case 28:
-          _context25.next = 30;
-          return effects.takeLatest(TURN_OFF_NOTIFICATION, notificationsTurnOff);
-
-        case 30:
-          _context25.next = 32;
-          return effects.takeLatest(TURN_ON_NOTIFICATION, notificationsTurnOn);
-
-        case 32:
-          _context25.next = 34;
-          return effects.takeLatest(MARK_CHANNEL_AS_READ, markChannelAsRead);
-
-        case 34:
-          _context25.next = 36;
-          return effects.takeLatest(MARK_CHANNEL_AS_UNREAD, markChannelAsUnRead);
-
-        case 36:
-          _context25.next = 38;
-          return effects.takeLatest(CHECK_USER_STATUS, checkUsersStatus);
-
-        case 38:
-          _context25.next = 40;
-          return effects.takeLatest(SEND_TYPING, sendTyping);
-
-        case 40:
-          _context25.next = 42;
-          return effects.takeLatest(CLEAR_HISTORY, clearHistory);
-
-        case 42:
-          _context25.next = 44;
-          return effects.takeLatest(JOIN_TO_CHANNEL, joinChannel);
-
-        case 44:
-          _context25.next = 46;
-          return effects.takeLatest(DELETE_ALL_MESSAGES, deleteAllMessages);
-
-        case 46:
-          _context25.next = 48;
-          return effects.takeLatest(REMOVE_CHANNEL_CACHES, removeChannelCaches);
-
-        case 48:
         case "end":
           return _context25.stop();
       }
     }
   }, _marked25);
+}
+
+function ChannelsSaga() {
+  return _regeneratorRuntime().wrap(function ChannelsSaga$(_context26) {
+    while (1) {
+      switch (_context26.prev = _context26.next) {
+        case 0:
+          _context26.next = 2;
+          return effects.takeLatest(CREATE_CHANNEL, createChannel);
+
+        case 2:
+          _context26.next = 4;
+          return effects.takeLatest(GET_CHANNELS, getChannels);
+
+        case 4:
+          _context26.next = 6;
+          return effects.takeLatest(SEARCH_CHANNELS, searchChannels);
+
+        case 6:
+          _context26.next = 8;
+          return effects.takeLatest(GET_CHANNELS_FOR_FORWARD, getChannelsForForward);
+
+        case 8:
+          _context26.next = 10;
+          return effects.takeLatest(SEARCH_CHANNELS_FOR_FORWARD, searchChannelsForForward);
+
+        case 10:
+          _context26.next = 12;
+          return effects.takeLatest(LOAD_MORE_CHANNEL, channelsLoadMore);
+
+        case 12:
+          _context26.next = 14;
+          return effects.takeLatest(LOAD_MORE_CHANNELS_FOR_FORWARD, channelsForForwardLoadMore);
+
+        case 14:
+          _context26.next = 16;
+          return effects.takeEvery(SWITCH_CHANNEL, switchChannel);
+
+        case 16:
+          _context26.next = 18;
+          return effects.takeLatest(LEAVE_CHANNEL, leaveChannel);
+
+        case 18:
+          _context26.next = 20;
+          return effects.takeLatest(DELETE_CHANNEL, deleteChannel);
+
+        case 20:
+          _context26.next = 22;
+          return effects.takeLatest(BLOCK_CHANNEL, blockChannel);
+
+        case 22:
+          _context26.next = 24;
+          return effects.takeLatest(UPDATE_CHANNEL, updateChannel);
+
+        case 24:
+          _context26.next = 26;
+          return effects.takeEvery(MARK_MESSAGES_AS_READ, markMessagesRead);
+
+        case 26:
+          _context26.next = 28;
+          return effects.takeLatest(MARK_MESSAGES_AS_DELIVERED, markMessagesDelivered);
+
+        case 28:
+          _context26.next = 30;
+          return effects.takeLatest(WATCH_FOR_EVENTS, watchForChannelEvents);
+
+        case 30:
+          _context26.next = 32;
+          return effects.takeLatest(TURN_OFF_NOTIFICATION, notificationsTurnOff);
+
+        case 32:
+          _context26.next = 34;
+          return effects.takeLatest(TURN_ON_NOTIFICATION, notificationsTurnOn);
+
+        case 34:
+          _context26.next = 36;
+          return effects.takeLatest(MARK_CHANNEL_AS_READ, markChannelAsRead);
+
+        case 36:
+          _context26.next = 38;
+          return effects.takeLatest(MARK_CHANNEL_AS_UNREAD, markChannelAsUnRead);
+
+        case 38:
+          _context26.next = 40;
+          return effects.takeLatest(CHECK_USER_STATUS, checkUsersStatus);
+
+        case 40:
+          _context26.next = 42;
+          return effects.takeLatest(SEND_TYPING, sendTyping);
+
+        case 42:
+          _context26.next = 44;
+          return effects.takeLatest(CLEAR_HISTORY, clearHistory);
+
+        case 44:
+          _context26.next = 46;
+          return effects.takeLatest(JOIN_TO_CHANNEL, joinChannel);
+
+        case 46:
+          _context26.next = 48;
+          return effects.takeLatest(DELETE_ALL_MESSAGES, deleteAllMessages);
+
+        case 48:
+          _context26.next = 50;
+          return effects.takeLatest(REMOVE_CHANNEL_CACHES, removeChannelCaches);
+
+        case 50:
+        case "end":
+          return _context26.stop();
+      }
+    }
+  }, _marked26);
 }
 
 function rgbaToThumbHash(w, h, rgba) {
@@ -19164,6 +19344,9 @@ var channelsSelector = function channelsSelector(store) {
 var searchedChannelsSelector = function searchedChannelsSelector(store) {
   return store.ChannelReducer.searchedChannels;
 };
+var searchedChannelsForForwardSelector = function searchedChannelsForForwardSelector(store) {
+  return store.ChannelReducer.searchedChannelsForForward;
+};
 var closeSearchChannelSelector = function closeSearchChannelSelector(store) {
   return store.ChannelReducer.closeSearchChannel;
 };
@@ -19190,6 +19373,9 @@ var activeChannelSelector = function activeChannelSelector(store) {
 };
 var channelsLoadingState = function channelsLoadingState(store) {
   return store.ChannelReducer.channelsLoadingState;
+};
+var channelsLoadingStateForForwardSelector = function channelsLoadingStateForForwardSelector(store) {
+  return store.ChannelReducer.channelsForForwardLoadingState;
 };
 var channelsHasNextSelector = function channelsHasNextSelector(store) {
   return store.ChannelReducer.channelsHasNext;
@@ -20820,10 +21006,9 @@ var UsersPopup = function UsersPopup(_ref) {
         metadata: '',
         label: '',
         type: CHANNEL_TYPE.DIRECT,
-        members: [{
-          id: 'waafiott',
+        members: [_extends({}, selectedUser, {
           role: 'owner'
-        }]
+        })]
       };
       dispatch(createChannelAC(channelData));
     } else {
@@ -22288,12 +22473,10 @@ var ChannelList = function ChannelList(_ref) {
   React.useEffect(function () {
     if (visibleChannel) {
       if (onChannelVisible) {
-        console.log('onChannelVisible .... ', visibleChannel);
         onChannelVisible(channels, visibleChannel, function (updatedChannels) {
           return handleSetChannelList(updatedChannels, true);
         });
       } else {
-        console.log('dispatch addChannelAC 3 .... ', visibleChannel);
         dispatch(addChannelAC(hiddenChannel));
       }
 
@@ -22322,8 +22505,6 @@ var ChannelList = function ChannelList(_ref) {
     }
   }, [activeChannel.id]);
   useDidUpdate(function () {
-    console.log('close search channels. ... ', closeSearchChannels);
-
     if (closeSearchChannels) {
       getMyChannels();
       dispatch(setCloseSearchChannelsAC(false));
@@ -22357,9 +22538,6 @@ var ChannelList = function ChannelList(_ref) {
 
     console.log('channels. ...........................', channels);
   }, [channels]);
-  useDidUpdate(function () {
-    console.log('searchedChannels. ...........................', searchedChannels);
-  }, [searchedChannels]);
   return /*#__PURE__*/React__default.createElement(Container$7, {
     withCustomList: !!List,
     ref: channelListRef,
@@ -22761,10 +22939,10 @@ function ForwardMessagePopup(_ref) {
   var user = ChatClient.user;
   var dispatch = reactRedux.useDispatch();
   var channels = reactRedux.useSelector(channelsForForwardSelector) || [];
-  var searchedChannels = reactRedux.useSelector(searchedChannelsSelector) || [];
+  var searchedChannels = reactRedux.useSelector(searchedChannelsForForwardSelector) || [];
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
   var getFromContacts = getShowOnlyContactUsers();
-  var channelsLoading = reactRedux.useSelector(channelsLoadingState);
+  var channelsLoading = reactRedux.useSelector(channelsLoadingStateForForwardSelector);
   var channelsHasNext = reactRedux.useSelector(channelsForForwardHasNextSelector);
 
   var _useState = React.useState(''),
@@ -22864,7 +23042,7 @@ function ForwardMessagePopup(_ref) {
   React.useEffect(function () {
     dispatch(getChannelsForForwardAC());
     return function () {
-      dispatch(setSearchedChannelsAC({
+      dispatch(setSearchedChannelsForForwardAC({
         chats_groups: [],
         channels: [],
         contacts: []
@@ -22873,11 +23051,11 @@ function ForwardMessagePopup(_ref) {
   }, []);
   React.useEffect(function () {
     if (searchValue) {
-      dispatch(searchChannelsAC({
+      dispatch(searchChannelsForForwardAC({
         search: searchValue
       }, contactsMap));
     } else {
-      dispatch(setSearchedChannelsAC({
+      dispatch(setSearchedChannelsForForwardAC({
         chats_groups: [],
         channels: [],
         contacts: []
@@ -29263,7 +29441,6 @@ var MessageList = function MessageList(_ref2) {
 
     if (scrollToNewMessage.scrollToBottom && messages.length) {
       setTimeout(function () {
-        console.log('should scroll to bottom .... update messages list .............. ');
         dispatch(scrollToNewMessageAC(false, false, false));
       }, 500);
     }
@@ -30044,10 +30221,12 @@ function MentionMembersPopup(_ref) {
   var handleSearchMembers = function handleSearchMembers() {
     var searchedMembers = [].concat(members).filter(function (member) {
       var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
-      return displayName && member.id !== user.id && displayName.toLowerCase().includes(searchMention.toLowerCase());
+      return displayName && member.id !== user.id && displayName.split(' ').find(function (namePart) {
+        return namePart[0] === '~' ? namePart.slice(1).toLowerCase().startsWith(searchMention.toLowerCase()) : namePart.toLowerCase().startsWith(searchMention.toLowerCase());
+      });
     });
     filteredMembersLength.current = searchedMembers.length;
-    setFilteredMembers(sortMembers(searchedMembers));
+    setFilteredMembers(searchedMembers);
   };
 
   var handleScrollToActiveItem = function handleScrollToActiveItem(newIndex, direction) {
@@ -30472,14 +30651,20 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setMentionTyping(false);
 
     if (setPending) {
+      var typed = currentMentions.typed.trim();
+
+      if (withoutLastChar) {
+        typed = typed.slice(0, -1);
+      }
+
       setPendingMentions([].concat(pendingMentions, [{
         start: currentMentions.start,
-        typed: currentMentions.typed.trim(),
+        typed: typed,
         end: currentMentions.start + 1 + currentMentions.typed.trim().length - (withoutLastChar ? 1 : 0)
       }]));
       console.log('set pending mentions... withoutLastChar. ', withoutLastChar, [].concat(pendingMentions, [{
         start: currentMentions.start,
-        typed: currentMentions.typed.trim(),
+        typed: typed,
         end: currentMentions.start + 1 + currentMentions.typed.trim().length - (withoutLastChar ? 1 : 0)
       }]));
     }
@@ -30775,6 +30960,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
       setOpenMention(false);
       setMentionTyping(false);
       setCurrentMentions(undefined);
+      console.log('set close search channels. . 12 . .', true);
       dispatch(setCloseSearchChannelsAC(true));
     }
   };
@@ -30920,6 +31106,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   React.useEffect(function () {
     if (mentionTyping) {
+      console.log('is in mention typing .>>>>>>');
+
       if (selectionPos <= currentMentions.start || selectionPos > currentMentions.start + 1 + currentMentions.typed.length) {
         handleCloseMentionsPopup(true);
       }
@@ -30927,10 +31115,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
       var currentPendingMention = pendingMentions.find(function (mention) {
         return selectionPos <= mention.end && selectionPos > mention.start;
       });
+      console.log('current pendiong mention .>>>>>>>>>>>>', currentPendingMention);
 
       if (currentPendingMention) {
         delete currentPendingMention.end;
-        setCurrentMentions(_extends({}, currentPendingMention));
+        setCurrentMentions({
+          start: currentPendingMention.start,
+          typed: currentPendingMention.typed
+        });
         setMentionTyping(true);
         setOpenMention(true);
         setPendingMentions(pendingMentions.filter(function (mention) {
@@ -31306,6 +31498,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     setOpenMention(false);
     setCurrentMentions(undefined);
     setMentionTyping(false);
+    setPendingMentions([]);
     var draftMessage = getDraftMessageFromMap(activeChannel.id);
 
     if (draftMessage) {
