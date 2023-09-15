@@ -13,7 +13,7 @@ interface IMessageProps {
         handleCopyMessage?: () => void;
         handleReportMessage?: () => void;
         handleOpenEmojis?: () => void;
-        handleSelectMessage?: () => void;
+        handleSelectMessage?: (event?: any) => void;
         handleReplyMessage?: () => void;
         isThreadMessage?: boolean;
         rtlDirection?: boolean;

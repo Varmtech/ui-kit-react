@@ -7747,6 +7747,9 @@ var getCaretPosition = function getCaretPosition(element) {
   var win = doc.defaultView || doc.parentWindow;
   var focusOffset = win.getSelection().focusOffset;
   var focusNode = win.getSelection().focusNode;
+  console.log('focusOffset. . . . .', focusOffset);
+  console.log('focusNode. . . . .', focusNode);
+  console.log('element.childNodes. . . ', element.childNodes);
 
   for (var i = 0; i < element.childNodes.length; i++) {
     var node = element.childNodes[i];
@@ -7765,6 +7768,12 @@ var getCaretPosition = function getCaretPosition(element) {
       } else {
         caretOffset += node.innerText.length;
       }
+    } else {
+      var browser = detectBrowser();
+
+      if (browser === 'Safari' && node.innerText && node.innerText.length) {
+        caretOffset += node.innerText.length + 1;
+      }
     }
 
     if (element.childNodes[i + 1] && element.childNodes[i + 1].nodeName === 'BR') {
@@ -7772,6 +7781,7 @@ var getCaretPosition = function getCaretPosition(element) {
     }
   }
 
+  console.log('retur caretOffset . . . ', caretOffset);
   return caretOffset;
 };
 var setCursorPosition = function setCursorPosition(element, position, isAddMention, attempt) {
@@ -22857,521 +22867,7 @@ function SvgInfo(props) {
   })));
 }
 
-var _path$r, _path2$3;
-
-function _extends$s() {
-  _extends$s = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$s.apply(this, arguments);
-}
-
-function SvgForward(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$s({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$r || (_path$r = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
-    fill: "CurrentColor"
-  })), _path2$3 || (_path2$3 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$s;
-
-function _extends$t() {
-  _extends$t = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$t.apply(this, arguments);
-}
-
-function SvgDeleteIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$t({
-    width: 20,
-    height: 20,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$s || (_path$s = /*#__PURE__*/React.createElement("path", {
-    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
-    fill: "#FA4C56"
-  })));
-}
-
-var _templateObject$i, _templateObject2$f, _templateObject3$b, _templateObject4$9, _templateObject5$7, _templateObject6$6, _templateObject7$5, _templateObject8$5, _templateObject9$5, _templateObject10$4;
-
-function ForwardMessagePopup(_ref) {
-  var title = _ref.title,
-      buttonText = _ref.buttonText,
-      togglePopup = _ref.togglePopup,
-      handleForward = _ref.handleForward,
-      loading = _ref.loading;
-  var ChatClient = getClient();
-  var user = ChatClient.user;
-  var dispatch = reactRedux.useDispatch();
-  var channels = reactRedux.useSelector(channelsForForwardSelector) || [];
-  var searchedChannels = reactRedux.useSelector(searchedChannelsForForwardSelector) || [];
-  var contactsMap = reactRedux.useSelector(contactsMapSelector);
-  var getFromContacts = getShowOnlyContactUsers();
-  var channelsLoading = reactRedux.useSelector(channelsLoadingStateForForwardSelector);
-  var channelsHasNext = reactRedux.useSelector(channelsForForwardHasNextSelector);
-
-  var _useState = React.useState(''),
-      searchValue = _useState[0],
-      setSearchValue = _useState[1];
-
-  var _useState2 = React.useState(0),
-      selectedChannelsContHeight = _useState2[0],
-      setSelectedChannelsHeight = _useState2[1];
-
-  var _useState3 = React.useState([]),
-      selectedChannels = _useState3[0],
-      setSelectedChannels = _useState3[1];
-
-  var _useState4 = React.useState([]),
-      channelIds = _useState4[0],
-      setChannelIds = _useState4[1];
-
-  var selectedChannelsContRef = React.useRef();
-
-  var handleForwardMessage = function handleForwardMessage() {
-    handleForward(channelIds);
-    togglePopup();
-  };
-
-  var handleChannelListScroll = function handleChannelListScroll(event) {
-    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100) {
-      if (channelsLoading === LOADING_STATE.LOADED && channelsHasNext) {
-        dispatch(loadMoreChannelsForForward(15));
-      }
-    }
-  };
-
-  var handleChoseChannel = function handleChoseChannel(e, channelId) {
-    if (e.target.checked) {
-      setChannelIds(function (prevState) {
-        return [].concat(prevState, [channelId]);
-      });
-    }
-  };
-
-  var handleSearchValueChange = function handleSearchValueChange(e) {
-    var value = e.target.value;
-    setSearchValue(value);
-  };
-
-  var getMyChannels = function getMyChannels() {
-    setSearchValue('');
-  };
-
-  var handleChannelSelect = function handleChannelSelect(event, channel) {
-    var newSelectedChannels = [].concat(selectedChannels);
-    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-      return member.id !== user.id;
-    });
-
-    if (event.target.checked && selectedChannels.length < 5) {
-      newSelectedChannels.push({
-        id: channel.id,
-        displayName: channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')
-      });
-    } else {
-      var itemToDeleteIndex = newSelectedChannels.findIndex(function (chan) {
-        return channel.id === chan.id;
-      });
-
-      if (itemToDeleteIndex >= 0) {
-        newSelectedChannels.splice(itemToDeleteIndex, 1);
-      }
-    }
-
-    setSearchValue('');
-    setSelectedChannels(newSelectedChannels);
-  };
-
-  var removeChannel = function removeChannel(channel) {
-    var newSelectedChannels = [].concat(selectedChannels);
-    var itemToDeleteIndex = newSelectedChannels.findIndex(function (c) {
-      return channel.id === c.id;
-    });
-
-    if (itemToDeleteIndex >= 0) {
-      newSelectedChannels.splice(itemToDeleteIndex, 1);
-    }
-
-    setSelectedChannels(newSelectedChannels);
-  };
-
-  React.useEffect(function () {
-    if (selectedChannelsContRef.current) {
-      setSelectedChannelsHeight(selectedChannelsContRef.current.offsetHeight);
-    } else {
-      setSelectedChannelsHeight(0);
-    }
-  }, [selectedChannels]);
-  React.useEffect(function () {
-    dispatch(getChannelsForForwardAC());
-    return function () {
-      dispatch(setSearchedChannelsForForwardAC({
-        chats_groups: [],
-        channels: [],
-        contacts: []
-      }));
-    };
-  }, []);
-  React.useEffect(function () {
-    if (searchValue) {
-      dispatch(searchChannelsForForwardAC({
-        search: searchValue
-      }, contactsMap));
-    } else {
-      dispatch(setSearchedChannelsForForwardAC({
-        chats_groups: [],
-        channels: [],
-        contacts: []
-      }));
-    }
-  }, [searchValue]);
-  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
-    maxWidth: '522px',
-    minWidth: '522px',
-    height: '540px',
-    isLoading: loading,
-    padding: '0'
-  }, /*#__PURE__*/React__default.createElement(PopupBody, {
-    paddingH: '24px',
-    paddingV: '24px',
-    withFooter: true
-  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }), /*#__PURE__*/React__default.createElement(PopupName, {
-    isDelete: true,
-    marginBottom: '20px'
-  }, title), /*#__PURE__*/React__default.createElement(ChannelSearch, {
-    searchValue: searchValue,
-    handleSearchValueChange: handleSearchValueChange,
-    getMyChannels: getMyChannels
-  }), /*#__PURE__*/React__default.createElement(SelectedChannelsContainer, {
-    ref: selectedChannelsContRef
-  }, selectedChannels.map(function (channel) {
-    return /*#__PURE__*/React__default.createElement(SelectedChannelBuble, {
-      key: "selected-" + channel.id
-    }, /*#__PURE__*/React__default.createElement(SelectedChannelName, null, channel.displayName), /*#__PURE__*/React__default.createElement(StyledSubtractSvg$1, {
-      onClick: function onClick() {
-        return removeChannel(channel);
-      }
-    }));
-  })), /*#__PURE__*/React__default.createElement(ForwardChannelsCont, {
-    onScroll: handleChannelListScroll,
-    selectedChannelsHeight: selectedChannelsContHeight
-  }, searchValue ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !!(searchedChannels.chats_groups && searchedChannels.chats_groups.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, {
-    margin: '0 0 12px'
-  }, "Chats & Groups"), searchedChannels.chats_groups.map(function (channel) {
-    var isSelected = selectedChannels.findIndex(function (chan) {
-      return chan.id === channel.id;
-    }) >= 0;
-    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-      return member.id !== user.id;
-    });
-    return /*#__PURE__*/React__default.createElement(ChannelItem, {
-      key: channel.id,
-      onClick: function onClick(e) {
-        return handleChoseChannel(e, channel.id);
-      }
-    }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : channel.subject || '',
-      image: directChannelUser ? directChannelUser.avatarUrl : channel.avatarUrl,
-      size: 40,
-      textSize: 12,
-      setDefaultAvatar: true
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, isDirectChannel ? directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User' : channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
-      index: channel.id,
-      disabled: selectedChannels.length >= 5 && !isSelected,
-      state: isSelected,
-      onChange: function onChange(e) {
-        return handleChannelSelect(e, channel);
-      },
-      size: '18px'
-    }));
-  })), !!(searchedChannels.channels && searchedChannels.channels.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, null, "Channels"), searchedChannels.channels.map(function (channel) {
-    var isSelected = selectedChannels.findIndex(function (chan) {
-      return chan.id === channel.id;
-    }) >= 0;
-    return /*#__PURE__*/React__default.createElement(ChannelItem, {
-      key: channel.id,
-      onClick: function onClick(e) {
-        return handleChoseChannel(e, channel.id);
-      }
-    }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: channel.subject || '',
-      image: channel.avatarUrl,
-      size: 40,
-      textSize: 12,
-      setDefaultAvatar: false
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
-      index: channel.id,
-      disabled: selectedChannels.length >= 5 && !isSelected,
-      state: isSelected,
-      onChange: function onChange(e) {
-        return handleChannelSelect(e, channel);
-      },
-      size: '18px'
-    }));
-  }))) : channels.map(function (channel) {
-    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-      return member.id !== user.id;
-    });
-    var isSelected = selectedChannels.findIndex(function (chan) {
-      return chan.id === channel.id;
-    }) >= 0;
-    return /*#__PURE__*/React__default.createElement(ChannelItem, {
-      key: channel.id,
-      onClick: function onClick(e) {
-        return handleChoseChannel(e, channel.id);
-      }
-    }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: channel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
-      image: channel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
-      size: 40,
-      textSize: 12,
-      setDefaultAvatar: isDirectChannel
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$2, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
-      index: channel.id,
-      disabled: selectedChannels.length >= 5 && !isSelected,
-      state: isSelected,
-      onChange: function onChange(e) {
-        return handleChannelSelect(e, channel);
-      },
-      size: '18px'
-    }));
-  }))), /*#__PURE__*/React__default.createElement(PopupFooter, {
-    backgroundColor: colors.backgroundColor
-  }, /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    color: colors.textColor1,
-    backgroundColor: 'transparent',
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    backgroundColor: colors.primary,
-    borderRadius: '8px',
-    onClick: handleForwardMessage
-  }, buttonText || 'Forward'))));
-}
-var ForwardChannelsCont = styled__default.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 22px;\n"])), function (props) {
-  return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
-});
-var ChannelItem = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
-var ChannelInfo$2 = styled__default.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
-var ChannelsGroupTitle = styled__default.h4(_templateObject4$9 || (_templateObject4$9 = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  margin: ", ";\n  color: ", ";\n"])), function (props) {
-  return props.margin || '20px 0 12px';
-}, colors.textColor2);
-var ChannelTitle = styled__default.h3(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
-var ChannelMembers = styled__default.h4(_templateObject6$6 || (_templateObject6$6 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
-var SelectedChannelsContainer = styled__default.div(_templateObject7$5 || (_templateObject7$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedChannelBuble = styled__default.div(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
-var SelectedChannelName = styled__default.span(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
-var StyledSubtractSvg$1 = styled__default(SvgCross)(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
-
-var _templateObject$j, _templateObject2$g;
-
-var CustomRadio$1 = function CustomRadio(_ref) {
-  var index = _ref.index,
-      state = _ref.state,
-      _onChange = _ref.onChange,
-      checkedBorder = _ref.checkedBorder,
-      border = _ref.border,
-      borderRadius = _ref.borderRadius,
-      size = _ref.size,
-      disabled = _ref.disabled;
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(CustomLabel$1, {
-    isChecked: state,
-    size: size,
-    checkedBorder: checkedBorder,
-    border: border,
-    borderRadius: borderRadius,
-    htmlFor: "radio-" + index
-  }), /*#__PURE__*/React__default.createElement(Radio, {
-    disabled: disabled,
-    type: 'radio',
-    id: "radio-" + index,
-    checked: state,
-    onChange: function onChange(e) {
-      return _onChange(e);
-    }
-  }));
-};
-var CustomLabel$1 = styled__default.label(_templateObject$j || (_templateObject$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
-  return props.size || '12px';
-}, function (props) {
-  return props.size || '12px';
-}, function (props) {
-  return props.isChecked ? props.checkedBorder || "6px solid " + colors.primary : props.border || "1px solid " + colors.textColor2;
-}, function (props) {
-  return props.borderRadius || '50%';
-});
-var Radio = styled__default.input(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-
-function usePermissions(myRole) {
-  var dispatch = reactRedux.useDispatch();
-  var rolesMap = reactRedux.useSelector(rolesMapSelector, reactRedux.shallowEqual);
-  var myPermissions = myRole && rolesMap && rolesMap[myRole] ? rolesMap[myRole].permissions : [];
-
-  var checkActionPermission = function checkActionPermission(actionName) {
-    return myPermissions.includes(actionName);
-  };
-
-  React.useEffect(function () {
-    dispatch(getRolesAC());
-  }, []);
-  return [checkActionPermission, myPermissions];
-}
-
-var _templateObject$k, _templateObject2$h;
-
-function ConfirmPopup(_ref) {
-  var title = _ref.title,
-      description = _ref.description,
-      theme = _ref.theme,
-      buttonText = _ref.buttonText,
-      buttonTextColor = _ref.buttonTextColor,
-      buttonBackground = _ref.buttonBackground,
-      togglePopup = _ref.togglePopup,
-      handleFunction = _ref.handleFunction,
-      isDeleteMessage = _ref.isDeleteMessage,
-      isIncomingMessage = _ref.isIncomingMessage,
-      allowDeleteIncoming = _ref.allowDeleteIncoming,
-      isDirectChannel = _ref.isDirectChannel,
-      _ref$myRole = _ref.myRole,
-      myRole = _ref$myRole === void 0 ? '' : _ref$myRole,
-      loading = _ref.loading;
-
-  var _usePermissions = usePermissions(myRole),
-      checkActionPermission = _usePermissions[0];
-
-  var _useState = React.useState(true),
-      initialRender = _useState[0],
-      setInitialRender = _useState[1];
-
-  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : isDirectChannel || checkActionPermission('deleteOwnMessage');
-
-  var _useState2 = React.useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
-      deleteMessageOption = _useState2[0],
-      setDeleteMessageOption = _useState2[1];
-
-  var handleDelete = function handleDelete() {
-    handleFunction(isDeleteMessage && deleteMessageOption);
-    togglePopup();
-  };
-
-  var handleChoseDeleteOption = function handleChoseDeleteOption(e, option) {
-    if (e.target.checked) {
-      setDeleteMessageOption(option);
-    }
-  };
-
-  React.useEffect(function () {
-    setInitialRender(false);
-  }, []);
-  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
-    theme: theme,
-    backgroundColor: colors.backgroundColor,
-    maxWidth: '520px',
-    minWidth: '520px',
-    isLoading: loading,
-    padding: '0'
-  }, /*#__PURE__*/React__default.createElement(PopupBody, {
-    paddingH: '24px',
-    paddingV: '24px'
-  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
-    color: colors.textColor1,
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }), /*#__PURE__*/React__default.createElement(PopupName, {
-    color: colors.textColor1,
-    isDelete: true,
-    marginBottom: '20px'
-  }, title), /*#__PURE__*/React__default.createElement(PopupDescription, null, description), isDeleteMessage && /*#__PURE__*/React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
-    onClick: function onClick() {
-      return setDeleteMessageOption('forEveryone');
-    }
-  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
-    index: '1',
-    size: '18px',
-    state: deleteMessageOption === 'forEveryone',
-    onChange: function onChange(e) {
-      return handleChoseDeleteOption(e, 'forEveryone');
-    }
-  }), "Delete for everyone"), /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
-    onClick: function onClick() {
-      return setDeleteMessageOption('forMe');
-    }
-  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
-    index: '2',
-    size: '18px',
-    state: deleteMessageOption === 'forMe',
-    onChange: function onChange(e) {
-      return handleChoseDeleteOption(e, 'forMe');
-    }
-  }), "Delete for me"))), /*#__PURE__*/React__default.createElement(PopupFooter, {
-    backgroundColor: colors.backgroundColor
-  }, /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    color: colors.textColor1,
-    backgroundColor: 'transparent',
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    backgroundColor: buttonBackground || colors.red1,
-    color: buttonTextColor,
-    borderRadius: '8px',
-    onClick: handleDelete,
-    disabled: initialRender
-  }, buttonText || 'Delete'))));
-}
-var DeleteMessageOptions = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
-var DeleteOptionItem = styled__default.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
-
-var _templateObject$l, _templateObject2$i, _templateObject3$c, _templateObject4$a, _templateObject5$8, _templateObject6$7, _templateObject7$6, _templateObject8$6;
+var _templateObject$i, _templateObject2$f, _templateObject3$b, _templateObject4$9, _templateObject5$7;
 function ChatHeader(_ref) {
   var infoIcon = _ref.infoIcon,
       backgroundColor = _ref.backgroundColor,
@@ -23385,23 +22881,8 @@ function ChatHeader(_ref) {
   var getFromContacts = getShowOnlyContactUsers();
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
   var theme = reactRedux.useSelector(themeSelector);
-  var connectionStatus = reactRedux.useSelector(connectionStatusSelector);
   var channelListHidden = reactRedux.useSelector(channelListHiddenSelector);
-  var selectedMessagesMap = reactRedux.useSelector(selectedMessagesMapSelector);
   var channelDetailsIsOpen = reactRedux.useSelector(channelInfoIsOpenSelector, reactRedux.shallowEqual);
-
-  var _useState = React.useState(false),
-      forwardPopupOpen = _useState[0],
-      setForwardPopupOpen = _useState[1];
-
-  var _useState2 = React.useState(false),
-      deletePopupOpen = _useState2[0],
-      setDeletePopupOpen = _useState2[1];
-
-  var _useState3 = React.useState(false),
-      isIncomingMessage = _useState3[0],
-      setIsIncomingMessage = _useState3[1];
-
   var isDirectChannel = activeChannel.type === CHANNEL_TYPE.DIRECT;
   var directChannelUser = isDirectChannel && activeChannel.members.find(function (member) {
     return member.id !== user.id;
@@ -23422,92 +22903,13 @@ function ChatHeader(_ref) {
     }
   };
 
-  var handleToggleForwardMessagePopup = function handleToggleForwardMessagePopup() {
-    setForwardPopupOpen(!forwardPopupOpen);
-  };
-
-  var handleForwardMessage = function handleForwardMessage(channelIds) {
-    if (channelIds && channelIds.length) {
-      channelIds.forEach(function (channelId) {
-        for (var _iterator = _createForOfIteratorHelperLoose(selectedMessagesMap.values()), _step; !(_step = _iterator()).done;) {
-          var message = _step.value;
-          dispatch(forwardMessageAC(message, channelId, connectionStatus));
-        }
-      });
-    }
-
-    dispatch(clearSelectedMessagesAC());
-  };
-
-  var handleDeletePendingMessage = function handleDeletePendingMessage(message) {
-    if (message.attachments && message.attachments.length) {
-      var customUploader = getCustomUploader();
-      message.attachments.forEach(function (att) {
-        if (customUploader) {
-          cancelUpload(att.tid);
-          deletePendingAttachment(att.tid);
-        }
-      });
-    }
-
-    removeMessageFromMap(activeChannel.id, message.id || message.tid);
-    removeMessageFromAllMessages(message.id || message.tid);
-    dispatch(deleteMessageFromListAC(message.id || message.tid));
-  };
-
-  var handleToggleDeleteMessagePopup = function handleToggleDeleteMessagePopup() {
-    if (!deletePopupOpen) {
-      for (var _iterator2 = _createForOfIteratorHelperLoose(selectedMessagesMap.values()), _step2; !(_step2 = _iterator2()).done;) {
-        var message = _step2.value;
-
-        if (message.incoming) {
-          setIsIncomingMessage(true);
-          break;
-        } else {
-          setIsIncomingMessage(false);
-        }
-      }
-    }
-
-    setDeletePopupOpen(!deletePopupOpen);
-  };
-
-  var handleDeleteMessage = function handleDeleteMessage(deleteOption) {
-    for (var _iterator3 = _createForOfIteratorHelperLoose(selectedMessagesMap.values()), _step3; !(_step3 = _iterator3()).done;) {
-      var message = _step3.value;
-
-      if (!message.deliveryStatus || message.deliveryStatus === MESSAGE_DELIVERY_STATUS.PENDING) {
-        handleDeletePendingMessage(message);
-      } else {
-        dispatch(deleteMessageAC(activeChannel.id, message.id, deleteOption));
-      }
-    }
-
-    dispatch(clearSelectedMessagesAC());
-  };
-
-  var handleCloseSelectMessages = function handleCloseSelectMessages() {
-    dispatch(clearSelectedMessagesAC());
-  };
-
   return /*#__PURE__*/React__default.createElement(Container$9, {
     background: backgroundColor,
     borderColor: colors.backgroundColor
-  }, selectedMessagesMap && selectedMessagesMap.size > 0 ? /*#__PURE__*/React__default.createElement(SelectedMessagesWrapper, null, selectedMessagesMap.size, " ", selectedMessagesMap.size > 1 ? ' messages selected' : ' message selected', /*#__PURE__*/React__default.createElement(CustomButton, {
-    onClick: handleToggleForwardMessagePopup,
-    backgroundColor: colors.primaryLight,
-    marginLeft: '32px'
-  }, /*#__PURE__*/React__default.createElement(SvgForward, null), "Forward"), /*#__PURE__*/React__default.createElement(CustomButton, {
-    onClick: handleToggleDeleteMessagePopup,
-    color: colors.red1,
-    backgroundColor: colors.primaryLight,
-    marginLeft: '16px'
-  }, /*#__PURE__*/React__default.createElement(SvgDeleteIcon, null), "Delete"), /*#__PURE__*/React__default.createElement(CloseIconWrapper, {
-    onClick: handleCloseSelectMessages
-  }, /*#__PURE__*/React__default.createElement(SvgClose, null))) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, activeChannel.isLinkedChannel && /*#__PURE__*/React__default.createElement(BackButtonWrapper, {
+  }, activeChannel.isLinkedChannel && /*#__PURE__*/React__default.createElement(BackButtonWrapper, {
     onClick: handleSwitchChannel,
     hoverBackground: colors.primaryLight
-  }, /*#__PURE__*/React__default.createElement(SvgArrowLeft, null)), /*#__PURE__*/React__default.createElement(ChannelInfo$3, {
+  }, /*#__PURE__*/React__default.createElement(SvgArrowLeft, null)), /*#__PURE__*/React__default.createElement(ChannelInfo$2, {
     onClick: !channelListHidden && channelDetailsOnOpen,
     clickable: !channelListHidden
   }, /*#__PURE__*/React__default.createElement(AvatarWrapper, null, (activeChannel.subject || isDirectChannel && directChannelUser) && /*#__PURE__*/React__default.createElement(Avatar, {
@@ -23529,51 +22931,26 @@ function ChatHeader(_ref) {
       return channelDetailsOnOpen();
     },
     infoIconColor: channelDetailsIsOpen ? colors.primary : colors.textColor2
-  }, infoIcon || /*#__PURE__*/React__default.createElement(SvgInfo, null))), forwardPopupOpen && /*#__PURE__*/React__default.createElement(ForwardMessagePopup, {
-    handleForward: handleForwardMessage,
-    togglePopup: handleToggleForwardMessagePopup,
-    buttonText: 'Forward',
-    title: 'Forward message'
-  }), deletePopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
-    handleFunction: handleDeleteMessage,
-    togglePopup: handleToggleDeleteMessagePopup,
-    buttonText: 'Delete',
-    description: "Who do you want to remove " + (selectedMessagesMap.size > 1 ? 'these messages' : 'this message') + " for?",
-    isDeleteMessage: true,
-    isIncomingMessage: isIncomingMessage,
-    myRole: activeChannel.userRole,
-    allowDeleteIncoming: getAllowEditDeleteIncomingMessage(),
-    isDirectChannel: activeChannel.type === CHANNEL_TYPE.DIRECT,
-    title: "Delete message" + (selectedMessagesMap.size > 1 ? 's' : '')
-  }));
+  }, infoIcon || /*#__PURE__*/React__default.createElement(SvgInfo, null)));
 }
-var Container$9 = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n"])), function (props) {
+var Container$9 = styled__default.div(_templateObject$i || (_templateObject$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 16px;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
   return props.background;
 });
-var ChannelInfo$3 = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n  cursor: ", ";\n  margin-right: auto;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+var ChannelInfo$2 = styled__default.div(_templateObject2$f || (_templateObject2$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 650px;\n  max-width: calc(100% - 70px);\n  cursor: ", ";\n  margin-right: auto;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.clickable && 'pointer';
 }, UserStatus);
-var ChannelName = styled__default.div(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n  width: 100%;\n\n  & > ", " {\n    max-width: calc(100% - 8px);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), SectionHeader);
-var ChanelInfo = styled__default.span(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var ChannelName = styled__default.div(_templateObject3$b || (_templateObject3$b = _taggedTemplateLiteralLoose(["\n  margin-left: 7px;\n  width: 100%;\n\n  & > ", " {\n    max-width: calc(100% - 8px);\n    white-space: nowrap;\n    text-overflow: ellipsis;\n    overflow: hidden;\n  }\n"])), SectionHeader);
+var ChanelInfo = styled__default.span(_templateObject4$9 || (_templateObject4$9 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.infoIconColor;
 });
-var BackButtonWrapper = styled__default.span(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-right: 16px;\n  border-radius: 50%;\n  transition: all 0.2s;\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
+var BackButtonWrapper = styled__default.span(_templateObject5$7 || (_templateObject5$7 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-right: 16px;\n  border-radius: 50%;\n  transition: all 0.2s;\n  &:hover {\n    background-color: ", ";\n  }\n"])), function (props) {
   return props.hoverBackground || colors.primaryLight;
 });
-var SelectedMessagesWrapper = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 100%;\n  padding: 0 16px;\n"])));
-var CloseIconWrapper = styled__default.span(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
-var CustomButton = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
-  return props.color || colors.textColor1;
-}, function (props) {
-  return props.backgroundColor || colors.primaryLight;
-}, function (props) {
-  return props.marginLeft || '8px';
-});
 
-var _templateObject$m;
-var Container$a = styled__default.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  margin-bottom: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 25px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -12px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n    }\n  }\n"])), function (props) {
+var _templateObject$j;
+var Container$a = styled__default.div(_templateObject$j || (_templateObject$j = _taggedTemplateLiteralLoose(["\n  text-align: center;\n  margin: ", ";\n  margin-bottom: ", ";\n  display: ", ";\n  align-items: center;\n  width: ", ";\n  height: 25px;\n  z-index: 5;\n  top: 0;\n  background: transparent;\n  div {\n    position: relative;\n    border-bottom: ", ";\n    width: 100%;\n    display: flex;\n    justify-content: center;\n    background: transparent;\n    span {\n      position: absolute;\n      top: -12px;\n      font-style: normal;\n      font-weight: normal;\n      font-size: ", ";\n      color: ", ";\n      background: ", ";\n      //border: ", ";\n      box-sizing: border-box;\n      border-radius: ", ";\n      padding: 5px 16px;\n\n      &::before {\n        content: '';\n        position: absolute;\n        left: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n\n      &::after {\n        content: '';\n        position: absolute;\n        right: ", ";\n        top: 0;\n        height: 100%;\n        width: ", ";\n        background-color: ", ";\n      }\n    }\n  }\n"])), function (props) {
   return props.noMargin ? '0 auto' : (props.marginTop || '16px') + " auto 0";
 }, function (props) {
   return props.marginBottom || '0';
@@ -23645,6 +23022,72 @@ function MessageDivider(_ref) {
   }, /*#__PURE__*/React__default.createElement("div", null, /*#__PURE__*/React__default.createElement("span", null, dividerText)));
 }
 
+var _path$r;
+
+function _extends$s() {
+  _extends$s = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$s.apply(this, arguments);
+}
+
+function SvgDownload(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$s({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$r || (_path$r = /*#__PURE__*/React.createElement("path", {
+    d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
+    fill: "#fff"
+  })));
+}
+
+var _path$s;
+
+function _extends$t() {
+  _extends$t = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$t.apply(this, arguments);
+}
+
+function SvgSliderButtonRight(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$t({
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$s || (_path$s = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
+    fill: "#fff"
+  })));
+}
+
 var _path$t;
 
 function _extends$u() {
@@ -23664,80 +23107,14 @@ function _extends$u() {
   return _extends$u.apply(this, arguments);
 }
 
-function SvgDownload(props) {
+function SvgSliderButtonLeft(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$u({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$t || (_path$t = /*#__PURE__*/React.createElement("path", {
-    d: "M17.5 3.5a1.5 1.5 0 00-3 0v13.379l-4.44-4.44a1.5 1.5 0 00-2.12 2.122l7 7a1.5 1.5 0 002.12 0l7-7a1.5 1.5 0 00-2.12-2.122l-4.44 4.44V3.5zM5.5 25a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
-    fill: "#fff"
-  })));
-}
-
-var _path$u;
-
-function _extends$v() {
-  _extends$v = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$v.apply(this, arguments);
-}
-
-function SvgSliderButtonRight(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$v({
-    width: 28,
-    height: 28,
-    viewBox: "0 0 28.01 28.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$u || (_path$u = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
-    fill: "#fff"
-  })));
-}
-
-var _path$v;
-
-function _extends$w() {
-  _extends$w = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$w.apply(this, arguments);
-}
-
-function SvgSliderButtonLeft(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$w({
-    width: 28,
-    height: 28,
-    viewBox: "0 0 28.01 28.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$v || (_path$v = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
@@ -23794,6 +23171,70 @@ var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentUrl
   }
 };
 
+var _path$u;
+
+function _extends$v() {
+  _extends$v = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$v.apply(this, arguments);
+}
+
+function SvgVideoPlayerPlay(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$v({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$u || (_path$u = /*#__PURE__*/React.createElement("path", {
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
+    fill: "#fff"
+  })));
+}
+
+var _path$v;
+
+function _extends$w() {
+  _extends$w = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$w.apply(this, arguments);
+}
+
+function SvgVideoPlayerPause(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$w({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$v || (_path$v = /*#__PURE__*/React.createElement("path", {
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    fill: "#fff"
+  })));
+}
+
 var _path$w;
 
 function _extends$x() {
@@ -23813,7 +23254,7 @@ function _extends$x() {
   return _extends$x.apply(this, arguments);
 }
 
-function SvgVideoPlayerPlay(props) {
+function SvgVolume(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$x({
     width: 20,
     height: 20,
@@ -23821,7 +23262,7 @@ function SvgVideoPlayerPlay(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$w || (_path$w = /*#__PURE__*/React.createElement("path", {
-    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
+    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
     fill: "#fff"
   })));
 }
@@ -23845,7 +23286,7 @@ function _extends$y() {
   return _extends$y.apply(this, arguments);
 }
 
-function SvgVideoPlayerPause(props) {
+function SvgVolumeMute(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$y({
     width: 20,
     height: 20,
@@ -23853,7 +23294,7 @@ function SvgVideoPlayerPause(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$x || (_path$x = /*#__PURE__*/React.createElement("path", {
-    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
     fill: "#fff"
   })));
 }
@@ -23877,7 +23318,7 @@ function _extends$z() {
   return _extends$z.apply(this, arguments);
 }
 
-function SvgVolume(props) {
+function SvgFullscreen(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$z({
     width: 20,
     height: 20,
@@ -23885,7 +23326,9 @@ function SvgVolume(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$y || (_path$y = /*#__PURE__*/React.createElement("path", {
-    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
     fill: "#fff"
   })));
 }
@@ -23909,7 +23352,7 @@ function _extends$A() {
   return _extends$A.apply(this, arguments);
 }
 
-function SvgVolumeMute(props) {
+function SvgFullscreenExit(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$A({
     width: 20,
     height: 20,
@@ -23917,72 +23360,6 @@ function SvgVolumeMute(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$z || (_path$z = /*#__PURE__*/React.createElement("path", {
-    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
-    fill: "#fff"
-  })));
-}
-
-var _path$A;
-
-function _extends$B() {
-  _extends$B = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$B.apply(this, arguments);
-}
-
-function SvgFullscreen(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$B({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$A || (_path$A = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
-    fill: "#fff"
-  })));
-}
-
-var _path$B;
-
-function _extends$C() {
-  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$C.apply(this, arguments);
-}
-
-function SvgFullscreenExit(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$C({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$B || (_path$B = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.438 11.781c0-.466.377-.844.843-.844H8.22c.466 0 .844.378.844.844v3.938a.844.844 0 01-1.688 0v-1.9L3.94 17.252a.844.844 0 11-1.193-1.193l3.435-3.435h-1.9a.844.844 0 01-.844-.844zM17.253 2.747c.33.33.33.864 0 1.193l-3.435 3.435h1.899a.844.844 0 110 1.688h-3.936a.844.844 0 01-.844-.844V4.28a.844.844 0 011.688 0v1.9l3.435-3.434a.844.844 0 011.193 0z",
@@ -23990,7 +23367,7 @@ function SvgFullscreenExit(props) {
   })));
 }
 
-var _templateObject$n, _templateObject2$j, _templateObject3$d, _templateObject4$b, _templateObject5$9, _templateObject6$8, _templateObject7$7, _templateObject8$7, _templateObject9$6, _templateObject10$5, _templateObject11$3;
+var _templateObject$k, _templateObject2$g, _templateObject3$c, _templateObject4$a, _templateObject5$8, _templateObject6$6, _templateObject7$5, _templateObject8$5, _templateObject9$5, _templateObject10$4, _templateObject11$3;
 var timerInterval;
 
 var VideoPlayer = function VideoPlayer(_ref) {
@@ -24222,23 +23599,23 @@ var VideoPlayer = function VideoPlayer(_ref) {
     onClick: handleOpenFullScreen
   }, isFullScreen ? /*#__PURE__*/React__default.createElement(SvgFullscreenExit, null) : /*#__PURE__*/React__default.createElement(SvgFullscreen, null))) : /*#__PURE__*/React__default.createElement(UploadCont, null, /*#__PURE__*/React__default.createElement(UploadingIcon, null)));
 };
-var Component = styled__default.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: ", ";\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
+var Component = styled__default.div(_templateObject$k || (_templateObject$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: inline-flex;\n  & > video {\n    ", "\n  }\n\n  &::after {\n    content: ", ";\n    position: absolute;\n    bottom: 0;\n    height: 70px;\n    width: 100%;\n    background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  }\n"])), function (props) {
   return props.fullScreen && "\n        max-width: inherit !important;\n        max-height: inherit !important;\n        width: 100%;\n        height: 100%;\n        object-fit: contain;\n    ";
 }, function (props) {
   return props.loaded && '';
 });
-var UploadCont = styled__default.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var PlayPauseWrapper = styled__default.span(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var ControlsContainer = styled__default.div(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  padding: 10px 16px 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
-var ControlTime = styled__default.span(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
-var ProgressBlock = styled__default.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
-var VolumeController = styled__default.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
-var VolumeIconWrapper = styled__default.span(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
-var VolumeSlide = styled__default.input(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
-var Progress = styled__default.input(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
+var UploadCont = styled__default.div(_templateObject2$g || (_templateObject2$g = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  top: 0;\n  width: 100%;\n  height: 100%;\n  min-height: 100px;\n  min-width: 100px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var PlayPauseWrapper = styled__default.span(_templateObject3$c || (_templateObject3$c = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  margin-right: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-right: 8px;\n    width: 18px;\n    height: 18px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-right: 8px;\n    width: 16px;\n    height: 16px;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var ControlsContainer = styled__default.div(_templateObject4$a || (_templateObject4$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 0;\n  left: 0;\n  display: flex;\n  align-items: center;\n  flex-wrap: wrap;\n  width: calc(100% - 32px);\n  background: linear-gradient(360deg, rgba(23, 25, 28, 0.8) 0%, rgba(23, 25, 28, 0) 100%);\n  padding: 10px 16px 16px;\n  z-index: 20;\n\n  @media (max-width: 768px) {\n    width: calc(100% - 20px);\n    padding: 0 10px;\n  }\n"])));
+var ControlTime = styled__default.span(_templateObject5$8 || (_templateObject5$8 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  @media (max-width: 768px) {\n    font-size: 14px;\n  }\n  @media (max-width: 480px) {\n    font-size: 12px;\n  }\n"])), colors.white);
+var ProgressBlock = styled__default.div(_templateObject6$6 || (_templateObject6$6 = _taggedTemplateLiteralLoose(["\n  //background-color: rgba(255, 255, 255, 0.4);\n  margin-bottom: 6px;\n  border-radius: 15px;\n  width: 100%;\n  //height: 4px;\n  z-index: 30;\n  position: relative;\n"])));
+var VolumeController = styled__default.div(_templateObject7$5 || (_templateObject7$5 = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  display: flex;\n  align-items: center;\n"])));
+var VolumeIconWrapper = styled__default.span(_templateObject8$5 || (_templateObject8$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 768px) {\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
+var VolumeSlide = styled__default.input(_templateObject9$5 || (_templateObject9$5 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-left: 8px;\n  width: 60px;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    visibility: hidden;\n    -webkit-appearance: none;\n    height: 1px;\n    width: 1px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  @media (max-width: 768px) {\n    width: 50px;\n  }\n"])));
+var Progress = styled__default.input(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
 var FullScreenWrapper = styled__default.div(_templateObject11$3 || (_templateObject11$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$o, _templateObject2$k, _templateObject3$e, _templateObject4$c, _templateObject5$a, _templateObject6$9, _templateObject7$8, _templateObject8$8, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2;
+var _templateObject$l, _templateObject2$h, _templateObject3$d, _templateObject4$b, _templateObject5$9, _templateObject6$7, _templateObject7$6, _templateObject8$6, _templateObject9$6, _templateObject10$5, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2;
 
 var SliderPopup = function SliderPopup(_ref) {
   var channelId = _ref.channelId,
@@ -24628,18 +24005,18 @@ var SliderPopup = function SliderPopup(_ref) {
     }))));
   })) : /*#__PURE__*/React__default.createElement(UploadingIcon, null)));
 };
-var Container$b = styled__default.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
-var ProgressWrapper = styled__default.span(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 35px;\n  height: 35px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
-var SliderHeader = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), function (props) {
+var Container$b = styled__default.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
+var ProgressWrapper = styled__default.span(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 35px;\n  height: 35px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var SliderHeader = styled__default.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), function (props) {
   return props.backgroundColor || colors.textColor1;
 });
-var SliderBody = styled__default.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.4);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
-var FileInfo = styled__default.div(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
-var Info = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
-var Actions = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
-var FileDateAndSize = styled__default.span(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
-var FileSize = styled__default.span(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
-var UserName = styled__default.h4(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
+var SliderBody = styled__default.div(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.4);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var FileInfo = styled__default.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
+var Info = styled__default.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
+var Actions = styled__default.div(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
+var FileDateAndSize = styled__default.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
+var FileSize = styled__default.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
+var UserName = styled__default.h4(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
 var ActionItem = styled__default.span(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
 var ActionDownload = styled__default.div(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
 var CarouselItem = styled__default.div(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
@@ -24660,10 +24037,10 @@ var ArrowButton = styled__default.button(_templateObject15$2 || (_templateObject
   return props.leftButton && '4px';
 });
 
-var _path$C;
+var _path$A;
 
-function _extends$D() {
-  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$B() {
+  _extends$B = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -24676,17 +24053,17 @@ function _extends$D() {
 
     return target;
   };
-  return _extends$D.apply(this, arguments);
+  return _extends$B.apply(this, arguments);
 }
 
 function SvgChoseMedia(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$D({
+  return /*#__PURE__*/React.createElement("svg", _extends$B({
     width: 18,
     height: 18,
     viewBox: "0 0 19 19",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$C || (_path$C = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$A || (_path$A = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
@@ -24694,10 +24071,10 @@ function SvgChoseMedia(props) {
   })));
 }
 
-var _path$D, _defs;
+var _path$B, _defs;
 
-function _extends$E() {
-  _extends$E = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$C() {
+  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -24710,17 +24087,17 @@ function _extends$E() {
 
     return target;
   };
-  return _extends$E.apply(this, arguments);
+  return _extends$C.apply(this, arguments);
 }
 
 function SvgNoMessagesIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$E({
+  return /*#__PURE__*/React.createElement("svg", _extends$C({
     width: 49,
     height: 49,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg",
     xmlnsXlink: "http://www.w3.org/1999/xlink"
-  }, props), _path$D || (_path$D = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$B || (_path$B = /*#__PURE__*/React.createElement("path", {
     d: "M.5 48.36h48v-48H.5v48z",
     fill: "url(#noMessagesIcon_svg__pattern0)"
   })), _defs || (_defs = /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("pattern", {
@@ -24739,7 +24116,86 @@ function SvgNoMessagesIcon(props) {
   }))));
 }
 
-var _circle, _path$E;
+var _path$C, _path2$3;
+
+function _extends$D() {
+  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$D.apply(this, arguments);
+}
+
+function SvgForward(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$D({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$C || (_path$C = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
+    fill: "CurrentColor"
+  })), _path2$3 || (_path2$3 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _circle, _path$D;
+
+function _extends$E() {
+  _extends$E = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$E.apply(this, arguments);
+}
+
+function SvgErrorIcon(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$E({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle || (_circle = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 12,
+    stroke: "#FA4C56",
+    strokeWidth: 2
+  })), _path$D || (_path$D = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
+    fill: "#ED4D60"
+  })));
+}
+
+var _path$E;
 
 function _extends$F() {
   _extends$F = Object.assign ? Object.assign.bind() : function (target) {
@@ -24758,24 +24214,18 @@ function _extends$F() {
   return _extends$F.apply(this, arguments);
 }
 
-function SvgErrorIcon(props) {
+function SvgSelectionIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$F({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle || (_circle = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 12,
-    stroke: "#FA4C56",
-    strokeWidth: 2
-  })), _path$E || (_path$E = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$E || (_path$E = /*#__PURE__*/React.createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
-    fill: "#ED4D60"
+    d: "M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11zm5.749-13.501a1 1 0 00-1.414-1.414l-6.168 6.167-2.502-2.5a1 1 0 00-1.414 1.413l3.209 3.209a1 1 0 001.414 0l6.875-6.875z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -24798,18 +24248,15 @@ function _extends$G() {
   return _extends$G.apply(this, arguments);
 }
 
-function SvgSelectionIcon(props) {
+function SvgDeleteIcon(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$G({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24.01 24.01",
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$F || (_path$F = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11zm5.749-13.501a1 1 0 00-1.414-1.414l-6.168 6.167-2.502-2.5a1 1 0 00-1.414 1.413l3.209 3.209a1 1 0 001.414 0l6.875-6.875z",
-    fill: "CurrentColor"
+    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
+    fill: "#FA4C56"
   })));
 }
 
@@ -25087,7 +24534,22 @@ function SvgReplyInThreadIcon(props) {
   })));
 }
 
-var _templateObject$p, _templateObject2$l, _templateObject3$f;
+function usePermissions(myRole) {
+  var dispatch = reactRedux.useDispatch();
+  var rolesMap = reactRedux.useSelector(rolesMapSelector, reactRedux.shallowEqual);
+  var myPermissions = myRole && rolesMap && rolesMap[myRole] ? rolesMap[myRole].permissions : [];
+
+  var checkActionPermission = function checkActionPermission(actionName) {
+    return myPermissions.includes(actionName);
+  };
+
+  React.useEffect(function () {
+    dispatch(getRolesAC());
+  }, []);
+  return [checkActionPermission, myPermissions];
+}
+
+var _templateObject$m, _templateObject2$i, _templateObject3$e;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
       channel = _ref.channel,
@@ -25267,7 +24729,7 @@ function MessageActions(_ref) {
     direction: 'top'
   }, reportIconTooltipText || 'Report'), reportIcon || /*#__PURE__*/React__default.createElement(SvgReportIcon, null))));
 }
-var MessageActionsWrapper = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 200;\n"])), function (_ref2) {
+var MessageActionsWrapper = styled__default.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 200;\n"])), function (_ref2) {
   var isThreadMessage = _ref2.isThreadMessage,
       rtlDirection = _ref2.rtlDirection;
   return !rtlDirection && (isThreadMessage ? '8px' : '0');
@@ -25277,12 +24739,12 @@ var MessageActionsWrapper = styled__default.div(_templateObject$p || (_templateO
 }, function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var EditMessageContainer = styled__default.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled__default.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, function (props) {
   return props.backgroundColor;
 });
-var Action = styled__default.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:first-child {\n    margin-left: 8px;\n  }\n\n  &:last-child {\n    margin-right: 8px;\n  }\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+var Action = styled__default.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:first-child {\n    margin-left: 8px;\n  }\n\n  &:last-child {\n    margin-right: 8px;\n  }\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.order || 1;
 }, function (props) {
   return props.iconColor || colors.textColor2;
@@ -25534,7 +24996,7 @@ var getFrame = function getFrame(videoSrc, time) {
   }
 };
 
-var _templateObject$q, _templateObject2$m, _templateObject3$g, _templateObject4$d, _templateObject5$b, _templateObject6$a, _templateObject7$9;
+var _templateObject$n, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$a, _templateObject6$8, _templateObject7$7;
 var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
   var width = _ref.width,
       height = _ref.height,
@@ -25664,8 +25126,8 @@ var VideoPreview = /*#__PURE__*/React.memo(function VideoPreview(_ref) {
     isRepliedMessage: isPreview || isRepliedMessage
   }, !isRepliedMessage && !isPreview && /*#__PURE__*/React__default.createElement(SvgVideoCall, null), videoCurrentTime)));
 });
-var VideoControls = styled__default.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var VideoTime = styled__default.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
+var VideoControls = styled__default.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var VideoTime = styled__default.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
   return props.isRepliedMessage ? '3px' : props.isDetailsView ? undefined : '8px';
 }, function (props) {
   return props.isDetailsView ? '8px' : undefined;
@@ -25676,10 +25138,10 @@ var VideoTime = styled__default.div(_templateObject2$m || (_templateObject2$m = 
 }, function (props) {
   return props.isRepliedMessage ? '0 3px' : '4px 6px';
 }, colors.white, colors.white);
-var VideoPlayButton = styled__default.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
+var VideoPlayButton = styled__default.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
   return props.showOnHover && 'hidden';
 });
-var Component$1 = styled__default.div(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: 100%;\n  max-height: 100%;\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: 100%;\n    max-height: 100%;\n    width: ", ";\n    height: ", ";\n    min-height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
+var Component$1 = styled__default.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: 100%;\n  max-height: 100%;\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: 100%;\n    max-height: 100%;\n    width: ", ";\n    height: ", ";\n    min-height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
   return props.width;
 }, function (props) {
   return props.height;
@@ -25698,8 +25160,8 @@ var Component$1 = styled__default.div(_templateObject4$d || (_templateObject4$d 
 }, function (props) {
   return props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
 }, VideoPlayButton);
-var DownloadFile = styled__default.a(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
-var AttachmentFile = styled__default.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
+var DownloadFile = styled__default.a(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
+var AttachmentFile = styled__default.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
   return props.background || '#ffffff';
 }, function (props) {
   return props.border || "1px solid " + colors.gray1;
@@ -25710,7 +25172,7 @@ var AttachmentFile = styled__default.div(_templateObject6$a || (_templateObject6
 }, function (props) {
   return props.borderRadius || '6px';
 }, DownloadFile, AttachmentIconCont);
-var AttachmentImg = styled__default.img(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
+var AttachmentImg = styled__default.img(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
   return props.borderRadius || '6px';
 });
 
@@ -25744,7 +25206,7 @@ function SvgPlay(props) {
     cx: 16,
     cy: 16,
     r: 16,
-    fill: "#0DBD8B"
+    fill: "CurrentColor"
   })), _path$T || (_path$T = /*#__PURE__*/React.createElement("path", {
     d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
     fill: "#fff"
@@ -25781,14 +25243,14 @@ function SvgPause(props) {
     cx: 16,
     cy: 16,
     r: 16,
-    fill: "#0DBD8B"
+    fill: "CurrentColor"
   })), _path$U || (_path$U = /*#__PURE__*/React.createElement("path", {
     d: "M13.721 10.375c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12h-1.067c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067zm5.625 0c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12H18.28c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067z",
     fill: "#fff"
   })));
 }
 
-var _templateObject$r, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$b;
+var _templateObject$o, _templateObject2$k, _templateObject3$g, _templateObject4$d, _templateObject5$b, _templateObject6$9;
 
 var AudioPlayer = function AudioPlayer(_ref) {
   var url = _ref.url,
@@ -25985,21 +25447,24 @@ var AudioPlayer = function AudioPlayer(_ref) {
     }
   }, [playingAudioId]);
   return /*#__PURE__*/React__default.createElement(Container$c, null, /*#__PURE__*/React__default.createElement(PlayPause, {
-    onClick: handlePlayPause
+    onClick: handlePlayPause,
+    iconColor: colors.primary
   }, playAudio ? /*#__PURE__*/React__default.createElement(SvgPause, null) : /*#__PURE__*/React__default.createElement(SvgPlay, null)), /*#__PURE__*/React__default.createElement(WaveContainer, null, /*#__PURE__*/React__default.createElement(AudioVisualization, {
     ref: wavesurferContainer
   }), /*#__PURE__*/React__default.createElement(AudioRate, {
     onClick: handleSetAudioRate
   }, audioRate, /*#__PURE__*/React__default.createElement("span", null, "X"))), /*#__PURE__*/React__default.createElement(Timer, null, currentTime));
 };
-var Container$c = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var AudioVisualization = styled__default.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled__default.div(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
-var WaveContainer = styled__default.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled__default.div(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
+var Container$c = styled__default.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause = styled__default.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+  return props.iconColor || colors.primary;
+});
+var AudioVisualization = styled__default.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var AudioRate = styled__default.div(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
+var WaveContainer = styled__default.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer = styled__default.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
 
-var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$8, _templateObject10$7, _templateObject11$5, _templateObject12$3, _templateObject13$3;
+var _templateObject$p, _templateObject2$l, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$a, _templateObject7$8, _templateObject8$7, _templateObject9$7, _templateObject10$6, _templateObject11$5, _templateObject12$3, _templateObject13$3;
 
 var Attachment = function Attachment(_ref) {
   var attachment = _ref.attachment,
@@ -26566,10 +26031,10 @@ var Attachment = function Attachment(_ref) {
 };
 
 var Attachment$1 = /*#__PURE__*/React__default.memo(Attachment, function (prevProps, nextProps) {
-  return prevProps.attachment.url === nextProps.attachment.url && prevProps.attachment.id === nextProps.attachment.id && prevProps.attachment.attachmentUrl === nextProps.attachment.attachmentUrl;
+  return prevProps.attachment.url === nextProps.attachment.url && prevProps.attachment.id === nextProps.attachment.id && prevProps.handleMediaItemClick === nextProps.handleMediaItemClick && prevProps.attachment.attachmentUrl === nextProps.attachment.attachmentUrl;
 });
-var DownloadImage = styled__default.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled__default.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  max-width: 100%;\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+var DownloadImage = styled__default.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
+var AttachmentImgCont = styled__default.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  max-width: 100%;\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPreview ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '130px';
@@ -26586,17 +26051,17 @@ var AttachmentImgCont = styled__default.div(_templateObject2$o || (_templateObje
 }, DownloadImage, function (props) {
   return props.isPreview && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
 });
-var FileThumbnail = styled__default.img(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
-var DownloadFile$1 = styled__default.span(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  position: ", ";\n  border-radius: ", ";\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
+var FileThumbnail = styled__default.img(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
+var DownloadFile$1 = styled__default.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  position: ", ";\n  border-radius: ", ";\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
   return props.widthThumb && 'absolute';
 }, function (props) {
   return props.widthThumb ? '8px' : '50%';
 });
-var ProgressWrapper$1 = styled__default.span(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
-var SizeProgress = styled__default.span(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: -26px;\n  background-color: rgba(0, 0, 0, 0.4);\n  color: ", ";\n  font-size: 12px;\n  border-radius: 12px;\n  padding: 3px 6px;\n  white-space: nowrap;\n"])), colors.white);
-var AttachmentFile$1 = styled__default.div(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var ProgressWrapper$1 = styled__default.span(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var SizeProgress = styled__default.span(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: -26px;\n  background-color: rgba(0, 0, 0, 0.4);\n  color: ", ";\n  font-size: 12px;\n  border-radius: 12px;\n  padding: 3px 6px;\n  white-space: nowrap;\n"])), colors.white);
+var AttachmentFile$1 = styled__default.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  width: ", ";\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
   return !props.isRepliedMessage && (props.width ? props.width + "px" : '350px');
@@ -26611,13 +26076,13 @@ var AttachmentFile$1 = styled__default.div(_templateObject7$a || (_templateObjec
 }, function (props) {
   return !props.isRepliedMessage && !props.isPreview && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
-var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
+var RemoveChosenFile = styled__default(SvgDeleteUpload)(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
   return props.color || colors.textColor3;
 });
-var AttachmentName = styled__default.h3(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
+var AttachmentName = styled__default.h3(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
   return props.color || colors.textColor1;
 });
-var AttachmentSize = styled__default.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
+var AttachmentSize = styled__default.span(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, colors.red1);
 var AttachmentFileInfo = styled__default.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  ", "\n"])), function (props) {
@@ -26646,6 +26111,153 @@ var VideoCont = styled__default.div(_templateObject13$3 || (_templateObject13$3 
   return props.isDetailsView && '100%';
 });
 
+var _templateObject$q, _templateObject2$m;
+
+var CustomRadio$1 = function CustomRadio(_ref) {
+  var index = _ref.index,
+      state = _ref.state,
+      _onChange = _ref.onChange,
+      checkedBorder = _ref.checkedBorder,
+      border = _ref.border,
+      borderRadius = _ref.borderRadius,
+      size = _ref.size,
+      disabled = _ref.disabled;
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(CustomLabel$1, {
+    isChecked: state,
+    size: size,
+    checkedBorder: checkedBorder,
+    border: border,
+    borderRadius: borderRadius,
+    htmlFor: "radio-" + index
+  }), /*#__PURE__*/React__default.createElement(Radio, {
+    disabled: disabled,
+    type: 'radio',
+    id: "radio-" + index,
+    checked: state,
+    onChange: function onChange(e) {
+      return _onChange(e);
+    }
+  }));
+};
+var CustomLabel$1 = styled__default.label(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
+  return props.size || '12px';
+}, function (props) {
+  return props.size || '12px';
+}, function (props) {
+  return props.isChecked ? props.checkedBorder || "6px solid " + colors.primary : props.border || "1px solid " + colors.textColor2;
+}, function (props) {
+  return props.borderRadius || '50%';
+});
+var Radio = styled__default.input(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+
+var _templateObject$r, _templateObject2$n;
+
+function ConfirmPopup(_ref) {
+  var title = _ref.title,
+      description = _ref.description,
+      theme = _ref.theme,
+      buttonText = _ref.buttonText,
+      buttonTextColor = _ref.buttonTextColor,
+      buttonBackground = _ref.buttonBackground,
+      togglePopup = _ref.togglePopup,
+      handleFunction = _ref.handleFunction,
+      isDeleteMessage = _ref.isDeleteMessage,
+      isIncomingMessage = _ref.isIncomingMessage,
+      allowDeleteIncoming = _ref.allowDeleteIncoming,
+      isDirectChannel = _ref.isDirectChannel,
+      _ref$myRole = _ref.myRole,
+      myRole = _ref$myRole === void 0 ? '' : _ref$myRole,
+      loading = _ref.loading;
+
+  var _usePermissions = usePermissions(myRole),
+      checkActionPermission = _usePermissions[0];
+
+  var _useState = React.useState(true),
+      initialRender = _useState[0],
+      setInitialRender = _useState[1];
+
+  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : isDirectChannel || checkActionPermission('deleteOwnMessage');
+
+  var _useState2 = React.useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
+      deleteMessageOption = _useState2[0],
+      setDeleteMessageOption = _useState2[1];
+
+  var handleDelete = function handleDelete() {
+    handleFunction(isDeleteMessage && deleteMessageOption);
+    togglePopup();
+  };
+
+  var handleChoseDeleteOption = function handleChoseDeleteOption(e, option) {
+    if (e.target.checked) {
+      setDeleteMessageOption(option);
+    }
+  };
+
+  React.useEffect(function () {
+    setInitialRender(false);
+  }, []);
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
+    theme: theme,
+    backgroundColor: colors.backgroundColor,
+    maxWidth: '520px',
+    minWidth: '520px',
+    isLoading: loading,
+    padding: '0'
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
+    paddingH: '24px',
+    paddingV: '24px'
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
+    color: colors.textColor1,
+    isDelete: true,
+    marginBottom: '20px'
+  }, title), /*#__PURE__*/React__default.createElement(PopupDescription, null, description), isDeleteMessage && /*#__PURE__*/React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
+    onClick: function onClick() {
+      return setDeleteMessageOption('forEveryone');
+    }
+  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
+    index: '1',
+    size: '18px',
+    state: deleteMessageOption === 'forEveryone',
+    onChange: function onChange(e) {
+      return handleChoseDeleteOption(e, 'forEveryone');
+    }
+  }), "Delete for everyone"), /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
+    onClick: function onClick() {
+      return setDeleteMessageOption('forMe');
+    }
+  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
+    index: '2',
+    size: '18px',
+    state: deleteMessageOption === 'forMe',
+    onChange: function onChange(e) {
+      return handleChoseDeleteOption(e, 'forMe');
+    }
+  }), "Delete for me"))), /*#__PURE__*/React__default.createElement(PopupFooter, {
+    backgroundColor: colors.backgroundColor
+  }, /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    color: colors.textColor1,
+    backgroundColor: 'transparent',
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    backgroundColor: buttonBackground || colors.red1,
+    color: buttonTextColor,
+    borderRadius: '8px',
+    onClick: handleDelete,
+    disabled: initialRender
+  }, buttonText || 'Delete'))));
+}
+var DeleteMessageOptions = styled__default.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
+var DeleteOptionItem = styled__default.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
+
 function useOnScreen(ref) {
   var _useState = React.useState(false),
       isIntersecting = _useState[0],
@@ -26664,6 +26276,288 @@ function useOnScreen(ref) {
   return isIntersecting;
 }
 
+var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$b, _templateObject7$9, _templateObject8$8, _templateObject9$8, _templateObject10$7;
+
+function ForwardMessagePopup(_ref) {
+  var title = _ref.title,
+      buttonText = _ref.buttonText,
+      togglePopup = _ref.togglePopup,
+      handleForward = _ref.handleForward,
+      loading = _ref.loading;
+  var ChatClient = getClient();
+  var user = ChatClient.user;
+  var dispatch = reactRedux.useDispatch();
+  var channels = reactRedux.useSelector(channelsForForwardSelector) || [];
+  var searchedChannels = reactRedux.useSelector(searchedChannelsForForwardSelector) || [];
+  var contactsMap = reactRedux.useSelector(contactsMapSelector);
+  var getFromContacts = getShowOnlyContactUsers();
+  var channelsLoading = reactRedux.useSelector(channelsLoadingStateForForwardSelector);
+  var channelsHasNext = reactRedux.useSelector(channelsForForwardHasNextSelector);
+
+  var _useState = React.useState(''),
+      searchValue = _useState[0],
+      setSearchValue = _useState[1];
+
+  var _useState2 = React.useState(0),
+      selectedChannelsContHeight = _useState2[0],
+      setSelectedChannelsHeight = _useState2[1];
+
+  var _useState3 = React.useState([]),
+      selectedChannels = _useState3[0],
+      setSelectedChannels = _useState3[1];
+
+  var _useState4 = React.useState([]),
+      channelIds = _useState4[0],
+      setChannelIds = _useState4[1];
+
+  var selectedChannelsContRef = React.useRef();
+
+  var handleForwardMessage = function handleForwardMessage() {
+    handleForward(channelIds);
+    togglePopup();
+  };
+
+  var handleChannelListScroll = function handleChannelListScroll(event) {
+    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100) {
+      if (channelsLoading === LOADING_STATE.LOADED && channelsHasNext) {
+        dispatch(loadMoreChannelsForForward(15));
+      }
+    }
+  };
+
+  var handleChoseChannel = function handleChoseChannel(e, channelId) {
+    if (e.target.checked) {
+      setChannelIds(function (prevState) {
+        return [].concat(prevState, [channelId]);
+      });
+    }
+  };
+
+  var handleSearchValueChange = function handleSearchValueChange(e) {
+    var value = e.target.value;
+    setSearchValue(value);
+  };
+
+  var getMyChannels = function getMyChannels() {
+    setSearchValue('');
+  };
+
+  var handleChannelSelect = function handleChannelSelect(event, channel) {
+    var newSelectedChannels = [].concat(selectedChannels);
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+
+    if (event.target.checked && selectedChannels.length < 5) {
+      newSelectedChannels.push({
+        id: channel.id,
+        displayName: channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')
+      });
+    } else {
+      var itemToDeleteIndex = newSelectedChannels.findIndex(function (chan) {
+        return channel.id === chan.id;
+      });
+
+      if (itemToDeleteIndex >= 0) {
+        newSelectedChannels.splice(itemToDeleteIndex, 1);
+      }
+    }
+
+    setSearchValue('');
+    setSelectedChannels(newSelectedChannels);
+  };
+
+  var removeChannel = function removeChannel(channel) {
+    var newSelectedChannels = [].concat(selectedChannels);
+    var itemToDeleteIndex = newSelectedChannels.findIndex(function (c) {
+      return channel.id === c.id;
+    });
+
+    if (itemToDeleteIndex >= 0) {
+      newSelectedChannels.splice(itemToDeleteIndex, 1);
+    }
+
+    setSelectedChannels(newSelectedChannels);
+  };
+
+  React.useEffect(function () {
+    if (selectedChannelsContRef.current) {
+      setSelectedChannelsHeight(selectedChannelsContRef.current.offsetHeight);
+    } else {
+      setSelectedChannelsHeight(0);
+    }
+  }, [selectedChannels]);
+  React.useEffect(function () {
+    dispatch(getChannelsForForwardAC());
+    return function () {
+      dispatch(setSearchedChannelsForForwardAC({
+        chats_groups: [],
+        channels: [],
+        contacts: []
+      }));
+    };
+  }, []);
+  React.useEffect(function () {
+    if (searchValue) {
+      dispatch(searchChannelsForForwardAC({
+        search: searchValue
+      }, contactsMap));
+    } else {
+      dispatch(setSearchedChannelsForForwardAC({
+        chats_groups: [],
+        channels: [],
+        contacts: []
+      }));
+    }
+  }, [searchValue]);
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
+    maxWidth: '522px',
+    minWidth: '522px',
+    height: '540px',
+    isLoading: loading,
+    padding: '0'
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
+    paddingH: '24px',
+    paddingV: '24px',
+    withFooter: true
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
+    isDelete: true,
+    marginBottom: '20px'
+  }, title), /*#__PURE__*/React__default.createElement(ChannelSearch, {
+    searchValue: searchValue,
+    handleSearchValueChange: handleSearchValueChange,
+    getMyChannels: getMyChannels
+  }), /*#__PURE__*/React__default.createElement(SelectedChannelsContainer, {
+    ref: selectedChannelsContRef
+  }, selectedChannels.map(function (channel) {
+    return /*#__PURE__*/React__default.createElement(SelectedChannelBuble, {
+      key: "selected-" + channel.id
+    }, /*#__PURE__*/React__default.createElement(SelectedChannelName, null, channel.displayName), /*#__PURE__*/React__default.createElement(StyledSubtractSvg$1, {
+      onClick: function onClick() {
+        return removeChannel(channel);
+      }
+    }));
+  })), /*#__PURE__*/React__default.createElement(ForwardChannelsCont, {
+    onScroll: handleChannelListScroll,
+    selectedChannelsHeight: selectedChannelsContHeight
+  }, searchValue ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !!(searchedChannels.chats_groups && searchedChannels.chats_groups.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, {
+    margin: '0 0 12px'
+  }, "Chats & Groups"), searchedChannels.chats_groups.map(function (channel) {
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id,
+      onClick: function onClick(e) {
+        return handleChoseChannel(e, channel.id);
+      }
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : channel.subject || '',
+      image: directChannelUser ? directChannelUser.avatarUrl : channel.avatarUrl,
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: true
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, isDirectChannel ? directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User' : channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  })), !!(searchedChannels.channels && searchedChannels.channels.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, null, "Channels"), searchedChannels.channels.map(function (channel) {
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id,
+      onClick: function onClick(e) {
+        return handleChoseChannel(e, channel.id);
+      }
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: channel.subject || '',
+      image: channel.avatarUrl,
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: false
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  }))) : channels.map(function (channel) {
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id,
+      onClick: function onClick(e) {
+        return handleChoseChannel(e, channel.id);
+      }
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: channel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
+      image: channel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: isDirectChannel
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  }))), /*#__PURE__*/React__default.createElement(PopupFooter, {
+    backgroundColor: colors.backgroundColor
+  }, /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    color: colors.textColor1,
+    backgroundColor: 'transparent',
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    backgroundColor: colors.primary,
+    borderRadius: '8px',
+    onClick: handleForwardMessage
+  }, buttonText || 'Forward'))));
+}
+var ForwardChannelsCont = styled__default.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 22px;\n"])), function (props) {
+  return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
+});
+var ChannelItem = styled__default.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
+var ChannelInfo$3 = styled__default.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
+var ChannelsGroupTitle = styled__default.h4(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  margin: ", ";\n  color: ", ";\n"])), function (props) {
+  return props.margin || '20px 0 12px';
+}, colors.textColor2);
+var ChannelTitle = styled__default.h3(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
+var ChannelMembers = styled__default.h4(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
+var SelectedChannelsContainer = styled__default.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
+var SelectedChannelBuble = styled__default.div(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
+var SelectedChannelName = styled__default.span(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
+var StyledSubtractSvg$1 = styled__default(SvgCross)(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
+
 var LOADING_STATE$1 = {
   LOADING: 1,
   LOADED: 2
@@ -26677,7 +26571,7 @@ var THEME$1 = {
   LIGHT: 'light'
 };
 
-var _templateObject$t, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$e, _templateObject6$d, _templateObject7$b, _templateObject8$a, _templateObject9$9, _templateObject10$8;
+var _templateObject$t, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$e, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$9, _templateObject10$8;
 var reactionsPrevLength = 0;
 function ReactionsPopup(_ref) {
   var messageId = _ref.messageId,
@@ -26875,11 +26769,11 @@ var ReactionsList = styled__default.ul(_templateObject4$g || (_templateObject4$g
   return !props.popupHeight && 'hidden';
 });
 var ReactionScoresCont = styled__default.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
-var ReactionScoresList = styled__default.div(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: ", ";\n  padding: 2px 8px 0;\n"])), function (props) {
+var ReactionScoresList = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: ", ";\n  padding: 2px 8px 0;\n"])), function (props) {
   return props.borderBottom && "1px solid " + colors.gray1;
 });
-var TabKey = styled__default.span(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose([""])));
-var ReactionScoreItem = styled__default.div(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  border-bottom: ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    border: ", ";\n    padding: ", ";\n    border-radius: 16px;\n    height: 30px;\n    box-sizing: border-box;\n    font-family: Inter, sans-serif;\n    font-style: normal;\n    font-weight: 600;\n    font-size: 14px;\n    line-height: ", ";\n    background-color: ", ";\n    color: ", ";\n    ", "\n\n    & ", " {\n      font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n        twemoji mozilla, segoe ui symbol;\n      margin-right: 4px;\n      font-size: 15px;\n    }\n  }\n"])), function (props) {
+var TabKey = styled__default.span(_templateObject7$a || (_templateObject7$a = _taggedTemplateLiteralLoose([""])));
+var ReactionScoreItem = styled__default.div(_templateObject8$9 || (_templateObject8$9 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  white-space: nowrap;\n  padding: ", ";\n  font-weight: 500;\n  font-size: 13px;\n  border-bottom: ", ";\n  color: ", ";\n  margin-bottom: -1px;\n  cursor: pointer;\n  & > span {\n    position: relative;\n    border: ", ";\n    padding: ", ";\n    border-radius: 16px;\n    height: 30px;\n    box-sizing: border-box;\n    font-family: Inter, sans-serif;\n    font-style: normal;\n    font-weight: 600;\n    font-size: 14px;\n    line-height: ", ";\n    background-color: ", ";\n    color: ", ";\n    ", "\n\n    & ", " {\n      font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n        twemoji mozilla, segoe ui symbol;\n      margin-right: 4px;\n      font-size: 15px;\n    }\n  }\n"])), function (props) {
   return props.bubbleStyle ? '12px 4px' : '12px';
 }, function (props) {
   return !props.bubbleStyle && "1px solid " + colors.gray1;
@@ -27394,7 +27288,7 @@ var EMOJIS = [{
   }]
 }];
 
-var _templateObject$u, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$f, _templateObject6$e, _templateObject7$c, _templateObject8$b;
+var _templateObject$u, _templateObject2$q, _templateObject3$k, _templateObject4$h, _templateObject5$f, _templateObject6$d, _templateObject7$b, _templateObject8$a;
 
 var EmojiIcon = function EmojiIcon(_ref) {
   var collectionName = _ref.collectionName;
@@ -27606,13 +27500,13 @@ var EmojiCollection = styled__default.span(_templateObject4$h || (_templateObjec
   return props.activeCollection ? colors.primary : colors.textColor3;
 });
 var CollectionPointer = styled__default.span(_templateObject5$f || (_templateObject5$f = _taggedTemplateLiteralLoose([""])));
-var AllEmojis = styled__default.ul(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
-var EmojiFooter = styled__default.div(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
+var AllEmojis = styled__default.ul(_templateObject6$d || (_templateObject6$d = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
+var EmojiFooter = styled__default.div(_templateObject7$b || (_templateObject7$b = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
   return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + (props.borderColor || colors.gray1);
 }, function (props) {
   return props.emojisCategoryIconsPosition === 'top' && "1px solid " + (props.borderColor || colors.gray1);
 });
-var Emoji = styled__default.li(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: ", ";\n  }\n"])), function (props) {
+var Emoji = styled__default.li(_templateObject8$a || (_templateObject8$a = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: ", ";\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.backgroundColor;
 });
 
@@ -27794,7 +27688,7 @@ var OpenMoreEmojis = styled__default.span(_templateObject3$l || (_templateObject
   return props.hoverBackground || colors.hoverBackgroundColor;
 });
 
-var _templateObject$w, _templateObject2$s, _templateObject3$m, _templateObject4$i, _templateObject5$g, _templateObject6$f, _templateObject7$d, _templateObject8$c, _templateObject9$a, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$3, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1;
+var _templateObject$w, _templateObject2$s, _templateObject3$m, _templateObject4$i, _templateObject5$g, _templateObject6$e, _templateObject7$c, _templateObject8$b, _templateObject9$a, _templateObject10$9, _templateObject11$6, _templateObject12$4, _templateObject13$4, _templateObject14$3, _templateObject15$3, _templateObject16$2, _templateObject17$2, _templateObject18$2, _templateObject19$2, _templateObject20$1, _templateObject21$1, _templateObject22$1, _templateObject23$1, _templateObject24$1, _templateObject25$1;
 
 var Message = function Message(_ref) {
   var message = _ref.message,
@@ -28047,7 +27941,12 @@ var Message = function Message(_ref) {
     setMessageActionsShow(false);
   };
 
-  var handleSelectMessage = function handleSelectMessage() {
+  var handleSelectMessage = function handleSelectMessage(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     if (isSelectedMessage) {
       if (selectedMessagesMap && selectedMessagesMap.size === 1) {
         dispatch(clearSelectedMessagesAC());
@@ -28106,7 +28005,7 @@ var Message = function Message(_ref) {
   };
 
   var handleMouseEnter = function handleMouseEnter() {
-    if (message.state !== MESSAGE_STATUS.DELETE) {
+    if (message.state !== MESSAGE_STATUS.DELETE && !selectionIsActive) {
       messageActionsTimeout.current = setTimeout(function () {
         setMessageActionsShow(true);
         dispatch(setMessageMenuOpenedAC(message.id || message.tid));
@@ -28162,7 +28061,7 @@ var Message = function Message(_ref) {
   var handleSendReadMarker = function handleSendReadMarker() {
     if (isVisible && message.incoming && !(message.userMarkers && message.userMarkers.length && message.userMarkers.find(function (marker) {
       return marker.name === MESSAGE_DELIVERY_STATUS.READ;
-    }))) {
+    })) && connectionStatus === CONNECTION_STATUS.CONNECTED) {
       console.log('send displayed marker for message ... ', message);
       dispatch(markMessagesAsReadAC(channel.id, [message.id]));
     }
@@ -28216,7 +28115,7 @@ var Message = function Message(_ref) {
   };
 
   var handleCreateChat = function handleCreateChat(user) {
-    if (user) {
+    if (user && !selectionIsActive) {
       dispatch(createChannelAC({
         metadata: '',
         type: CHANNEL_TYPE.DIRECT,
@@ -28244,11 +28143,16 @@ var Message = function Message(_ref) {
       }
     }
   }, [isVisible]);
-  React.useEffect(function () {
+  useDidUpdate(function () {
     if (tabIsActive) {
       handleSendReadMarker();
     }
   }, [tabIsActive]);
+  useDidUpdate(function () {
+    if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
+      handleSendReadMarker();
+    }
+  }, [connectionStatus]);
   React.useEffect(function () {
     if (emojisPopupOpen) {
       var bottomPos = messageItemRef.current ? messageItemRef.current.getBoundingClientRect().bottom : 0;
@@ -28279,8 +28183,8 @@ var Message = function Message(_ref) {
     bottomMargin: message.reactionTotals && message.reactionTotals.length ? reactionsContainerTopPosition : '',
     ref: messageItemRef,
     selectMessagesIsActive: selectionIsActive,
-    onClick: function onClick() {
-      return selectionIsActive && handleSelectMessage();
+    onClick: function onClick(e) {
+      return selectionIsActive && handleSelectMessage(e);
     },
     className: 'MessageItem'
   }, selectionIsActive && message.state !== MESSAGE_STATUS.DELETE && /*#__PURE__*/React__default.createElement(SelectMessageWrapper, {
@@ -28299,6 +28203,7 @@ var Message = function Message(_ref) {
       return handleCreateChat(message.user);
     }
   }), /*#__PURE__*/React__default.createElement(MessageContent, {
+    selectionIsActive: selectionIsActive,
     messageWidthPercent: messageWidthPercent,
     rtl: ownMessageOnRightSide && !message.incoming,
     withAvatar: !(channel.type === CHANNEL_TYPE.DIRECT && !showSenderNameOnDirectChannel) && !(!message.incoming && !showOwnAvatar),
@@ -28401,7 +28306,7 @@ var Message = function Message(_ref) {
     withAttachments: withAttachments && notLinkAttachment,
     leftBorderColor: colors.primary,
     onClick: function onClick() {
-      return handleScrollToRepliedMessage && handleScrollToRepliedMessage(message.parentMessage.id);
+      return handleScrollToRepliedMessage && !selectionIsActive && handleScrollToRepliedMessage(message.parentMessage.id);
     }
   }, message.parentMessage.attachments && !!message.parentMessage.attachments.length && message.parentMessage.attachments[0].type !== attachmentTypes.voice && parentNotLinkAttachment && message.parentMessage.attachments.map(function (attachment, index) {
     return /*#__PURE__*/React__default.createElement(Attachment$1, {
@@ -28481,7 +28386,7 @@ var Message = function Message(_ref) {
   }, "edited") : '', messageTimeVisible && /*#__PURE__*/React__default.createElement(HiddenMessageTime, null, "" + moment(message.createdAt).format('HH:mm')), messageStatusVisible && messageStatusIcon(message.deliveryStatus, messageStatusDisplayingType, message.attachments[0].type !== 'voice' && message.attachments[0].type !== 'file' ? colors.white : '')), withAttachments && message.attachments.map(function (attachment) {
     return /*#__PURE__*/React__default.createElement(Attachment$1, {
       key: attachment.tid || attachment.url,
-      handleMediaItemClick: handleMediaItemClick,
+      handleMediaItemClick: selectionIsActive ? undefined : handleMediaItemClick,
       attachment: _extends({}, attachment, {
         metadata: isJSON(attachment.metadata) ? JSON.parse(attachment.metadata) : attachment.metadata
       }),
@@ -28633,13 +28538,13 @@ var FailedMessageIcon = styled__default.div(_templateObject5$g || (_templateObje
 }, function (props) {
   return props.rtl && '-24px';
 });
-var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
-var SelectMessageWrapper = styled__default.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  padding: 10px;\n  position: absolute;\n  left: 4%;\n  bottom: calc(50% - 22px);\n  cursor: ", ";\n  & > svg {\n    color: ", ";\n    width: 24px;\n    height: 24px;\n  }\n"])), function (props) {
+var ErrorIconWrapper = styled__default(SvgErrorIcon)(_templateObject6$e || (_templateObject6$e = _taggedTemplateLiteralLoose(["\n  width: 20px;\n  height: 20px;\n"])));
+var SelectMessageWrapper = styled__default.div(_templateObject7$c || (_templateObject7$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  padding: 10px;\n  position: absolute;\n  left: 4%;\n  bottom: calc(50% - 22px);\n  cursor: ", ";\n  & > svg {\n    color: ", ";\n    width: 24px;\n    height: 24px;\n  }\n"])), function (props) {
   return !props.disabled && 'pointer';
 }, function (props) {
   return props.activeColor || colors.primary;
 });
-var EmptySelection = styled__default.span(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 24px;\n  height: 24px;\n  border: 1.5px solid ", ";\n  box-sizing: border-box;\n  border-radius: 50%;\n  transform: scale(0.92);\n  opacity: ", ";\n"])), colors.borderColor2, function (props) {
+var EmptySelection = styled__default.span(_templateObject8$b || (_templateObject8$b = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 24px;\n  height: 24px;\n  border: 1.5px solid ", ";\n  box-sizing: border-box;\n  border-radius: 50%;\n  transform: scale(0.92);\n  opacity: ", ";\n"])), colors.borderColor2, function (props) {
   return props.disabled && '0.5';
 });
 var ReactionsContainer = styled__default.div(_templateObject9$a || (_templateObject9$a = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  margin-left: ", ";\n  margin-right: ", ";\n\n  margin-top: 4px;\n  justify-content: flex-end;\n  border: ", ";\n  box-shadow: ", ";\n  filter: drop-shadow(0px 0px 2px rgba(17, 21, 57, 0.08));\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  z-index: 9;\n  ", ";\n"])), function (props) {
@@ -28741,7 +28646,7 @@ var MessageBody = styled__default.div(_templateObject20$1 || (_templateObject20$
 }, function (props) {
   return props.noBody && 'hidden';
 });
-var MessageContent = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n"])), function (props) {
+var MessageContent = styled__default.div(_templateObject21$1 || (_templateObject21$1 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-right: ", ";\n  //transform: ", ";\n  max-width: ", ";\n\n  display: flex;\n  flex-direction: column;\n  pointer-events: ", ";\n"])), function (props) {
   return props.withAvatar && '13px';
 }, function (props) {
   return props.withAvatar && '13px';
@@ -28749,6 +28654,8 @@ var MessageContent = styled__default.div(_templateObject21$1 || (_templateObject
   return !props.withAvatar && (props.rtl ? 'translate(-32px,0)  ' : 'translate(32px,0)');
 }, function (props) {
   return props.messageWidthPercent ? props.messageWidthPercent + "%" : '100%';
+}, function (props) {
+  return props.selectionIsActive && 'none';
 });
 var VoiceIconWrapper = styled__default(SvgVoiceIcon)(_templateObject22$1 || (_templateObject22$1 = _taggedTemplateLiteralLoose(["\n  transform: translate(0px, 3.5px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.primary;
@@ -28787,7 +28694,7 @@ var FrequentlyEmojisContainer = styled__default.div(_templateObject25$1 || (_tem
   return props.rtlDirection && '0';
 });
 
-var _templateObject$x, _templateObject2$t, _templateObject3$n, _templateObject4$j, _templateObject5$h, _templateObject6$g, _templateObject7$e, _templateObject8$d, _templateObject9$b, _templateObject10$a, _templateObject11$7;
+var _templateObject$x, _templateObject2$t, _templateObject3$n, _templateObject4$j, _templateObject5$h, _templateObject6$f, _templateObject7$d, _templateObject8$c, _templateObject9$b, _templateObject10$a, _templateObject11$7;
 var loading = false;
 var loadFromServer = false;
 var loadDirection = '';
@@ -29749,13 +29656,13 @@ var DragAndDropContainer = styled__default.div(_templateObject5$h || (_templateO
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper = styled__default.span(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.backgroundColor, function (props) {
+var IconWrapper = styled__default.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.backgroundColor, function (props) {
   return props.iconColor || colors.primary;
 });
-var DropAttachmentArea = styled__default.div(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.textColor2, function (props) {
+var DropAttachmentArea = styled__default.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.textColor2, function (props) {
   return props.margin || '12px 32px 32px';
 }, colors.textColor1, colors.backgroundColor, IconWrapper, colors.white);
-var MessageWrapper = styled__default.div(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
+var MessageWrapper = styled__default.div(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
 var NoMessagesContainer = styled__default.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
@@ -30133,7 +30040,7 @@ function SvgErrorCircle(props) {
   })));
 }
 
-var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$h;
+var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$g;
 function MentionMembersPopup(_ref) {
   var channelId = _ref.channelId,
       theme = _ref.theme,
@@ -30329,11 +30236,11 @@ var MemberName$2 = styled__default.h3(_templateObject3$o || (_templateObject3$o 
 });
 var EditMemberIcon = styled__default.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList = styled__default.ul(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin: 4px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
-var MemberItem = styled__default.li(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
 }, EditMemberIcon, UserStatus);
 
-var _templateObject$z, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$j, _templateObject6$i, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1;
+var _templateObject$z, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$j, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1;
 var prevActiveChannelId;
 
 var SendMessageInput = function SendMessageInput(_ref) {
@@ -30387,6 +30294,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var messageToEdit = reactRedux.useSelector(messageToEditSelector);
   var messageForReply = reactRedux.useSelector(messageForReplySelector);
   var draggedAttachments = reactRedux.useSelector(draggedAttachmentsSelector);
+  var selectedMessagesMap = reactRedux.useSelector(selectedMessagesMapSelector);
   var isDirectChannel = activeChannel.type === CHANNEL_TYPE.DIRECT;
   var directChannelUser = isDirectChannel && activeChannel.members.find(function (member) {
     return member.id !== user.id;
@@ -30486,6 +30394,18 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var _useState22 = React.useState([]),
       attachments = _useState22[0],
       setAttachments = _useState22[1];
+
+  var _useState23 = React.useState(false),
+      forwardPopupOpen = _useState23[0],
+      setForwardPopupOpen = _useState23[1];
+
+  var _useState24 = React.useState(false),
+      deletePopupOpen = _useState24[0],
+      setDeletePopupOpen = _useState24[1];
+
+  var _useState25 = React.useState(false),
+      isIncomingMessage = _useState25[0],
+      setIsIncomingMessage = _useState25[1];
 
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
@@ -30716,6 +30636,9 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     var lastTwoChar = messageInputRef.current.innerText.slice(0, selPos).slice(-2);
+    console.log('messageInputRef.current.innerText. . . . .', messageInputRef.current.innerText);
+    console.log('selPos. . . . .', selPos);
+    console.log('lastTwoChar. . . . .', lastTwoChar);
 
     if (lastTwoChar.trimStart() === '@' && !mentionTyping) {
       setCurrentMentions({
@@ -31104,33 +31027,73 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   };
 
-  React.useEffect(function () {
-    if (mentionTyping) {
-      console.log('is in mention typing .>>>>>>');
+  var handleToggleForwardMessagePopup = function handleToggleForwardMessagePopup() {
+    setForwardPopupOpen(!forwardPopupOpen);
+  };
 
-      if (selectionPos <= currentMentions.start || selectionPos > currentMentions.start + 1 + currentMentions.typed.length) {
-        handleCloseMentionsPopup(true);
-      }
-    } else if (pendingMentions && pendingMentions.length) {
-      var currentPendingMention = pendingMentions.find(function (mention) {
-        return selectionPos <= mention.end && selectionPos > mention.start;
+  var handleForwardMessage = function handleForwardMessage(channelIds) {
+    if (channelIds && channelIds.length) {
+      channelIds.forEach(function (channelId) {
+        for (var _iterator = _createForOfIteratorHelperLoose(selectedMessagesMap.values()), _step; !(_step = _iterator()).done;) {
+          var message = _step.value;
+          dispatch(forwardMessageAC(message, channelId, connectionStatus));
+        }
       });
-      console.log('current pendiong mention .>>>>>>>>>>>>', currentPendingMention);
+    }
 
-      if (currentPendingMention) {
-        delete currentPendingMention.end;
-        setCurrentMentions({
-          start: currentPendingMention.start,
-          typed: currentPendingMention.typed
-        });
-        setMentionTyping(true);
-        setOpenMention(true);
-        setPendingMentions(pendingMentions.filter(function (mention) {
-          return mention.start !== currentPendingMention.start;
-        }));
+    dispatch(clearSelectedMessagesAC());
+  };
+
+  var handleDeletePendingMessage = function handleDeletePendingMessage(message) {
+    if (message.attachments && message.attachments.length) {
+      var customUploader = getCustomUploader();
+      message.attachments.forEach(function (att) {
+        if (customUploader) {
+          cancelUpload(att.tid);
+          deletePendingAttachment(att.tid);
+        }
+      });
+    }
+
+    removeMessageFromMap(activeChannel.id, message.id || message.tid);
+    removeMessageFromAllMessages(message.id || message.tid);
+    dispatch(deleteMessageFromListAC(message.id || message.tid));
+  };
+
+  var handleToggleDeleteMessagePopup = function handleToggleDeleteMessagePopup() {
+    if (!deletePopupOpen) {
+      for (var _iterator2 = _createForOfIteratorHelperLoose(selectedMessagesMap.values()), _step2; !(_step2 = _iterator2()).done;) {
+        var message = _step2.value;
+
+        if (message.incoming) {
+          setIsIncomingMessage(true);
+          break;
+        } else {
+          setIsIncomingMessage(false);
+        }
       }
     }
-  }, [selectionPos]);
+
+    setDeletePopupOpen(!deletePopupOpen);
+  };
+
+  var handleDeleteMessage = function handleDeleteMessage(deleteOption) {
+    for (var _iterator3 = _createForOfIteratorHelperLoose(selectedMessagesMap.values()), _step3; !(_step3 = _iterator3()).done;) {
+      var message = _step3.value;
+
+      if (!message.deliveryStatus || message.deliveryStatus === MESSAGE_DELIVERY_STATUS.PENDING) {
+        handleDeletePendingMessage(message);
+      } else {
+        dispatch(deleteMessageAC(activeChannel.id, message.id, deleteOption));
+      }
+    }
+
+    dispatch(clearSelectedMessagesAC());
+  };
+
+  var handleCloseSelectMessages = function handleCloseSelectMessages() {
+    dispatch(clearSelectedMessagesAC());
+  };
 
   var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
     try {
@@ -31440,6 +31403,33 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   };
 
+  React.useEffect(function () {
+    if (mentionTyping) {
+      console.log('is in mention typing .>>>>>>');
+
+      if (selectionPos <= currentMentions.start || selectionPos > currentMentions.start + 1 + currentMentions.typed.length) {
+        handleCloseMentionsPopup(true);
+      }
+    } else if (pendingMentions && pendingMentions.length) {
+      var currentPendingMention = pendingMentions.find(function (mention) {
+        return selectionPos <= mention.end && selectionPos > mention.start;
+      });
+      console.log('current pendiong mention .>>>>>>>>>>>>', currentPendingMention);
+
+      if (currentPendingMention) {
+        delete currentPendingMention.end;
+        setCurrentMentions({
+          start: currentPendingMention.start,
+          typed: currentPendingMention.typed
+        });
+        setMentionTyping(true);
+        setOpenMention(true);
+        setPendingMentions(pendingMentions.filter(function (mention) {
+          return mention.start !== currentPendingMention.start;
+        }));
+      }
+    }
+  }, [selectionPos]);
   React.useEffect(function () {
     if (typingTimout === 0) {
       handleSendTypingState(false);
@@ -31753,7 +31743,34 @@ var SendMessageInput = function SendMessageInput(_ref) {
     border: border,
     ref: messageContRef,
     theme: theme
-  }, !activeChannel.id ? /*#__PURE__*/React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disableInput ? /*#__PURE__*/React__default.createElement(BlockedUserInfo, null, /*#__PURE__*/React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disableInput ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.userRole && activeChannel.type !== CHANNEL_TYPE.DIRECT ? /*#__PURE__*/React__default.createElement(JoinChannelCont, {
+  }, selectedMessagesMap && selectedMessagesMap.size > 0 ? /*#__PURE__*/React__default.createElement(SelectedMessagesWrapper, null, selectedMessagesMap.size, " ", selectedMessagesMap.size > 1 ? ' messages selected' : ' message selected', /*#__PURE__*/React__default.createElement(CustomButton, {
+    onClick: handleToggleForwardMessagePopup,
+    backgroundColor: colors.primaryLight,
+    marginLeft: '32px'
+  }, /*#__PURE__*/React__default.createElement(SvgForward, null), "Forward"), /*#__PURE__*/React__default.createElement(CustomButton, {
+    onClick: handleToggleDeleteMessagePopup,
+    color: colors.red1,
+    backgroundColor: colors.primaryLight,
+    marginLeft: '16px'
+  }, /*#__PURE__*/React__default.createElement(SvgDeleteIcon, null), "Delete"), /*#__PURE__*/React__default.createElement(CloseIconWrapper, {
+    onClick: handleCloseSelectMessages
+  }, /*#__PURE__*/React__default.createElement(SvgClose, null)), forwardPopupOpen && /*#__PURE__*/React__default.createElement(ForwardMessagePopup, {
+    handleForward: handleForwardMessage,
+    togglePopup: handleToggleForwardMessagePopup,
+    buttonText: 'Forward',
+    title: 'Forward message'
+  }), deletePopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
+    handleFunction: handleDeleteMessage,
+    togglePopup: handleToggleDeleteMessagePopup,
+    buttonText: 'Delete',
+    description: "Who do you want to remove " + (selectedMessagesMap.size > 1 ? 'these messages' : 'this message') + " for?",
+    isDeleteMessage: true,
+    isIncomingMessage: isIncomingMessage,
+    myRole: activeChannel.userRole,
+    allowDeleteIncoming: getAllowEditDeleteIncomingMessage(),
+    isDirectChannel: activeChannel.type === CHANNEL_TYPE.DIRECT,
+    title: "Delete message" + (selectedMessagesMap.size > 1 ? 's' : '')
+  })) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !activeChannel.id ? /*#__PURE__*/React__default.createElement(Loading, null) : isBlockedUserChat || isDeletedUserChat || disableInput ? /*#__PURE__*/React__default.createElement(BlockedUserInfo, null, /*#__PURE__*/React__default.createElement(SvgErrorCircle, null), ' ', isDeletedUserChat ? 'This user has been deleted.' : disableInput ? "Sender doesn't support replies" : 'You blocked this user.') : !activeChannel.userRole && activeChannel.type !== CHANNEL_TYPE.DIRECT ? /*#__PURE__*/React__default.createElement(JoinChannelCont, {
     onClick: handleJoinToChannel,
     color: colors.primary
   }, "Join") : (activeChannel.type === CHANNEL_TYPE.BROADCAST || activeChannel.type === CHANNEL_TYPE.PUBLIC ? !(activeChannel.userRole === 'admin' || activeChannel.userRole === 'owner') : activeChannel.type !== CHANNEL_TYPE.DIRECT && !checkActionPermission('sendMessage')) ? /*#__PURE__*/React__default.createElement(ReadOnlyCont, {
@@ -31883,7 +31900,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     color: colors.backgroundColor,
     height: inputContainerHeight || minHeight,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
-  }, /*#__PURE__*/React__default.createElement(SvgSend, null)))));
+  }, /*#__PURE__*/React__default.createElement(SvgSend, null))))));
 };
 
 var Container$i = styled__default.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
@@ -31897,10 +31914,10 @@ var EditReplyMessageCont = styled__default.div(_templateObject2$v || (_templateO
 var EditMessageText = styled__default.p(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
 var CloseEditMode = styled__default.span(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
 var UserName$1 = styled__default.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled__default.h4(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var EditReplyMessageHeader = styled__default.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
-var AddAttachmentIcon = styled__default.span(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled__default.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
@@ -31909,7 +31926,7 @@ var AddAttachmentIcon = styled__default.span(_templateObject7$f || (_templateObj
 }, function (props) {
   return props.color || colors.primary;
 });
-var SendMessageInputContainer = styled__default.div(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n\n    & ", " {\n      & > svg {\n        color: ", ";\n      }\n    ;\n    }\n  }\n}\n"])), function (props) {
+var SendMessageInputContainer = styled__default.div(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n\n    & ", " {\n      & > svg {\n        color: ", ";\n      }\n    ;\n    }\n  }\n}\n"])), function (props) {
   return props.minHeight || '36px';
 }, function (props) {
   return props.messageForReply ? '0 0 4px 4px' : '4px';
@@ -31978,6 +31995,15 @@ var ReplyMessageCont = styled__default.div(_templateObject27$1 || (_templateObje
 var ReplyIconWrapper = styled__default.span(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, colors.white);
+var SelectedMessagesWrapper = styled__default.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
+var CustomButton = styled__default.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
+  return props.color || colors.textColor1;
+}, function (props) {
+  return props.backgroundColor || colors.primaryLight;
+}, function (props) {
+  return props.marginLeft || '8px';
+});
+var CloseIconWrapper = styled__default.span(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
 
 var _path$13;
 
@@ -32276,7 +32302,7 @@ function SvgPin(props) {
   })));
 }
 
-var _templateObject$A, _templateObject2$w, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$j;
+var _templateObject$A, _templateObject2$w, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$i;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -32734,7 +32760,7 @@ var MenuTriggerIcon = styled__default.span(_templateObject3$q || (_templateObjec
 });
 var ActionsMenu = styled__default.ul(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DefaultMutedIcon = styled__default(SvgUnmuteNotifications)(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled__default.li(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionItem$1 = styled__default.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.order;
@@ -32926,7 +32952,7 @@ var RoleLabel = styled__default.div(_templateObject2$x || (_templateObject2$x = 
 });
 var RoleSpan = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$C, _templateObject2$y, _templateObject3$s, _templateObject4$n, _templateObject5$l, _templateObject6$k, _templateObject7$g, _templateObject8$f, _templateObject9$d;
+var _templateObject$C, _templateObject2$y, _templateObject3$s, _templateObject4$n, _templateObject5$l, _templateObject6$j, _templateObject7$f, _templateObject8$e, _templateObject9$d;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -33216,9 +33242,9 @@ var ActionsMenu$1 = styled__default.div(_templateObject2$y || (_templateObject2$
 var MemberNamePresence = styled__default.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
 var MemberNameWrapper = styled__default.div(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
 var MemberName$3 = styled__default.h4(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
-var EditMemberIcon$1 = styled__default.span(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList$1 = styled__default.ul(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem$1 = styled__default.li(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n  cursor: pointer;\n\n  &:first-child {\n    cursor: pointer;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
+var EditMemberIcon$1 = styled__default.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList$1 = styled__default.ul(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var MemberItem$1 = styled__default.li(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n  cursor: pointer;\n\n  &:first-child {\n    cursor: pointer;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.addMemberIconColor || colors.primary;
@@ -33369,7 +33395,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$E, _templateObject2$A, _templateObject3$t, _templateObject4$o, _templateObject5$m, _templateObject6$l, _templateObject7$h, _templateObject8$g;
+var _templateObject$E, _templateObject2$A, _templateObject3$t, _templateObject4$o, _templateObject5$m, _templateObject6$k, _templateObject7$g, _templateObject8$f;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -33486,11 +33512,11 @@ var DownloadWrapper = styled__default.a(_templateObject2$A || (_templateObject2$
 var ProgressWrapper$2 = styled__default.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
 var FileIconCont = styled__default.span(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileHoverIconCont = styled__default.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled__default.img(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled__default.div(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var FileThumb = styled__default.img(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var FileItem = styled__default.div(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
-var FileSizeAndDate = styled__default.span(_templateObject8$g || (_templateObject8$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
+var FileSizeAndDate = styled__default.span(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
@@ -33779,7 +33805,7 @@ function SvgVoicePreviewPauseHover(props) {
   })));
 }
 
-var _templateObject$H, _templateObject2$C, _templateObject3$v, _templateObject4$q, _templateObject5$o, _templateObject6$m, _templateObject7$i, _templateObject8$h;
+var _templateObject$H, _templateObject2$C, _templateObject3$v, _templateObject4$q, _templateObject5$o, _templateObject6$l, _templateObject7$h, _templateObject8$g;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -33917,13 +33943,13 @@ var AudioInfo = styled__default.div(_templateObject4$q || (_templateObject4$q = 
 var AudioTitle = styled__default.span(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
-var AudioDate = styled__default.span(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+var AudioDate = styled__default.span(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor2;
 });
-var AudioSendTime = styled__default.span(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
+var AudioSendTime = styled__default.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
   return props.color || colors.textColor2;
 });
-var Audio = styled__default.audio(_templateObject8$h || (_templateObject8$h = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var Audio = styled__default.audio(_templateObject8$g || (_templateObject8$g = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
 var _templateObject$I;
 
@@ -34309,7 +34335,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$L, _templateObject2$F, _templateObject3$x, _templateObject4$s, _templateObject5$p, _templateObject6$n, _templateObject7$j, _templateObject8$i, _templateObject9$e, _templateObject10$c, _templateObject11$9;
+var _templateObject$L, _templateObject2$F, _templateObject3$x, _templateObject4$s, _templateObject5$p, _templateObject6$m, _templateObject7$i, _templateObject8$h, _templateObject9$e, _templateObject10$c, _templateObject11$9;
 
 var Details = function Details(_ref) {
   var size = _ref.size,
@@ -34624,17 +34650,17 @@ var ChatDetails = styled__default.div(_templateObject3$x || (_templateObject3$x 
 });
 var AboutChannel = styled__default.div(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
 var AboutChannelTitle = styled__default.h4(_templateObject5$p || (_templateObject5$p = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
-var AboutChannelText = styled__default.h3(_templateObject6$n || (_templateObject6$n = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
+var AboutChannelText = styled__default.h3(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var ChannelInfo$4 = styled__default.div(_templateObject7$j || (_templateObject7$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
+var ChannelInfo$4 = styled__default.div(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
   return (!props.direction || props.direction !== 'column') && '16px';
 }, function (props) {
   return props.direction && props.direction === 'column' && '16px';
 }, function (props) {
   return props.direction && props.direction === 'column' && 'center';
 });
-var DetailsHeader = styled__default.div(_templateObject8$i || (_templateObject8$i = _taggedTemplateLiteralLoose(["\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), function (props) {
+var DetailsHeader = styled__default.div(_templateObject8$h || (_templateObject8$h = _taggedTemplateLiteralLoose(["\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
 var ChannelAvatarAndName = styled__default.div(_templateObject9$e || (_templateObject9$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  flex-direction: ", ";\n"])), function (props) {
