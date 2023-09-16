@@ -9,6 +9,8 @@ interface MessagesProps {
     messageStatusDisplayingType?: 'ticks' | 'text';
     ownMessageBackground?: string;
     incomingMessageBackground?: string;
+    ownRepliedMessageBackground?: string;
+    incomingRepliedMessageBackground?: string;
     showMessageStatus?: boolean;
     showMessageTimeAndStatusOnlyOnHover?: boolean;
     showMessageTime?: boolean;

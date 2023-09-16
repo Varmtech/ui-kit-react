@@ -25,6 +25,8 @@ export declare const colors: {
     lightModePrimary: string;
     darkModePrimaryLight: string;
     lightModePrimaryLight: string;
+    incomingRepliedMessageBackground: string;
+    ownRepliedMessageBackground: string;
     red1: string;
     red2: string;
     purple: string;
