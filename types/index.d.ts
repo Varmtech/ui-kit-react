@@ -62,6 +62,12 @@ export interface IReaction {
     messageId: string;
     user: IUser;
 }
+export interface IBodyAttribute {
+    type: string;
+    metadata: string;
+    offset: number;
+    length: number;
+}
 export interface IMessage {
     id: string;
     tid?: string;
@@ -94,6 +100,7 @@ export interface IMessage {
     mentionedUsers: IUser[];
     requestedMentionUserIds: string[] | null;
     parentMessage?: IMessage | null;
+    bodyAttributes: IBodyAttribute[] | [];
     parentId?: string;
     repliedInThread?: boolean;
     replyCount?: number;

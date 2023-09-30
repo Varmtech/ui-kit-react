@@ -90,6 +90,15 @@ export declare const MentionedUser: import("styled-components").StyledComponent<
     color?: string | undefined;
     isLastMessage?: boolean | undefined;
 }, never>;
+export declare const StyledText: import("styled-components").StyledComponent<"span", any, {
+    color?: string | undefined;
+    fontWeight?: string | undefined;
+    fontFamily?: string | undefined;
+    fontStyle?: string | undefined;
+    isLastMessage?: boolean | undefined;
+    textDecoration?: string | undefined;
+    letterSpacing?: string | undefined;
+}, never>;
 export declare const MessageOwner: import("styled-components").StyledComponent<"h3", any, {
     color?: string | undefined;
     rtlDirection?: boolean | undefined;

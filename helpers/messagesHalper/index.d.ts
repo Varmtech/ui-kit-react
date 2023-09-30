@@ -92,6 +92,7 @@ export declare const setDraftMessageToMap: (channelId: string, draftMessage: {
     text: string;
     mentionedMembers: any;
     messageForReply?: IMessage;
+    editorState?: any;
 }) => void;
 declare let visibleMessagesMap: visibleMessagesMap;
 export declare const getVisibleMessagesMap: () => visibleMessagesMap;

@@ -38,6 +38,7 @@ interface SendMessageProps {
     voiceMessage?: boolean;
     sendAttachmentSeparately?: boolean;
     allowMentionUser?: boolean;
+    textSelectionBackgroundColor?: string;
 }
 declare const SendMessageInput: React.FC<SendMessageProps>;
 export declare const MentionsContainer: import("styled-components").StyledComponent<"div", any, {

@@ -15,6 +15,7 @@ export declare const colors: {
     lightModeTextColor1: string;
     textColor2: string;
     textColor3: string;
+    placeholderTextColor: string;
     gray0: string;
     gray1: string;
     borderColor: string;

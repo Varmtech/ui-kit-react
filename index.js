@@ -34,6 +34,16 @@ var LinkifyIt = _interopDefault(require('linkify-it'));
 var Cropper = _interopDefault(require('react-easy-crop'));
 var Carousel = _interopDefault(require('react-elastic-carousel'));
 var reactCircularProgressbar = require('react-circular-progressbar');
+var lexical = require('lexical');
+var LexicalComposerContext = require('@lexical/react/LexicalComposerContext');
+var LexicalComposer = require('@lexical/react/LexicalComposer');
+var LexicalContentEditable = require('@lexical/react/LexicalContentEditable');
+var LexicalRichTextPlugin = require('@lexical/react/LexicalRichTextPlugin');
+var LexicalErrorBoundary = _interopDefault(require('@lexical/react/LexicalErrorBoundary'));
+var LexicalOnChangePlugin = require('@lexical/react/LexicalOnChangePlugin');
+var ReactDOM = require('react-dom');
+var LexicalTypeaheadMenuPlugin = require('@lexical/react/LexicalTypeaheadMenuPlugin');
+var offset = require('@lexical/offset');
 
 /** A function that accepts a potential "extra argument" value to be injected later,
  * and returns an instance of the thunk middleware that uses that value
@@ -809,6 +819,31 @@ function _regeneratorRuntime() {
   }, exports;
 }
 
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
+  return Constructor;
+}
+
 function _extends() {
   _extends = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -824,6 +859,119 @@ function _extends() {
     return target;
   };
   return _extends.apply(this, arguments);
+}
+
+function _inherits(subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function");
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      writable: true,
+      configurable: true
+    }
+  });
+  Object.defineProperty(subClass, "prototype", {
+    writable: false
+  });
+  if (superClass) _setPrototypeOf(subClass, superClass);
+}
+
+function _getPrototypeOf(o) {
+  _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
+    return o.__proto__ || Object.getPrototypeOf(o);
+  };
+  return _getPrototypeOf(o);
+}
+
+function _setPrototypeOf(o, p) {
+  _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+  return _setPrototypeOf(o, p);
+}
+
+function _isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _assertThisInitialized(self) {
+  if (self === void 0) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return self;
+}
+
+function _possibleConstructorReturn(self, call) {
+  if (call && (typeof call === "object" || typeof call === "function")) {
+    return call;
+  } else if (call !== void 0) {
+    throw new TypeError("Derived constructors may only return object or undefined");
+  }
+
+  return _assertThisInitialized(self);
+}
+
+function _createSuper(Derived) {
+  var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+  return function _createSuperInternal() {
+    var Super = _getPrototypeOf(Derived),
+        result;
+
+    if (hasNativeReflectConstruct) {
+      var NewTarget = _getPrototypeOf(this).constructor;
+
+      result = Reflect.construct(Super, arguments, NewTarget);
+    } else {
+      result = Super.apply(this, arguments);
+    }
+
+    return _possibleConstructorReturn(this, result);
+  };
+}
+
+function _superPropBase(object, property) {
+  while (!Object.prototype.hasOwnProperty.call(object, property)) {
+    object = _getPrototypeOf(object);
+    if (object === null) break;
+  }
+
+  return object;
+}
+
+function _get() {
+  if (typeof Reflect !== "undefined" && Reflect.get) {
+    _get = Reflect.get.bind();
+  } else {
+    _get = function _get(target, property, receiver) {
+      var base = _superPropBase(target, property);
+
+      if (!base) return;
+      var desc = Object.getOwnPropertyDescriptor(base, property);
+
+      if (desc.get) {
+        return desc.get.call(arguments.length < 3 ? target : receiver);
+      }
+
+      return desc.value;
+    };
+  }
+
+  return _get.apply(this, arguments);
 }
 
 function _taggedTemplateLiteralLoose(strings, raw) {
@@ -7461,6 +7609,7 @@ var colors = {
   lightModeTextColor1: '#111539',
   textColor2: '#707388',
   textColor3: '#A0A1B0',
+  placeholderTextColor: '#acacad',
   gray0: '#F3F5F8',
   gray1: '#EDEDED',
   borderColor: '#dfe0eb',
@@ -7741,149 +7890,6 @@ var formatLargeText = function formatLargeText(text, maxLength) {
     }
   } else {
     return text;
-  }
-};
-var getCaretPosition = function getCaretPosition(element) {
-  var caretOffset = 0;
-  var doc = element.ownerDocument || element.document;
-  var win = doc.defaultView || doc.parentWindow;
-  var focusOffset = win.getSelection().focusOffset;
-  var focusNode = win.getSelection().focusNode;
-  console.log('focusOffset. . . . .', focusOffset);
-  console.log('focusNode. . . . .', focusNode);
-  console.log('element.childNodes. . . ', element.childNodes);
-
-  for (var i = 0; i < element.childNodes.length; i++) {
-    var node = element.childNodes[i];
-
-    if (node.nodeType === Node.TEXT_NODE) {
-      if (node === focusNode) {
-        caretOffset += focusOffset;
-        break;
-      } else {
-        caretOffset += node.nodeValue.length;
-      }
-    } else if (node.nodeName === 'SPAN') {
-      if (node.contains(focusNode)) {
-        caretOffset += focusOffset;
-        break;
-      } else {
-        caretOffset += node.innerText.length;
-      }
-    } else {
-      var browser = detectBrowser();
-
-      if (browser === 'Safari' && node.innerText && node.innerText.length) {
-        caretOffset += node.innerText.length + 1;
-      }
-    }
-
-    if (element.childNodes[i + 1] && element.childNodes[i + 1].nodeName === 'BR') {
-      caretOffset += 1;
-    }
-  }
-
-  console.log('retur caretOffset . . . ', caretOffset);
-  return caretOffset;
-};
-var setCursorPosition = function setCursorPosition(element, position, isAddMention, attempt) {
-  if (attempt === void 0) {
-    attempt = 0;
-  }
-
-  try {
-    console.log('set pos ... ', position);
-    var range = document.createRange();
-    var sel = window.getSelection();
-    var currentNode = element.childNodes[0];
-    var caretOffset = 0;
-    var textNodesAdded = false;
-    var currentNodeIsFind = false;
-    element.childNodes.forEach(function (node, index) {
-      if (!currentNodeIsFind && node.nodeType === Node.TEXT_NODE) {
-        currentNode = node;
-        var textLength = node.nodeValue.length;
-        caretOffset = caretOffset + textLength;
-
-        if (element.childNodes.length === index + 1) {
-          textNodesAdded = true;
-        }
-
-        if (caretOffset >= position) {
-          currentNodeIsFind = true;
-          currentNode = node;
-
-          if (!textNodesAdded) {}
-
-          caretOffset = position - (caretOffset - textLength);
-          return;
-        }
-      } else if (!currentNodeIsFind) {
-        if (node.nodeName === 'SPAN') {
-          caretOffset += node.innerText.length;
-
-          if (caretOffset >= position) {
-            currentNodeIsFind = true;
-            currentNode = element.childNodes[index + 1];
-
-            if (isAddMention) {
-              caretOffset = 1;
-            } else {
-              caretOffset = position - caretOffset;
-            }
-
-            return;
-          }
-        } else {}
-      }
-
-      if (element.childNodes[index + 1] && !currentNodeIsFind && element.childNodes[index + 1].nodeName === 'BR') {
-        caretOffset += 1;
-      }
-
-      if (element.childNodes.length === index + 1 && !currentNodeIsFind) {
-        if (!textNodesAdded) {}
-
-        currentNodeIsFind = true;
-
-        if (position > caretOffset) {
-          caretOffset++;
-        }
-
-        currentNode = node;
-        caretOffset = caretOffset - position;
-      }
-    });
-    range.setStart(currentNode, caretOffset);
-    range.collapse(true);
-
-    if (sel) {
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-  } catch (e) {
-    if (attempt <= 5) {
-      setCursorPosition(element, position - 1, isAddMention, ++attempt);
-    }
-  }
-};
-var placeCaretAtEnd = function placeCaretAtEnd(el) {
-  el.focus();
-
-  if (typeof window.getSelection !== 'undefined' && typeof document.createRange !== 'undefined') {
-    var range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    var sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(range);
-  } else {
-    if (typeof document.body.createTextRange !== 'undefined') {
-      var textRange = document.body.createTextRange();
-      textRange.moveToElementText(el);
-      textRange.collapse(false);
-      textRange.select();
-    }
   }
 };
 var detectOS = function detectOS() {
@@ -9766,7 +9772,7 @@ function SvgSearch(props) {
   })));
 }
 
-var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44;
+var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44, _templateObject45;
 function md5(inputString) {
   var hc = '0123456789abcdef';
 
@@ -10121,7 +10127,18 @@ var MentionedUser = styled__default.span(_templateObject30 || (_templateObject30
 }, function (props) {
   return props.isLastMessage && '500';
 });
-var MessageOwner = styled__default.h3(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 4px 0;\n  white-space: nowrap;\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n  cursor: ", ";\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
+var StyledText = styled__default.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  font-weight: ", ";\n  font-family: ", ";\n  font-style: ", ";\n  text-decoration: ", ";\n  letter-spacing: ", ";\n  &.bold {\n    font-weight: bold;\n  }\n  &.italic {\n    font-style: italic;\n  }\n  &.underline {\n    text-decoration: underline;\n  }\n  &.strikethrough {\n    text-decoration: line-through;\n  }\n  &.underline.strikethrough {\n    text-decoration: underline line-through;\n  }\n  &.monospace {\n    letter-spacing: 4px;\n  }\n"])), function (props) {
+  return props.fontWeight || props.isLastMessage && '500';
+}, function (props) {
+  return props.fontFamily;
+}, function (props) {
+  return props.fontStyle;
+}, function (props) {
+  return props.textDecoration;
+}, function (props) {
+  return props.letterSpacing;
+});
+var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 4px 0;\n  white-space: nowrap;\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n  cursor: ", ";\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.rtlDirection && 'auto';
@@ -10132,7 +10149,7 @@ var MessageOwner = styled__default.h3(_templateObject31 || (_templateObject31 = 
 }, function (props) {
   return props.clickable && 'pointer';
 });
-var MessageText = styled__default.pre(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+var MessageText = styled__default.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'sans-serif';
 }, function (props) {
   return props.withAttachment && (props.showMessageSenderName ? props.withPaddings ? '0 12px 10px' : '0 0 10px' : props.isForwarded ? props.withPaddings ? '4px 12px 10px' : '4px 0px 10px' : '8px 12px 10px');
@@ -10149,29 +10166,29 @@ var MessageText = styled__default.pre(_templateObject32 || (_templateObject32 = 
 }, function (props) {
   return props.isRepliedMessage && "\n      display: -webkit-box;\n      -webkit-line-clamp: 1;\n      -webkit-box-orient: vertical;\n      overflow: hidden;\n      text-overflow: ellipsis;\n  ";
 }, colors.blue);
-var ReplyMessageText = styled__default.span(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageText = styled__default.span(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
 }, function (props) {
   return props.fontSize || '15px';
 }, function (props) {
   return props.lineHeight || '20px';
 }, colors.textColor1, colors.blue);
-var CloseIcon = styled__default(SvgClose)(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  box-sizing: content-box;\n  color: ", ";\n"])), function (props) {
+var CloseIcon = styled__default(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  box-sizing: content-box;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var ClearTypedText = styled__default(CloseIcon)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
-var StyledSearchSvg = styled__default(SvgSearch)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: ", ";\n"])), function (props) {
+var ClearTypedText = styled__default(CloseIcon)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
+var StyledSearchSvg = styled__default(SvgSearch)(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: ", ";\n"])), function (props) {
   return props.left || '14px';
 });
-var SubTitle = styled__default.span(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  margin: ", ";\n"])), function (props) {
+var SubTitle = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  margin: ", ";\n"])), function (props) {
   return props.color || colors.textColor2;
 }, function (props) {
   return props.margin;
 });
-var AttachmentIconCont = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n"])), function (props) {
+var AttachmentIconCont = styled__default.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 });
-var UploadingIcon = styled__default.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border-style: solid;\n  border-color: ", ";\n  border-width: ", ";\n  border-top-width: ", ";\n  border-top-color: rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
+var UploadingIcon = styled__default.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border-style: solid;\n  border-color: ", ";\n  border-width: ", ";\n  border-top-width: ", ";\n  border-top-color: rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
   return props.color || 'rgba(255, 255, 255, 0.8)';
 }, function (props) {
   return props.borderWidth || (props.fileAttachment ? '2px' : '3px');
@@ -10182,9 +10199,9 @@ var UploadingIcon = styled__default.span(_templateObject39 || (_templateObject39
 }, function (props) {
   return props.height || (props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px');
 });
-var TextInOneLine = styled__default.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CancelResumeWrapper = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px;\n  z-index: 3;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])));
-var UploadPercent = styled__default.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  //background-color: rgba(0,0,0,0.4);\n  background-color: ", ";\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
+var TextInOneLine = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CancelResumeWrapper = styled__default.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px;\n  z-index: 3;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])));
+var UploadPercent = styled__default.span(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  //background-color: rgba(0,0,0,0.4);\n  background-color: ", ";\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
   return props.fileAttachment || props.isRepliedMessage || props.isDetailsView ? '40px' : '56px';
 }, function (props) {
   return props.fileAttachment || props.isRepliedMessage || props.isDetailsView ? '40px' : '56px';
@@ -10195,7 +10212,7 @@ var UploadPercent = styled__default.span(_templateObject42 || (_templateObject42
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
-var UploadProgress = styled__default.div(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  background-position: center;\n  border-radius: ", ";\n  z-index: ", ";\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
+var UploadProgress = styled__default.div(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  background-position: center;\n  border-radius: ", ";\n  z-index: ", ";\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
   return props.fileAttachment ? '8px' : '0';
@@ -10226,77 +10243,10 @@ var UploadProgress = styled__default.div(_templateObject43 || (_templateObject43
 }, function (props) {
   return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
 });
-var AttachmentPreviewTitle = styled__default.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
+var AttachmentPreviewTitle = styled__default.span(_templateObject45 || (_templateObject45 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
-var typingTextFormat = function typingTextFormat(_ref) {
-  var text = _ref.text,
-      mentionedMembers = _ref.mentionedMembers,
-      currentMentionEnd = _ref.currentMentionEnd;
-  var messageText = '';
-  var mentionsPositions = Array.isArray(mentionedMembers) ? [].concat(mentionedMembers).sort(function (a, b) {
-    return a.start - b.start;
-  }) : [];
-  var prevEnd = 0;
-  var separateLines = text.split(/\r?\n|\r|\n/g);
-  var addedMembers = 0;
-  var textLengthInCurrentIteration = 0;
-
-  for (var i = 0; i < separateLines.length; i++) {
-    var nextTextPart = '';
-    var currentLine = separateLines[i];
-    var lastFoundIndexOnTheLine = 0;
-    textLengthInCurrentIteration += currentLine.length + 1;
-
-    if (mentionsPositions.length > addedMembers) {
-      for (var j = addedMembers; j < mentionsPositions.length; j++) {
-        var mention = mentionsPositions[j];
-
-        if (mention.start >= textLengthInCurrentIteration) {
-          var addPart = (nextTextPart || currentLine.substring(prevEnd)).trimStart();
-          messageText = messageText + " " + addPart;
-          prevEnd = 0;
-          break;
-        }
-
-        if (!nextTextPart || nextTextPart === '') {
-          var mentionStartInCurrentLine = currentLine.indexOf(mention.displayName, lastFoundIndexOnTheLine);
-          lastFoundIndexOnTheLine = mentionStartInCurrentLine + mention.displayName.length;
-          nextTextPart = currentLine.substring(mentionStartInCurrentLine + mention.displayName.length);
-          var setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextTextPart.trim() && !separateLines[i + 1];
-          messageText += currentLine.substring(0, mentionStartInCurrentLine) + "<span class='mention_user'>" + mention.displayName + "</span>" + (setSpaceToEnd ? '&nbsp;' : '');
-          prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
-        } else {
-          var _mentionStartInCurrentLine = nextTextPart.indexOf(mention.displayName);
-
-          lastFoundIndexOnTheLine = _mentionStartInCurrentLine + mention.displayName.length;
-          var nextPart = nextTextPart.substring(_mentionStartInCurrentLine + mention.displayName.length);
-
-          var _setSpaceToEnd = currentMentionEnd && currentMentionEnd === mention.end || !nextPart.trim() && !separateLines[i + 1];
-
-          messageText += nextTextPart.substring(0, _mentionStartInCurrentLine) + "<span class=\"mention_user\">" + mention.displayName + "</span>" + (_setSpaceToEnd ? '&nbsp;' : '');
-          nextTextPart = nextPart;
-          prevEnd = currentMentionEnd === mention.end ? mention.end + 1 : mention.end;
-        }
-
-        addedMembers++;
-
-        if (addedMembers === mentionsPositions.length && nextTextPart.trim()) {
-          messageText += nextTextPart;
-        }
-      }
-    } else {
-      messageText += "" + currentLine;
-    }
-
-    if (separateLines.length > i + 1) {
-      messageText += '<br/>';
-    }
-  }
-
-  return messageText.length > 1 ? messageText : text;
-};
 var makeUsername = function makeUsername(contact, user, fromContact, getFirstNameOnly) {
   var _contact$lastName;
 
@@ -10349,6 +10299,28 @@ var linkifyTextPart = function linkifyTextPart(textPart, match) {
   return newMessageText || textPart;
 };
 
+var combineMessageAttributes = function combineMessageAttributes(attributes) {
+  var attributesPositions = attributes.sort(function (a, b) {
+    return a.offset - b.offset;
+  });
+  var combinedAttributes = {};
+  attributesPositions.forEach(function (attribute) {
+    var offset = attribute.offset;
+    var typeValue = attribute.type;
+
+    if (offset in combinedAttributes) {
+      combinedAttributes[offset].type += " " + typeValue;
+    } else {
+      combinedAttributes[offset] = {
+        type: typeValue,
+        metadata: attribute.metadata,
+        offset: offset,
+        length: attribute.length
+      };
+    }
+  });
+  return Object.values(combinedAttributes);
+};
 var MessageTextFormat = function MessageTextFormat(_ref2) {
   var text = _ref2.text,
       message = _ref2.message,
@@ -10358,41 +10330,49 @@ var MessageTextFormat = function MessageTextFormat(_ref2) {
       asSampleText = _ref2.asSampleText;
   var messageText = [];
   var linkify = new LinkifyIt();
+  var messageBodyAttributes = JSON.parse(JSON.stringify(message.bodyAttributes));
 
-  if (message.body && message.mentionedUsers && message.mentionedUsers.length > 0) {
-    var messageMetadata = isJSON(message.metadata) ? JSON.parse(message.metadata) : message.metadata;
-    var mentionsPositions = Array.isArray(messageMetadata) ? [].concat(messageMetadata).sort(function (a, b) {
-      return a.loc - b.loc;
-    }) : [];
+  if (message.body && messageBodyAttributes && messageBodyAttributes.length > 0) {
+    var combinedAttributesList = combineMessageAttributes(messageBodyAttributes);
     var textPart = text;
     var nextPartIndex;
-    mentionsPositions.forEach(function (mention, index) {
+    combinedAttributesList.forEach(function (attribute, index) {
+      var attributeOffset = attribute.offset;
+
       try {
-        var mentionDisplay = message.mentionedUsers.find(function (men) {
-          return men.id === mention.id;
-        });
-        var firstPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(nextPartIndex || 0, mention.loc) : '');
-        nextPartIndex = mention.loc + mention.len;
+        var firstPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(nextPartIndex || 0, attributeOffset) : '');
         var firstPartMatch = firstPart ? linkify.match(firstPart) : '';
 
         if (!isLastMessage && !asSampleText && firstPartMatch) {
           firstPart = linkifyTextPart(firstPart, firstPartMatch);
         }
 
-        var secondPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(mention.loc + mention.len) : '');
+        var secondPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(attributeOffset + attribute.length) : '');
         var secondPartMatch = secondPart ? linkify.match(secondPart) : '';
 
         if (!isLastMessage && !asSampleText && secondPartMatch) {
           secondPart = linkifyTextPart(secondPart, secondPartMatch);
         }
 
-        if (mentionDisplay) {
+        if (attribute.type === 'mention') {
+          var mentionDisplay = message.mentionedUsers && message.mentionedUsers.find(function (men) {
+            return men.id === attribute.metadata;
+          });
           var user = getClient().user;
-          messageText.push(firstPart, asSampleText ? "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim() : /*#__PURE__*/React__default.createElement(MentionedUser, {
+          var mentionDisplayName = "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim();
+          nextPartIndex = attribute.offset + attribute.length;
+          messageText.push(firstPart, asSampleText ? mentionDisplayName : /*#__PURE__*/React__default.createElement(MentionedUser, {
             isLastMessage: isLastMessage,
             color: colors.primary,
-            key: "" + mention.loc
-          }, "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim()), index === mentionsPositions.length - 1 ? secondPart : '');
+            key: attributeOffset
+          }, mentionDisplayName), index === combinedAttributesList.length - 1 ? secondPart : '');
+        } else {
+          nextPartIndex = attributeOffset + attribute.length;
+          messageText.push(firstPart, asSampleText ? "" + text.slice(attributeOffset, attributeOffset + attribute.length).trim() : /*#__PURE__*/React__default.createElement(StyledText, {
+            isLastMessage: isLastMessage,
+            className: attribute.type,
+            key: attributeOffset + "-" + attribute.type
+          }, "" + text.slice(attributeOffset, attributeOffset + attribute.length).trim()), index === combinedAttributesList.length - 1 ? secondPart : '');
         }
       } catch (e) {
         console.log('Error on format message text, message: ', message, 'error: ', e);
@@ -10425,25 +10405,58 @@ var lastMessageDateFormat = function lastMessageDateFormat(date) {
 
   return moment(date).format('DD.MM.YY');
 };
-var getDuplicateMentionsFromMeta = function getDuplicateMentionsFromMeta(mentionsMetas, mentionedMembers) {
-  var mentionsList = [];
-  mentionsMetas.forEach(function (mentionMeta) {
-    var editingMention = mentionedMembers.find(function (menMem) {
-      return menMem.id === mentionMeta.id;
-    });
-
-    if (editingMention) {
-      mentionsList.push(editingMention);
-    }
-  });
-  return mentionsList;
-};
 var allowEditDeleteIncomingMessage = true;
 var setAllowEditDeleteIncomingMessage = function setAllowEditDeleteIncomingMessage(allow) {
   allowEditDeleteIncomingMessage = allow;
 };
 var getAllowEditDeleteIncomingMessage = function getAllowEditDeleteIncomingMessage() {
   return allowEditDeleteIncomingMessage;
+};
+var bodyAttributesMapByType = {
+  1: ['bold'],
+  2: ['italic'],
+  3: ['bold', 'italic'],
+  4: ['strikethrough'],
+  5: ['bold', 'strikethrough'],
+  6: ['italic', 'strikethrough'],
+  7: ['bold', 'italic', 'strikethrough'],
+  8: ['underline'],
+  9: ['bold', 'underline'],
+  10: ['italic', 'underline'],
+  11: ['bold', 'italic', 'underline'],
+  12: ['strikethrough', 'underline'],
+  13: ['bold', 'strikethrough', 'underline'],
+  14: ['italic', 'strikethrough', 'underline'],
+  15: ['bold', 'italic', 'strikethrough', 'underline'],
+  16: ['monospace'],
+  17: ['bold', 'monospace'],
+  18: ['italic', 'monospace'],
+  19: ['bold', 'italic', 'monospace'],
+  20: ['strikethrough', 'monospace'],
+  21: ['bold', 'strikethrough', 'monospace'],
+  22: ['italic', 'strikethrough', 'monospace'],
+  23: ['bold', 'italic', 'strikethrough', 'monospace'],
+  24: ['underline', 'monospace'],
+  25: ['bold', 'underline', 'monospace'],
+  26: ['italic', 'underline', 'monospace'],
+  27: ['bold', 'italic', 'underline', 'monospace'],
+  28: ['strikethrough', 'underline', 'monospace'],
+  29: ['bold', 'strikethrough', 'underline', 'monospace'],
+  30: ['italic', 'strikethrough', 'underline', 'monospace'],
+  31: ['bold', 'italic', 'strikethrough', 'underline', 'monospace']
+};
+var EditorTheme = {
+  paragraph: 'editor_paragraph',
+  text: {
+    bold: 'text_bold',
+    code: 'text_monospace',
+    italic: 'text_italic',
+    strikethrough: 'text_strikethrough',
+    subscript: 'text_subscript',
+    superscript: 'text_superscript',
+    underline: 'text_underline',
+    underlineStrikethrough: 'text_underlineStrikethrough'
+  }
 };
 
 var allChannels = [];
@@ -14534,20 +14547,25 @@ function updateChannel(action) {
           }));
 
         case 25:
-          _context19.next = 30;
+          updateChannelOnAllChannels(channelId, {
+            subject: subject,
+            avatarUrl: avatarUrl,
+            metadata: isJSON(metadata) ? JSON.parse(metadata) : metadata
+          });
+          _context19.next = 31;
           break;
 
-        case 27:
-          _context19.prev = 27;
+        case 28:
+          _context19.prev = 28;
           _context19.t0 = _context19["catch"](0);
           console.log('ERROR in update channel', _context19.t0.message);
 
-        case 30:
+        case 31:
         case "end":
           return _context19.stop();
       }
     }
-  }, _marked19, null, [[0, 27]]);
+  }, _marked19, null, [[0, 28]]);
 }
 
 function checkUsersStatus() {
@@ -14691,7 +14709,7 @@ function clearHistory(action) {
           activeChannelId = _context22.sent;
 
           if (!channel) {
-            _context22.next = 24;
+            _context22.next = 25;
             break;
           }
 
@@ -14721,29 +14739,34 @@ function clearHistory(action) {
           }));
 
         case 21:
+          updateChannelOnAllChannels(channel.id, {
+            lastMessage: null,
+            newMessageCount: 0,
+            newMentionCount: 0
+          });
           groupName = getChannelGroupName(channel);
-          _context22.next = 24;
+          _context22.next = 25;
           return effects.put(updateSearchedChannelDataAC(channel.id, {
             lastMessage: null,
             newMessageCount: 0,
             newMentionCount: 0
           }, groupName));
 
-        case 24:
-          _context22.next = 29;
+        case 25:
+          _context22.next = 30;
           break;
 
-        case 26:
-          _context22.prev = 26;
+        case 27:
+          _context22.prev = 27;
           _context22.t0 = _context22["catch"](0);
           console.log('ERROR in clear history');
 
-        case 29:
+        case 30:
         case "end":
           return _context22.stop();
       }
     }
-  }, _marked22, null, [[0, 26]]);
+  }, _marked22, null, [[0, 27]]);
 }
 
 function deleteAllMessages(action) {
@@ -14772,7 +14795,7 @@ function deleteAllMessages(action) {
           activeChannelId = _context23.sent;
 
           if (!channel) {
-            _context23.next = 25;
+            _context23.next = 26;
             break;
           }
 
@@ -14806,29 +14829,34 @@ function deleteAllMessages(action) {
           }));
 
         case 22:
+          updateChannelOnAllChannels(channel.id, {
+            lastMessage: null,
+            newMessageCount: 0,
+            newMentionCount: 0
+          });
           groupName = getChannelGroupName(channel);
-          _context23.next = 25;
+          _context23.next = 26;
           return effects.put(updateSearchedChannelDataAC(channel.id, {
             lastMessage: null,
             newMessageCount: 0,
             newMentionCount: 0
           }, groupName));
 
-        case 25:
-          _context23.next = 30;
+        case 26:
+          _context23.next = 31;
           break;
 
-        case 27:
-          _context23.prev = 27;
+        case 28:
+          _context23.prev = 28;
           _context23.t0 = _context23["catch"](0);
           console.log('ERROR in clear history');
 
-        case 30:
+        case 31:
         case "end":
           return _context23.stop();
       }
     }
-  }, _marked23, null, [[0, 27]]);
+  }, _marked23, null, [[0, 28]]);
 }
 
 function joinChannel(action) {
@@ -15710,7 +15738,7 @@ function sendMessage(action) {
         case 44:
           setPendingAttachment(messageAttachment.tid, messageAttachment.data);
           messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody(message.body).setAttachments([]).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
+          messageBuilder.setBody(message.body).setAttachments([]).setBodyAttributes(message.bodyAttributes).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parentMessage) {
             messageBuilder.setParentMessageId(message.parentMessage ? message.parentMessage.id : null);
@@ -15726,6 +15754,7 @@ function sendMessage(action) {
           });
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageCopy, {
             createdAt: new Date(Date.now()),
+            mentionedUsers: message.mentionedMembers,
             parentMessage: message.parentMessage
           })));
           _context.next = 54;
@@ -15922,6 +15951,7 @@ function sendMessage(action) {
             deliveryStatus: messageResponse.deliveryStatus,
             attachments: messageResponse.attachments,
             mentionedUsers: messageResponse.mentionedUsers,
+            bodyAttributes: messageResponse.bodyAttributes,
             metadata: messageResponse.metadata,
             parentMessage: messageResponse.parentMessage,
             repliedInThread: messageResponse.repliedInThread,
@@ -16034,6 +16064,7 @@ function sendMessage(action) {
             mentionedUsers: _messageResponse.mentionedUsers,
             metadata: _messageResponse.metadata,
             parentMessage: _messageResponse.parentMessage,
+            bodyAttributes: _messageResponse.bodyAttributes,
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
@@ -16157,7 +16188,7 @@ function sendMessage(action) {
           });
           _messageBuilder = channel.createMessageBuilder();
 
-          _messageBuilder.setBody(message.body).setAttachments(message.attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
+          _messageBuilder.setBody(message.body).setBodyAttributes(message.bodyAttributes).setAttachments(message.attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parentMessage) {
             _messageBuilder.setParentMessageId(message.parentMessage ? message.parentMessage.id : null);
@@ -16364,6 +16395,7 @@ function sendMessage(action) {
             deliveryStatus: _messageResponse2.deliveryStatus,
             attachments: attachmentsToUpdate,
             mentionedUsers: _messageResponse2.mentionedUsers,
+            bodyAttributes: _messageResponse2.bodyAttributes,
             metadata: _messageResponse2.metadata,
             parentMessage: _messageResponse2.parentMessage,
             repliedInThread: _messageResponse2.repliedInThread,
@@ -16486,7 +16518,7 @@ function sendTextMessage(action) {
           }
 
           messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody(message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
+          messageBuilder.setBody(message.body).setBodyAttributes(message.bodyAttributes).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
           if (message.parentMessage) {
             messageBuilder.setParentMessageId(message.parentMessage ? message.parentMessage.id : null);
@@ -16499,6 +16531,7 @@ function sendTextMessage(action) {
           messageToSend = messageBuilder.create();
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageToSend, {
             createdAt: new Date(Date.now()),
+            mentionedUsers: message.mentionedMembers,
             parentMessage: message.parentMessage
           })));
           sendMessageTid = messageToSend.tid;
@@ -16507,72 +16540,76 @@ function sendTextMessage(action) {
             pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
           }
 
-          _context2.next = 35;
+          console.log('pendingMessage >>> > >', pendingMessage);
+          _context2.next = 36;
           return effects.select(messagesHasNextSelector);
 
-        case 35:
+        case 36:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 44;
+            _context2.next = 45;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 42;
+            _context2.next = 43;
             break;
           }
 
-          _context2.next = 40;
+          _context2.next = 41;
           return effects.put(getMessagesAC(channel));
 
-        case 40:
-          _context2.next = 44;
+        case 41:
+          _context2.next = 45;
           break;
 
-        case 42:
-          _context2.next = 44;
+        case 43:
+          _context2.next = 45;
           return effects.put(addMessageAC(JSON.parse(JSON.stringify(pendingMessage))));
 
-        case 44:
+        case 45:
           addMessageToMap(channel.id, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context2.next = 49;
+          _context2.next = 50;
           return effects.put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
 
-        case 49:
+        case 50:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 75;
+            _context2.next = 77;
             break;
           }
+
+          console.log('send message messageToSend ... ', messageToSend);
 
           if (!sendMessageHandler) {
-            _context2.next = 56;
+            _context2.next = 58;
             break;
           }
 
-          _context2.next = 53;
+          _context2.next = 55;
           return effects.call(sendMessageHandler, messageToSend, channel.id);
 
-        case 53:
+        case 55:
           messageResponse = _context2.sent;
-          _context2.next = 59;
+          _context2.next = 61;
           break;
 
-        case 56:
-          _context2.next = 58;
+        case 58:
+          _context2.next = 60;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 58:
+        case 60:
           messageResponse = _context2.sent;
 
-        case 59:
+        case 61:
           messageUpdateData = {
             id: messageResponse.id,
             body: messageResponse.body,
             type: messageResponse.type,
             state: messageResponse.state,
+            bodyAttributes: messageResponse.bodyAttributes,
             displayCount: messageResponse.displayCount,
             deliveryStatus: messageResponse.deliveryStatus,
             attachments: messageResponse.attachments,
@@ -16582,10 +16619,10 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 62;
+          _context2.next = 64;
           return effects.put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 62:
+        case 64:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
@@ -16597,41 +16634,41 @@ function sendTextMessage(action) {
             lastMessage: messageToUpdate,
             lastReactedMessage: null
           };
-          _context2.next = 69;
+          _context2.next = 71;
           return effects.put(updateChannelDataAC(channel.id, channelUpdateParam, true));
 
-        case 69:
+        case 71:
           updateChannelOnAllChannels(channel.id, channelUpdateParam);
 
           if (!channel.unread) {
-            _context2.next = 73;
+            _context2.next = 75;
             break;
           }
 
-          _context2.next = 73;
+          _context2.next = 75;
           return effects.put(markChannelAsReadAC(channel.id));
 
-        case 73:
-          _context2.next = 76;
+        case 75:
+          _context2.next = 78;
           break;
 
-        case 75:
+        case 77:
           throw new Error('Connection required to send message');
-
-        case 76:
-          _context2.next = 78;
-          return effects.put(scrollToNewMessageAC(true));
 
         case 78:
           _context2.next = 80;
-          return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
+          return effects.put(scrollToNewMessageAC(true));
 
         case 80:
-          _context2.next = 91;
-          break;
+          _context2.next = 82;
+          return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
         case 82:
-          _context2.prev = 82;
+          _context2.next = 93;
+          break;
+
+        case 84:
+          _context2.prev = 84;
           _context2.t0 = _context2["catch"](8);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
@@ -16643,21 +16680,21 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 89;
+          _context2.next = 91;
           return effects.put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 89:
-          _context2.next = 91;
+        case 91:
+          _context2.next = 93;
           return effects.put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 91:
+        case 93:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[8, 82]]);
+  }, _marked2$1, null, [[8, 84]]);
 }
 
 function forwardMessage(action) {
@@ -16726,7 +16763,7 @@ function forwardMessage(action) {
           }
 
           messageBuilder = channel.createMessageBuilder();
-          messageBuilder.setBody(_message.body).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(_message.type).setMetadata(_message.metadata ? JSON.stringify(_message.metadata) : '').setForwardingMessageId(_message.forwardingDetails ? _message.forwardingDetails.messageId : _message.id);
+          messageBuilder.setBody(_message.body).setBodyAttributes(_message.bodyAttributes).setAttachments(attachments).setMentionUserIds(mentionedUserIds).setType(_message.type).setMetadata(_message.metadata ? JSON.stringify(_message.metadata) : '').setForwardingMessageId(_message.forwardingDetails ? _message.forwardingDetails.messageId : _message.id);
           messageToSend = messageBuilder.create();
           pendingMessage = JSON.parse(JSON.stringify(_extends({}, messageToSend, {
             createdAt: new Date(Date.now())
@@ -17093,6 +17130,7 @@ function resendMessage(action) {
             metadata: messageResponse.metadata,
             parentMessage: messageResponse.parentMessage,
             repliedInThread: messageResponse.repliedInThread,
+            bodyAttributes: messageResponse.bodyAttributes,
             createdAt: messageResponse.createdAt
           };
           _context4.next = 74;
@@ -17180,6 +17218,7 @@ function resendMessage(action) {
             metadata: _messageResponse3.metadata,
             parentMessage: _messageResponse3.parentMessage,
             repliedInThread: _messageResponse3.repliedInThread,
+            bodyAttributes: _messageResponse3.bodyAttributes,
             createdAt: _messageResponse3.createdAt
           };
           removePendingMessageFromMap(channel.id, _messageCopy4.tid);
@@ -17962,7 +18001,7 @@ function deleteReaction(action) {
           reaction = _yield$call2.reaction;
 
           if (!isLastReaction) {
-            _context10.next = 16;
+            _context10.next = 17;
             break;
           }
 
@@ -17974,31 +18013,34 @@ function deleteReaction(action) {
           return effects.put(updateChannelDataAC(channel.id, channelUpdateParam));
 
         case 16:
+          updateChannelOnAllChannels(channel.id, channelUpdateParam);
+
+        case 17:
           console.log('message received. ... ', _message4);
-          _context10.next = 19;
+          _context10.next = 20;
           return effects.put(deleteReactionFromListAC(reaction));
 
-        case 19:
-          _context10.next = 21;
+        case 20:
+          _context10.next = 22;
           return effects.put(deleteReactionFromMessageAC(_message4, reaction, true));
 
-        case 21:
+        case 22:
           removeReactionToMessageOnMap(channelId, _message4, reaction, true);
           removeReactionOnAllMessages(_message4, reaction, true);
-          _context10.next = 28;
+          _context10.next = 29;
           break;
 
-        case 25:
-          _context10.prev = 25;
+        case 26:
+          _context10.prev = 26;
           _context10.t0 = _context10["catch"](0);
           console.log('ERROR in delete reaction', _context10.t0.message);
 
-        case 28:
+        case 29:
         case "end":
           return _context10.stop();
       }
     }
-  }, _marked10$1, null, [[0, 25]]);
+  }, _marked10$1, null, [[0, 26]]);
 }
 
 function getReactions(action) {
@@ -18985,7 +19027,7 @@ function blockUser(action) {
           });
 
           if (!(directChannelUser && directChannelUser.id === blockedUsers[0].id)) {
-            _context2.next = 18;
+            _context2.next = 19;
             break;
           }
 
@@ -19001,20 +19043,31 @@ function blockUser(action) {
           }));
 
         case 18:
-          _context2.next = 23;
+          updateChannelOnAllChannels(activeChannelId, {
+            members: activeChannel.members.map(function (member) {
+              if (member.id === blockedUsers[0].id) {
+                return blockedUsers[0];
+              } else {
+                return member;
+              }
+            })
+          });
+
+        case 19:
+          _context2.next = 24;
           break;
 
-        case 20:
-          _context2.prev = 20;
+        case 21:
+          _context2.prev = 21;
           _context2.t0 = _context2["catch"](0);
           console.log('error in block users', _context2.t0.message);
 
-        case 23:
+        case 24:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$3, null, [[0, 20]]);
+  }, _marked2$3, null, [[0, 21]]);
 }
 
 function unblockUser(action) {
@@ -19048,7 +19101,7 @@ function unblockUser(action) {
           });
 
           if (!(directChannelUser && directChannelUser.id === unblockedUsers[0].id)) {
-            _context3.next = 18;
+            _context3.next = 19;
             break;
           }
 
@@ -19064,20 +19117,31 @@ function unblockUser(action) {
           }));
 
         case 18:
-          _context3.next = 23;
+          updateChannelOnAllChannels(activeChannelId, {
+            members: activeChannel.members.map(function (member) {
+              if (member.id === unblockedUsers[0].id) {
+                return unblockedUsers[0];
+              } else {
+                return member;
+              }
+            })
+          });
+
+        case 19:
+          _context3.next = 24;
           break;
 
-        case 20:
-          _context3.prev = 20;
+        case 21:
+          _context3.prev = 21;
           _context3.t0 = _context3["catch"](0);
           console.log('error in unblock users', _context3.t0.message);
 
-        case 23:
+        case 24:
         case "end":
           return _context3.stop();
       }
     }
-  }, _marked3$3, null, [[0, 20]]);
+  }, _marked3$3, null, [[0, 21]]);
 }
 
 function updateProfile(action) {
@@ -26578,10 +26642,6 @@ var USER_PRESENCE_STATUS$1 = {
   OFFLINE: 'offline',
   ONLINE: 'online'
 };
-var THEME$1 = {
-  DARK: 'dark',
-  LIGHT: 'light'
-};
 
 var _templateObject$t, _templateObject2$p, _templateObject3$j, _templateObject4$g, _templateObject5$e, _templateObject6$c, _templateObject7$a, _templateObject8$9, _templateObject9$9, _templateObject10$8;
 var reactionsPrevLength = 0;
@@ -29940,7 +30000,369 @@ var MessagesContainer = function MessagesContainer(_ref) {
   }));
 };
 
-var _circle$5, _path$$;
+function convertMentionElement(domNode) {
+  var textContent = domNode.textContent;
+
+  if (textContent !== null) {
+    var node = $createMentionNode(textContent);
+    return {
+      node: node
+    };
+  }
+
+  return null;
+}
+
+var MentionNode = /*#__PURE__*/function (_TextNode) {
+  _inherits(MentionNode, _TextNode);
+
+  var _super = _createSuper(MentionNode);
+
+  function MentionNode(mention, text, key) {
+    var _this;
+
+    _classCallCheck(this, MentionNode);
+
+    _this = _super.call(this, text != null ? text : mention.name, key);
+    _this.__mention = mention;
+    _this.mentionId = mention.id;
+    return _this;
+  }
+
+  _createClass(MentionNode, [{
+    key: "exportJSON",
+    value: function exportJSON() {
+      return _extends({}, _get(_getPrototypeOf(MentionNode.prototype), "exportJSON", this).call(this), {
+        mentionName: this.__mention.id,
+        type: 'mention',
+        version: 1
+      });
+    }
+  }, {
+    key: "createDOM",
+    value: function createDOM(config) {
+      var dom = _get(_getPrototypeOf(MentionNode.prototype), "createDOM", this).call(this, config);
+
+      dom.className = 'mention';
+      return dom;
+    }
+  }, {
+    key: "exportDOM",
+    value: function exportDOM() {
+      var element = document.createElement('span');
+      element.setAttribute('data-lexical-mention', 'true');
+      element.textContent = this.__text;
+      return {
+        element: element
+      };
+    }
+  }, {
+    key: "isTextEntity",
+    value: function isTextEntity() {
+      return true;
+    }
+  }, {
+    key: "canInsertTextBefore",
+    value: function canInsertTextBefore() {
+      return false;
+    }
+  }, {
+    key: "canInsertTextAfter",
+    value: function canInsertTextAfter() {
+      return false;
+    }
+  }], [{
+    key: "getType",
+    value: function getType() {
+      return 'mention';
+    }
+  }, {
+    key: "clone",
+    value: function clone(node) {
+      return new MentionNode(node.__mention, node.__text, node.__key);
+    }
+  }, {
+    key: "importJSON",
+    value: function importJSON(serializedNode) {
+      var node = $createMentionNode(serializedNode.mentionName);
+      node.setTextContent(serializedNode.text);
+      node.setFormat(serializedNode.format);
+      node.setDetail(serializedNode.detail);
+      node.setMode(serializedNode.mode);
+      node.setStyle(serializedNode.style);
+      return node;
+    }
+  }, {
+    key: "importDOM",
+    value: function importDOM() {
+      return {
+        span: function span(domNode) {
+          if (!domNode.hasAttribute('data-lexical-mention')) {
+            return null;
+          }
+
+          return {
+            conversion: convertMentionElement,
+            priority: 1
+          };
+        }
+      };
+    }
+  }]);
+
+  return MentionNode;
+}(lexical.TextNode);
+function $createMentionNode(mention) {
+  var mentionNode = new MentionNode(mention, mention.name);
+  mentionNode.setMode('segmented').toggleDirectionless();
+  return lexical.$applyNodeReplacement(mentionNode);
+}
+
+var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i;
+var PUNCTUATION = '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
+var NAME = '\\b[A-Z][^\\s' + PUNCTUATION + ']';
+var DocumentMentionsRegex = {
+  NAME: NAME,
+  PUNCTUATION: PUNCTUATION
+};
+var PUNC = DocumentMentionsRegex.PUNCTUATION;
+var TRIGGERS = ['@'].join('');
+var VALID_CHARS = '[^' + TRIGGERS + PUNC + '\\s]';
+var VALID_JOINS = '(?:' + '\\.[ |$]|' + ' |' + '[' + PUNC + ']|' + ')';
+var LENGTH_LIMIT = 75;
+var AtSignMentionsRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS + ']' + '((?:' + VALID_CHARS + VALID_JOINS + '){0,' + LENGTH_LIMIT + '})' + ')$');
+var ALIAS_LENGTH_LIMIT = 50;
+var AtSignMentionsRegexAliasRegex = new RegExp('(^|\\s|\\()(' + '[' + TRIGGERS + ']' + '((?:' + VALID_CHARS + '){0,' + ALIAS_LENGTH_LIMIT + '})' + ')$');
+var SUGGESTION_LIST_LENGTH_LIMIT = 50;
+var mentionsCache = new Map();
+var membersMap = {};
+
+function useMentionLookupService(mentionString, contactsMap, userId, getFromContacts) {
+  var members = reactRedux.useSelector(activeChannelMembersSelector, reactRedux.shallowEqual);
+
+  var _useState = React.useState([]),
+      results = _useState[0],
+      setResults = _useState[1];
+
+  var membersMapMemo = React.useMemo(function () {
+    return members.reduce(function (acc, member) {
+      acc[member.id] = member;
+      return acc;
+    }, {});
+  }, [members]);
+  membersMap = membersMapMemo;
+  React.useEffect(function () {
+    var cachedResults = mentionsCache.get(mentionString);
+
+    if (mentionString == null) {
+      setResults([]);
+      return;
+    }
+
+    if (cachedResults === null) {
+      return;
+    } else if (cachedResults !== undefined) {
+      setResults(cachedResults);
+      return;
+    }
+
+    mentionsCache.set(mentionString, null);
+    var searchedMembers = [].concat(members).filter(function (member) {
+      var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
+      return displayName && member.id !== userId && displayName.split(' ').find(function (namePart) {
+        return namePart[0] === '~' ? namePart.slice(1).toLowerCase().startsWith(mentionString.toLowerCase()) : namePart.toLowerCase().startsWith(mentionString.toLowerCase());
+      });
+    }).map(function (member) {
+      var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
+      return {
+        avatar: member.avatarUrl,
+        name: displayName,
+        id: member.id,
+        presence: member.presence
+      };
+    });
+    mentionsCache.set(mentionString, searchedMembers);
+    setResults(searchedMembers);
+  }, [mentionString]);
+  return results;
+}
+
+function checkForAtSignMentions(text, minMatchLength) {
+  var match = AtSignMentionsRegex.exec(text);
+
+  if (match === null) {
+    match = AtSignMentionsRegexAliasRegex.exec(text);
+  }
+
+  if (match !== null) {
+    var maybeLeadingWhitespace = match[1];
+    var matchingString = match[3];
+
+    if (matchingString.length >= minMatchLength) {
+      return {
+        leadOffset: match.index + maybeLeadingWhitespace.length,
+        matchingString: matchingString,
+        replaceableString: match[2]
+      };
+    }
+  }
+
+  return null;
+}
+
+function getPossibleQueryMatch(text) {
+  return checkForAtSignMentions(text, 0);
+}
+
+var MentionTypeaheadOption = /*#__PURE__*/function (_MenuOption) {
+  _inherits(MentionTypeaheadOption, _MenuOption);
+
+  var _super = _createSuper(MentionTypeaheadOption);
+
+  function MentionTypeaheadOption(name, id, presence, avatarUrl) {
+    var _this;
+
+    _classCallCheck(this, MentionTypeaheadOption);
+
+    _this = _super.call(this, name);
+    _this.name = name;
+    _this.id = id;
+    _this.presence = presence;
+    _this.avatarUrl = avatarUrl;
+    return _this;
+  }
+
+  return _createClass(MentionTypeaheadOption);
+}(LexicalTypeaheadMenuPlugin.MenuOption);
+
+function MentionsTypeaheadMenuItem(_ref) {
+  var index = _ref.index,
+      isSelected = _ref.isSelected,
+      onClick = _ref.onClick,
+      onMouseEnter = _ref.onMouseEnter,
+      option = _ref.option;
+  var className = 'item';
+
+  if (isSelected) {
+    className += ' selected';
+  }
+
+  return /*#__PURE__*/React__default.createElement(MemberItem, {
+    key: option.key,
+    tabIndex: -1,
+    className: className,
+    ref: option.setRefElement,
+    role: 'option',
+    isActiveItem: isSelected,
+    id: 'typeahead-item-' + index,
+    onMouseEnter: onMouseEnter,
+    activeBackgroundColor: colors.hoverBackgroundColor,
+    onClick: onClick
+  }, /*#__PURE__*/React__default.createElement(AvatarWrapper, null, /*#__PURE__*/React__default.createElement(Avatar, {
+    name: option.name,
+    image: option.avatarUrl,
+    size: 32,
+    textSize: 14,
+    setDefaultAvatar: true
+  })), /*#__PURE__*/React__default.createElement(UserNamePresence$2, null, /*#__PURE__*/React__default.createElement(MemberName$2, {
+    color: colors.textColor1
+  }, option.name), /*#__PURE__*/React__default.createElement(SubTitle, null, option.presence && option.presence.state === USER_PRESENCE_STATUS.ONLINE ? 'Online' : option.presence && option.presence.lastActiveAt && userLastActiveDateFormat(option.presence.lastActiveAt))));
+}
+
+function MentionsPlugin(_ref2) {
+  var contactsMap = _ref2.contactsMap,
+      userId = _ref2.userId,
+      getFromContacts = _ref2.getFromContacts,
+      setMentionMember = _ref2.setMentionMember;
+
+  var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
+      editor = _useLexicalComposerCo[0];
+
+  var _useState2 = React.useState(null),
+      queryString = _useState2[0],
+      setQueryString = _useState2[1];
+
+  var results = useMentionLookupService(queryString, contactsMap, userId, getFromContacts);
+  var checkForSlashTriggerMatch = LexicalTypeaheadMenuPlugin.useBasicTypeaheadTriggerMatch('/', {
+    minLength: 0
+  });
+  var options = React.useMemo(function () {
+    return results.map(function (result) {
+      return new MentionTypeaheadOption(result.name, result.id, result.presence, result.avatar);
+    }).slice(0, SUGGESTION_LIST_LENGTH_LIMIT);
+  }, [results]);
+  var onSelectOption = React.useCallback(function (selectedOption, nodeToReplace, closeMenu) {
+    setMentionMember(membersMap[selectedOption.id]);
+    editor.update(function () {
+      var mentionNode = $createMentionNode(_extends({}, selectedOption, {
+        name: "@" + selectedOption.name
+      }));
+
+      if (nodeToReplace) {
+        var replacedNode = nodeToReplace.replace(mentionNode);
+        console.log('replacedNode.... . .>>>> >', replacedNode);
+        var appendedNode = replacedNode.insertAfter(lexical.$createTextNode(' '));
+        appendedNode.select();
+      }
+
+      closeMenu();
+    });
+  }, [editor]);
+  var checkForMentionMatch = React.useCallback(function (text) {
+    var slashMatch = checkForSlashTriggerMatch(text, editor);
+
+    if (slashMatch !== null) {
+      return null;
+    }
+
+    return getPossibleQueryMatch(text);
+  }, [checkForSlashTriggerMatch, editor]);
+  return /*#__PURE__*/React__default.createElement(LexicalTypeaheadMenuPlugin.LexicalTypeaheadMenuPlugin, {
+    onQueryChange: setQueryString,
+    onSelectOption: onSelectOption,
+    triggerFn: checkForMentionMatch,
+    options: options,
+    menuRenderFn: function menuRenderFn(anchorElementRef, _ref3) {
+      var selectedIndex = _ref3.selectedIndex,
+          selectOptionAndCleanUp = _ref3.selectOptionAndCleanUp,
+          setHighlightedIndex = _ref3.setHighlightedIndex;
+      return anchorElementRef.current && results.length ? /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React__default.createElement(MentionsContainer, {
+        className: 'typeahead-popover mentions-menu'
+      }, /*#__PURE__*/React__default.createElement(MentionsList, null, options.map(function (option, i) {
+        return /*#__PURE__*/React__default.createElement(MentionsTypeaheadMenuItem, {
+          index: i,
+          isSelected: selectedIndex === i,
+          onClick: function onClick() {
+            setHighlightedIndex(i);
+            selectOptionAndCleanUp(option);
+          },
+          onMouseEnter: function onMouseEnter() {
+            setHighlightedIndex(i);
+          },
+          key: option.key,
+          option: option
+        });
+      }))), anchorElementRef.current) : null;
+    }
+  });
+}
+var MentionsContainer = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  animation: fadeIn 0.2s ease-in-out;\n  @keyframes fadeIn {\n    from {\n      opacity: 0;\n    }\n    to {\n      opacity: 1;\n    }\n  }\n"])));
+var MentionsList = styled__default.ul(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  width: 300px;\n  transition: all 0.2s;\n  overflow: auto;\n  max-height: 240px;\n  z-index: 99;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
+  return props.withBorder && "1px solid " + colors.borderColor;
+}, function (props) {
+  return props.hidden ? 'hidden' : 'visible';
+});
+var MemberItem = styled__default.li(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
+  return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
+}, UserStatus);
+var UserNamePresence$2 = styled__default.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var MemberName$2 = styled__default.h3(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), function (props) {
+  return props.color || colors.textColor1;
+});
+
+var _path$$;
 
 function _extends$11() {
   _extends$11 = Object.assign ? Object.assign.bind() : function (target) {
@@ -29959,20 +30381,18 @@ function _extends$11() {
   return _extends$11.apply(this, arguments);
 }
 
-function SvgSend(props) {
+function SvgBold(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$11({
-    width: 32,
-    height: 32,
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$$ || (_path$$ = /*#__PURE__*/React.createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
+  }, props), _path$$ || (_path$$ = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.35 3.029A1.1 1.1 0 005 4.1v10a1.1 1.1 0 001.35 1.072c.08.018.164.028.25.028h3.429c1.998 0 3.671-1.583 3.671-3.6a3.566 3.566 0 00-1.596-2.969c.38-.588.596-1.294.596-2.031 0-1.904-1.444-3.6-3.408-3.6H6.6c-.086 0-.17.01-.25.029zm3.41 7.138a3.318 3.318 0 01-.468.033H7.2V13h2.829c.842 0 1.471-.656 1.471-1.4 0-.744-.63-1.4-1.471-1.4a1.1 1.1 0 01-.268-.033zM7.2 8h2.092c.586 0 1.208-.542 1.208-1.4 0-.858-.622-1.4-1.208-1.4H7.2V8z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -29995,19 +30415,22 @@ function _extends$12() {
   return _extends$12.apply(this, arguments);
 }
 
-function SvgEye(props) {
+function SvgItalic(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$12({
-    width: 25,
-    height: 24,
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$10 || (_path$10 = /*#__PURE__*/React.createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M9.984 3.2H8a.8.8 0 000 1.6h1.024l-1.68 8.4H6a.8.8 0 100 1.6h4a.8.8 0 000-1.6H8.976l1.68-8.4H12a.8.8 0 000-1.6H9.984z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$11;
+var _g$1;
 
 function _extends$13() {
   _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30026,20 +30449,25 @@ function _extends$13() {
   return _extends$13.apply(this, arguments);
 }
 
-function SvgAddAttachment(props) {
+function SvgStrikethrough(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$13({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24.01 24.01",
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
-    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+  }, props), _g$1 || (_g$1 = /*#__PURE__*/React.createElement("g", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
     fill: "CurrentColor"
-  })));
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M8.565 4.766c1.043-.104 1.987.287 2.447 1.138a.75.75 0 101.32-.713c-.821-1.519-2.44-2.064-3.915-1.918-2.504.248-3.581 2.265-3.144 3.93.228.868.738 1.423 1.342 1.797h4.835a4.345 4.345 0 00-.457-.205c-.514-.196-1.105-.325-1.634-.44l-.314-.07c-1.343-.301-2.097-.611-2.32-1.462-.197-.748.227-1.898 1.84-2.057zM12.937 11H11.38c.195.497.15 1.007-.113 1.392-.285.418-.943.858-2.277.858-2.072 0-2.685-1.118-2.762-1.428a.75.75 0 10-1.455.363c.255 1.021 1.503 2.565 4.217 2.565 1.656 0 2.867-.56 3.517-1.513.466-.685.582-1.486.43-2.237z"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M2.7 9a.8.8 0 01.8-.8h11a.8.8 0 010 1.6h-11a.8.8 0 01-.8-.8z"
+  }))));
 }
 
-var _path$12;
+var _path$11;
 
 function _extends$14() {
   _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30058,262 +30486,1374 @@ function _extends$14() {
   return _extends$14.apply(this, arguments);
 }
 
-function SvgErrorCircle(props) {
+function SvgMono(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$14({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$11 || (_path$11 = /*#__PURE__*/React.createElement("path", {
+    d: "M4.98 14.753A.826.826 0 014.37 15a.882.882 0 01-.624-.247.882.882 0 01-.247-.624V3.87c0-.24.082-.444.247-.608A.853.853 0 014.37 3c.581 0 1.003.258 1.266.773l3.238 6.28c0 .01.006.015.017.015.01 0 .016-.005.016-.016l3.222-6.247c.274-.537.712-.805 1.315-.805.252 0 .466.088.641.263a.873.873 0 01.263.641v10.192a.873.873 0 01-.263.641.872.872 0 01-.64.263.873.873 0 01-.642-.263.873.873 0 01-.263-.641V6.14c0-.011-.005-.017-.016-.017s-.017.006-.017.017l-2.433 4.833c-.252.493-.646.74-1.183.74s-.932-.247-1.184-.74L5.275 6.14c0-.011-.005-.017-.016-.017s-.017.006-.017.017v7.989c0 .24-.087.45-.263.624z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _g$2;
+
+function _extends$15() {
+  _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$15.apply(this, arguments);
+}
+
+function SvgUnderline(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$15({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _g$2 || (_g$2 = /*#__PURE__*/React.createElement("g", {
+    fill: "CurrentColor"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M13 9c0 2.79-1.368 4.184-4.105 4.184S4.789 11.79 4.789 9V2.384c0-.242.085-.447.253-.616a.864.864 0 01.632-.268c.242 0 .447.09.615.268a.814.814 0 01.269.616V9.08c0 .926.19 1.6.568 2.021.39.421.99.632 1.8.632s1.406-.21 1.784-.632c.39-.421.585-1.095.585-2.021V2.353a.82.82 0 01.252-.6.82.82 0 01.6-.253.82.82 0 01.6.253.82.82 0 01.253.6V9z"
+  }), /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M4 15.71a.79.79 0 01.79-.789h8.42a.79.79 0 110 1.579H4.79a.79.79 0 01-.79-.79z"
+  }))));
+}
+
+var _templateObject$z, _templateObject2$v;
+function mergeRegister() {
+  for (var _len = arguments.length, func = new Array(_len), _key = 0; _key < _len; _key++) {
+    func[_key] = arguments[_key];
+  }
+
+  return function () {
+    func.forEach(function (f) {
+      return f();
+    });
+  };
+}
+function getDOMRangeRect(nativeSelection, rootElement) {
+  var domRange = nativeSelection.getRangeAt(0);
+  var rect;
+
+  if (nativeSelection.anchorNode === rootElement) {
+    var inner = rootElement;
+
+    while (inner.firstElementChild != null) {
+      inner = inner.firstElementChild;
+    }
+
+    rect = inner.getBoundingClientRect();
+  } else {
+    rect = domRange.getBoundingClientRect();
+  }
+
+  return rect;
+}
+var VERTICAL_GAP = 10;
+var HORIZONTAL_OFFSET = 40;
+function setFloatingElemPosition(targetRect, floatingElem, anchorElem, verticalGap, horizontalOffset) {
+  if (verticalGap === void 0) {
+    verticalGap = VERTICAL_GAP;
+  }
+
+  if (horizontalOffset === void 0) {
+    horizontalOffset = HORIZONTAL_OFFSET;
+  }
+
+  var scrollerElem = anchorElem.parentElement;
+
+  if (targetRect === null || !scrollerElem) {
+    floatingElem.style.opacity = '0';
+    floatingElem.style.transform = 'translate(-10000px, -10000px)';
+    return;
+  }
+
+  var floatingElemRect = floatingElem.getBoundingClientRect();
+  var anchorElementRect = anchorElem.getBoundingClientRect();
+  var top = floatingElemRect.height - targetRect.height + verticalGap;
+  var menuWidthHalf = floatingElemRect.width / 2;
+  var selectionWidthHalf = targetRect.width / 2;
+  var left = targetRect.left - anchorElementRect.left + horizontalOffset - menuWidthHalf + selectionWidthHalf;
+  floatingElem.style.opacity = '1';
+  floatingElem.style.transform = "translate(" + left + "px, " + -top + "px)";
+}
+function getSelectedNode(selection) {
+  var anchor = selection.anchor;
+  var focus = selection.focus;
+  var anchorNode = selection.anchor.getNode();
+  var focusNode = selection.focus.getNode();
+
+  if (anchorNode === focusNode) {
+    return anchorNode;
+  }
+
+  var isBackward = selection.isBackward();
+
+  if (isBackward) {
+    return focus ? anchorNode : focusNode;
+  } else {
+    return anchor ? anchorNode : focusNode;
+  }
+}
+
+function TextFormatFloatingToolbar(_ref) {
+  var editor = _ref.editor,
+      anchorElem = _ref.anchorElem,
+      isBold = _ref.isBold,
+      isItalic = _ref.isItalic,
+      isUnderline = _ref.isUnderline,
+      isCode = _ref.isCode,
+      isStrikethrough = _ref.isStrikethrough;
+  var popupCharStylesEditorRef = React.useRef(null);
+  console.log('popupCharStylesEditorRef >>>>>> : ', popupCharStylesEditorRef);
+  console.log('editor <<< >>> >>>>: ', editor);
+
+  function mouseMoveListener(e) {
+    if (popupCharStylesEditorRef !== null && popupCharStylesEditorRef !== void 0 && popupCharStylesEditorRef.current && (e.buttons === 1 || e.buttons === 3)) {
+      if (popupCharStylesEditorRef.current.style.pointerEvents !== 'none') {
+        var x = e.clientX;
+        var y = e.clientY;
+        var elementUnderMouse = document.elementFromPoint(x, y);
+
+        if (!popupCharStylesEditorRef.current.contains(elementUnderMouse)) {
+          popupCharStylesEditorRef.current.style.pointerEvents = 'none';
+        }
+      }
+    }
+  }
+
+  function mouseUpListener(e) {
+    if (popupCharStylesEditorRef !== null && popupCharStylesEditorRef !== void 0 && popupCharStylesEditorRef.current) {
+      if (popupCharStylesEditorRef.current.style.pointerEvents !== 'auto') {
+        popupCharStylesEditorRef.current.style.pointerEvents = 'auto';
+      }
+    }
+  }
+
+  React.useEffect(function () {
+    if (popupCharStylesEditorRef !== null && popupCharStylesEditorRef !== void 0 && popupCharStylesEditorRef.current) {
+      document.addEventListener('mousemove', mouseMoveListener);
+      document.addEventListener('mouseup', mouseUpListener);
+      return function () {
+        document.removeEventListener('mousemove', mouseMoveListener);
+        document.removeEventListener('mouseup', mouseUpListener);
+      };
+    }
+  }, [popupCharStylesEditorRef]);
+  var updateTextFormatFloatingToolbar = React.useCallback(function () {
+    var selection = lexical.$getSelection();
+    var popupCharStylesEditorElem = popupCharStylesEditorRef.current;
+    var nativeSelection = window.getSelection();
+
+    if (popupCharStylesEditorElem === null) {
+      return;
+    }
+
+    var rootElement = editor.getRootElement();
+
+    if (selection !== null && nativeSelection !== null && !nativeSelection.isCollapsed && rootElement !== null && rootElement.contains(nativeSelection.anchorNode)) {
+      var rangeRect = getDOMRangeRect(nativeSelection, rootElement);
+      setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem);
+    }
+  }, [editor, anchorElem]);
+  React.useEffect(function () {
+    var scrollerElem = anchorElem.parentElement;
+
+    var update = function update() {
+      editor.getEditorState().read(function () {
+        updateTextFormatFloatingToolbar();
+      });
+    };
+
+    window.addEventListener('resize', update);
+
+    if (scrollerElem) {
+      scrollerElem.addEventListener('scroll', update);
+    }
+
+    return function () {
+      window.removeEventListener('resize', update);
+
+      if (scrollerElem) {
+        scrollerElem.removeEventListener('scroll', update);
+      }
+    };
+  }, [editor, updateTextFormatFloatingToolbar, anchorElem]);
+  React.useEffect(function () {
+    editor.getEditorState().read(function () {
+      updateTextFormatFloatingToolbar();
+    });
+    return mergeRegister(editor.registerUpdateListener(function (_ref2) {
+      var editorState = _ref2.editorState;
+      editorState.read(function () {
+        updateTextFormatFloatingToolbar();
+      });
+    }), editor.registerCommand(lexical.SELECTION_CHANGE_COMMAND, function () {
+      updateTextFormatFloatingToolbar();
+      return false;
+    }, lexical.COMMAND_PRIORITY_LOW));
+  }, [editor, updateTextFormatFloatingToolbar]);
+  return /*#__PURE__*/React__default.createElement(FloatingTextFormatPopup, {
+    ref: popupCharStylesEditorRef,
+    className: 'floating-text-format-popup'
+  }, editor.isEditable() && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Action$1, {
+    type: 'button',
+    onClick: function onClick() {
+      editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'bold');
+    },
+    "aria-label": 'Format text as bold',
+    iconColor: colors.textColor2,
+    hoverBackgroundColor: colors.hoverBackgroundColor,
+    hoverIconColor: colors.primary,
+    isActive: isBold
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
+    direction: 'top'
+  }, "Bold"), /*#__PURE__*/React__default.createElement(SvgBold, null)), /*#__PURE__*/React__default.createElement(Action$1, {
+    iconColor: colors.textColor2,
+    hoverBackgroundColor: colors.hoverBackgroundColor,
+    hoverIconColor: colors.primary,
+    isActive: isItalic,
+    type: 'button',
+    onClick: function onClick() {
+      editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'italic');
+    },
+    "aria-label": 'Format text as italics'
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
+    direction: 'top'
+  }, "Italic"), /*#__PURE__*/React__default.createElement(SvgItalic, null)), /*#__PURE__*/React__default.createElement(Action$1, {
+    iconColor: colors.textColor2,
+    hoverBackgroundColor: colors.hoverBackgroundColor,
+    hoverIconColor: colors.primary,
+    isActive: isStrikethrough,
+    type: 'button',
+    onClick: function onClick() {
+      editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
+    },
+    "aria-label": 'Format text with a strikethrough'
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
+    direction: 'top'
+  }, " Strikethrough "), /*#__PURE__*/React__default.createElement(SvgStrikethrough, null)), /*#__PURE__*/React__default.createElement(Action$1, {
+    type: 'button',
+    iconColor: colors.textColor2,
+    hoverBackgroundColor: colors.hoverBackgroundColor,
+    hoverIconColor: colors.primary,
+    isActive: isCode,
+    onClick: function onClick() {
+      editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'code');
+    },
+    "aria-label": 'Insert code block'
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
+    direction: 'top'
+  }, "Monospace"), /*#__PURE__*/React__default.createElement(SvgMono, null)), /*#__PURE__*/React__default.createElement(Action$1, {
+    type: 'button',
+    iconColor: colors.textColor2,
+    hoverBackgroundColor: colors.hoverBackgroundColor,
+    hoverIconColor: colors.primary,
+    isActive: isUnderline,
+    onClick: function onClick() {
+      editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'underline');
+    },
+    "aria-label": 'Insert code block'
+  }, /*#__PURE__*/React__default.createElement(ItemNote, {
+    direction: 'top'
+  }, "Underline"), /*#__PURE__*/React__default.createElement(SvgUnderline, null))));
+}
+
+function useFloatingTextFormatToolbar(editor, anchorElem) {
+  var _useState = React.useState(false),
+      isText = _useState[0],
+      setIsText = _useState[1];
+
+  var _useState2 = React.useState(false),
+      isBold = _useState2[0],
+      setIsBold = _useState2[1];
+
+  var _useState3 = React.useState(false),
+      isItalic = _useState3[0],
+      setIsItalic = _useState3[1];
+
+  var _useState4 = React.useState(false),
+      isUnderline = _useState4[0],
+      setIsUnderline = _useState4[1];
+
+  var _useState5 = React.useState(false),
+      isStrikethrough = _useState5[0],
+      setIsStrikethrough = _useState5[1];
+
+  var _useState6 = React.useState(false),
+      isSubscript = _useState6[0],
+      setIsSubscript = _useState6[1];
+
+  var _useState7 = React.useState(false),
+      isSuperscript = _useState7[0],
+      setIsSuperscript = _useState7[1];
+
+  var _useState8 = React.useState(false),
+      isCode = _useState8[0],
+      setIsCode = _useState8[1];
+
+  var handleClick = function handleClick(e) {
+    if (!e.target.closest('.rich_text_editor')) {
+      setIsText(false);
+    }
+  };
+
+  var updatePopup = React.useCallback(function () {
+    editor.getEditorState().read(function () {
+      if (editor.isComposing()) {
+        return;
+      }
+
+      var selection = lexical.$getSelection();
+      var nativeSelection = window.getSelection();
+      var rootElement = editor.getRootElement();
+
+      if (nativeSelection !== null && (!lexical.$isRangeSelection(selection) || rootElement === null || !rootElement.contains(nativeSelection.anchorNode))) {
+        setIsText(false);
+        return;
+      }
+
+      if (!lexical.$isRangeSelection(selection)) {
+        return;
+      }
+
+      var node = getSelectedNode(selection);
+      setIsBold(selection.hasFormat('bold'));
+      setIsItalic(selection.hasFormat('italic'));
+      setIsUnderline(selection.hasFormat('underline'));
+      setIsStrikethrough(selection.hasFormat('strikethrough'));
+      setIsSubscript(selection.hasFormat('subscript'));
+      setIsSuperscript(selection.hasFormat('superscript'));
+      setIsCode(selection.hasFormat('code'));
+
+      if (selection.getTextContent() !== '') {
+        setIsText(lexical.$isTextNode(node));
+      } else {
+        setIsText(false);
+      }
+
+      var rawTextContent = selection.getTextContent().replace(/\n/g, '');
+
+      if (!selection.isCollapsed() && rawTextContent === '') {
+        setIsText(false);
+      }
+    });
+  }, [editor]);
+  useEventListener('click', handleClick);
+  React.useEffect(function () {
+    document.addEventListener('selectionchange', updatePopup);
+    return function () {
+      document.removeEventListener('selectionchange', updatePopup);
+    };
+  }, [updatePopup]);
+  React.useEffect(function () {
+    return mergeRegister(editor.registerUpdateListener(function () {
+      updatePopup();
+    }), editor.registerRootListener(function () {
+      if (editor.getRootElement() === null) {
+        setIsText(false);
+      }
+    }));
+  }, [editor, updatePopup]);
+
+  if (!isText) {
+    return null;
+  }
+
+  return /*#__PURE__*/ReactDOM.createPortal( /*#__PURE__*/React__default.createElement(TextFormatFloatingToolbar, {
+    editor: editor,
+    anchorElem: anchorElem,
+    isBold: isBold,
+    isItalic: isItalic,
+    isStrikethrough: isStrikethrough,
+    isSubscript: isSubscript,
+    isSuperscript: isSuperscript,
+    isUnderline: isUnderline,
+    isCode: isCode
+  }), anchorElem);
+}
+
+function FloatingTextFormatToolbarPlugin(_ref3) {
+  var _ref3$anchorElem = _ref3.anchorElem,
+      anchorElem = _ref3$anchorElem === void 0 ? document.body : _ref3$anchorElem;
+
+  var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
+      editor = _useLexicalComposerCo[0];
+
+  return useFloatingTextFormatToolbar(editor, anchorElem);
+}
+var FloatingTextFormatPopup = styled__default.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  display: flex;\n  background: #fff;\n  vertical-align: middle;\n  position: absolute;\n  top: 0;\n  left: 0;\n  opacity: 0;\n  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);\n  border-radius: 8px;\n  transition: opacity 0.5s;\n  padding: 12px;\n  will-change: transform;\n  z-index: 99;\n\n  & button.popup-item {\n    border: 0;\n    display: flex;\n    background: none;\n    border-radius: 10px;\n    padding: 8px;\n    cursor: pointer;\n    vertical-align: middle;\n  }\n  & button.popup-item:disabled {\n    cursor: not-allowed;\n  }\n  & button.popup-item.spaced {\n    margin-right: 2px;\n  }\n  & button.popup-item i.format {\n    background-size: contain;\n    height: 18px;\n    width: 18px;\n    margin-top: 2px;\n    vertical-align: -0.25em;\n    display: flex;\n    opacity: 0.6;\n  }\n\n  & button.popup-item:disabled i.format {\n    opacity: 0.2;\n  }\n  & button.popup-item.active {\n    background-color: rgba(223, 232, 250, 0.3);\n  }\n  & button.popup-item.active i {\n    opacity: 1;\n  }\n  & .popup-item:hover:not([disabled]) {\n    background-color: #eee;\n  }\n  & select.popup-item {\n    border: 0;\n    display: flex;\n    background: none;\n    border-radius: 10px;\n    padding: 8px;\n    vertical-align: middle;\n    -webkit-appearance: none;\n    -moz-appearance: none;\n    width: 70px;\n    font-size: 14px;\n    color: #777;\n    text-overflow: ellipsis;\n  }\n  & select.code-language {\n    text-transform: capitalize;\n    width: 130px;\n  }\n\n  & .popup-item .text {\n    display: flex;\n    line-height: 20px;\n    vertical-align: middle;\n    font-size: 14px;\n    color: #777;\n    text-overflow: ellipsis;\n    width: 70px;\n    overflow: hidden;\n    height: 20px;\n    text-align: left;\n  }\n\n  & .popup-item .icon {\n    display: flex;\n    width: 20px;\n    height: 20px;\n    user-select: none;\n    margin-right: 8px;\n    line-height: 16px;\n    background-size: contain;\n  }\n  & i.chevron-down {\n    margin-top: 3px;\n    width: 16px;\n    height: 16px;\n    display: flex;\n    user-select: none;\n  }\n  & i.chevron-down.inside {\n    width: 16px;\n    height: 16px;\n    display: flex;\n    margin-left: -25px;\n    margin-top: 11px;\n    margin-right: 10px;\n    pointer-events: none;\n  }\n  & .divider {\n    width: 1px;\n    background-color: #eee;\n    margin: 0 4px;\n  }\n  @media (max-width: 1024px) {\n    & button.insert-comment {\n      display: none;\n    }\n  }\n"])));
+var Action$1 = styled__default.button(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  border: 0;\n  display: flex;\n  background-color: inherit;\n  vertical-align: middle;\n  position: relative;\n  padding: 3px;\n  margin-right: 10px;\n  //margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  color: ", ";\n  border-radius: 50%;\n  ", "\n\n  &:last-child {\n    margin-right: 0;\n  }\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+  return props.iconColor || colors.textColor2;
+}, function (props) {
+  return props.isActive && "\n    color: " + (props.hoverIconColor || colors.primary) + ";\n    background-color: " + (props.hoverBackgroundColor || colors.backgroundColor) + ";\n  ";
+}, function (props) {
+  return props.hoverIconColor || colors.primary;
+}, function (props) {
+  return props.hoverBackgroundColor || colors.backgroundColor;
+}, ItemNote);
+
+function EditMessagePlugin(_ref) {
+  var editMessage = _ref.editMessage,
+      contactsMap = _ref.contactsMap,
+      getFromContacts = _ref.getFromContacts,
+      setMentionedMember = _ref.setMentionedMember;
+
+  var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
+      editor = _useLexicalComposerCo[0];
+
+  useDidUpdate(function () {
+    if (editMessage) {
+      if (editMessage.mentionedUsers && editMessage.mentionedUsers.length) {
+        setMentionedMember(editMessage.mentionedUsers);
+      }
+
+      editor.update(function () {
+        var rootNode = lexical.$getRoot();
+        lexical.$getRoot().clear();
+        var paragraphNode = lexical.$createParagraphNode();
+        var textPart = editMessage.body;
+        var nextPartIndex;
+
+        if (editMessage.bodyAttributes && editMessage.bodyAttributes.length) {
+          var combinedAttributes = combineMessageAttributes(editMessage.bodyAttributes);
+          combinedAttributes.forEach(function (attribute, index) {
+            var attributeOffset = attribute.offset;
+            var firstPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(nextPartIndex || 0, attributeOffset) : '');
+            var secondPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(attributeOffset + attribute.length) : '');
+            nextPartIndex = attribute.offset + attribute.length;
+
+            if (attribute.type === 'mention') {
+              var mentionUser = editMessage.mentionedUsers.find(function (mention) {
+                return mention.id === attribute.metadata;
+              });
+
+              if (mentionUser) {
+                var userDisplayName = makeUsername(contactsMap[mentionUser.id], mentionUser, getFromContacts);
+                var mentionNodeParams = new MentionTypeaheadOption("@" + userDisplayName, mentionUser.id || '', mentionUser.presence, mentionUser.avatarUrl || '');
+                var mentionNode = $createMentionNode(mentionNodeParams);
+
+                if (firstPart) {
+                  paragraphNode.append(lexical.$createTextNode(firstPart));
+                }
+
+                paragraphNode.append(mentionNode);
+              }
+            } else {
+              if (firstPart) {
+                paragraphNode.append(lexical.$createTextNode(firstPart));
+              }
+
+              console.log('attribute. . . ..  ', attribute);
+              var textNode = lexical.$createTextNode(textPart.slice(attributeOffset, attributeOffset + attribute.length));
+
+              switch (attribute.type) {
+                case 'bold':
+                  {
+                    textNode.toggleFormat('bold');
+                    break;
+                  }
+
+                case 'italic':
+                  {
+                    textNode.toggleFormat('italic');
+                    break;
+                  }
+
+                case 'strikethrough':
+                  {
+                    textNode.toggleFormat('strikethrough');
+                    break;
+                  }
+
+                case 'monospace':
+                  {
+                    textNode.toggleFormat('code');
+                    break;
+                  }
+
+                case 'underline':
+                  {
+                    textNode.toggleFormat('underline');
+                    break;
+                  }
+
+                default:
+                  {
+                    var typeArray = attribute.type.split(' ');
+
+                    if (typeArray.length > 1) {
+                      typeArray.forEach(function (type) {
+                        textNode.toggleFormat(type === 'monospace' ? 'code' : type);
+                      });
+                    }
+                  }
+              }
+
+              paragraphNode.append(textNode);
+            }
+
+            if (index === combinedAttributes.length - 1) {
+              if (secondPart) {
+                paragraphNode.append(lexical.$createTextNode(secondPart));
+              } else {
+                paragraphNode.append(lexical.$createTextNode(' '));
+              }
+            }
+
+            rootNode.append(paragraphNode);
+            rootNode.selectEnd();
+          });
+        } else {
+          paragraphNode.append(lexical.$createTextNode(editMessage.body));
+          rootNode.append(paragraphNode);
+        }
+      });
+    }
+  }, [editMessage]);
+  return null;
+}
+
+function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMessageText, messageToEdit) {
+  useDidUpdate(function () {
+    if (editorState) {
+      editorState.read(function () {
+        var rootNode = lexical.$getRoot();
+        var messageText = rootNode.getTextContent();
+        var parsedEditorState = editorState.toJSON();
+        var offsetView = offset.$createOffsetView(editor);
+        var offsetList = Array.from(offsetView._offsetMap.values());
+        var messageBodyAttributes = [];
+
+        if (parsedEditorState.root && parsedEditorState.root.children && parsedEditorState.root.children.length && (parsedEditorState.root.children[0].children.length > 1 || parsedEditorState.root.children[0].children[0] && parsedEditorState.root.children[0].children[0].type === 'mention')) {
+          var currentOffsetDiff = 0;
+          var newMessageText = messageText;
+          parsedEditorState.root.children[0].children.forEach(function (child, index) {
+            if (child.type === 'mention') {
+              var offset = offsetList[index].start;
+              var length = offsetList[index].end - offsetList[index].start;
+              var mentionId = "@" + child.mentionName;
+              var idLength = mentionId.length;
+              newMessageText = "" + newMessageText.slice(0, offset + currentOffsetDiff) + mentionId + newMessageText.slice(offset + currentOffsetDiff + length);
+              var menIndex = offset + currentOffsetDiff;
+              currentOffsetDiff += idLength - length;
+              messageBodyAttributes.push({
+                type: 'mention',
+                metadata: child.mentionName,
+                offset: menIndex,
+                length: idLength
+              });
+            } else {
+              var attributeTypes = bodyAttributesMapByType[child.format];
+
+              if (attributeTypes) {
+                var _offset = offsetList[index].start;
+
+                var _length = offsetList[index].end - offsetList[index].start;
+
+                var attIndex = _offset + currentOffsetDiff;
+
+                if (attributeTypes.length > 1) {
+                  attributeTypes.forEach(function (attributeType) {
+                    messageBodyAttributes.push({
+                      type: attributeType,
+                      offset: attIndex,
+                      length: _length
+                    });
+                  });
+                } else {
+                  messageBodyAttributes.push({
+                    type: attributeTypes[0],
+                    offset: attIndex,
+                    length: _length
+                  });
+                }
+              }
+            }
+          });
+
+          if (messageText) {
+            setMessageText(newMessageText);
+            setMessageBodyAttributes(messageBodyAttributes);
+          } else {
+            setMessageText(messageToEdit ? messageToEdit.body : '');
+          }
+        }
+      });
+    }
+  }, [editor, editorState]);
+}
+
+function FormatMessagePlugin(_ref) {
+  var editorState = _ref.editorState,
+      setMessageBodyAttributes = _ref.setMessageBodyAttributes,
+      setMessageText = _ref.setMessageText,
+      messageToEdit = _ref.messageToEdit;
+
+  var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
+      editor = _useLexicalComposerCo[0];
+
+  useFormatMessage(editor, editorState, setMessageBodyAttributes, setMessageText, messageToEdit);
+  return null;
+}
+
+var _circle$5, _path$12;
+
+function _extends$16() {
+  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$16.apply(this, arguments);
+}
+
+function SvgSend(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$16({
+    width: 32,
+    height: 32,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
+  })));
+}
+
+var _path$13;
+
+function _extends$17() {
+  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$17.apply(this, arguments);
+}
+
+function SvgEye(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$17({
     width: 25,
     height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$14;
+
+function _extends$18() {
+  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$18.apply(this, arguments);
+}
+
+function SvgAddAttachment(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$18({
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24.01 24.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
+    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$15;
+
+function _extends$19() {
+  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$19.apply(this, arguments);
+}
+
+function SvgErrorCircle(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$19({
+    width: 25,
+    height: 24,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
     d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
     fill: "#FFB73D"
   })));
 }
 
-var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i, _templateObject6$g;
-function MentionMembersPopup(_ref) {
-  var channelId = _ref.channelId,
-      theme = _ref.theme,
-      addMentionMember = _ref.addMentionMember,
-      handleMentionsPopupClose = _ref.handleMentionsPopupClose,
-      searchMention = _ref.searchMention;
-  var members = reactRedux.useSelector(activeChannelMembersSelector, reactRedux.shallowEqual);
-  var contactsMap = reactRedux.useSelector(contactsMapSelector);
-  var getFromContacts = getShowOnlyContactUsers();
+var EMOJIS$1 = [{
+  key: 'People',
+  array: [{
+    key: 'face-smiling',
+    array: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇']
+  }, {
+    key: 'face-affection',
+    array: ['🥰', '😍', '🤩', '😘', '😗', '😚', '😙']
+  }, {
+    key: 'face-tongue',
+    array: ['😋', '😛', '😜', '🤪', '😝', '🤑']
+  }, {
+    key: 'face-hand',
+    array: ['🤗', '🤭', '🤫', '🤔']
+  }, {
+    key: 'face-neutral-skeptical',
+    array: ['🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥']
+  }, {
+    key: 'face-sleepy',
+    array: ['😌', '😔', '😪', '🤤', '😴']
+  }, {
+    key: 'face-unwell',
+    array: ['😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯']
+  }, {
+    key: 'face-hat',
+    array: ['🤠', '🥳']
+  }, {
+    key: 'face-glasses',
+    array: ['😎', '🤓', '🧐']
+  }, {
+    key: 'face-concerned',
+    array: ['😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱']
+  }, {
+    key: 'face-negative',
+    array: ['😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️']
+  }, {
+    key: 'face-costume',
+    array: ['💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖']
+  }, {
+    key: 'cat-face',
+    array: ['😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾']
+  }, {
+    key: 'monkey-face',
+    array: ['🙈', '🙉', '🙊']
+  }, {
+    key: 'emotion',
+    array: ['💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '👁‍🗨', '🗨️', '🗯️', '💭', '💤']
+  }, {
+    key: 'hand-fingers-open',
+    array: ['👋', '🤚', '🖐️', '✋', '🖖']
+  }, {
+    key: 'hand-fingers-partial',
+    array: ['👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙']
+  }, {
+    key: 'hand-single-finger',
+    array: ['👈', '👉', '👆', '🖕', '👇', '☝️']
+  }, {
+    key: 'hand-fingers-closed',
+    array: ['👍', '👎', '✊', '👊', '🤛', '🤜']
+  }, {
+    key: 'hands',
+    array: ['👏', '🙌', '👐', '🤲', '🤝', '🙏']
+  }, {
+    key: 'hand-prop',
+    array: ['✍️', '💅', '🤳']
+  }, {
+    key: 'body-parts',
+    array: ['💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄']
+  }, {
+    key: 'person',
+    array: ['👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👱‍♂️', '👨‍🦰', '👩', '👱‍♀️', '👩‍🦰', '🧓', '👴', '👵']
+  }, {
+    key: 'person-fantasy',
+    array: ['👼', '🎅', '🤶', '🦸', '🦸‍♂️', '🦸🏻‍♂️', '🦸‍♀️', '🦸🏻‍♀️', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞']
+  }, {
+    key: 'person-activity',
+    array: ['💆', '💇', '🚶', '🧍', '🧎', '👨‍🦯', '👩‍🦯', '👨‍🦼', '👩‍🦼', '🏃', '💃', '🕺', '🕴', '👯', '🧖', '🧗']
+  }]
+}, {
+  key: 'Animals',
+  array: [{
+    key: 'animal-mammal',
+    array: ['🐵', '🐒', '🦍', '🦧', '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🦊', '🦝', '🐱', '🐈', '🦁', '🐯', '🐅', '🐆', '🐴', '🐎', '🦄', '🦓', '🦌', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦏', '🦛', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐿️', '🐿', '🦔', '🦇', '🐻', '🐨', '🐼', '🦥', '🦦', '🦨', '🦘', '🦡', '🐾']
+  }, {
+    key: 'animal-bird',
+    array: ['🦃', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🕊', '🦅', '🦆', '🦢', '🦉', '🦩', '🦚', '🦜']
+  }, {
+    key: 'animal-amphibian',
+    array: ['🐸']
+  }, {
+    key: 'animal-reptile',
+    array: ['🐊', '🐢', '🦎', '🐍', '🐲', '🐉', '🦕', '🦖']
+  }, {
+    key: 'animal-marine',
+    array: ['🐳', '🐋', '🐬', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚']
+  }, {
+    key: 'animal-bug',
+    array: ['🐌', '🦋', '🐛', '🐜', '🐝', '🐞', '🦗', '🕷️', '🕸️', '🦂', '🦟', '🦠']
+  }, {
+    key: 'plant-flower',
+    array: ['💐', '🌸', '💮', '🏵️', '🏵', '🌹', '🥀', '🌺', '🌻', '🌼', '🌷']
+  }, {
+    key: 'plant-other',
+    array: ['🌱', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '☘', '🍀', '🍁', '🍂', '🍃']
+  }]
+}, {
+  key: 'Food',
+  array: [{
+    key: 'food-fruit',
+    array: ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🥝', '🍅', '🥥']
+  }, {
+    key: 'food-vegetable',
+    array: ['🥑', '🍆', '🥔', '🥕', '🌽', '🌶️', '🌶', '🥒', '🥬', '🥦', '🧄', '🧅', '🍄', '🥜', '🌰']
+  }, {
+    key: 'food-prepared',
+    array: ['🍞', '🥐', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥙', '🧆', '🥚', '🍳', '🥘', '🍲', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫']
+  }, {
+    key: 'food-asian',
+    array: ['🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🥮', '🍡', '🥟', '🥠', '🥡']
+  }, {
+    key: 'food-marine',
+    array: ['🦀', '🦞', '🦐', '🦑', '🦪']
+  }, {
+    key: 'food-sweet',
+    array: ['🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯']
+  }, {
+    key: 'drink',
+    array: ['🍼', '🥛', '☕', '🍵', '🍶', '🍾', '🍷', '🍸', '🍹', '🍺', '🍻', '🥂', '🥃', '🥤', '🧃', '🧉', '🧊']
+  }, {
+    key: 'dishware',
+    array: ['🥢', '🍽️', '🍽', '🍴', '🥄', '🔪', '🏺']
+  }]
+}, {
+  key: 'Travel',
+  array: [{
+    key: 'place-map',
+    array: ['🌍', '🌎', '🌏', '🌐', '🗺', '🗾', '🧭']
+  }, {
+    key: 'place-geographic',
+    array: ['🏔️', '🏔', '⛰️', '⛰', '🌋', '🗻', '🏕️', '🏕', '🏖️', '🏖', '🏜️', '🏜', '🏝️', '🏝', '🏞️', '🏞']
+  }, {
+    key: 'place-building',
+    array: ['🏟️', '🏛️', '🏗️', '🏗', '🧱', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽']
+  }, {
+    key: 'place-religious',
+    array: ['⛪', '🕌', '🛕', '🕍', '⛩️', '🕋']
+  }, {
+    key: 'place-other',
+    array: ['⛲', '⛺', '🌁', '🌃', '🏙️', '🏙', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '♨', '🎠', '🎡', '🎢', '💈', '🎪']
+  }, {
+    key: 'transport-ground',
+    array: ['🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏎', '🏍️', '🏍', '🛵', '🦽', '🦼', '🛺', '🚲', '🛴', '🛹', '🚏', '🛣️', '🛤️', '🛢️', '⛽', '🚨', '🚥', '🚦', '🛑', '🚧']
+  }, {
+    key: 'transport-water',
+    array: ['⚓', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🛥', '🚢']
+  }, {
+    key: 'transport-air',
+    array: ['✈️', '✈', '🛩️', '🛫', '🛬', '🪂', '💺', '🚁', '🚟', '🚠', '🚡', '🛰️', '🛰', '🚀', '🛸']
+  }, {
+    key: 'hotel',
+    array: ['🛎️', '🧳']
+  }, {
+    key: 'time',
+    array: ['⌛', '⏳', '⌚', '⏰', '⏱️', '⏲️', '🕰️', '🕛', '🕧', '🕐', '🕜', '🕑', '🕝', '🕒', '🕞', '🕓', '🕟', '🕔', '🕠', '🕕', '🕡', '🕖', '🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦']
+  }, {
+    key: 'sky weather',
+    array: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘', '🌙', '🌚', '🌛', '🌜', '🌡️', '🌡', '☀️', '☀', '🌝', '🌞', '🪐', '⭐', '🌟', '🌠', '🌌', '☁️', '☁', '⛅', '⛈️', '⛈', '🌤️', '🌤', '🌥️', '🌥', '🌦️', '🌦', '🌧️', '🌧', '🌨️', '🌨', '🌩️', '🌩', '🌪️', '🌪', '🌫️', '🌫', '🌬️', '🌬', '🌀', '🌈', '🌂', '☂️', '☂', '☔', '⛱️', '⛱', '⚡', '❄️', '❄', '☃️', '☃', '⛄', '☄️', '☄', '🔥', '💧', '🌊']
+  }]
+}, {
+  key: 'Objects',
+  array: [{
+    key: 'event',
+    array: ['🎃', '🎄', '🎆', '🎇', '🧨', '✨', '🎈', '🎉', '🎊', '🎋', '🎍', '🎎', '🎏', '🎐', '🎑', '🧧', '🎀', '🎁', '🎗️', '🎟️', '🎫']
+  }, {
+    key: 'award-medal',
+    array: ['🎖️', '🏆', '🏅', '🥇', '🥈', '🥉']
+  }, {
+    key: 'sport',
+    array: ['⚽', '⚾', '🥎', '🏀', '🏐', '🏈', '🏉', '🎾', '🥏', '🎳', '🏏', '🏑', '🏒', '🥍', '🏓', '🏸', '🥊', '🥋', '🥅', '⛳', '⛸️', '🎣', '🤿', '🎽', '🎿', '🛷', '🥌']
+  }, {
+    key: 'game',
+    array: ['🎯', '🪀', '🪁', '🎱', '🔮', '🧿', '🎮', '🕹️', '🎰', '🎲', '🧩', '🧸', '♠️', '♥️', '♦️', '♣️', '♟️', '🃏', '🀄', '🎴']
+  }, {
+    key: 'arts crafts',
+    array: ['🎭', '🖼️', '🎨', '🧵', '🧶']
+  }, {
+    key: 'clothing',
+    array: ['👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🛍️', '🎒', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '⛑', '📿', '💄', '💍', '💎']
+  }, {
+    key: 'sound',
+    array: ['🔇', '🔈', '🔉', '🔊', '📢', '📣', '📯', '🔔', '🔕']
+  }, {
+    key: 'music',
+    array: ['🎼', '🎵', '🎶', '🎙️', '🎙', '🎚', '🎛', '🎤', '🎧', '📻']
+  }, {
+    key: 'musical-instrument',
+    array: ['🎷', '🎸', '🎹', '🎺', '🎻', '🪕', '🥁']
+  }, {
+    key: 'phone',
+    array: ['📱', '📲', '☎️', '☎', '📞', '📟', '📠']
+  }, {
+    key: 'computer',
+    array: ['🔋', '🔌', '💻', '🖥️', '🖨️', '⌨️', '⌨', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '🧮']
+  }, {
+    key: 'light video',
+    array: ['🎥', '🎞', '📽️', '📽', '🎬', '📺', '📷', '📸', '📹', '📼', '🔍', '🔎', '🕯️', '💡', '🔦', '🏮', '🪔']
+  }, {
+    key: 'book-paper',
+    array: ['📔', '📕', '📖', '📗', '📘', '📙', '📚', '📓', '📒', '📃', '📜', '📄', '📰', '🗞️', '📑', '🔖', '🏷️']
+  }, {
+    key: 'money',
+    array: ['💰', '💴', '💵', '💶', '💷', '💸', '💳', '🧾', '💹', '💱', '💲']
+  }, {
+    key: 'mail',
+    array: ['✉️', '📧', '📨', '📩', '📤', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️']
+  }, {
+    key: 'writing',
+    array: ['✏️', '✏', '✒️', '✒', '🖋️', '🖊️', '🖌️', '🖍️', '🖍', '📝']
+  }, {
+    key: 'office',
+    array: ['💼', '📁', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '✂', '🗃️', '🗄', '🗑️']
+  }, {
+    key: 'lock',
+    array: ['🔒', '🔓', '🔏', '🔐', '🔑', '🗝️']
+  }, {
+    key: 'tool',
+    array: ['🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '⚔', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜', '⚖️', '🦯', '🔗', '⛓️', '🧰', '🧲']
+  }, {
+    key: 'science',
+    array: ['⚗️', '⚗', '🧪', '🧫', '🧬', '🔬', '🔭', '📡']
+  }, {
+    key: 'medical',
+    array: ['💉', '🩸', '💊', '🩹', '🩺']
+  }, {
+    key: 'household',
+    array: ['🚪', '🛏️', '🛋️', '🛋', '🪑', '🚽', '🚿', '🛁', '🪒', '🧴', '🧷', '🧹', '🧺', '🧻', '🧼', '🧽', '🧯', '🛒']
+  }, {
+    key: 'other-object',
+    array: ['🚬', '⚰️', '⚱️', '🗿']
+  }]
+}, {
+  key: 'Flags',
+  array: [{
+    key: 'country-flag',
+    array: ['🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼']
+  }, {
+    key: 'subdivision-flag',
+    array: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
+  }]
+}, {
+  key: 'Symbols',
+  array: [{
+    key: 'transport-sign',
+    array: ['🏧', '🚮', '🚰', '♿', '🚹', '🚺', '🚻', '🚼', '🚾', '🛂', '🛃', '🛄', '🛅']
+  }, {
+    key: 'warning',
+    array: ['⚠️', '⚠', '🚸', '⛔', '🚫', '🚳', '🚭', '🚯', '🚱', '🚷', '📵', '🔞', '☢️', '☣️']
+  }, {
+    key: 'arrow',
+    array: ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️', '↕️', '↔️', '↔', '↩️', '↩', '↪️', '↪', '⤴️', '⤴', '⤵️', '⤵', '🔃', '🔄', '🔙', '🔚', '🔛', '🔜', '🔝']
+  }, {
+    key: 'religion',
+    array: ['🛐', '⚛️', '🕉️', '🕉', '✡️', '☸️', '☯️', '✝️', '☮️', '🕎', '🔯']
+  }, {
+    key: 'zodiac',
+    array: ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎']
+  }, {
+    key: 'other-symbol',
+    array: ['♻️', '⚜️', '🔱', '📛', '🔰', '⭕', '✅', '☑️', '✔️', '✖️', '✖', '❌', '❎', '➕', '➖', '➗', '➰', '➿', '〽️', '✳️', '✴️', '❇️', '‼️', '⁉️', '❓', '❗']
+  }]
+}];
 
-  var _useState = React.useState([]),
-      filteredMembers = _useState[0],
-      setFilteredMembers = _useState[1];
+var _templateObject$A, _templateObject2$w, _templateObject3$p, _templateObject4$l, _templateObject5$j, _templateObject6$g, _templateObject7$e, _templateObject8$d;
 
-  var filteredMembersLength = React.useRef(0);
+var EmojiIcon$1 = function EmojiIcon(_ref) {
+  var collectionName = _ref.collectionName;
 
-  var _useState2 = React.useState(0),
-      activeIndex = _useState2[0],
-      setActiveIndex = _useState2[1];
+  switch (collectionName) {
+    case 'People':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiSmileIcon, null);
 
-  var _useState3 = React.useState(true),
-      hideMenu = _useState3[0],
-      setHideMenu = _useState3[1];
+    case 'Animals':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiAnimalIcon, null);
 
-  var membersListRef = React.useRef();
-  var user = getClient().user;
-  var membersLoading = reactRedux.useSelector(membersLoadingStateSelector, reactRedux.shallowEqual) || {};
-  var dispatch = reactRedux.useDispatch();
+    case 'Food':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiFoodIcon, null);
 
-  var handleMembersListScroll = function handleMembersListScroll(event) {
-    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100) {
-      if (membersLoading === LOADING_STATE$1.LOADED) {
-        dispatch(loadMoreMembersAC(15));
-      }
-    }
-  };
+    case 'Travel':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiTravelIcon, null);
 
-  var handleMentionMember = function handleMentionMember() {
-    addMentionMember(filteredMembers[activeIndex]);
-    handleMentionsPopupClose();
-  };
+    case 'Objects':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiObjectIcon, null);
 
-  var sortMembers = function sortMembers(membersList) {
-    return [].concat(membersList).sort(function (a, b) {
-      var aDisplayName = makeUsername(a.id === user.id ? a : contactsMap[a.id], a, getFromContacts);
-      var bDisplayName = makeUsername(b.id === user.id ? b : contactsMap[b.id], b, getFromContacts);
+    case 'Flags':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiFlagicon, null);
 
-      if (aDisplayName < bDisplayName) {
-        return -1;
-      }
+    case 'Symbols':
+      return /*#__PURE__*/React__default.createElement(SvgEmojiSymbolsIcon, null);
 
-      if (aDisplayName > bDisplayName) {
-        return 1;
-      }
+    default:
+      return null;
+  }
+};
 
-      return 0;
-    });
-  };
+function EmojisPopup$1(_ref2) {
+  var handleAddEmoji = _ref2.handleAddEmoji,
+      handleEmojiPopupToggle = _ref2.handleEmojiPopupToggle,
+      rtlDirection = _ref2.rtlDirection,
+      rightSide = _ref2.rightSide,
+      bottomPosition = _ref2.bottomPosition,
+      emojisContainerBorderRadius = _ref2.emojisContainerBorderRadius,
+      _ref2$emojisCategoryI = _ref2.emojisCategoryIconsPosition,
+      emojisCategoryIconsPosition = _ref2$emojisCategoryI === void 0 ? 'top' : _ref2$emojisCategoryI,
+      fixEmojiCategoriesTitleOnTop = _ref2.fixEmojiCategoriesTitleOnTop,
+      emojisPopupPosition = _ref2.emojisPopupPosition,
+      relativePosition = _ref2.relativePosition,
+      leftPosition = _ref2.leftPosition;
+  console.log('EmojisPopup leftPosition', leftPosition);
+  var theme = reactRedux.useSelector(themeSelector);
+  var richTextEditor;
 
-  var handleKeyDown = function handleKeyDown(e) {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex(function (prevState) {
-        var newIndex = prevState < filteredMembersLength.current - 1 ? prevState + 1 : prevState;
-        handleScrollToActiveItem(newIndex, 'bottom');
-        return newIndex;
-      });
-    }
+  try {
+    var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
+        editor = _useLexicalComposerCo[0];
 
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex(function (prevState) {
-        var newIndex = prevState > 0 ? prevState - 1 : prevState;
-        handleScrollToActiveItem(newIndex, 'top');
-        return newIndex;
-      });
-    }
+    richTextEditor = editor;
+  } catch (e) {
+    console.log('error getting editor', e);
+  }
 
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleMentionMember();
-    }
-  };
+  var _useState = React.useState(false),
+      rendered = _useState[0],
+      setRendered = _useState[1];
 
-  var handleSearchMembers = function handleSearchMembers() {
-    var searchedMembers = [].concat(members).filter(function (member) {
-      var displayName = makeUsername(contactsMap[member.id], member, getFromContacts);
-      return displayName && member.id !== user.id && displayName.split(' ').find(function (namePart) {
-        return namePart[0] === '~' ? namePart.slice(1).toLowerCase().startsWith(searchMention.toLowerCase()) : namePart.toLowerCase().startsWith(searchMention.toLowerCase());
-      });
-    });
-    filteredMembersLength.current = searchedMembers.length;
-    setFilteredMembers(searchedMembers);
-  };
+  var _useState2 = React.useState('People'),
+      activeCollection = _useState2[0],
+      setActiveCollection = _useState2[1];
 
-  var handleScrollToActiveItem = function handleScrollToActiveItem(newIndex, direction) {
-    var membersList = membersListRef.current;
+  var _useState3 = React.useState([]),
+      collectionHeights = _useState3[0],
+      setCollectionHeights = _useState3[1];
 
-    if (membersList) {
-      var activeMentionPosition = (newIndex + 1) * 48;
-
-      if (direction === 'bottom' && activeMentionPosition > membersList.scrollTop + membersList.offsetHeight) {
-        membersList.scrollTop = activeMentionPosition - membersList.offsetHeight + 30;
-      } else if (direction === 'top' && membersList.scrollTop + 48 > activeMentionPosition) {
-        membersList.scrollTop = activeMentionPosition - 68;
-      }
-    }
-  };
-
-  React.useEffect(function () {
-    dispatch(getMembersAC(channelId));
-  }, [channelId]);
-  React.useEffect(function () {
-    window.addEventListener('keydown', handleKeyDown);
-    return function () {
-      window.removeEventListener('keydown', handleKeyDown);
+  var emojiContainerRef = React.useRef(null);
+  var collectionsRef = React.useRef(EMOJIS$1.map(function (col) {
+    return {
+      collectionName: col.key,
+      elem: /*#__PURE__*/React.createRef()
     };
-  }, [filteredMembers, activeIndex]);
-  React.useEffect(function () {
-    if (members && members.length) {
-      if (searchMention) {
-        handleSearchMembers();
-      } else {
-        var sortedMembers = sortMembers(members.filter(function (member) {
-          return member.id !== user.id;
-        }));
-        filteredMembersLength.current = sortedMembers.length;
-        setFilteredMembers(sortedMembers);
+  }));
+
+  var handleEmojiListScroll = function handleEmojiListScroll() {
+    var scrollPos = emojiContainerRef.current.scrollTop;
+
+    if (collectionHeights[6] < scrollPos) {
+      setActiveCollection('Symbols');
+    } else if (collectionHeights[5] < scrollPos) {
+      setActiveCollection('Flags');
+    } else if (collectionHeights[4] < scrollPos) {
+      setActiveCollection('Objects');
+    } else if (collectionHeights[3] < scrollPos) {
+      setActiveCollection('Travel');
+    } else if (collectionHeights[2] < scrollPos) {
+      setActiveCollection('Food');
+    } else if (collectionHeights[1] < scrollPos) {
+      setActiveCollection('Animals');
+    } else {
+      setActiveCollection('People');
+    }
+  };
+
+  var chooseEmoji = function chooseEmoji(selectedEmoji) {
+    if (richTextEditor) {
+      richTextEditor.update(function () {
+        var selection = lexical.$getSelection();
+
+        if (!lexical.$isRangeSelection(selection)) {
+          console.log('close.  ...............................>>>>>>> ');
+          return;
+        }
+
+        selection.insertNodes([lexical.$createTextNode(selectedEmoji)]);
+      });
+
+      if (handleAddEmoji) {
+        handleAddEmoji(selectedEmoji);
       }
     }
-  }, [members]);
+
+    if (handleEmojiPopupToggle) {
+      handleEmojiPopupToggle(false);
+    }
+  };
+
+  var handleEmojiCollectionClick = function handleEmojiCollectionClick(mainCollection) {
+    var collection = collectionsRef.current.find(function (el) {
+      return el.collectionName === mainCollection;
+    });
+    var pos = collection.elem.current.offsetTop - 40;
+    emojiContainerRef.current.scrollTo(0, pos);
+  };
+
   React.useEffect(function () {
-    if (searchMention) {
-      handleSearchMembers();
-    } else {
-      var searchedMembers = [].concat(members).filter(function (member) {
-        return member.id !== user.id;
-      });
-      filteredMembersLength.current = searchedMembers.length || 0;
-      setFilteredMembers(sortMembers(searchedMembers || []));
-    }
-  }, [searchMention]);
-  useDidUpdate(function () {
-    if (filteredMembersLength.current === 0) {
-      handleMentionsPopupClose(true, true);
-    } else {
-      setHideMenu(false);
-    }
-  }, [filteredMembersLength.current]);
+    setRendered(true);
+    setTimeout(function () {
+      if (emojiContainerRef.current) {
+        var containerTop = emojiContainerRef.current.getBoundingClientRect().top + 10;
+        var heights = collectionsRef.current.map(function (col) {
+          return col.elem.current.getBoundingClientRect().top - 80 - containerTop;
+        });
+        setCollectionHeights(heights);
+      }
+    }, 300);
+  }, []);
   return /*#__PURE__*/React__default.createElement(Container$h, {
-    className: 'mention_member_popup',
-    hidden: hideMenu,
-    height: filteredMembers && filteredMembers.length * 44,
-    backgroundColor: theme === THEME$1.DARK ? colors.backgroundColor : colors.white,
-    withBorder: theme !== THEME$1.DARK
-  }, /*#__PURE__*/React__default.createElement(MembersList, {
-    ref: membersListRef,
-    onScroll: handleMembersListScroll
-  }, filteredMembers.map(function (member, index) {
-    return /*#__PURE__*/React__default.createElement(MemberItem, {
-      key: member.id,
+    backgroundColor: theme === THEME.DARK ? colors.backgroundColor : colors.white,
+    noBorder: theme === THEME.DARK,
+    relativePosition: relativePosition,
+    borderRadius: emojisContainerBorderRadius,
+    rightSide: rightSide,
+    id: 'emojisContainer',
+    rtlDirection: rtlDirection,
+    bottomPosition: bottomPosition,
+    leftPosition: leftPosition,
+    rendered: rendered,
+    emojisPopupPosition: emojisPopupPosition
+  }, emojisCategoryIconsPosition === 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter$1, {
+    borderColor: colors.hoverBackgroundColor,
+    emojisCategoryIconsPosition: emojisCategoryIconsPosition
+  }, EMOJIS$1.map(function (emoji) {
+    return /*#__PURE__*/React__default.createElement(EmojiCollection$1, {
+      activeCollection: activeCollection === emoji.key,
+      key: "" + emoji.key,
       onClick: function onClick() {
-        handleMentionMember();
-      },
-      isActiveItem: activeIndex === index,
-      onMouseEnter: function onMouseEnter() {
-        return setActiveIndex(index);
-      },
-      activeBackgroundColor: colors.hoverBackgroundColor
-    }, /*#__PURE__*/React__default.createElement(AvatarWrapper, null, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: member.firstName || member.id,
-      image: member.avatarUrl,
-      size: 32,
-      textSize: 14,
-      setDefaultAvatar: true
-    })), /*#__PURE__*/React__default.createElement(UserNamePresence$2, null, /*#__PURE__*/React__default.createElement(MemberName$2, {
-      color: colors.textColor1
-    }, makeUsername(member.id === user.id ? member : contactsMap[member.id], member, getFromContacts)), /*#__PURE__*/React__default.createElement(SubTitle, null, member.presence && member.presence.state === USER_PRESENCE_STATUS$1.ONLINE ? 'Online' : member.presence && member.presence.lastActiveAt && userLastActiveDateFormat(member.presence.lastActiveAt))));
+        return handleEmojiCollectionClick(emoji.key);
+      }
+    }, /*#__PURE__*/React__default.createElement(EmojiIcon$1, {
+      collectionName: emoji.key
+    }));
+  })), fixEmojiCategoriesTitleOnTop && /*#__PURE__*/React__default.createElement(EmojiHeader$1, {
+    padding: emojisCategoryIconsPosition !== 'top' ? '10px 18px 6px' : ''
+  }, getEmojisCategoryTitle(activeCollection)), /*#__PURE__*/React__default.createElement(EmojiSection$1, {
+    ref: emojiContainerRef,
+    onScroll: handleEmojiListScroll
+  }, /*#__PURE__*/React__default.createElement(AllEmojis$1, null, EMOJIS$1.map(function (emojiBigCollection, bigColIndex) {
+    var mainCollectionKey = emojiBigCollection.key;
+    return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
+      key: mainCollectionKey
+    }, !fixEmojiCategoriesTitleOnTop && /*#__PURE__*/React__default.createElement(EmojiHeader$1, {
+      padding: '6px 8px 0'
+    }, getEmojisCategoryTitle(mainCollectionKey)), emojiBigCollection.array.map(function (emojiSmallCollection, bigIndex) {
+      var label = emojiSmallCollection.key;
+      var array = emojiSmallCollection.array;
+      return array.map(function (emoji, i) {
+        return /*#__PURE__*/React__default.createElement(Emoji$1, {
+          hoverBackgroundColor: colors.hoverBackgroundColor,
+          key: "" + emoji,
+          className: 'emoji-cont',
+          onClick: function onClick() {
+            return chooseEmoji(emoji);
+          }
+        }, bigIndex === 0 && i === 0 && /*#__PURE__*/React__default.createElement(CollectionPointer$1, {
+          ref: collectionsRef.current[bigColIndex].elem,
+          "data-emoji-sec": mainCollectionKey
+        }), /*#__PURE__*/React__default.createElement("span", {
+          className: 'emoji',
+          role: 'img',
+          "aria-label": label || '',
+          "aria-hidden": label ? 'false' : 'true'
+        }, emoji));
+      });
+    }));
+  }))), emojisCategoryIconsPosition !== 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter$1, null, EMOJIS$1.map(function (emoji) {
+    return /*#__PURE__*/React__default.createElement(EmojiCollection$1, {
+      activeCollection: activeCollection === emoji.key,
+      key: "" + emoji.key,
+      onClick: function onClick() {
+        return handleEmojiCollectionClick(emoji.key);
+      }
+    }, /*#__PURE__*/React__default.createElement(EmojiIcon$1, {
+      collectionName: emoji.key
+    }));
   })));
 }
-var Container$h = styled__default.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  height: ", "px;\n  max-height: 240px;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
-  return props.height && props.height + 22;
+var Container$h = styled__default.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  //transform: scaleY(0);\n  height: 0;\n  overflow: hidden;\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
+  return props.leftPosition ? 'fixed' : props.relativePosition ? 'relative' : 'absolute';
 }, function (props) {
-  return props.backgroundColor || colors.white;
+  return props.leftPosition || (props.rtlDirection ? '' : props.rightSide ? '' : '5px');
 }, function (props) {
-  return props.withBorder && "1px solid " + colors.borderColor;
+  return props.rtlDirection ? '0' : props.rightSide ? '65px' : '';
 }, function (props) {
-  return props.hidden ? 'hidden' : 'visible';
+  return props.rtlDirection ? 'initial' : '';
+}, function (props) {
+  return props.bottomPosition;
+}, function (props) {
+  return props.noBorder ? 'none' : "1px solid " + colors.gray1;
+}, function (props) {
+  return props.borderRadius || '12px';
+}, function (props) {
+  return props.backgroundColor;
+}, function (props) {
+  return props.emojisPopupPosition === 'bottom' ? '0 0' : '0 100%';
+}, function (props) {
+  return props.rendered && "\n    height: 225px;\n  ";
 });
-var UserNamePresence$2 = styled__default.div(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
-var MemberName$2 = styled__default.h3(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), function (props) {
-  return props.color || colors.textColor1;
+var EmojiHeader$1 = styled__default.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  align-items: flex-end;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 22px;\n  text-transform: uppercase;\n  color: ", ";\n  display: flex;\n  padding: ", ";\n"])), colors.textColor2, function (props) {
+  return props.padding || '6px 18px';
 });
-var EditMemberIcon = styled__default.span(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled__default.ul(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin: 4px 0 0;\n  padding: 0;\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 10px); ;\n"])));
-var MemberItem = styled__default.li(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & .dropdown-body {\n    bottom: -100px;\n    right: 0;\n  }\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
-  return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
-}, EditMemberIcon, UserStatus);
+var EmojiSection$1 = styled__default.div(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  height: 180px;\n  overflow-x: hidden;\n\n  & ::selection {\n    color: inherit;\n    background: inherit;\n  }\n"])));
+var EmojiCollection$1 = styled__default.span(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n\n  & > * {\n    color: ", ";\n  }\n"])), function (props) {
+  return props.activeCollection ? colors.primary : colors.textColor3;
+});
+var CollectionPointer$1 = styled__default.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose([""])));
+var AllEmojis$1 = styled__default.ul(_templateObject6$g || (_templateObject6$g = _taggedTemplateLiteralLoose(["\n  overflow: hidden;\n  padding: 0 8px 8px;\n  margin: 0;\n"])));
+var EmojiFooter$1 = styled__default.div(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  height: 42px;\n  display: flex;\n  justify-content: space-around;\n  align-items: center;\n  border-top: ", ";\n  border-bottom: ", ";\n  padding: 0 10px;\n  & > span {\n    width: 100%;\n    text-align: center;\n  }\n"])), function (props) {
+  return props.emojisCategoryIconsPosition !== 'top' && "1px solid " + (props.borderColor || colors.gray1);
+}, function (props) {
+  return props.emojisCategoryIconsPosition === 'top' && "1px solid " + (props.borderColor || colors.gray1);
+});
+var Emoji$1 = styled__default.li(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  width: 32px;\n  height: 32px;\n  margin: 0 2px;\n  display: inline-block;\n  box-sizing: border-box;\n  border-radius: 50%;\n  padding-top: 2px;\n  text-align: center;\n  background: transparent;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  & > * {\n    font-size: 22px;\n  }\n  &:hover {\n    background: ", ";\n  }\n"])), function (props) {
+  return props.hoverBackgroundColor || colors.backgroundColor;
+});
 
-var _templateObject$z, _templateObject2$v, _templateObject3$p, _templateObject4$l, _templateObject5$j, _templateObject6$h, _templateObject7$e, _templateObject8$d, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1;
+var CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
+
+var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1, _templateObject32$1, _templateObject33$1;
+
+function MyCustomAutoFocusPlugin() {
+  var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
+      editor = _useLexicalComposerCo[0];
+
+  React.useEffect(function () {
+    editor.focus();
+  }, [editor]);
+  return null;
+}
+
+function ClearEditorPlugin(_ref) {
+  var shouldClearEditor = _ref.shouldClearEditor,
+      setEditorCleared = _ref.setEditorCleared;
+
+  var _useLexicalComposerCo2 = LexicalComposerContext.useLexicalComposerContext(),
+      editor = _useLexicalComposerCo2[0];
+
+  useDidUpdate(function () {
+    if (shouldClearEditor.clear) {
+      editor.update(function () {
+        var rootNode = lexical.$getRoot();
+        rootNode.clear();
+
+        if (shouldClearEditor.draftMessage) {
+          var paragraphNode = lexical.$createParagraphNode();
+          paragraphNode.append(lexical.$createTextNode(shouldClearEditor.draftMessage.text));
+          editor.setEditorState(shouldClearEditor.draftMessage.editorState);
+        }
+
+        setEditorCleared();
+      });
+    }
+  }, [shouldClearEditor]);
+  return null;
+}
+
+function onError(error) {
+  console.error(error);
+}
+
 var prevActiveChannelId;
 
-var SendMessageInput = function SendMessageInput(_ref) {
-  var handleAttachmentSelected = _ref.handleAttachmentSelected,
-      handleSendMessage = _ref.handleSendMessage,
-      _ref$disabled = _ref.disabled,
-      disabled = _ref$disabled === void 0 ? false : _ref$disabled,
-      sendIconOrder = _ref.sendIconOrder,
-      _ref$inputOrder = _ref.inputOrder,
-      inputOrder = _ref$inputOrder === void 0 ? 1 : _ref$inputOrder,
-      _ref$showAddEmojis = _ref.showAddEmojis,
-      showAddEmojis = _ref$showAddEmojis === void 0 ? true : _ref$showAddEmojis,
-      AddEmojisIcon = _ref.AddEmojisIcon,
-      _ref$emojiIcoOrder = _ref.emojiIcoOrder,
-      emojiIcoOrder = _ref$emojiIcoOrder === void 0 ? 2 : _ref$emojiIcoOrder,
-      _ref$showAddAttachmen = _ref.showAddAttachments,
-      showAddAttachments = _ref$showAddAttachmen === void 0 ? true : _ref$showAddAttachmen,
-      AddAttachmentsIcon = _ref.AddAttachmentsIcon,
-      _ref$attachmentIcoOrd = _ref.attachmentIcoOrder,
-      attachmentIcoOrder = _ref$attachmentIcoOrd === void 0 ? 0 : _ref$attachmentIcoOrd,
-      CustomTypingIndicator = _ref.CustomTypingIndicator,
-      margin = _ref.margin,
-      border = _ref.border,
-      minHeight = _ref.minHeight,
-      borderRadius = _ref.borderRadius,
-      inputBorderRadius = _ref.inputBorderRadius,
-      backgroundColor = _ref.backgroundColor,
-      inputBackgroundColor = _ref.inputBackgroundColor,
-      inputCustomClassname = _ref.inputCustomClassname,
-      _ref$inputAutofocus = _ref.inputAutofocus,
-      inputAutofocus = _ref$inputAutofocus === void 0 ? true : _ref$inputAutofocus,
-      inputPaddings = _ref.inputPaddings,
-      selectedAttachmentsBorderRadius = _ref.selectedAttachmentsBorderRadius,
-      selectedFileAttachmentsIcon = _ref.selectedFileAttachmentsIcon,
-      selectedFileAttachmentsBoxBackground = _ref.selectedFileAttachmentsBoxBackground,
-      selectedFileAttachmentsBoxBorder = _ref.selectedFileAttachmentsBoxBorder,
-      selectedFileAttachmentsTitleColor = _ref.selectedFileAttachmentsTitleColor,
-      selectedFileAttachmentsSizeColor = _ref.selectedFileAttachmentsSizeColor,
-      replyMessageIcon = _ref.replyMessageIcon,
-      editMessageIcon = _ref.editMessageIcon,
-      sendAttachmentSeparately = _ref.sendAttachmentSeparately,
-      _ref$allowMentionUser = _ref.allowMentionUser,
-      allowMentionUser = _ref$allowMentionUser === void 0 ? true : _ref$allowMentionUser;
+var SendMessageInput = function SendMessageInput(_ref2) {
+  var handleAttachmentSelected = _ref2.handleAttachmentSelected,
+      handleSendMessage = _ref2.handleSendMessage,
+      _ref2$disabled = _ref2.disabled,
+      disabled = _ref2$disabled === void 0 ? false : _ref2$disabled,
+      sendIconOrder = _ref2.sendIconOrder,
+      _ref2$inputOrder = _ref2.inputOrder,
+      inputOrder = _ref2$inputOrder === void 0 ? 1 : _ref2$inputOrder,
+      _ref2$showAddEmojis = _ref2.showAddEmojis,
+      showAddEmojis = _ref2$showAddEmojis === void 0 ? true : _ref2$showAddEmojis,
+      AddEmojisIcon = _ref2.AddEmojisIcon,
+      _ref2$emojiIcoOrder = _ref2.emojiIcoOrder,
+      emojiIcoOrder = _ref2$emojiIcoOrder === void 0 ? 2 : _ref2$emojiIcoOrder,
+      _ref2$showAddAttachme = _ref2.showAddAttachments,
+      showAddAttachments = _ref2$showAddAttachme === void 0 ? true : _ref2$showAddAttachme,
+      AddAttachmentsIcon = _ref2.AddAttachmentsIcon,
+      _ref2$attachmentIcoOr = _ref2.attachmentIcoOrder,
+      attachmentIcoOrder = _ref2$attachmentIcoOr === void 0 ? 0 : _ref2$attachmentIcoOr,
+      CustomTypingIndicator = _ref2.CustomTypingIndicator,
+      margin = _ref2.margin,
+      border = _ref2.border,
+      minHeight = _ref2.minHeight,
+      borderRadius = _ref2.borderRadius,
+      inputBorderRadius = _ref2.inputBorderRadius,
+      backgroundColor = _ref2.backgroundColor,
+      inputBackgroundColor = _ref2.inputBackgroundColor,
+      inputCustomClassname = _ref2.inputCustomClassname,
+      _ref2$inputAutofocus = _ref2.inputAutofocus,
+      inputAutofocus = _ref2$inputAutofocus === void 0 ? true : _ref2$inputAutofocus,
+      inputPaddings = _ref2.inputPaddings,
+      selectedAttachmentsBorderRadius = _ref2.selectedAttachmentsBorderRadius,
+      selectedFileAttachmentsIcon = _ref2.selectedFileAttachmentsIcon,
+      selectedFileAttachmentsBoxBackground = _ref2.selectedFileAttachmentsBoxBackground,
+      selectedFileAttachmentsBoxBorder = _ref2.selectedFileAttachmentsBoxBorder,
+      selectedFileAttachmentsTitleColor = _ref2.selectedFileAttachmentsTitleColor,
+      selectedFileAttachmentsSizeColor = _ref2.selectedFileAttachmentsSizeColor,
+      replyMessageIcon = _ref2.replyMessageIcon,
+      editMessageIcon = _ref2.editMessageIcon,
+      sendAttachmentSeparately = _ref2.sendAttachmentSeparately,
+      _ref2$allowMentionUse = _ref2.allowMentionUser,
+      allowMentionUser = _ref2$allowMentionUse === void 0 ? true : _ref2$allowMentionUse,
+      textSelectionBackgroundColor = _ref2.textSelectionBackgroundColor;
   var dispatch = reactRedux.useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
@@ -30365,77 +31905,73 @@ var SendMessageInput = function SendMessageInput(_ref) {
       emojisInRightSide = _useState7[0],
       setEmojisInRightSide = _useState7[1];
 
-  var _useState8 = React.useState(false),
-      addAttachmentsInRightSide = _useState8[0],
-      setAddAttachmentsInRightSide = _useState8[1];
+  var _useState8 = React.useState(0),
+      emojisPopupLeftPosition = _useState8[0],
+      setEmojisPopupLeftPosition = _useState8[1];
 
-  var _useState9 = React.useState([]),
-      mentionedMembers = _useState9[0],
-      setMentionedMembers = _useState9[1];
+  var _useState9 = React.useState(0),
+      emojisPopupBottomPosition = _useState9[0],
+      setEmojisPopupBottomPosition = _useState9[1];
 
-  var _useState10 = React.useState({}),
-      mentionedMembersDisplayName = _useState10[0],
-      setMentionedMembersDisplayName = _useState10[1];
+  var _useState10 = React.useState(false),
+      addAttachmentsInRightSide = _useState10[0],
+      setAddAttachmentsInRightSide = _useState10[1];
 
-  var _useState11 = React.useState(undefined),
-      currentMentions = _useState11[0],
-      setCurrentMentions = _useState11[1];
+  var _useState11 = React.useState({
+    clear: false
+  }),
+      shouldClearEditor = _useState11[0],
+      setShouldClearEditor = _useState11[1];
 
   var _useState12 = React.useState([]),
-      pendingMentions = _useState12[0],
-      setPendingMentions = _useState12[1];
+      messageBodyAttributes = _useState12[0],
+      setMessageBodyAttributes = _useState12[1];
 
-  var _useState13 = React.useState(''),
-      browser = _useState13[0],
-      setBrowser = _useState13[1];
+  var _useState13 = React.useState([]),
+      mentionedMembers = _useState13[0],
+      setMentionedMembers = _useState13[1];
 
-  var _useState14 = React.useState(false),
-      mentionTyping = _useState14[0],
-      setMentionTyping = _useState14[1];
+  var _useState14 = React.useState(''),
+      browser = _useState14[0],
+      setBrowser = _useState14[1];
 
   var _useState15 = React.useState(),
-      selectionPos = _useState15[0],
-      setSelectionPos = _useState15[1];
+      inputContainerHeight = _useState15[0],
+      setInputContainerHeight = _useState15[1];
+
+  var selectedText = React.useRef(null);
 
   var _useState16 = React.useState(),
-      inputContainerHeight = _useState16[0],
-      setInputContainerHeight = _useState16[1];
+      typingTimout = _useState16[0],
+      setTypingTimout = _useState16[1];
 
   var _useState17 = React.useState(),
-      typingTimout = _useState17[0],
-      setTypingTimout = _useState17[1];
+      inTypingStateTimout = _useState17[0],
+      setInTypingStateTimout = _useState17[1];
 
-  var _useState18 = React.useState(),
-      inTypingStateTimout = _useState18[0],
-      setInTypingStateTimout = _useState18[1];
+  var _useState18 = React.useState(false),
+      inTypingState = _useState18[0],
+      setInTypingState = _useState18[1];
 
   var _useState19 = React.useState(false),
-      inTypingState = _useState19[0],
-      setInTypingState = _useState19[1];
+      sendMessageIsActive = _useState19[0],
+      setSendMessageIsActive = _useState19[1];
 
-  var _useState20 = React.useState(false),
-      sendMessageIsActive = _useState20[0],
-      setSendMessageIsActive = _useState20[1];
+  var _useState20 = React.useState([]),
+      attachments = _useState20[0],
+      setAttachments = _useState20[1];
 
   var _useState21 = React.useState(false),
-      openMention = _useState21[0],
-      setOpenMention = _useState21[1];
+      forwardPopupOpen = _useState21[0],
+      setForwardPopupOpen = _useState21[1];
 
-  var _useState22 = React.useState([]),
-      attachments = _useState22[0],
-      setAttachments = _useState22[1];
+  var _useState22 = React.useState(false),
+      deletePopupOpen = _useState22[0],
+      setDeletePopupOpen = _useState22[1];
 
   var _useState23 = React.useState(false),
-      forwardPopupOpen = _useState23[0],
-      setForwardPopupOpen = _useState23[1];
-
-  var _useState24 = React.useState(false),
-      deletePopupOpen = _useState24[0],
-      setDeletePopupOpen = _useState24[1];
-
-  var _useState25 = React.useState(false),
-      isIncomingMessage = _useState25[0],
-      setIsIncomingMessage = _useState25[1];
+      isIncomingMessage = _useState23[0],
+      setIsIncomingMessage = _useState23[1];
 
   var typingIndicator = reactRedux.useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = reactRedux.useSelector(contactsMapSelector);
@@ -30445,6 +31981,73 @@ var SendMessageInput = function SendMessageInput(_ref) {
   var messageInputRef = React.useRef(null);
   var emojiBtnRef = React.useRef(null);
   var addAttachmentsBtnRef = React.useRef(null);
+  var editorRef = React.useRef(null);
+
+  var _useState24 = React.useState(),
+      realEditorState = _useState24[0],
+      setRealEditorState = _useState24[1];
+
+  var _useState25 = React.useState(null),
+      floatingAnchorElem = _useState25[0],
+      setFloatingAnchorElem = _useState25[1];
+
+  var _useState26 = React.useState(false),
+      isSmallWidthViewport = _useState26[0],
+      setIsSmallWidthViewport = _useState26[1];
+
+  function onChange(editorState) {
+    setRealEditorState(editorState);
+    editorState.read(function () {
+      var rootNode = lexical.$getRoot();
+      var plainText = rootNode.getTextContent();
+
+      if (messageToEdit) ; else {
+        setMessageText(plainText);
+      }
+    });
+
+    if (typingTimout) {
+      if (!inTypingStateTimout) {
+        handleSendTypingState(true);
+      }
+
+      clearTimeout(typingTimout);
+    } else {
+      handleSendTypingState(true);
+    }
+
+    setTypingTimout(setTimeout(function () {
+      setTypingTimout(0);
+    }, 2000));
+  }
+
+  var onRef = function onRef(_floatingAnchorElem) {
+    if (_floatingAnchorElem !== null) {
+      setFloatingAnchorElem(_floatingAnchorElem);
+    }
+  };
+
+  var initialConfig = {
+    namespace: 'MyEditor',
+    theme: EditorTheme,
+    nodes: [MentionNode],
+    onError: onError
+  };
+  React.useEffect(function () {
+    var updateViewPortWidth = function updateViewPortWidth() {
+      var isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia('(max-width: 1025px)').matches;
+
+      if (isNextSmallWidthViewport !== isSmallWidthViewport) {
+        setIsSmallWidthViewport(isNextSmallWidthViewport);
+      }
+    };
+
+    updateViewPortWidth();
+    window.addEventListener('resize', updateViewPortWidth);
+    return function () {
+      window.removeEventListener('resize', updateViewPortWidth);
+    };
+  }, [isSmallWidthViewport]);
   var mediaExtensions = '.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.wmv,.flv,.webm,.jfif';
 
   var handleSendTypingState = function handleSendTypingState(typingState) {
@@ -30463,314 +32066,15 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   };
 
-  var handleAddEmoji = function handleAddEmoji(emoji) {
-    var selPos = getCaretPosition(messageInputRef.current);
-    var messageTextToFormat = editMessageText || messageText;
-    var newText = messageTextToFormat.slice(0, selPos) + emoji + messageTextToFormat.slice(selPos);
-
-    if (editMessageText) {
-      setEditMessageText(newText);
-    } else {
-      setMessageText(newText);
-    }
-
-    var editingMentions = [];
-
-    if (messageToEdit && messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length > 0) {
-      editingMentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
-    }
-
-    var mentions = editingMentions && editingMentions.length ? [].concat(editingMentions, mentionedMembers) : mentionedMembers;
-
-    if (mentions.length && mentions.length > 0) {
-      messageInputRef.current.innerHTML = typingTextFormat({
-        text: newText,
-        mentionedMembers: [].concat(mentions.map(function (menMem) {
-          return _extends({}, menMem, {
-            displayName: ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim()
-          });
-        }))
-      });
-    } else {
-      messageInputRef.current.innerText = newText;
-    }
-
-    setCursorPosition(messageInputRef.current, selPos + emoji.length);
-  };
-
-  var handleSetMention = function handleSetMention(member) {
-    var mentionDisplayName = makeUsername(user.id === member.id ? member : contactsMap[member.id], member, getFromContacts).trim();
-    var mentionToChange = mentionedMembers.find(function (men) {
-      return men.start === currentMentions.start;
-    });
-
-    if (mentionToChange) {
-      setMentionedMembers(mentionedMembers.map(function (menMem) {
-        if (menMem.start === currentMentions.start) {
-          return _extends({}, member, {
-            start: currentMentions.start,
-            end: currentMentions.start + 1 + mentionDisplayName.length
-          });
-        } else {
-          return menMem;
-        }
-      }));
-
-      var mentionDisplayNameToChange = _extends({}, mentionedMembersDisplayName);
-
-      delete mentionDisplayNameToChange[mentionToChange.id];
-      setMentionedMembersDisplayName(mentionDisplayNameToChange);
-    } else {
-      setMentionedMembers(function (members) {
-        return [].concat(members, [_extends({}, member, {
-          start: currentMentions.start,
-          end: currentMentions.start + 1 + mentionDisplayName.length
-        })]);
-      });
-    }
-
-    if (!mentionedMembersDisplayName[member.id]) {
-      setMentionedMembersDisplayName(function (prevState) {
-        var _extends2;
-
-        return _extends({}, prevState, (_extends2 = {}, _extends2[member.id] = {
-          id: member.id,
-          displayName: "@" + mentionDisplayName
-        }, _extends2));
-      });
-    }
-
-    setMentionTyping(false);
-    var messageTextToFormat = editMessageText || messageText;
-    var currentText = "" + messageTextToFormat.slice(0, mentionToChange ? mentionToChange.start + 1 : currentMentions.start + 1) + mentionDisplayName + messageTextToFormat.slice(mentionToChange ? mentionToChange.end : currentMentions.start + 1 + currentMentions.typed.length);
-    var mentionedMembersPositions = [];
-
-    if (mentionedMembers && mentionedMembers.length > 0) {
-      var lastFoundIndex = 0;
-      var starts = {};
-      mentionedMembers.forEach(function (menMem) {
-        var mentionDisplayName = "@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts).trim();
-        var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
-        lastFoundIndex = menIndex + mentionDisplayName.length;
-
-        if (!starts[menIndex]) {
-          mentionedMembersPositions.push({
-            displayName: mentionDisplayName,
-            start: menIndex,
-            end: menIndex + mentionDisplayName.length
-          });
-        }
-
-        starts[menIndex] = true;
-      });
-    }
-
-    var currentTextCont = typingTextFormat({
-      text: currentText,
-      mentionedMembers: [].concat(mentionedMembersPositions, [{
-        displayName: "@" + mentionDisplayName,
-        start: mentionToChange ? mentionToChange.start : currentMentions.start,
-        end: mentionToChange ? mentionToChange.end : currentMentions.start + 1 + mentionDisplayName.length
-      }]),
-      currentMentionEnd: mentionToChange ? mentionToChange.end : currentMentions.start + 1 + mentionDisplayName.length
-    });
-
-    if (editMessageText) {
-      setEditMessageText(currentText);
-    } else {
-      setMessageText(currentText);
-    }
-
-    messageInputRef.current.innerHTML = currentTextCont;
-    setCursorPosition(messageInputRef.current, currentMentions.start + 2 + mentionDisplayName.length, true);
-
-    var updateCurrentMentions = _extends({}, currentMentions);
-
-    updateCurrentMentions.typed = mentionDisplayName;
-    updateCurrentMentions.id = member.id;
-    updateCurrentMentions.end = updateCurrentMentions.start + mentionDisplayName.length;
-    setCurrentMentions(updateCurrentMentions);
-    setPendingMentions(pendingMentions.filter(function (mention) {
-      return mention.start !== updateCurrentMentions.start;
-    }));
-    messageInputRef.current.focus();
-  };
-
-  var handleCloseMentionsPopup = function handleCloseMentionsPopup(setPending, withoutLastChar) {
-    setOpenMention(false);
-    setMentionTyping(false);
-
-    if (setPending) {
-      var typed = currentMentions.typed.trim();
-
-      if (withoutLastChar) {
-        typed = typed.slice(0, -1);
-      }
-
-      setPendingMentions([].concat(pendingMentions, [{
-        start: currentMentions.start,
-        typed: typed,
-        end: currentMentions.start + 1 + currentMentions.typed.trim().length - (withoutLastChar ? 1 : 0)
-      }]));
-      console.log('set pending mentions... withoutLastChar. ', withoutLastChar, [].concat(pendingMentions, [{
-        start: currentMentions.start,
-        typed: typed,
-        end: currentMentions.start + 1 + currentMentions.typed.trim().length - (withoutLastChar ? 1 : 0)
-      }]));
-    }
-
-    setCurrentMentions(undefined);
-  };
-
-  var handleTyping = function handleTyping(e) {
-    if (!e.currentTarget.innerText.trim()) {
-      setSendMessageIsActive(false);
-    } else {
-      setSendMessageIsActive(true);
-    }
-
-    if (!(openMention && (e.key === 'ArrowDown' || e.key === 'ArrowUp'))) {
-      if (messageToEdit) {
-        setEditMessageText(e.currentTarget.innerText);
-      } else {
-        setMessageText(e.currentTarget.innerText);
-      }
-
-      if (allowMentionUser && (activeChannel.type === CHANNEL_TYPE.GROUP || activeChannel.type === CHANNEL_TYPE.PRIVATE)) {
-        handleMentionDetect(e);
-      }
-
-      if (typingTimout) {
-        if (!inTypingStateTimout) {
-          handleSendTypingState(true);
-        }
-
-        clearTimeout(typingTimout);
-      } else {
-        handleSendTypingState(true);
-      }
-
-      setTypingTimout(setTimeout(function () {
-        setTypingTimout(0);
-      }, 2000));
-    }
-  };
-
-  var handleMentionDetect = function handleMentionDetect(e) {
-    var selPos = getCaretPosition(e.currentTarget);
-    setSelectionPos(selPos);
-
-    if (currentMentions && currentMentions.start === selPos - 1 && !mentionTyping) {
-      setMentionTyping(true);
-      setOpenMention(true);
-    }
-
-    var lastTwoChar = messageInputRef.current.innerText.slice(0, selPos).slice(-2);
-    console.log('messageInputRef.current.innerText. . . . .', messageInputRef.current.innerText);
-    console.log('selPos. . . . .', selPos);
-    console.log('lastTwoChar. . . . .', lastTwoChar);
-
-    if (lastTwoChar.trimStart() === '@' && !mentionTyping) {
-      setCurrentMentions({
-        start: selPos - 1,
-        typed: ''
-      });
-      setMentionTyping(true);
-      setOpenMention(true);
-    }
-
-    var shouldClose = false;
-
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      var mentionedMembersPositions = [];
-      var currentText = messageInputRef.current.innerText;
-
-      if (pendingMentions && pendingMentions.length > 0) {
-        setPendingMentions(pendingMentions.filter(function (mention) {
-          return mention.start !== selPos;
-        }));
-      }
-
-      if (mentionedMembers && mentionedMembers.length > 0) {
-        var lastFoundIndex = 0;
-        var starts = {};
-        var updatedMentionedMembers = [];
-        mentionedMembers.forEach(function (menMem) {
-          var mentionDisplayName = menMem.displayName || mentionedMembersDisplayName[menMem.id].displayName;
-          var menIndex = currentText.indexOf(mentionDisplayName, lastFoundIndex);
-          lastFoundIndex = menIndex + mentionDisplayName.length;
-
-          if (menIndex >= 0 && !starts[menMem.start]) {
-            updatedMentionedMembers.push(_extends({}, menMem, {
-              start: menIndex,
-              end: menIndex + mentionDisplayName.length
-            }));
-            mentionedMembersPositions.push({
-              displayName: mentionDisplayName,
-              start: menIndex,
-              end: menIndex + mentionDisplayName.length
-            });
-          }
-
-          starts[menMem.start] = true;
-        });
-        setMentionedMembers(updatedMentionedMembers);
-        messageInputRef.current.innerHTML = typingTextFormat({
-          text: currentText,
-          mentionedMembers: [].concat(mentionedMembersPositions)
-        });
-      }
-
-      if (messageToEdit) {
-        setEditMessageText(currentText);
-      } else {
-        setMessageText(currentText);
-      }
-
-      if (selPos > 0) {
-        setSelectionPos(selPos);
-        setCursorPosition(messageInputRef.current, selPos);
-      }
-
-      if (currentMentions) {
-        if (currentMentions.start >= selPos) {
-          shouldClose = true;
-          setCurrentMentions(undefined);
-          setOpenMention(false);
-          setMentionTyping(false);
-        } else {
-          setCurrentMentions({
-            start: currentMentions.start,
-            typed: messageText.slice(currentMentions.start + 1, selPos)
-          });
-        }
-      }
-    }
-
-    if (mentionTyping) {
-      if (e.key === ' ') {
-        setSelectionPos(selPos);
-        handleCloseMentionsPopup(true);
-      } else if (!currentMentions.end && !shouldClose) {
-        var typedMessage = e.currentTarget.innerText;
-
-        var updateCurrentMentions = _extends({}, currentMentions);
-
-        updateCurrentMentions.typed = typedMessage.slice(updateCurrentMentions.start + 1, selPos);
-        setCurrentMentions(updateCurrentMentions);
-      }
-    }
-  };
-
   var handleCloseReply = function handleCloseReply() {
     dispatch(setMessageForReplyAC(null));
   };
 
   var handleSendEditMessage = function handleSendEditMessage(event) {
     var shiftKey = event.shiftKey,
-        charCode = event.charCode,
-        type = event.type;
-    var isEnter = charCode === 13 && shiftKey === false && !openMention;
+        type = event.type,
+        code = event.code;
+    var isEnter = code === 'Enter' && shiftKey === false;
     var shouldSend = (isEnter || type === 'click') && (messageToEdit || messageText || attachments.length && attachments.length > 0);
 
     if (isEnter) {
@@ -30778,44 +32082,42 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     if (shouldSend) {
+      event.preventDefault();
+      event.stopPropagation();
+
       if (messageToEdit) {
         handleEditMessage();
       } else if (messageText || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
-        var mentionedMembersPositions = [];
-
-        if (mentionedMembers && mentionedMembers.length > 0) {
-          var lastFoundIndex = 0;
-          var starts = {};
-          mentionedMembers.forEach(function (menMem) {
-            var mentionDisplayName = mentionedMembersDisplayName[menMem.id].displayName;
-            var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
-            lastFoundIndex = menIndex + mentionDisplayName.length;
-
-            if (!starts[menIndex]) {
-              mentionedMembersPositions.push({
-                id: menMem.id,
-                loc: menIndex,
-                len: mentionDisplayName.length
-              });
-            }
-
-            starts[menIndex] = true;
-          });
-        }
-
         var messageToSend = {
-          metadata: mentionedMembersPositions,
           body: messageTexToSend,
+          bodyAttributes: messageBodyAttributes,
           mentionedMembers: [],
           attachments: [],
           type: 'text'
         };
-        messageToSend.mentionedMembers = mentionedMembers.filter(function (v, i, a) {
-          return a.findIndex(function (t) {
-            return t.id === v.id;
-          }) === i;
-        });
+        var mentionMembersToSend = [];
+
+        if (messageBodyAttributes && messageBodyAttributes.length) {
+          messageBodyAttributes.forEach(function (att) {
+            if (att.type === 'mention') {
+              var mentionsToFind = [].concat(mentionedMembers);
+              var draftMessage = getDraftMessageFromMap(activeChannel.id);
+
+              if (draftMessage) {
+                mentionsToFind = [].concat(draftMessage.mentionedMembers, mentionedMembers);
+              }
+
+              var mentionToAdd = mentionsToFind.find(function (mention) {
+                return mention.id === att.metadata;
+              });
+              mentionMembersToSend.push(mentionToAdd);
+            }
+          });
+        }
+
+        messageToSend.mentionedMembers = mentionMembersToSend;
+        console.log('message to send ..........................................', messageToSend);
 
         if (messageForReply) {
           messageToSend.parentMessage = messageForReply;
@@ -30895,7 +32197,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
         }
 
         setMessageText('');
-        messageInputRef.current.innerText = '';
         fileUploader.current.value = '';
 
         if (inTypingState) {
@@ -30908,71 +32209,63 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
       setAttachments([]);
       handleCloseReply();
+      setShouldClearEditor({
+        clear: true
+      });
       setMentionedMembers([]);
-      setMentionedMembersDisplayName([]);
-      setOpenMention(false);
-      setMentionTyping(false);
-      setCurrentMentions(undefined);
-      console.log('set close search channels. . 12 . .', true);
+      setMessageBodyAttributes([]);
+      console.log('set mention typing false. . . . . .  >>>>>>>>>>>>>>>>>>>>>3 ');
       dispatch(setCloseSearchChannelsAC(true));
     }
   };
 
   var handleEditMessage = function handleEditMessage() {
     var messageTexToSend = editMessageText.trim();
+    console.log('messageTexToSend . . . . .', messageTexToSend);
+    console.log('messageToEdit . . . . .', messageToEdit);
 
-    if (messageTexToSend) {
+    if (messageTexToSend && messageTexToSend !== messageToEdit.body) {
       var mentionedMembersPositions = [];
-      var mentionedUserForSend = [];
+      var mentionMembersToSend = [];
 
       if (mentionedMembers && mentionedMembers.length) {
-        var lastFoundIndex = 0;
-        var starts = {};
-        mentionedMembers.forEach(function (menMem) {
-          var mentionDisplayName = ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim();
-          var menIndex = messageTexToSend.indexOf(mentionDisplayName, lastFoundIndex);
+        if (messageBodyAttributes && messageBodyAttributes.length) {
+          messageBodyAttributes.forEach(function (att) {
+            if (att.type === 'mention') {
+              var mentionsToFind = [].concat(mentionedMembers);
+              var draftMessage = getDraftMessageFromMap(activeChannel.id);
 
-          if (menIndex >= 0) {
-            lastFoundIndex = menIndex + mentionDisplayName.length;
+              if (draftMessage) {
+                mentionsToFind = [].concat(draftMessage.mentionedMembers, mentionedMembers);
+              }
 
-            if (!starts[menIndex]) {
-              mentionedMembersPositions.push({
-                id: menMem.id,
-                loc: menIndex,
-                len: mentionDisplayName.length
+              var mentionToAdd = mentionsToFind.find(function (mention) {
+                return mention.id === att.metadata;
               });
+              mentionMembersToSend.push(mentionToAdd);
             }
-
-            starts[menIndex] = true;
-            mentionedUserForSend.push(menMem);
-          }
-        });
+          });
+        }
       }
 
       var messageToSend = _extends({}, messageToEdit, {
         metadata: mentionedMembersPositions,
-        mentionedUsers: mentionedUserForSend,
+        bodyAttributes: messageBodyAttributes,
+        mentionedUsers: mentionMembersToSend,
         body: messageTexToSend
       });
 
       messageToSend.type = /(https?:\/\/[^\s]+)/.test(messageToSend.body) ? 'link' : messageToSend.type;
       dispatch(editMessageAC(activeChannel.id, messageToSend));
-      handleCloseEditMode();
     }
+
+    handleCloseEditMode();
   };
 
   var handleCloseEditMode = function handleCloseEditMode() {
     setEditMessageText('');
-
-    if (messageInputRef.current) {
-      messageInputRef.current.innerText = '';
-    }
-
     setMentionedMembers([]);
-    setMentionedMembersDisplayName([]);
-    setOpenMention(false);
-    setMentionTyping(false);
-    setCurrentMentions(undefined);
+    console.log('set mention typing false. . . . . .  >>>>>>>>>>>>>>>>>>>>> 4');
     dispatch(setMessageToEditAC(null));
   };
 
@@ -31004,13 +32297,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   var handlePastAttachments = function handlePastAttachments(e) {
+    console.log('handle past >>>>>>>>>>>>>>>>>>>>>>>>');
     var os = detectOS();
+    console.log('os is >>> ', os);
 
-    if (os === 'Windows' && browser === 'Firefox') {
-      e.preventDefault();
-      setMessageText(e.clipboardData.getData('text/plain').trim());
-      document.execCommand('inserttext', false, e.clipboardData.getData('text/plain').trim());
-    } else {
+    if (os === 'Windows' && browser === 'Firefox') ; else {
       if (e.clipboardData.files && e.clipboardData.files.length > 0) {
         e.preventDefault();
         var fileList = Object.values(e.clipboardData.files);
@@ -31020,29 +32311,24 @@ var SendMessageInput = function SendMessageInput(_ref) {
         });
       } else {
         e.preventDefault();
-        setMessageText(e.clipboardData.getData('text/plain').trim());
-        document.execCommand('inserttext', false, e.clipboardData.getData('text/plain').trim());
       }
     }
   };
 
   var handleCut = function handleCut() {
-    setMentionTyping(false);
     setMessageText('');
-    setCurrentMentions(undefined);
-    setOpenMention(false);
+    console.log('set mention typing false. . . . . .  >>>>>>>>>>>>>>>>>>>>> 5');
     setMentionedMembers([]);
   };
 
   var handleEmojiPopupToggle = function handleEmojiPopupToggle(bool) {
     setIsEmojisOpened(bool);
-    messageInputRef.current.focus();
   };
 
   var setVideoIsReadyToSend = function setVideoIsReadyToSend(attachmentId) {
-    var _extends3;
+    var _extends2;
 
-    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends3 = {}, _extends3[attachmentId] = true, _extends3)));
+    setReadyVideoAttachments(_extends({}, readyVideoAttachments, (_extends2 = {}, _extends2[attachmentId] = true, _extends2)));
   };
 
   var handleJoinToChannel = function handleJoinToChannel() {
@@ -31127,6 +32413,12 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
   var handleCloseSelectMessages = function handleCloseSelectMessages() {
     dispatch(clearSelectedMessagesAC());
+  };
+
+  var handleSetMentionMember = function handleSetMentionMember(mentionMember) {
+    setMentionedMembers(function (prevState) {
+      return [].concat(prevState, [mentionMember]);
+    });
   };
 
   var handleAddAttachment = function handleAddAttachment(file, isMediaAttachment) {
@@ -31296,10 +32588,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
                             if (dataFromDb) {
                               _metas = dataFromDb.metadata;
                             } else {
-                              return Promise.resolve(createImageThumbnail(file)).then(function (_ref2) {
-                                var thumbnail = _ref2.thumbnail,
-                                    imageWidth = _ref2.imageWidth,
-                                    imageHeight = _ref2.imageHeight;
+                              return Promise.resolve(createImageThumbnail(file)).then(function (_ref3) {
+                                var thumbnail = _ref3.thumbnail,
+                                    imageWidth = _ref3.imageWidth,
+                                    imageHeight = _ref3.imageHeight;
                                 _metas.imageHeight = imageHeight;
                                 _metas.imageWidth = imageWidth;
                                 _metas.thumbnail = thumbnail;
@@ -31332,8 +32624,8 @@ var SendMessageInput = function SendMessageInput(_ref) {
                             if (dataFromDb) {
                               _metas2 = dataFromDb.metadata;
                             } else {
-                              return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref3) {
-                                var thumbnail = _ref3.thumbnail;
+                              return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref4) {
+                                var thumbnail = _ref4.thumbnail;
                                 _metas2.thumbnail = thumbnail;
                               });
                             }
@@ -31369,10 +32661,10 @@ var SendMessageInput = function SendMessageInput(_ref) {
                             if (dataFromDb) {
                               _metas3 = dataFromDb.metadata;
                             } else {
-                              return Promise.resolve(getFrame(URL.createObjectURL(file), 0)).then(function (_ref4) {
-                                var thumb = _ref4.thumb,
-                                    width = _ref4.width,
-                                    height = _ref4.height;
+                              return Promise.resolve(getFrame(URL.createObjectURL(file), 0)).then(function (_ref5) {
+                                var thumb = _ref5.thumb,
+                                    width = _ref5.width,
+                                    height = _ref5.height;
                                 _metas3.thumb = thumb;
                                 _metas3.width = width;
                                 _metas3.height = height;
@@ -31438,33 +32730,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
   };
 
   React.useEffect(function () {
-    if (mentionTyping) {
-      console.log('is in mention typing .>>>>>>');
-
-      if (selectionPos <= currentMentions.start || selectionPos > currentMentions.start + 1 + currentMentions.typed.length) {
-        handleCloseMentionsPopup(true);
-      }
-    } else if (pendingMentions && pendingMentions.length) {
-      var currentPendingMention = pendingMentions.find(function (mention) {
-        return selectionPos <= mention.end && selectionPos > mention.start;
-      });
-      console.log('current pendiong mention .>>>>>>>>>>>>', currentPendingMention);
-
-      if (currentPendingMention) {
-        delete currentPendingMention.end;
-        setCurrentMentions({
-          start: currentPendingMention.start,
-          typed: currentPendingMention.typed
-        });
-        setMentionTyping(true);
-        setOpenMention(true);
-        setPendingMentions(pendingMentions.filter(function (mention) {
-          return mention.start !== currentPendingMention.start;
-        }));
-      }
-    }
-  }, [selectionPos]);
-  React.useEffect(function () {
     if (typingTimout === 0) {
       handleSendTypingState(false);
     }
@@ -31500,14 +32765,24 @@ var SendMessageInput = function SendMessageInput(_ref) {
     if (prevActiveChannelId && activeChannel.id && prevActiveChannelId !== activeChannel.id) {
       setMessageText('');
       handleCloseReply();
-      setMentionedMembersDisplayName([]);
       setAttachments([]);
       handleCloseEditMode();
       clearTimeout(typingTimout);
+      var draftMessage = getDraftMessageFromMap(activeChannel.id);
 
-      if (messageInputRef && messageInputRef.current) {
-        messageInputRef.current.focus();
+      if (draftMessage) {
+        if (draftMessage.messageForReply) {
+          dispatch(setMessageForReplyAC(draftMessage.messageForReply));
+        }
+
+        setMessageText(draftMessage.text);
+        setMentionedMembers(draftMessage.mentionedMembers);
       }
+
+      setShouldClearEditor({
+        clear: true,
+        draftMessage: draftMessage
+      });
     }
 
     if (activeChannel.id) {
@@ -31518,63 +32793,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
       messageInputRef.current.focus();
     }
 
+    dispatch(getMembersAC(activeChannel.id));
     setMentionedMembers([]);
-    setOpenMention(false);
-    setCurrentMentions(undefined);
-    setMentionTyping(false);
-    setPendingMentions([]);
-    var draftMessage = getDraftMessageFromMap(activeChannel.id);
-
-    if (draftMessage) {
-      if (draftMessage.messageForReply) {
-        dispatch(setMessageForReplyAC(draftMessage.messageForReply));
-      }
-
-      setMessageText(draftMessage.text);
-      setMentionedMembers(draftMessage.mentionedMembers);
-      var mentionedMembersPositions = [];
-
-      if (draftMessage.mentionedMembers && draftMessage.mentionedMembers.length > 0) {
-        var lastFoundIndex = 0;
-        var starts = {};
-        draftMessage.mentionedMembers.forEach(function (menMem) {
-          var mentionDisplayName = "@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts).trim();
-          var menIndex = draftMessage.text.indexOf(mentionDisplayName, lastFoundIndex);
-          lastFoundIndex = menIndex + mentionDisplayName.length;
-          setMentionedMembersDisplayName(function (prevState) {
-            var _extends4;
-
-            return _extends({}, prevState, (_extends4 = {}, _extends4[menMem.id] = {
-              id: menMem.id,
-              displayName: mentionDisplayName
-            }, _extends4));
-          });
-
-          if (!starts[menIndex]) {
-            mentionedMembersPositions.push({
-              displayName: mentionDisplayName,
-              start: menIndex,
-              end: menIndex + mentionDisplayName.length
-            });
-          }
-
-          starts[menIndex] = true;
-        });
-      }
-
-      messageInputRef.current.innerHTML = typingTextFormat({
-        text: draftMessage.text,
-        mentionedMembers: [].concat(mentionedMembersPositions)
-      });
-      setCursorPosition(messageInputRef.current, draftMessage.text.length);
-
-      if (inputAutofocus) {
-        messageInputRef.current.focus();
-      }
-    }
   }, [activeChannel.id]);
   React.useEffect(function () {
-    if (messageText.trim() || editMessageText.trim() && editMessageText !== messageToEdit.body || attachments.length) {
+    if (messageText.trim() || editMessageText.trim() && editMessageText && editMessageText.trim() !== messageToEdit.body || attachments.length) {
       if (attachments.length) {
         var videoAttachment = false;
         attachments.forEach(function (att) {
@@ -31600,11 +32823,23 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
 
     if (messageText.trim()) {
-      setDraftMessageToMap(activeChannel.id, {
-        text: messageText,
-        mentionedMembers: mentionedMembers,
-        messageForReply: messageForReply
-      });
+      var draftMessage = getDraftMessageFromMap(activeChannel.id);
+
+      if (draftMessage && draftMessage.mentionedMembers && draftMessage.mentionedMembers.length) {
+        setDraftMessageToMap(activeChannel.id, {
+          text: messageText,
+          mentionedMembers: draftMessage.mentionedMembers,
+          messageForReply: messageForReply,
+          editorState: realEditorState
+        });
+      } else {
+        setDraftMessageToMap(activeChannel.id, {
+          text: messageText,
+          mentionedMembers: mentionedMembers,
+          messageForReply: messageForReply,
+          editorState: realEditorState
+        });
+      }
 
       if (!listenerIsAdded) {
         setListenerIsAdded(true);
@@ -31622,6 +32857,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, [messageText, attachments, editMessageText, readyVideoAttachments]);
   useDidUpdate(function () {
     if (mentionedMembers && mentionedMembers.length) {
+      console.log('set draft message 2 ..>> ', {
+        text: messageText,
+        mentionedMembers: mentionedMembers,
+        messageForReply: messageForReply
+      });
       setDraftMessageToMap(activeChannel.id, {
         text: messageText,
         mentionedMembers: mentionedMembers,
@@ -31629,6 +32869,15 @@ var SendMessageInput = function SendMessageInput(_ref) {
       });
     }
   }, [mentionedMembers]);
+  React.useEffect(function () {
+    if (emojiBtnRef && emojiBtnRef.current) {
+      var _emojiBtnRef$current$ = emojiBtnRef.current.getBoundingClientRect(),
+          left = _emojiBtnRef$current$.left,
+          width = _emojiBtnRef$current$.width;
+
+      setEmojisPopupLeftPosition(left - width / 2);
+    }
+  }, [emojiBtnRef.current]);
   React.useEffect(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       setTimeout(function () {
@@ -31655,7 +32904,7 @@ var SendMessageInput = function SendMessageInput(_ref) {
     }
   }, [attachments]);
   React.useEffect(function () {
-    if (emojiBtnRef.current && emojiBtnRef.current.offsetLeft > messageInputRef.current.offsetWidth) {
+    if (emojiBtnRef.current && messageInputRef.current && emojiBtnRef.current.offsetLeft > messageInputRef.current.offsetWidth) {
       setEmojisInRightSide(true);
     }
 
@@ -31669,6 +32918,11 @@ var SendMessageInput = function SendMessageInput(_ref) {
   });
   useDidUpdate(function () {
     if (draftMessagesMap[activeChannel.id]) {
+      console.log('set draft 3 .>> >>', {
+        text: messageText,
+        mentionedMembers: mentionedMembers,
+        messageForReply: messageForReply
+      });
       setDraftMessageToMap(activeChannel.id, {
         text: messageText,
         mentionedMembers: mentionedMembers,
@@ -31684,56 +32938,12 @@ var SendMessageInput = function SendMessageInput(_ref) {
       dispatch(setSendMessageInputHeightAC(messageContRef.current.getBoundingClientRect().height));
     }
 
-    if (messageInputRef.current) {
-      messageInputRef.current.focus();
+    if (editorRef.current) {
+      editorRef.current.focus();
     }
   }, [messageForReply]);
   useDidUpdate(function () {
-    if (messageToEdit && messageInputRef.current) {
-      if (messageToEdit.mentionedUsers && messageToEdit.mentionedUsers.length) {
-        var formattedText = MessageTextFormat({
-          text: messageToEdit.body,
-          message: messageToEdit,
-          contactsMap: contactsMap,
-          getFromContacts: getFromContacts,
-          asSampleText: true
-        });
-        setEditMessageText(formattedText);
-        var mentions = getDuplicateMentionsFromMeta(messageToEdit.metadata, messageToEdit.mentionedUsers);
-        var mentionedMembersPositions = [];
-        var editingMentionedMembers = [];
-        var lastFoundIndex = 0;
-        var starts = {};
-        mentions.forEach(function (menMem) {
-          var mentionDisplayName = ("@" + makeUsername(contactsMap[menMem.id], menMem, getFromContacts)).trim();
-          var menIndex = formattedText.indexOf(mentionDisplayName, lastFoundIndex);
-          lastFoundIndex = menIndex + mentionDisplayName.length;
-
-          if (!starts[menIndex]) {
-            var mentionInfo = {
-              displayName: mentionDisplayName,
-              start: menIndex,
-              end: menIndex + mentionDisplayName.length
-            };
-            editingMentionedMembers.push(_extends({}, menMem, mentionInfo));
-            mentionedMembersPositions.push(mentionInfo);
-          }
-
-          starts[menIndex] = true;
-        });
-        setMentionedMembers(editingMentionedMembers);
-        messageInputRef.current.innerHTML = typingTextFormat({
-          text: messageToEdit.body,
-          mentionedMembers: [].concat(mentionedMembersPositions)
-        });
-      } else {
-        setEditMessageText(messageToEdit.body || '');
-        messageInputRef.current.innerText = messageToEdit.body;
-      }
-
-      placeCaretAtEnd(messageInputRef.current);
-      messageInputRef.current.focus();
-
+    if (messageToEdit) {
       if (messageForReply) {
         handleCloseReply();
       }
@@ -31741,10 +32951,6 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     if (messageContRef && messageContRef.current) {
       dispatch(setSendMessageInputHeightAC(messageContRef.current.getBoundingClientRect().height));
-    }
-
-    if (messageInputRef.current) {
-      messageInputRef.current.focus();
     }
   }, [messageToEdit]);
   React.useEffect(function () {
@@ -31758,10 +32964,14 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
     if (messageContRef && messageContRef.current) {
       inputHeightTimeout = setTimeout(function () {
-        dispatch(setSendMessageInputHeightAC(messageContRef.current.getBoundingClientRect().height));
+        var inputContHeight = messageContRef.current.getBoundingClientRect().height;
+        setEmojisPopupBottomPosition(inputContHeight);
+        dispatch(setSendMessageInputHeightAC(inputContHeight));
       }, 800);
     }
 
+    messageContRef.current.addEventListener('paste', handlePastAttachments);
+    messageContRef.current.addEventListener('cut', handleCut);
     document.addEventListener('mousedown', handleClick);
     return function () {
       if (inputHeightTimeout) {
@@ -31770,13 +32980,22 @@ var SendMessageInput = function SendMessageInput(_ref) {
 
       prevActiveChannelId = undefined;
       document.removeEventListener('mousedown', handleClick);
+
+      if (messageContRef && messageContRef.current) {
+        messageContRef.current.removeEventListener('paste', handlePastAttachments);
+        messageContRef.current.removeEventListener('cut', handleCut);
+      }
     };
   }, []);
   return /*#__PURE__*/React__default.createElement(Container$i, {
     margin: margin,
     border: border,
     ref: messageContRef,
-    theme: theme
+    theme: theme,
+    mentionColor: colors.primary,
+    toolBarTop: selectedText && selectedText.current ? selectedText.current.top : '',
+    toolBarLeft: selectedText && selectedText.current ? selectedText.current.left : '',
+    selectionBackgroundColor: textSelectionBackgroundColor || colors.primaryLight
   }, selectedMessagesMap && selectedMessagesMap.size > 0 ? /*#__PURE__*/React__default.createElement(SelectedMessagesWrapper, null, selectedMessagesMap.size, " ", selectedMessagesMap.size > 1 ? ' messages selected' : ' message selected', /*#__PURE__*/React__default.createElement(CustomButton, {
     onClick: handleToggleForwardMessagePopup,
     backgroundColor: colors.primaryLight,
@@ -31813,16 +33032,17 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, /*#__PURE__*/React__default.createElement(SvgEye, null), " Read only") : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(TypingIndicator$1, null, typingIndicator && typingIndicator.typingState && (CustomTypingIndicator ? /*#__PURE__*/React__default.createElement(CustomTypingIndicator, {
     from: typingIndicator.from,
     typingState: typingIndicator.typingState
-  }) : /*#__PURE__*/React__default.createElement(TypingIndicatorCont, null, /*#__PURE__*/React__default.createElement(TypingFrom, null, makeUsername(getFromContacts && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts), ' ', "is typing"), /*#__PURE__*/React__default.createElement(TypingAnimation, null, /*#__PURE__*/React__default.createElement(DotOne, null), /*#__PURE__*/React__default.createElement(DotTwo, null), /*#__PURE__*/React__default.createElement(DotThree, null))))), isEmojisOpened && /*#__PURE__*/React__default.createElement(EmojisPopup, {
-    handleAddEmoji: handleAddEmoji,
-    handleEmojiPopupToggle: handleEmojiPopupToggle,
-    rightSide: emojisInRightSide,
-    bottomPosition: '100%'
-  }), messageToEdit && /*#__PURE__*/React__default.createElement(EditReplyMessageCont, null, /*#__PURE__*/React__default.createElement(CloseEditMode, {
+  }) : /*#__PURE__*/React__default.createElement(TypingIndicatorCont, null, /*#__PURE__*/React__default.createElement(TypingFrom, null, makeUsername(getFromContacts && typingIndicator.from && contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts), ' ', "is typing"), /*#__PURE__*/React__default.createElement(TypingAnimation, null, /*#__PURE__*/React__default.createElement(DotOne, null), /*#__PURE__*/React__default.createElement(DotTwo, null), /*#__PURE__*/React__default.createElement(DotThree, null))))), messageToEdit && /*#__PURE__*/React__default.createElement(EditReplyMessageCont, null, /*#__PURE__*/React__default.createElement(CloseEditMode, {
     onClick: handleCloseEditMode
   }, /*#__PURE__*/React__default.createElement(SvgClose, null)), /*#__PURE__*/React__default.createElement(EditReplyMessageHeader, {
     color: colors.primary
-  }, editMessageIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null), "Edit Message"), /*#__PURE__*/React__default.createElement(EditMessageText, null, messageToEdit.body)), messageForReply && /*#__PURE__*/React__default.createElement(EditReplyMessageCont, null, /*#__PURE__*/React__default.createElement(CloseEditMode, {
+  }, editMessageIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null), "Edit Message"), /*#__PURE__*/React__default.createElement(EditMessageText, null, MessageTextFormat({
+    text: messageToEdit.body,
+    message: messageToEdit,
+    contactsMap: contactsMap,
+    getFromContacts: getFromContacts,
+    asSampleText: true
+  }))), messageForReply && /*#__PURE__*/React__default.createElement(EditReplyMessageCont, null, /*#__PURE__*/React__default.createElement(CloseEditMode, {
     onClick: handleCloseReply
   }, /*#__PURE__*/React__default.createElement(SvgClose, null)), /*#__PURE__*/React__default.createElement(ReplyMessageCont, null, !!(messageForReply.attachments && messageForReply.attachments.length) && (messageForReply.attachments[0].type === attachmentTypes.image || messageForReply.attachments[0].type === attachmentTypes.video ? /*#__PURE__*/React__default.createElement(Attachment$1, {
     attachment: messageForReply.attachments[0],
@@ -31854,24 +33074,19 @@ var SendMessageInput = function SendMessageInput(_ref) {
   })), /*#__PURE__*/React__default.createElement(SendMessageInputContainer, {
     iconColor: colors.primary,
     minHeight: minHeight
-  }, /*#__PURE__*/React__default.createElement(MentionsContainer, {
-    mentionsIsOpen: openMention
-  }, openMention && /*#__PURE__*/React__default.createElement(MentionMembersPopup, {
-    theme: theme,
-    channelId: activeChannel.id,
-    addMentionMember: handleSetMention,
-    searchMention: currentMentions.typed,
-    handleMentionsPopupClose: handleCloseMentionsPopup
-  })), /*#__PURE__*/React__default.createElement(UploadFile, {
+  }, /*#__PURE__*/React__default.createElement(UploadFile, {
     ref: fileUploader,
     onChange: handleFileUpload,
     multiple: true,
     type: 'file'
   }), /*#__PURE__*/React__default.createElement(MessageInputWrapper, {
+    className: 'message_input_wrapper',
     borderRadius: borderRadius,
     ref: inputWrapperRef,
     backgroundColor: backgroundColor || colors.backgroundColor,
-    channelDetailsIsOpen: channelDetailsIsOpen
+    channelDetailsIsOpen: channelDetailsIsOpen,
+    messageInputOrder: inputOrder,
+    messageInputPaddings: inputPaddings
   }, showAddEmojis && /*#__PURE__*/React__default.createElement(EmojiButton, {
     order: emojiIcoOrder,
     isEmojisOpened: isEmojisOpened,
@@ -31910,25 +33125,62 @@ var SendMessageInput = function SendMessageInput(_ref) {
     },
     iconWidth: '20px',
     iconColor: colors.textColor2
-  }, /*#__PURE__*/React__default.createElement(SvgChoseFile, null), "File"))), /*#__PURE__*/React__default.createElement(MessageInput, {
-    contentEditable: true,
-    suppressContentEditableWarning: true,
-    isChrome: browser === 'Chrome',
-    onKeyUp: handleTyping,
-    onChange: handleTyping,
-    onPaste: handlePastAttachments,
-    color: colors.textColor1,
-    onCut: handleCut,
-    onKeyPress: handleSendEditMessage,
-    "data-placeholder": 'Type message here ...',
-    borderRadius: inputBorderRadius,
+  }, /*#__PURE__*/React__default.createElement(SvgChoseFile, null), "File"))), /*#__PURE__*/React__default.createElement(LexicalWrapper, {
+    ref: messageInputRef,
     order: inputOrder,
     backgroundColor: inputBackgroundColor,
     paddings: inputPaddings,
-    ref: messageInputRef,
     mentionColor: colors.primary,
-    className: inputCustomClassname
-  })), /*#__PURE__*/React__default.createElement(SendMessageIcon, {
+    className: inputCustomClassname,
+    selectionBackgroundColor: textSelectionBackgroundColor || colors.primaryLight,
+    borderRadius: inputBorderRadius
+  }, /*#__PURE__*/React__default.createElement(LexicalComposer.LexicalComposer, {
+    initialConfig: initialConfig
+  }, /*#__PURE__*/React__default.createElement(MyCustomAutoFocusPlugin, null), /*#__PURE__*/React__default.createElement(ClearEditorPlugin, {
+    shouldClearEditor: shouldClearEditor,
+    setEditorCleared: function setEditorCleared() {
+      return setShouldClearEditor({
+        clear: false
+      });
+    }
+  }), /*#__PURE__*/React__default.createElement(LexicalOnChangePlugin.OnChangePlugin, {
+    onChange: onChange
+  }), /*#__PURE__*/React__default.createElement(EditMessagePlugin, {
+    editMessage: messageToEdit,
+    contactsMap: contactsMap,
+    getFromContacts: getFromContacts,
+    setMentionedMember: setMentionedMembers
+  }), /*#__PURE__*/React__default.createElement(FormatMessagePlugin, {
+    editorState: realEditorState,
+    setMessageBodyAttributes: setMessageBodyAttributes,
+    messageText: messageToEdit ? editMessageText : messageText,
+    setMessageText: messageToEdit ? setEditMessageText : setMessageText,
+    messageToEdit: messageToEdit
+  }), /*#__PURE__*/React__default.createElement(React__default.Fragment, null, isEmojisOpened && /*#__PURE__*/React__default.createElement(EmojisPopup$1, {
+    handleEmojiPopupToggle: handleEmojiPopupToggle,
+    rightSide: emojisInRightSide,
+    bottomPosition: emojisPopupBottomPosition + "px",
+    leftPosition: emojisPopupLeftPosition + "px"
+  }), allowMentionUser && /*#__PURE__*/React__default.createElement(MentionsPlugin, {
+    setMentionMember: handleSetMentionMember,
+    contactsMap: contactsMap,
+    userId: user.id,
+    getFromContacts: getFromContacts
+  }), /*#__PURE__*/React__default.createElement(LexicalRichTextPlugin.RichTextPlugin, {
+    contentEditable: /*#__PURE__*/React__default.createElement("div", {
+      onKeyDown: handleSendEditMessage,
+      className: 'rich_text_editor',
+      ref: onRef
+    }, /*#__PURE__*/React__default.createElement(LexicalContentEditable.ContentEditable, {
+      className: 'content_editable_input'
+    })),
+    placeholder: /*#__PURE__*/React__default.createElement(Placeholder, {
+      paddings: inputPaddings
+    }, "Type message here ..."),
+    ErrorBoundary: LexicalErrorBoundary
+  }), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FloatingTextFormatToolbarPlugin, {
+    anchorElem: floatingAnchorElem
+  })))))), /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     color: colors.backgroundColor,
@@ -31937,21 +33189,36 @@ var SendMessageInput = function SendMessageInput(_ref) {
   }, /*#__PURE__*/React__default.createElement(SvgSend, null))))));
 };
 
-var Container$i = styled__default.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .rdw-suggestion-option {\n  }\n\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n"])), function (props) {
+var Container$i = styled__default.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .text_formatting_toolbar {\n    display: ", ";\n    position: fixed;\n    top: ", ";\n    left: ", ";\n  }\n\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n  & .custom_editor {\n    cursor: text;\n\n    & .rdw-mention-link {\n      color: ", ";\n    }\n  }\n"])), function (props) {
   return props.margin || '30px 0 16px';
 }, function (props) {
   return props.border || '';
 }, function (props) {
   return props.borderRadius || '4px';
+}, function (props) {
+  return props.toolBarTop || props.toolBarLeft ? 'block' : 'none';
+}, function (props) {
+  return props.toolBarTop;
+}, function (props) {
+  return props.toolBarLeft;
+}, function (props) {
+  return props.mentionColor || colors.primary;
 });
-var EditReplyMessageCont = styled__default.div(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
-var EditMessageText = styled__default.p(_templateObject3$p || (_templateObject3$p = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled__default.span(_templateObject4$l || (_templateObject4$l = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
-var UserName$1 = styled__default.span(_templateObject5$j || (_templateObject5$j = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled__default.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var MentionsPopup = styled__default.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  transition: all 0.2s;\n  overflow: auto;\n  max-height: 240px;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
+  return props.backgroundColor || colors.white;
+}, function (props) {
+  return props.withBorder && "1px solid " + colors.borderColor;
+}, function (props) {
+  return props.hidden ? 'hidden' : 'visible';
+});
+var EditReplyMessageCont = styled__default.div(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
+var EditMessageText = styled__default.p(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled__default.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
+var UserName$1 = styled__default.span(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageHeader = styled__default.h4(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
-var AddAttachmentIcon = styled__default.span(_templateObject7$e || (_templateObject7$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled__default.span(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
@@ -31960,21 +33227,21 @@ var AddAttachmentIcon = styled__default.span(_templateObject7$e || (_templateObj
 }, function (props) {
   return props.color || colors.primary;
 });
-var SendMessageInputContainer = styled__default.div(_templateObject8$d || (_templateObject8$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n\n    & ", " {\n      & > svg {\n        color: ", ";\n      }\n    ;\n    }\n  }\n}\n"])), function (props) {
+var SendMessageInputContainer = styled__default.div(_templateObject9$c || (_templateObject9$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n\n    & ", " {\n      & > svg {\n        color: ", ";\n      }\n    ;\n    }\n  }\n}\n"])), function (props) {
   return props.minHeight || '36px';
 }, function (props) {
   return props.messageForReply ? '0 0 4px 4px' : '4px';
 }, AddAttachmentIcon, function (props) {
   return props.iconColor || colors.primary;
 });
-var MessageInputWrapper = styled__default.div(_templateObject9$c || (_templateObject9$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 100%;\n  max-width: calc(100% - 50px);\n  //max-width: ", ";\n  //max-width: calc(100% - 110px);\n  background-color: ", ";\n  border-radius: ", ";\n  position: relative;\n"])), function (props) {
+var MessageInputWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 100%;\n  max-width: calc(100% - 50px);\n  //max-width: ", ";\n  //max-width: calc(100% - 110px);\n  background-color: ", ";\n  border-radius: ", ";\n  position: relative;\n"])), function (props) {
   return props.channelDetailsIsOpen ? "calc(100% - " + (props.channelDetailsIsOpen ? 362 : 0) + "px)" : '';
 }, function (props) {
   return props.backgroundColor || colors.backgroundColor;
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var MessageInput = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  margin: 8px 6px;\n  width: 100%;\n  max-height: 80px;\n  min-height: 20px;\n  display: block;\n  border: none;\n  font: inherit;\n  color: ", ";\n  box-sizing: border-box;\n  outline: none !important;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: auto;\n  border-radius: ", ";\n  background-color: ", ";\n  padding: ", ";\n  order: ", ";\n\n  &:empty:before {\n    content: attr(data-placeholder);\n  }\n\n  &:before {\n    position: relative;\n    top: calc(50% - 10px);\n    left: 0;\n    font-size: 15px;\n    color: ", ";\n    pointer-events: none;\n    unicode-bidi: plaintext;\n    white-space: nowrap;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    max-width: 100%;\n  }\n\n  &::placeholder {\n    font-size: 15px;\n    color: ", ";\n    opacity: 1;\n  }\n\n  & span.mention_user {\n    color: ", ";\n    user-modify: ", ";\n  }\n\n  //caret-color: #000;\n"])), function (props) {
+var LexicalWrapper = styled__default.div(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & span.mention {\n      color: ", ";\n      user-modify: ", ";\n      background-color: inherit !important;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: bold;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.borderRadius;
@@ -31984,12 +33251,19 @@ var MessageInput = styled__default.div(_templateObject10$b || (_templateObject10
   return props.paddings;
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
-}, colors.textColor3, colors.textColor3, function (props) {
+}, function (props) {
+  return props.selectionBackgroundColor || colors.primary;
+}, function (props) {
+  return props.selectionBackgroundColor || colors.primary;
+}, function (props) {
   return props.mentionColor || colors.primary;
 }, function (props) {
   return props.isChrome && 'read-only';
 });
-var EmojiButton = styled__default.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var Placeholder = styled__default.span(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  color: ", ";\n  margin: 8px 6px;\n\n  padding: ", ";\n"])), colors.placeholderTextColor, function (props) {
+  return props.paddings;
+});
+var EmojiButton = styled__default.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 2;
@@ -31998,215 +33272,48 @@ var EmojiButton = styled__default.span(_templateObject11$8 || (_templateObject11
 }, function (props) {
   return props.hoverColor || colors.primary;
 });
-var MentionsContainer = styled__default.div(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n"])));
-var SendMessageIcon = styled__default.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
+var MentionsContainer$1 = styled__default.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n  animation: fadeIn 0.2s ease-in-out;\n  @keyframes fadeIn {\n    from {\n      opacity: 0;\n    }\n    to {\n      opacity: 1;\n    }\n  }\n"])));
+var SendMessageIcon = styled__default.span(_templateObject15$4 || (_templateObject15$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
   return props.isActive ? colors.primary : props.color;
 });
-var ChosenAttachments = styled__default.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
-var TypingIndicator$1 = styled__default.div(_templateObject15$4 || (_templateObject15$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
-var TypingIndicatorCont = styled__default.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
-var TypingFrom = styled__default.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
-var sizeAnimation = styled.keyframes(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
-var DotOne = styled__default.span(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose([""])));
-var DotTwo = styled__default.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
-var DotThree = styled__default.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
-var TypingAnimation = styled__default.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", "\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
-var Loading = styled__default.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
-var BlockedUserInfo = styled__default.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
-var JoinChannelCont = styled__default.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
+var ChosenAttachments = styled__default.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
+var TypingIndicator$1 = styled__default.div(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
+var TypingIndicatorCont = styled__default.div(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
+var TypingFrom = styled__default.h5(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
+var sizeAnimation = styled.keyframes(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var DotOne = styled__default.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
+var DotTwo = styled__default.span(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose([""])));
+var DotThree = styled__default.span(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose([""])));
+var TypingAnimation = styled__default.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", "\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
+var Loading = styled__default.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
+var BlockedUserInfo = styled__default.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
+var JoinChannelCont = styled__default.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
 }, colors.backgroundColor);
-var ReadOnlyCont = styled__default.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReadOnlyCont = styled__default.div(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.iconColor || colors.primary;
 });
-var ReplyMessageCont = styled__default.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
-var ReplyIconWrapper = styled__default.span(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageCont = styled__default.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
+var ReplyIconWrapper = styled__default.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, colors.white);
-var SelectedMessagesWrapper = styled__default.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
-var CustomButton = styled__default.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
+var SelectedMessagesWrapper = styled__default.div(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
+var CustomButton = styled__default.span(_templateObject32$1 || (_templateObject32$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.backgroundColor || colors.primaryLight;
 }, function (props) {
   return props.marginLeft || '8px';
 });
-var CloseIconWrapper = styled__default.span(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
-
-var _path$13;
-
-function _extends$15() {
-  _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$15.apply(this, arguments);
-}
-
-function SvgBottom(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$15({
-    width: 12,
-    height: 7,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _path$14, _path2$6;
-
-function _extends$16() {
-  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$16.apply(this, arguments);
-}
-
-function SvgMarkAsUnRead(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$16({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
-    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
-    fill: "currentColor"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/React.createElement("path", {
-    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
-    fill: "currentColor"
-  })));
-}
-
-var _path$15;
-
-function _extends$17() {
-  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$17.apply(this, arguments);
-}
-
-function SvgMarkAsRead(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$17({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
-    fill: "currentColor"
-  })));
-}
+var CloseIconWrapper = styled__default.span(_templateObject33$1 || (_templateObject33$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
 
 var _path$16;
-
-function _extends$18() {
-  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$18.apply(this, arguments);
-}
-
-function SvgDeleteChannel(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$18({
-    width: 20,
-    height: 21,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$17;
-
-function _extends$19() {
-  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$19.apply(this, arguments);
-}
-
-function SvgClear(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$19({
-    width: 20,
-    height: 21,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
-    fill: "#FA4C56"
-  })));
-}
-
-var _path$18;
 
 function _extends$1a() {
   _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
@@ -32225,20 +33332,22 @@ function _extends$1a() {
   return _extends$1a.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgBottom(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1a({
-    width: 20,
-    height: 21,
-    viewBox: "0 0 20.01 21.01",
+    width: 12,
+    height: 7,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
-    fill: "CurrentColor"
+  }, props), _path$16 || (_path$16 = /*#__PURE__*/React.createElement("path", {
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$19, _path2$7;
+var _path$17, _path2$6;
 
 function _extends$1b() {
   _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
@@ -32257,24 +33366,23 @@ function _extends$1b() {
   return _extends$1b.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1b({
     width: 20,
-    height: 21,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/React.createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
-    fill: "CurrentColor"
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/React.createElement("path", {
+    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
+    fill: "currentColor"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/React.createElement("path", {
+    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
+    fill: "currentColor"
   })));
 }
 
-var _path$1a;
+var _path$18;
 
 function _extends$1c() {
   _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
@@ -32293,19 +33401,22 @@ function _extends$1c() {
   return _extends$1c.apply(this, arguments);
 }
 
-function SvgStar(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1c({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
+  }, props), _path$18 || (_path$18 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    fill: "currentColor"
   })));
 }
 
-var _path$1b;
+var _path$19;
 
 function _extends$1d() {
   _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
@@ -32324,19 +33435,182 @@ function _extends$1d() {
   return _extends$1d.apply(this, arguments);
 }
 
-function SvgPin(props) {
+function SvgDeleteChannel(props) {
   return /*#__PURE__*/React.createElement("svg", _extends$1d({
+    width: 20,
+    height: 21,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/React.createElement("path", {
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$1a;
+
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1e.apply(this, arguments);
+}
+
+function SvgClear(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1e({
+    width: 20,
+    height: 21,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1a || (_path$1a = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
+    fill: "#FA4C56"
+  })));
+}
+
+var _path$1b;
+
+function _extends$1f() {
+  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1f.apply(this, arguments);
+}
+
+function SvgBlockChannel(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1f({
+    width: 20,
+    height: 21,
+    viewBox: "0 0 20.01 21.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1b || (_path$1b = /*#__PURE__*/React.createElement("path", {
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$1c, _path2$7;
+
+function _extends$1g() {
+  _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1g.apply(this, arguments);
+}
+
+function SvgReport(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1g({
+    width: 20,
+    height: 21,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1c || (_path$1c = /*#__PURE__*/React.createElement("path", {
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/React.createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$1d;
+
+function _extends$1h() {
+  _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1h.apply(this, arguments);
+}
+
+function SvgStar(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1h({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1b || (_path$1b = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1d || (_path$1d = /*#__PURE__*/React.createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
+  })));
+}
+
+var _path$1e;
+
+function _extends$1i() {
+  _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1i.apply(this, arguments);
+}
+
+function SvgPin(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$1i({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1e || (_path$1e = /*#__PURE__*/React.createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
 }
 
-var _templateObject$A, _templateObject2$w, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$i;
+var _templateObject$C, _templateObject2$y, _templateObject3$r, _templateObject4$n, _templateObject5$l, _templateObject6$i;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -32785,15 +34059,15 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$j = styled__default.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-bottom: 6px solid ", ";\n]"])), function (props) {
+var Container$j = styled__default.div(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-bottom: 6px solid ", ";\n]"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ActionHeader = styled__default.div(_templateObject2$w || (_templateObject2$w = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
-var MenuTriggerIcon = styled__default.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
+var ActionHeader = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
+var MenuTriggerIcon = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
-var ActionsMenu = styled__default.ul(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled__default(SvgUnmuteNotifications)(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu = styled__default.ul(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DefaultMutedIcon = styled__default(SvgUnmuteNotifications)(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose([""])));
 var ActionItem$1 = styled__default.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
@@ -32806,10 +34080,10 @@ var ActionItem$1 = styled__default.li(_templateObject6$i || (_templateObject6$i 
   return props.hoverColor || colors.blue;
 });
 
-var _rect$2, _rect2, _path$1c;
+var _rect$2, _rect2, _path$1f;
 
-function _extends$1e() {
-  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1j() {
+  _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32822,11 +34096,11 @@ function _extends$1e() {
 
     return target;
   };
-  return _extends$1e.apply(this, arguments);
+  return _extends$1j.apply(this, arguments);
 }
 
 function SvgAddMember(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1e({
+  return /*#__PURE__*/React.createElement("svg", _extends$1j({
     width: 40,
     height: 40,
     viewBox: "0 0 40.01 40.01",
@@ -32846,16 +34120,16 @@ function SvgAddMember(props) {
     stroke: "#000",
     strokeOpacity: 0.08,
     strokeWidth: 0.5
-  })), _path$1c || (_path$1c = /*#__PURE__*/React.createElement("path", {
+  })), _path$1f || (_path$1f = /*#__PURE__*/React.createElement("path", {
     d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$1d;
+var _path$1g;
 
-function _extends$1f() {
-  _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1k() {
+  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -32868,22 +34142,22 @@ function _extends$1f() {
 
     return target;
   };
-  return _extends$1f.apply(this, arguments);
+  return _extends$1k.apply(this, arguments);
 }
 
 function SvgMoreVert(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1f({
+  return /*#__PURE__*/React.createElement("svg", _extends$1k({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1d || (_path$1d = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
 }
 
-var _templateObject$B, _templateObject2$x, _templateObject3$r;
+var _templateObject$D, _templateObject2$z, _templateObject3$s;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
   var theme = _ref.theme,
@@ -32979,14 +34253,14 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }, "Save"))));
 };
 
-var RolesSelect = styled__default.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled__default.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: ", ";\n"])), function (_ref2) {
+var RolesSelect = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
+var RoleLabel = styled__default.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: ", ";\n"])), function (_ref2) {
   var color = _ref2.color;
   return color || colors.textColor1;
 });
-var RoleSpan = styled__default.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  text-transform: capitalize;\n"])));
+var RoleSpan = styled__default.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$C, _templateObject2$y, _templateObject3$s, _templateObject4$n, _templateObject5$l, _templateObject6$j, _templateObject7$f, _templateObject8$e, _templateObject9$d;
+var _templateObject$E, _templateObject2$A, _templateObject3$t, _templateObject4$o, _templateObject5$m, _templateObject6$j, _templateObject7$g, _templateObject8$f, _templateObject9$d;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -33153,7 +34427,7 @@ var Members = function Members(_ref) {
   }, [channel]);
   return /*#__PURE__*/React__default.createElement(Container$k, {
     theme: theme
-  }, /*#__PURE__*/React__default.createElement(ActionsMenu$1, null, /*#__PURE__*/React__default.createElement(MembersList$1, {
+  }, /*#__PURE__*/React__default.createElement(ActionsMenu$1, null, /*#__PURE__*/React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
   }, checkActionPermission('addMember') && /*#__PURE__*/React__default.createElement(MemberItem$1, {
     key: 1,
@@ -33188,7 +34462,7 @@ var Members = function Members(_ref) {
       watchToggleState: function watchToggleState(state) {
         return watchDropdownState(state, member.id);
       },
-      trigger: /*#__PURE__*/React__default.createElement(EditMemberIcon$1, null, /*#__PURE__*/React__default.createElement(SvgMoreVert, null))
+      trigger: /*#__PURE__*/React__default.createElement(EditMemberIcon, null, /*#__PURE__*/React__default.createElement(SvgMoreVert, null))
     }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, showChangeMemberRole && checkActionPermission('changeMemberRole') && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
       onClick: function onClick() {
         setSelectedMember(member);
@@ -33271,27 +34545,27 @@ var Members = function Members(_ref) {
     toggleCreatePopup: handleAddMemberPopup
   }));
 };
-var Container$k = styled__default.div(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose([""])));
-var ActionsMenu$1 = styled__default.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled__default.div(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
-var MemberNameWrapper = styled__default.div(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
-var MemberName$3 = styled__default.h4(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
-var EditMemberIcon$1 = styled__default.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList$1 = styled__default.ul(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var MemberItem$1 = styled__default.li(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n  cursor: pointer;\n\n  &:first-child {\n    cursor: pointer;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
+var Container$k = styled__default.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu$1 = styled__default.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
+var MemberNamePresence = styled__default.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
+var MemberNameWrapper = styled__default.div(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
+var MemberName$3 = styled__default.h4(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
+var EditMemberIcon = styled__default.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList = styled__default.ul(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var MemberItem$1 = styled__default.li(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n  cursor: pointer;\n\n  &:first-child {\n    cursor: pointer;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.addMemberIconColor || colors.primary;
 }, function (props) {
   return props.hoverBackground || colors.gray0;
-}, EditMemberIcon$1, UserStatus);
+}, EditMemberIcon, UserStatus);
 var RoleBadge = styled__default.span(_templateObject9$d || (_templateObject9$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 2px 8px;\n  border-radius: 12px;\n  margin-left: 4px;\n  font-weight: 500;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n\n  &::after {\n    content: '';\n    position: absolute;\n    top: 0;\n    left: 0;\n    border-radius: 12px;\n    width: 100%;\n    height: 100%;\n    background-color: ", ";\n    opacity: 0.1;\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.color || colors.primary;
 });
 
-var _templateObject$D, _templateObject2$z;
+var _templateObject$F, _templateObject2$B;
 
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
@@ -33340,13 +34614,13 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$l = styled__default.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
-var MediaItem = styled__default.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
+var Container$l = styled__default.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var MediaItem = styled__default.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$1e, _path2$8, _path3$3;
+var _path$1h, _path2$8, _path3$3;
 
-function _extends$1g() {
-  _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1l() {
+  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33359,17 +34633,17 @@ function _extends$1g() {
 
     return target;
   };
-  return _extends$1g.apply(this, arguments);
+  return _extends$1l.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1g({
+  return /*#__PURE__*/React.createElement("svg", _extends$1l({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1e || (_path$1e = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -33389,10 +34663,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$1f, _path2$9;
+var _path$1i, _path2$9;
 
-function _extends$1h() {
-  _extends$1h = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1m() {
+  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33405,16 +34679,16 @@ function _extends$1h() {
 
     return target;
   };
-  return _extends$1h.apply(this, arguments);
+  return _extends$1m.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1h({
+  return /*#__PURE__*/React.createElement("svg", _extends$1m({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1f || (_path$1f = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1i || (_path$1i = /*#__PURE__*/React.createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -33429,7 +34703,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$E, _templateObject2$A, _templateObject3$t, _templateObject4$o, _templateObject5$m, _templateObject6$k, _templateObject7$g, _templateObject8$f;
+var _templateObject$G, _templateObject2$C, _templateObject3$u, _templateObject4$p, _templateObject5$n, _templateObject6$k, _templateObject7$h, _templateObject8$g;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -33539,25 +34813,25 @@ var Files = function Files(_ref) {
     })) : filePreviewDownloadIcon || /*#__PURE__*/React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$m = styled__default.ul(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled__default.a(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: ", ";\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])), function (props) {
+var Container$m = styled__default.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DownloadWrapper = styled__default.a(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: ", ";\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])), function (props) {
   return props.visible ? 'visible' : 'hidden';
 });
-var ProgressWrapper$2 = styled__default.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
-var FileIconCont = styled__default.span(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileHoverIconCont = styled__default.span(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var ProgressWrapper$2 = styled__default.span(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var FileIconCont = styled__default.span(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileHoverIconCont = styled__default.span(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
 var FileThumb = styled__default.img(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled__default.div(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var FileItem = styled__default.div(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
-var FileSizeAndDate = styled__default.span(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
+var FileSizeAndDate = styled__default.span(_templateObject8$g || (_templateObject8$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
-var _rect$3, _rect2$1, _g$1, _defs$2;
+var _rect$3, _rect2$1, _g$3, _defs$2;
 
-function _extends$1i() {
-  _extends$1i = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1n() {
+  _extends$1n = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33570,11 +34844,11 @@ function _extends$1i() {
 
     return target;
   };
-  return _extends$1i.apply(this, arguments);
+  return _extends$1n.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1i({
+  return /*#__PURE__*/React.createElement("svg", _extends$1n({
     width: 42,
     height: 42,
     fill: "none",
@@ -33593,7 +34867,7 @@ function SvgLinkIcon(props) {
     stroke: "#000",
     strokeOpacity: 0.1,
     strokeWidth: 0.5
-  })), _g$1 || (_g$1 = /*#__PURE__*/React.createElement("g", {
+  })), _g$3 || (_g$3 = /*#__PURE__*/React.createElement("g", {
     clipPath: "url(#linkIcon_svg__clip0)"
   }, /*#__PURE__*/React.createElement("path", {
     d: "M20.314 20.973a.984.984 0 11-1.754.895 3.939 3.939 0 01.724-4.574l2.088-2.088a3.938 3.938 0 115.569 5.569.984.984 0 01-1.392-1.393 1.969 1.969 0 00-2.785-2.784l-2.088 2.088a1.97 1.97 0 00-.362 2.287zm1.522.198a.984.984 0 111.754-.895 3.939 3.939 0 01-.724 4.574l-2.089 2.088a3.938 3.938 0 01-5.568-5.569.984.984 0 011.392 1.392 1.969 1.969 0 002.784 2.785l2.088-2.089a1.97 1.97 0 00.363-2.286z",
@@ -33607,7 +34881,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$F, _templateObject2$B, _templateObject3$u, _templateObject4$p, _templateObject5$n;
+var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$q, _templateObject5$o;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -33632,21 +34906,21 @@ var LinkItem = function LinkItem(_ref) {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled__default.span(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  color: ", ";\n"])), function (props) {
+var LinkIconCont = styled__default.span(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var LinkHoverIconCont = styled__default.span(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  display: none;\n  color: ", ";\n"])), function (props) {
+var LinkHoverIconCont = styled__default.span(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: none;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var LinkInfoCont = styled__default.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
-var FileItem$1 = styled__default.li(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var LinkInfoCont = styled__default.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
+var FileItem$1 = styled__default.li(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled__default.span(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled__default.span(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
-var _templateObject$G;
+var _templateObject$I;
 
 var Links = function Links(_ref) {
   var channelId = _ref.channelId,
@@ -33673,12 +34947,12 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$n = styled__default.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$n = styled__default.ul(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$4, _circle$6, _path$1g;
+var _rect$4, _circle$6, _path$1j;
 
-function _extends$1j() {
-  _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1o() {
+  _extends$1o = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33691,11 +34965,11 @@ function _extends$1j() {
 
     return target;
   };
-  return _extends$1j.apply(this, arguments);
+  return _extends$1o.apply(this, arguments);
 }
 
 function SvgVoicePreview(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1j({
+  return /*#__PURE__*/React.createElement("svg", _extends$1o({
     width: 40,
     height: 40,
     fill: "none",
@@ -33710,16 +34984,16 @@ function SvgVoicePreview(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1g || (_path$1g = /*#__PURE__*/React.createElement("path", {
+  })), _path$1j || (_path$1j = /*#__PURE__*/React.createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$5, _circle$7, _path$1h;
+var _rect$5, _circle$7, _path$1k;
 
-function _extends$1k() {
-  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1p() {
+  _extends$1p = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33732,11 +35006,11 @@ function _extends$1k() {
 
     return target;
   };
-  return _extends$1k.apply(this, arguments);
+  return _extends$1p.apply(this, arguments);
 }
 
 function SvgVoicePreviewPause(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1k({
+  return /*#__PURE__*/React.createElement("svg", _extends$1p({
     width: 40,
     height: 40,
     fill: "none",
@@ -33751,16 +35025,16 @@ function SvgVoicePreviewPause(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1h || (_path$1h = /*#__PURE__*/React.createElement("path", {
+  })), _path$1k || (_path$1k = /*#__PURE__*/React.createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
 
-var _rect$6, _circle$8, _path$1i;
+var _rect$6, _circle$8, _path$1l;
 
-function _extends$1l() {
-  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1q() {
+  _extends$1q = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33773,11 +35047,11 @@ function _extends$1l() {
 
     return target;
   };
-  return _extends$1l.apply(this, arguments);
+  return _extends$1q.apply(this, arguments);
 }
 
 function SvgVoicePreviewHoverIcon(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1l({
+  return /*#__PURE__*/React.createElement("svg", _extends$1q({
     width: 40,
     height: 40,
     fill: "none",
@@ -33792,16 +35066,16 @@ function SvgVoicePreviewHoverIcon(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1i || (_path$1i = /*#__PURE__*/React.createElement("path", {
+  })), _path$1l || (_path$1l = /*#__PURE__*/React.createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$7, _circle$9, _path$1j;
+var _rect$7, _circle$9, _path$1m;
 
-function _extends$1m() {
-  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1r() {
+  _extends$1r = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -33814,11 +35088,11 @@ function _extends$1m() {
 
     return target;
   };
-  return _extends$1m.apply(this, arguments);
+  return _extends$1r.apply(this, arguments);
 }
 
 function SvgVoicePreviewPauseHover(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1m({
+  return /*#__PURE__*/React.createElement("svg", _extends$1r({
     width: 40,
     height: 40,
     fill: "none",
@@ -33833,13 +35107,13 @@ function SvgVoicePreviewPauseHover(props) {
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1j || (_path$1j = /*#__PURE__*/React.createElement("path", {
+  })), _path$1m || (_path$1m = /*#__PURE__*/React.createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
 
-var _templateObject$H, _templateObject2$C, _templateObject3$v, _templateObject4$q, _templateObject5$o, _templateObject6$l, _templateObject7$h, _templateObject8$g;
+var _templateObject$J, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$p, _templateObject6$l, _templateObject7$i, _templateObject8$h;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -33968,24 +35242,24 @@ var VoiceItem = function VoiceItem(_ref) {
     type: 'audio/mpeg'
   })));
 };
-var FileIconCont$1 = styled__default.span(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
-var FileHoverIconCont$1 = styled__default.span(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
-var FileItem$2 = styled__default.li(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var FileIconCont$1 = styled__default.span(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled__default.span(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled__default.li(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
-var AudioInfo = styled__default.div(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled__default.span(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioInfo = styled__default.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioTitle = styled__default.span(_templateObject5$p || (_templateObject5$p = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 var AudioDate = styled__default.span(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor2;
 });
-var AudioSendTime = styled__default.span(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
+var AudioSendTime = styled__default.span(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
   return props.color || colors.textColor2;
 });
-var Audio = styled__default.audio(_templateObject8$g || (_templateObject8$g = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+var Audio = styled__default.audio(_templateObject8$h || (_templateObject8$h = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$I;
+var _templateObject$K;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
@@ -34017,9 +35291,9 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$o = styled__default.ul(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$o = styled__default.ul(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$J, _templateObject2$D;
+var _templateObject$L, _templateObject2$F;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -34135,8 +35409,8 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$p = styled__default.div(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled__default.div(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  overflow: auto;\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  /* width */\n  &::-webkit-scrollbar {\n    width: 0;\n    height: 0;\n  }\n\n  /* Track */\n  &::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  /* Handle */\n  &::-webkit-scrollbar-thumb {\n    background: transparent;\n  }\n\n  /* Handle on hover */\n  &::-webkit-scrollbar-thumb:hover {\n    background: transparent;\n  }\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    min-width: 70px;\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
+var Container$p = styled__default.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled__default.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  overflow: auto;\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  /* width */\n  &::-webkit-scrollbar {\n    width: 0;\n    height: 0;\n  }\n\n  /* Track */\n  &::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  /* Handle */\n  &::-webkit-scrollbar-thumb {\n    background: transparent;\n  }\n\n  /* Handle on hover */\n  &::-webkit-scrollbar-thumb:hover {\n    background: transparent;\n  }\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    min-width: 70px;\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
   return props.backgroundColor || colors.white;
@@ -34146,17 +35420,17 @@ var DetailsTabHeader = styled__default.div(_templateObject2$D || (_templateObjec
   return props.activeTabColor || colors.primary;
 });
 
-var _templateObject$K, _templateObject2$E, _templateObject3$w, _templateObject4$r;
-var Container$q = styled__default.div(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: ", ";\n  z-index: 25;\n"])), function (props) {
+var _templateObject$M, _templateObject2$G, _templateObject3$x, _templateObject4$s;
+var Container$q = styled__default.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: ", ";\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
 }, function (props) {
   return props.backgroundColor || colors.white;
 });
-var AvatarCont = styled__default.div(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
-var DropDownWrapper = styled__default.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
-var EditChannelFooter = styled__default(ButtonBlock)(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
+var AvatarCont = styled__default.div(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
+var DropDownWrapper = styled__default.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
+var EditChannelFooter = styled__default(ButtonBlock)(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
@@ -34369,7 +35643,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$L, _templateObject2$F, _templateObject3$x, _templateObject4$s, _templateObject5$p, _templateObject6$m, _templateObject7$i, _templateObject8$h, _templateObject9$e, _templateObject10$c, _templateObject11$9;
+var _templateObject$N, _templateObject2$H, _templateObject3$y, _templateObject4$t, _templateObject5$q, _templateObject6$m, _templateObject7$j, _templateObject8$i, _templateObject9$e, _templateObject10$c, _templateObject11$9;
 
 var Details = function Details(_ref) {
   var size = _ref.size,
@@ -34667,34 +35941,34 @@ var Details = function Details(_ref) {
     showMakeMemberAdmin: showMakeMemberAdmin
   })));
 };
-var Container$r = styled__default.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), function (props) {
+var Container$r = styled__default.div(_templateObject$N || (_templateObject$N = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
   return props.mounted && " width: " + (props.size === 'small' ? '300px' : props.size === 'medium' ? '350px' : '400px') + ";";
 });
-var ChannelDetailsHeader = styled__default.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
+var ChannelDetailsHeader = styled__default.div(_templateObject2$H || (_templateObject2$H = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ChatDetails = styled__default.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: ", ";\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChatDetails = styled__default.div(_templateObject3$y || (_templateObject3$y = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: ", ";\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.size === 'small' ? '300px' : props.size === 'medium' ? '350px' : '400px';
 }, function (props) {
   return props.height ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 }, function (props) {
   return props.height && props.height - (props.heightOffset ? props.heightOffset + 2 : 0) + "px";
 });
-var AboutChannel = styled__default.div(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
-var AboutChannelTitle = styled__default.h4(_templateObject5$p || (_templateObject5$p = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
+var AboutChannel = styled__default.div(_templateObject4$t || (_templateObject4$t = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
+var AboutChannelTitle = styled__default.h4(_templateObject5$q || (_templateObject5$q = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
 var AboutChannelText = styled__default.h3(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var ChannelInfo$4 = styled__default.div(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
+var ChannelInfo$4 = styled__default.div(_templateObject7$j || (_templateObject7$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
   return (!props.direction || props.direction !== 'column') && '16px';
 }, function (props) {
   return props.direction && props.direction === 'column' && '16px';
 }, function (props) {
   return props.direction && props.direction === 'column' && 'center';
 });
-var DetailsHeader = styled__default.div(_templateObject8$h || (_templateObject8$h = _taggedTemplateLiteralLoose(["\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), function (props) {
+var DetailsHeader = styled__default.div(_templateObject8$i || (_templateObject8$i = _taggedTemplateLiteralLoose(["\n  border-bottom: 6px solid ", ";\n  align-items: center;\n  box-sizing: border-box;\n  padding: 20px 16px;\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
 var ChannelAvatarAndName = styled__default.div(_templateObject9$e || (_templateObject9$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  box-sizing: border-box;\n  flex-direction: ", ";\n"])), function (props) {
@@ -34707,7 +35981,7 @@ var ChannelName$1 = styled__default(SectionHeader)(_templateObject10$c || (_temp
 });
 var EditButton = styled__default.span(_templateObject11$9 || (_templateObject11$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
-var _templateObject$M;
+var _templateObject$O;
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var _ref$size = _ref.size,
@@ -34873,12 +36147,12 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var DetailsWrapper = styled__default.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose([""])));
+var DetailsWrapper = styled__default.div(_templateObject$O || (_templateObject$O = _taggedTemplateLiteralLoose([""])));
 
-var _path$1k;
+var _path$1n;
 
-function _extends$1n() {
-  _extends$1n = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1s() {
+  _extends$1s = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -34891,22 +36165,22 @@ function _extends$1n() {
 
     return target;
   };
-  return _extends$1n.apply(this, arguments);
+  return _extends$1s.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$1n({
+  return /*#__PURE__*/React.createElement("svg", _extends$1s({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1k || (_path$1k = /*#__PURE__*/React.createElement("path", {
+  }, props), _path$1n || (_path$1n = /*#__PURE__*/React.createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
 }
 
-var _templateObject$N, _templateObject2$G;
+var _templateObject$P, _templateObject2$I;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -34955,14 +36229,14 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : ''), buttonIcon || /*#__PURE__*/React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled__default.div(_templateObject$N || (_templateObject$N = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: ", ";\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled__default.div(_templateObject$P || (_templateObject$P = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: ", ";\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomOffset + (props.bottomPosition || 45) + "px";
 }, function (props) {
   return (props.rightPosition || 16) + "px";
 }, function (props) {
   return props.backgroundColor || colors.backgroundColor;
 });
-var UnreadCount$1 = styled__default.span(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var UnreadCount$1 = styled__default.span(_templateObject2$I || (_templateObject2$I = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
   return props.fontSize || '13px';

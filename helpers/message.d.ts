@@ -1,12 +1,13 @@
-import { IContact, IContactsMap, IUser } from '../types';
-export declare const typingTextFormat: ({ text, mentionedMembers, currentMentionEnd }: {
+import { IBodyAttribute, IContact, IContactsMap, IUser } from '../types';
+import { EditorThemeClasses } from 'lexical';
+export declare const typingTextFormat: ({ text, formatAttributes, currentAttributeEnd }: {
     text: string;
-    mentionedMembers: any;
-    currentMentionEnd?: number | undefined;
-    setEmoji?: any;
+    formatAttributes: any[];
+    currentAttributeEnd?: number | undefined;
 }) => any;
 export declare const makeUsername: (contact?: IContact | undefined, user?: IUser | undefined, fromContact?: boolean | undefined, getFirstNameOnly?: boolean | undefined) => string;
 export declare const isJSON: (str: any) => boolean;
+export declare const combineMessageAttributes: (attributes: IBodyAttribute[]) => IBodyAttribute[];
 export declare const MessageTextFormat: ({ text, message, contactsMap, getFromContacts, isLastMessage, asSampleText }: {
     text: string;
     message: any;
@@ -23,3 +24,37 @@ export declare const lastMessageDateFormat: (date: Date | number) => string;
 export declare const getDuplicateMentionsFromMeta: (mentionsMetas: any[], mentionedMembers: any[]) => any[];
 export declare const setAllowEditDeleteIncomingMessage: (allow: boolean) => void;
 export declare const getAllowEditDeleteIncomingMessage: () => boolean;
+export declare const bodyAttributesMapByType: {
+    1: string[];
+    2: string[];
+    3: string[];
+    4: string[];
+    5: string[];
+    6: string[];
+    7: string[];
+    8: string[];
+    9: string[];
+    10: string[];
+    11: string[];
+    12: string[];
+    13: string[];
+    14: string[];
+    15: string[];
+    16: string[];
+    17: string[];
+    18: string[];
+    19: string[];
+    20: string[];
+    21: string[];
+    22: string[];
+    23: string[];
+    24: string[];
+    25: string[];
+    26: string[];
+    27: string[];
+    28: string[];
+    29: string[];
+    30: string[];
+    31: string[];
+};
+export declare const EditorTheme: EditorThemeClasses;
