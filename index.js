@@ -30145,6 +30145,7 @@ function useMentionLookupService(mentionString, contactsMap, userId, getFromCont
       setResults = _useState[1];
 
   var membersMapMemo = React.useMemo(function () {
+    mentionsCache.clear();
     return members.reduce(function (acc, member) {
       acc[member.id] = member;
       return acc;
@@ -31872,6 +31873,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   var disableInput = disabled || directChannelUser && hideUserPresence && hideUserPresence(directChannelUser);
   var isBlockedUserChat = directChannelUser && directChannelUser.blocked;
   var isDeletedUserChat = directChannelUser && directChannelUser.state === USER_STATE.DELETED;
+  var allowSetMention = allowMentionUser && (activeChannel.type === CHANNEL_TYPE.PRIVATE || activeChannel.type === CHANNEL_TYPE.GROUP);
   var messageContRef = React.useRef(null);
 
   var _usePermissions = usePermissions(activeChannel.userRole),
@@ -33161,7 +33163,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     rightSide: emojisInRightSide,
     bottomPosition: emojisPopupBottomPosition + "px",
     leftPosition: emojisPopupLeftPosition + "px"
-  }), allowMentionUser && /*#__PURE__*/React__default.createElement(MentionsPlugin, {
+  }), allowSetMention && /*#__PURE__*/React__default.createElement(MentionsPlugin, {
     setMentionMember: handleSetMentionMember,
     contactsMap: contactsMap,
     userId: user.id,
