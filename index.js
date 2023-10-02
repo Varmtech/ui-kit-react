@@ -30137,9 +30137,7 @@ var SUGGESTION_LIST_LENGTH_LIMIT = 50;
 var mentionsCache = new Map();
 var membersMap = {};
 
-function useMentionLookupService(mentionString, contactsMap, userId, getFromContacts) {
-  var members = reactRedux.useSelector(activeChannelMembersSelector, reactRedux.shallowEqual);
-
+function useMentionLookupService(mentionString, contactsMap, userId, members, getFromContacts) {
   var _useState = React.useState([]),
       results = _useState[0],
       setResults = _useState[1];
@@ -30184,7 +30182,7 @@ function useMentionLookupService(mentionString, contactsMap, userId, getFromCont
     });
     mentionsCache.set(mentionString, searchedMembers);
     setResults(searchedMembers);
-  }, [mentionString]);
+  }, [mentionString, members]);
   return results;
 }
 
@@ -30274,7 +30272,8 @@ function MentionsPlugin(_ref2) {
   var contactsMap = _ref2.contactsMap,
       userId = _ref2.userId,
       getFromContacts = _ref2.getFromContacts,
-      setMentionMember = _ref2.setMentionMember;
+      setMentionMember = _ref2.setMentionMember,
+      members = _ref2.members;
 
   var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
       editor = _useLexicalComposerCo[0];
@@ -30283,7 +30282,7 @@ function MentionsPlugin(_ref2) {
       queryString = _useState2[0],
       setQueryString = _useState2[1];
 
-  var results = useMentionLookupService(queryString, contactsMap, userId, getFromContacts);
+  var results = useMentionLookupService(queryString, contactsMap, userId, members, getFromContacts);
   var checkForSlashTriggerMatch = LexicalTypeaheadMenuPlugin.useBasicTypeaheadTriggerMatch('/', {
     minLength: 0
   });
@@ -30301,7 +30300,6 @@ function MentionsPlugin(_ref2) {
 
       if (nodeToReplace) {
         var replacedNode = nodeToReplace.replace(mentionNode);
-        console.log('replacedNode.... . .>>>> >', replacedNode);
         var appendedNode = replacedNode.insertAfter(lexical.$createTextNode(' '));
         appendedNode.select();
       }
@@ -31863,6 +31861,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   var getFromContacts = getShowOnlyContactUsers();
   var activeChannel = reactRedux.useSelector(activeChannelSelector);
   var messageToEdit = reactRedux.useSelector(messageToEditSelector);
+  var activeChannelMembers = reactRedux.useSelector(activeChannelMembersSelector, reactRedux.shallowEqual);
   var messageForReply = reactRedux.useSelector(messageForReplySelector);
   var draggedAttachments = reactRedux.useSelector(draggedAttachmentsSelector);
   var selectedMessagesMap = reactRedux.useSelector(selectedMessagesMapSelector);
@@ -32003,7 +32002,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       var rootNode = lexical.$getRoot();
       var plainText = rootNode.getTextContent();
 
-      if (messageToEdit) ; else {
+      if (!messageToEdit) {
         setMessageText(plainText);
       }
     });
@@ -32035,21 +32034,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     nodes: [MentionNode],
     onError: onError
   };
-  React.useEffect(function () {
-    var updateViewPortWidth = function updateViewPortWidth() {
-      var isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia('(max-width: 1025px)').matches;
-
-      if (isNextSmallWidthViewport !== isSmallWidthViewport) {
-        setIsSmallWidthViewport(isNextSmallWidthViewport);
-      }
-    };
-
-    updateViewPortWidth();
-    window.addEventListener('resize', updateViewPortWidth);
-    return function () {
-      window.removeEventListener('resize', updateViewPortWidth);
-    };
-  }, [isSmallWidthViewport]);
   var mediaExtensions = '.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi,.wmv,.flv,.webm,.jfif';
 
   var handleSendTypingState = function handleSendTypingState(typingState) {
@@ -32216,15 +32200,12 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       });
       setMentionedMembers([]);
       setMessageBodyAttributes([]);
-      console.log('set mention typing false. . . . . .  >>>>>>>>>>>>>>>>>>>>>3 ');
       dispatch(setCloseSearchChannelsAC(true));
     }
   };
 
   var handleEditMessage = function handleEditMessage() {
     var messageTexToSend = editMessageText.trim();
-    console.log('messageTexToSend . . . . .', messageTexToSend);
-    console.log('messageToEdit . . . . .', messageToEdit);
 
     if (messageTexToSend && messageTexToSend !== messageToEdit.body) {
       var mentionedMembersPositions = [];
@@ -32267,7 +32248,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   var handleCloseEditMode = function handleCloseEditMode() {
     setEditMessageText('');
     setMentionedMembers([]);
-    console.log('set mention typing false. . . . . .  >>>>>>>>>>>>>>>>>>>>> 4');
     dispatch(setMessageToEditAC(null));
   };
 
@@ -32299,11 +32279,9 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   };
 
   var handlePastAttachments = function handlePastAttachments(e) {
-    console.log('handle past >>>>>>>>>>>>>>>>>>>>>>>>');
     var os = detectOS();
-    console.log('os is >>> ', os);
 
-    if (os === 'Windows' && browser === 'Firefox') ; else {
+    if (!(os === 'Windows' && browser === 'Firefox')) {
       if (e.clipboardData.files && e.clipboardData.files.length > 0) {
         e.preventDefault();
         var fileList = Object.values(e.clipboardData.files);
@@ -32319,7 +32297,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
 
   var handleCut = function handleCut() {
     setMessageText('');
-    console.log('set mention typing false. . . . . .  >>>>>>>>>>>>>>>>>>>>> 5');
     setMentionedMembers([]);
   };
 
@@ -32430,7 +32407,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       var tid = uuid.v4();
       var cachedUrl;
       var reader = new FileReader();
-      console.log('file is opened. .. ', file);
 
       reader.onload = function () {
         try {
@@ -32483,16 +32459,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
                       }
                     });
                   } else if (fileType === 'video') {
-                    console.log('handle set attachments ... .', {
-                      data: file,
-                      cachedUrl: cachedUrl,
-                      upload: false,
-                      type: isMediaAttachment ? fileType : 'file',
-                      attachmentUrl: URL.createObjectURL(file),
-                      tid: tid,
-                      size: dataFromDb ? dataFromDb.size : file.size,
-                      metadata: dataFromDb && dataFromDb.metadata
-                    });
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -32642,7 +32608,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
                       var _temp19 = function () {
                         if (fileType === 'video') {
                           var _temp20 = function _temp20() {
-                            console.log('metas ...... ', _metas3);
                             setAttachments(function (prevState) {
                               return [].concat(prevState, [{
                                 data: file,
@@ -32707,7 +32672,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
             var _temp11 = _catch(function () {
               return Promise.resolve(getDataFromDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, checksumHash, 'checksum')).then(function (_getDataFromDB) {
                 dataFromDb = _getDataFromDB;
-                console.log('data from db . . . . ', dataFromDb);
               });
             }, function (e) {
               console.log('error in get data from db . . . . ', e);
@@ -32763,6 +32727,21 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       dispatch(setDraggedAttachments([], ''));
     }
   }, [draggedAttachments]);
+  React.useEffect(function () {
+    var updateViewPortWidth = function updateViewPortWidth() {
+      var isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia('(max-width: 1025px)').matches;
+
+      if (isNextSmallWidthViewport !== isSmallWidthViewport) {
+        setIsSmallWidthViewport(isNextSmallWidthViewport);
+      }
+    };
+
+    updateViewPortWidth();
+    window.addEventListener('resize', updateViewPortWidth);
+    return function () {
+      window.removeEventListener('resize', updateViewPortWidth);
+    };
+  }, [isSmallWidthViewport]);
   React.useEffect(function () {
     if (prevActiveChannelId && activeChannel.id && prevActiveChannelId !== activeChannel.id) {
       setMessageText('');
@@ -32859,11 +32838,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   }, [messageText, attachments, editMessageText, readyVideoAttachments]);
   useDidUpdate(function () {
     if (mentionedMembers && mentionedMembers.length) {
-      console.log('set draft message 2 ..>> ', {
-        text: messageText,
-        mentionedMembers: mentionedMembers,
-        messageForReply: messageForReply
-      });
       setDraftMessageToMap(activeChannel.id, {
         text: messageText,
         mentionedMembers: mentionedMembers,
@@ -32920,11 +32894,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   });
   useDidUpdate(function () {
     if (draftMessagesMap[activeChannel.id]) {
-      console.log('set draft 3 .>> >>', {
-        text: messageText,
-        mentionedMembers: mentionedMembers,
-        messageForReply: messageForReply
-      });
       setDraftMessageToMap(activeChannel.id, {
         text: messageText,
         mentionedMembers: mentionedMembers,
@@ -33167,7 +33136,8 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     setMentionMember: handleSetMentionMember,
     contactsMap: contactsMap,
     userId: user.id,
-    getFromContacts: getFromContacts
+    getFromContacts: getFromContacts,
+    members: activeChannelMembers
   }), /*#__PURE__*/React__default.createElement(LexicalRichTextPlugin.RichTextPlugin, {
     contentEditable: /*#__PURE__*/React__default.createElement("div", {
       onKeyDown: handleSendEditMessage,
