@@ -10,7 +10,7 @@ import LinkifyIt from 'linkify-it';
 import Cropper from 'react-easy-crop';
 import Carousel from 'react-elastic-carousel';
 import { CircularProgressbar } from 'react-circular-progressbar';
-import { $applyNodeReplacement, TextNode, $createTextNode, $getSelection, $isRangeSelection, $isTextNode, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_LOW, FORMAT_TEXT_COMMAND, $getRoot, $createParagraphNode } from 'lexical';
+import { $applyNodeReplacement, TextNode, $createTextNode, KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, SELECTION_CHANGE_COMMAND, $getRoot, $createParagraphNode } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -10345,11 +10345,11 @@ var MessageTextFormat = function MessageTextFormat(_ref2) {
           }, mentionDisplayName), index === combinedAttributesList.length - 1 ? secondPart : '');
         } else {
           nextPartIndex = attributeOffset + attribute.length;
-          messageText.push(firstPart, asSampleText ? "" + text.slice(attributeOffset, attributeOffset + attribute.length).trim() : /*#__PURE__*/React__default.createElement(StyledText, {
+          messageText.push(firstPart, asSampleText ? "" + text.slice(attributeOffset, attributeOffset + attribute.length) : /*#__PURE__*/React__default.createElement(StyledText, {
             isLastMessage: isLastMessage,
             className: attribute.type,
             key: attributeOffset + "-" + attribute.type
-          }, "" + text.slice(attributeOffset, attributeOffset + attribute.length).trim()), index === combinedAttributesList.length - 1 ? secondPart : '');
+          }, "" + text.slice(attributeOffset, attributeOffset + attribute.length)), index === combinedAttributesList.length - 1 ? secondPart : '');
         }
       } catch (e) {
         console.log('Error on format message text, message: ', message, 'error: ', e);
@@ -12541,6 +12541,8 @@ function watchForEvents() {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments,
+            bodyAttributes: _message.bodyAttributes,
+            mentionedUsers: _message.mentionedUsers,
             updatedAt: _message.updatedAt
           }));
 
@@ -12549,6 +12551,8 @@ function watchForEvents() {
             body: _message.body,
             state: _message.state,
             attachments: _message.attachments,
+            bodyAttributes: _message.bodyAttributes,
+            mentionedUsers: _message.mentionedUsers,
             updatedAt: _message.updatedAt
           });
 
@@ -16517,70 +16521,69 @@ function sendTextMessage(action) {
             pendingMessage.metadata = JSON.parse(pendingMessage.metadata);
           }
 
-          console.log('pendingMessage >>> > >', pendingMessage);
-          _context2.next = 36;
+          _context2.next = 35;
           return select(messagesHasNextSelector);
 
-        case 36:
+        case 35:
           hasNextMessages = _context2.sent;
 
           if (getHasNextCached()) {
-            _context2.next = 45;
+            _context2.next = 44;
             break;
           }
 
           if (!hasNextMessages) {
-            _context2.next = 43;
+            _context2.next = 42;
             break;
           }
 
-          _context2.next = 41;
+          _context2.next = 40;
           return put(getMessagesAC(channel));
 
-        case 41:
-          _context2.next = 45;
+        case 40:
+          _context2.next = 44;
           break;
 
-        case 43:
-          _context2.next = 45;
+        case 42:
+          _context2.next = 44;
           return put(addMessageAC(JSON.parse(JSON.stringify(pendingMessage))));
 
-        case 45:
+        case 44:
           addMessageToMap(channel.id, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context2.next = 50;
+          _context2.next = 49;
           return put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
 
-        case 50:
+        case 49:
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context2.next = 77;
+            _context2.next = 76;
             break;
           }
 
           console.log('send message messageToSend ... ', messageToSend);
 
           if (!sendMessageHandler) {
-            _context2.next = 58;
+            _context2.next = 57;
             break;
           }
 
-          _context2.next = 55;
+          _context2.next = 54;
           return call(sendMessageHandler, messageToSend, channel.id);
 
-        case 55:
+        case 54:
           messageResponse = _context2.sent;
-          _context2.next = 61;
+          _context2.next = 60;
           break;
 
-        case 58:
-          _context2.next = 60;
+        case 57:
+          _context2.next = 59;
           return call(channel.sendMessage, messageToSend);
 
-        case 60:
+        case 59:
           messageResponse = _context2.sent;
 
-        case 61:
+        case 60:
           messageUpdateData = {
             id: messageResponse.id,
             body: messageResponse.body,
@@ -16596,10 +16599,10 @@ function sendTextMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context2.next = 64;
+          _context2.next = 63;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 64:
+        case 63:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: messageUpdateData
@@ -16611,41 +16614,41 @@ function sendTextMessage(action) {
             lastMessage: messageToUpdate,
             lastReactedMessage: null
           };
-          _context2.next = 71;
+          _context2.next = 70;
           return put(updateChannelDataAC(channel.id, channelUpdateParam, true));
 
-        case 71:
+        case 70:
           updateChannelOnAllChannels(channel.id, channelUpdateParam);
 
           if (!channel.unread) {
-            _context2.next = 75;
+            _context2.next = 74;
             break;
           }
 
-          _context2.next = 75;
+          _context2.next = 74;
           return put(markChannelAsReadAC(channel.id));
 
-        case 75:
-          _context2.next = 78;
+        case 74:
+          _context2.next = 77;
           break;
 
-        case 77:
+        case 76:
           throw new Error('Connection required to send message');
 
-        case 78:
-          _context2.next = 80;
+        case 77:
+          _context2.next = 79;
           return put(scrollToNewMessageAC(true));
 
-        case 80:
-          _context2.next = 82;
+        case 79:
+          _context2.next = 81;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 82:
-          _context2.next = 93;
+        case 81:
+          _context2.next = 92;
           break;
 
-        case 84:
-          _context2.prev = 84;
+        case 83:
+          _context2.prev = 83;
           _context2.t0 = _context2["catch"](8);
           console.log('error on send text message ... ', _context2.t0);
           updateMessageOnMap(channel.id, {
@@ -16657,21 +16660,21 @@ function sendTextMessage(action) {
           updateMessageOnAllMessages(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context2.next = 91;
+          _context2.next = 90;
           return put(updateMessageAC(sendMessageTid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 91:
-          _context2.next = 93;
+        case 90:
+          _context2.next = 92;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 93:
+        case 92:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2$1, null, [[8, 84]]);
+  }, _marked2$1, null, [[8, 83]]);
 }
 
 function forwardMessage(action) {
@@ -25096,11 +25099,24 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
     var checkVideoInterval;
 
     if (videoRef.current) {
+      var intervalCount = 0;
       checkVideoInterval = setInterval(function () {
         try {
-          var _temp4 = function () {
+          var _temp5 = function _temp5() {
+            if (intervalCount >= 8) {
+              if (setVideoIsReadyToSend) {
+                setVideoIsReadyToSend(file.tid);
+              }
+
+              clearInterval(checkVideoInterval);
+            }
+          };
+
+          intervalCount++;
+
+          var _temp6 = function () {
             if (videoRef.current && videoRef.current.readyState > 3) {
-              var _temp5 = function _temp5() {
+              var _temp7 = function _temp7() {
                 clearInterval(checkVideoInterval);
               };
 
@@ -25110,7 +25126,7 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
               var seconds = Math.floor(videoRef.current.duration % 60);
               setVideoCurrentTime(minutes + ":" + (seconds < 10 ? "0" + seconds : seconds));
 
-              var _temp6 = function () {
+              var _temp8 = function () {
                 if (isPreview) {
                   return Promise.resolve(getFrame3(videoRef.current, 0)).then(function (thumb) {
                     if (thumb) {
@@ -25126,11 +25142,11 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
                 }
               }();
 
-              return _temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6);
+              return _temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8);
             }
           }();
 
-          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+          return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -30245,12 +30261,73 @@ function MentionsTypeaheadMenuItem(_ref) {
   }, option.name), /*#__PURE__*/React__default.createElement(SubTitle, null, option.presence && option.presence.state === USER_PRESENCE_STATUS.ONLINE ? 'Online' : option.presence && option.presence.lastActiveAt && userLastActiveDateFormat(option.presence.lastActiveAt))));
 }
 
-function MentionsPlugin(_ref2) {
-  var contactsMap = _ref2.contactsMap,
-      userId = _ref2.userId,
-      getFromContacts = _ref2.getFromContacts,
-      setMentionMember = _ref2.setMentionMember,
-      members = _ref2.members;
+function MentionsContainer(_ref2) {
+  var queryString = _ref2.queryString,
+      options = _ref2.options,
+      selectedIndex = _ref2.selectedIndex,
+      selectOptionAndCleanUp = _ref2.selectOptionAndCleanUp,
+      setHighlightedIndex = _ref2.setHighlightedIndex,
+      setMentionsIsOpen = _ref2.setMentionsIsOpen;
+  var contRef = useRef();
+
+  var handleKeyDown = function handleKeyDown(event) {
+    var code = event.code;
+    var isEnter = code === 'Enter';
+
+    if (isEnter) {
+      var selectedOption = options[selectedIndex];
+      selectOptionAndCleanUp(selectedOption);
+    }
+  };
+
+  useEffect(function () {
+    setHighlightedIndex(selectedIndex + 1);
+    setTimeout(function () {
+      setHighlightedIndex(selectedIndex || 0);
+    }, 50);
+  }, [queryString]);
+  useEffect(function () {
+    document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return function () {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedIndex]);
+  useEffect(function () {
+    setMentionsIsOpen(true);
+    return function () {
+      setMentionsIsOpen(false);
+    };
+  }, []);
+  return /*#__PURE__*/React__default.createElement(MentionsContainerWrapper, {
+    className: 'typeahead-popover mentions-menu',
+    ref: contRef
+  }, /*#__PURE__*/React__default.createElement(MentionsList, null, options.map(function (option, i) {
+    return /*#__PURE__*/React__default.createElement(MentionsTypeaheadMenuItem, {
+      index: i,
+      isSelected: selectedIndex === i,
+      onClick: function onClick() {
+        console.log('click on option >>>>>>>>>>>>>>>>> i - ', i);
+        console.log('click on option >>>>>>>>>>>>>>>>> option - ', option);
+        setHighlightedIndex(i);
+        selectOptionAndCleanUp(option);
+      },
+      onMouseEnter: function onMouseEnter() {
+        setHighlightedIndex(i);
+      },
+      key: option.key,
+      option: option
+    });
+  })));
+}
+
+function MentionsPlugin(_ref3) {
+  var contactsMap = _ref3.contactsMap,
+      userId = _ref3.userId,
+      getFromContacts = _ref3.getFromContacts,
+      setMentionMember = _ref3.setMentionMember,
+      setMentionsIsOpen = _ref3.setMentionsIsOpen,
+      members = _ref3.members;
 
   var _useLexicalComposerCo = useLexicalComposerContext(),
       editor = _useLexicalComposerCo[0];
@@ -30293,36 +30370,32 @@ function MentionsPlugin(_ref2) {
 
     return getPossibleQueryMatch(text);
   }, [checkForSlashTriggerMatch, editor]);
+  useEffect(function () {
+    editor.registerCommand(KEY_ENTER_COMMAND, function () {
+      return true;
+    }, COMMAND_PRIORITY_LOW);
+  }, []);
   return /*#__PURE__*/React__default.createElement(LexicalTypeaheadMenuPlugin, {
     onQueryChange: setQueryString,
     onSelectOption: onSelectOption,
     triggerFn: checkForMentionMatch,
     options: options,
-    menuRenderFn: function menuRenderFn(anchorElementRef, _ref3) {
-      var selectedIndex = _ref3.selectedIndex,
-          selectOptionAndCleanUp = _ref3.selectOptionAndCleanUp,
-          setHighlightedIndex = _ref3.setHighlightedIndex;
+    menuRenderFn: function menuRenderFn(anchorElementRef, _ref4) {
+      var selectedIndex = _ref4.selectedIndex,
+          selectOptionAndCleanUp = _ref4.selectOptionAndCleanUp,
+          setHighlightedIndex = _ref4.setHighlightedIndex;
       return anchorElementRef.current && results.length ? /*#__PURE__*/createPortal( /*#__PURE__*/React__default.createElement(MentionsContainer, {
-        className: 'typeahead-popover mentions-menu'
-      }, /*#__PURE__*/React__default.createElement(MentionsList, null, options.map(function (option, i) {
-        return /*#__PURE__*/React__default.createElement(MentionsTypeaheadMenuItem, {
-          index: i,
-          isSelected: selectedIndex === i,
-          onClick: function onClick() {
-            setHighlightedIndex(i);
-            selectOptionAndCleanUp(option);
-          },
-          onMouseEnter: function onMouseEnter() {
-            setHighlightedIndex(i);
-          },
-          key: option.key,
-          option: option
-        });
-      }))), anchorElementRef.current) : null;
+        queryString: queryString,
+        options: options,
+        setMentionsIsOpen: setMentionsIsOpen,
+        selectOptionAndCleanUp: selectOptionAndCleanUp,
+        selectedIndex: selectedIndex,
+        setHighlightedIndex: setHighlightedIndex
+      }), anchorElementRef.current) : null;
     }
   });
 }
-var MentionsContainer = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  animation: fadeIn 0.2s ease-in-out;\n  @keyframes fadeIn {\n    from {\n      opacity: 0;\n    }\n    to {\n      opacity: 1;\n    }\n  }\n"])));
+var MentionsContainerWrapper = styled.div(_templateObject$y || (_templateObject$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  animation: fadeIn 0.2s ease-in-out;\n  @keyframes fadeIn {\n    from {\n      opacity: 0;\n    }\n    to {\n      opacity: 1;\n    }\n  }\n"])));
 var MentionsList = styled.ul(_templateObject2$u || (_templateObject2$u = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  width: 300px;\n  transition: all 0.2s;\n  overflow: auto;\n  max-height: 240px;\n  z-index: 99;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
   return props.backgroundColor || colors.white;
 }, function (props) {
@@ -30544,6 +30617,7 @@ function getDOMRangeRect(nativeSelection, rootElement) {
 }
 var VERTICAL_GAP = 10;
 var HORIZONTAL_OFFSET = 40;
+
 function setFloatingElemPosition(targetRect, floatingElem, anchorElem, verticalGap, horizontalOffset) {
   if (verticalGap === void 0) {
     verticalGap = VERTICAL_GAP;
@@ -30570,6 +30644,7 @@ function setFloatingElemPosition(targetRect, floatingElem, anchorElem, verticalG
   floatingElem.style.opacity = '1';
   floatingElem.style.transform = "translate(" + left + "px, " + -top + "px)";
 }
+
 function getSelectedNode(selection) {
   var anchor = selection.anchor;
   var focus = selection.focus;
@@ -30598,8 +30673,10 @@ function TextFormatFloatingToolbar(_ref) {
       isCode = _ref.isCode,
       isStrikethrough = _ref.isStrikethrough;
   var popupCharStylesEditorRef = useRef(null);
-  console.log('popupCharStylesEditorRef >>>>>> : ', popupCharStylesEditorRef);
-  console.log('editor <<< >>> >>>>: ', editor);
+
+  var _useState = useState(false),
+      showMenu = _useState[0],
+      setShowMenu = _useState[1];
 
   function mouseMoveListener(e) {
     if (popupCharStylesEditorRef !== null && popupCharStylesEditorRef !== void 0 && popupCharStylesEditorRef.current && (e.buttons === 1 || e.buttons === 3)) {
@@ -30645,6 +30722,7 @@ function TextFormatFloatingToolbar(_ref) {
     var rootElement = editor.getRootElement();
 
     if (selection !== null && nativeSelection !== null && !nativeSelection.isCollapsed && rootElement !== null && rootElement.contains(nativeSelection.anchorNode)) {
+      setShowMenu(true);
       var rangeRect = getDOMRangeRect(nativeSelection, rootElement);
       setFloatingElemPosition(rangeRect, popupCharStylesEditorElem, anchorElem);
     }
@@ -30687,6 +30765,7 @@ function TextFormatFloatingToolbar(_ref) {
     }, COMMAND_PRIORITY_LOW));
   }, [editor, updateTextFormatFloatingToolbar]);
   return /*#__PURE__*/React__default.createElement(FloatingTextFormatPopup, {
+    showMenu: showMenu,
     ref: popupCharStylesEditorRef,
     className: 'floating-text-format-popup'
   }, editor.isEditable() && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Action$1, {
@@ -30753,37 +30832,37 @@ function TextFormatFloatingToolbar(_ref) {
 }
 
 function useFloatingTextFormatToolbar(editor, anchorElem) {
-  var _useState = useState(false),
-      isText = _useState[0],
-      setIsText = _useState[1];
-
   var _useState2 = useState(false),
-      isBold = _useState2[0],
-      setIsBold = _useState2[1];
+      isText = _useState2[0],
+      setIsText = _useState2[1];
 
   var _useState3 = useState(false),
-      isItalic = _useState3[0],
-      setIsItalic = _useState3[1];
+      isBold = _useState3[0],
+      setIsBold = _useState3[1];
 
   var _useState4 = useState(false),
-      isUnderline = _useState4[0],
-      setIsUnderline = _useState4[1];
+      isItalic = _useState4[0],
+      setIsItalic = _useState4[1];
 
   var _useState5 = useState(false),
-      isStrikethrough = _useState5[0],
-      setIsStrikethrough = _useState5[1];
+      isUnderline = _useState5[0],
+      setIsUnderline = _useState5[1];
 
   var _useState6 = useState(false),
-      isSubscript = _useState6[0],
-      setIsSubscript = _useState6[1];
+      isStrikethrough = _useState6[0],
+      setIsStrikethrough = _useState6[1];
 
   var _useState7 = useState(false),
-      isSuperscript = _useState7[0],
-      setIsSuperscript = _useState7[1];
+      isSubscript = _useState7[0],
+      setIsSubscript = _useState7[1];
 
   var _useState8 = useState(false),
-      isCode = _useState8[0],
-      setIsCode = _useState8[1];
+      isSuperscript = _useState8[0],
+      setIsSuperscript = _useState8[1];
+
+  var _useState9 = useState(false),
+      isCode = _useState9[0],
+      setIsCode = _useState9[1];
 
   var handleClick = function handleClick(e) {
     if (!e.target.closest('.rich_text_editor')) {
@@ -30811,6 +30890,8 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
       }
 
       var node = getSelectedNode(selection);
+      var textContent = node.getTextContent();
+      var lastChar = textContent.slice(-1);
       setIsBold(selection.hasFormat('bold'));
       setIsItalic(selection.hasFormat('italic'));
       setIsUnderline(selection.hasFormat('underline'));
@@ -30823,6 +30904,36 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
         setIsText($isTextNode(node));
       } else {
         setIsText(false);
+      }
+
+      if (lastChar === ' ' || !textContent) {
+        if (selection.hasFormat('bold')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+        }
+
+        if (selection.hasFormat('italic')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+        }
+
+        if (selection.hasFormat('underline')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline');
+        }
+
+        if (selection.hasFormat('strikethrough')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough');
+        }
+
+        if (selection.hasFormat('subscript')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'subscript');
+        }
+
+        if (selection.hasFormat('superscript')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'superscript');
+        }
+
+        if (selection.hasFormat('code')) {
+          editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
+        }
       }
 
       var rawTextContent = selection.getTextContent().replace(/\n/g, '');
@@ -31018,7 +31129,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
         var offsetList = Array.from(offsetView._offsetMap.values());
         var messageBodyAttributes = [];
 
-        if (parsedEditorState.root && parsedEditorState.root.children && parsedEditorState.root.children.length && (parsedEditorState.root.children[0].children.length > 1 || parsedEditorState.root.children[0].children[0] && parsedEditorState.root.children[0].children[0].type === 'mention')) {
+        if (parsedEditorState.root && parsedEditorState.root.children && parsedEditorState.root.children.length && (parsedEditorState.root.children[0].children.length > 1 || parsedEditorState.root.children[0].children[0] && (parsedEditorState.root.children[0].children[0].type === 'mention' || parsedEditorState.root.children[0].children[0].format > 0))) {
           var currentOffsetDiff = 0;
           var newMessageText = messageText;
           parsedEditorState.root.children[0].children.forEach(function (child, index) {
@@ -31220,278 +31331,6 @@ function SvgErrorCircle(props) {
   })));
 }
 
-var EMOJIS$1 = [{
-  key: 'People',
-  array: [{
-    key: 'face-smiling',
-    array: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇']
-  }, {
-    key: 'face-affection',
-    array: ['🥰', '😍', '🤩', '😘', '😗', '😚', '😙']
-  }, {
-    key: 'face-tongue',
-    array: ['😋', '😛', '😜', '🤪', '😝', '🤑']
-  }, {
-    key: 'face-hand',
-    array: ['🤗', '🤭', '🤫', '🤔']
-  }, {
-    key: 'face-neutral-skeptical',
-    array: ['🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥']
-  }, {
-    key: 'face-sleepy',
-    array: ['😌', '😔', '😪', '🤤', '😴']
-  }, {
-    key: 'face-unwell',
-    array: ['😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯']
-  }, {
-    key: 'face-hat',
-    array: ['🤠', '🥳']
-  }, {
-    key: 'face-glasses',
-    array: ['😎', '🤓', '🧐']
-  }, {
-    key: 'face-concerned',
-    array: ['😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '🥱']
-  }, {
-    key: 'face-negative',
-    array: ['😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️']
-  }, {
-    key: 'face-costume',
-    array: ['💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖']
-  }, {
-    key: 'cat-face',
-    array: ['😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾']
-  }, {
-    key: 'monkey-face',
-    array: ['🙈', '🙉', '🙊']
-  }, {
-    key: 'emotion',
-    array: ['💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '👁‍🗨', '🗨️', '🗯️', '💭', '💤']
-  }, {
-    key: 'hand-fingers-open',
-    array: ['👋', '🤚', '🖐️', '✋', '🖖']
-  }, {
-    key: 'hand-fingers-partial',
-    array: ['👌', '🤏', '✌️', '🤞', '🤟', '🤘', '🤙']
-  }, {
-    key: 'hand-single-finger',
-    array: ['👈', '👉', '👆', '🖕', '👇', '☝️']
-  }, {
-    key: 'hand-fingers-closed',
-    array: ['👍', '👎', '✊', '👊', '🤛', '🤜']
-  }, {
-    key: 'hands',
-    array: ['👏', '🙌', '👐', '🤲', '🤝', '🙏']
-  }, {
-    key: 'hand-prop',
-    array: ['✍️', '💅', '🤳']
-  }, {
-    key: 'body-parts',
-    array: ['💪', '🦾', '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🦷', '🦴', '👀', '👁️', '👅', '👄']
-  }, {
-    key: 'person',
-    array: ['👶', '🧒', '👦', '👧', '🧑', '👱', '👨', '🧔', '👱‍♂️', '👨‍🦰', '👩', '👱‍♀️', '👩‍🦰', '🧓', '👴', '👵']
-  }, {
-    key: 'person-fantasy',
-    array: ['👼', '🎅', '🤶', '🦸', '🦸‍♂️', '🦸🏻‍♂️', '🦸‍♀️', '🦸🏻‍♀️', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞']
-  }, {
-    key: 'person-activity',
-    array: ['💆', '💇', '🚶', '🧍', '🧎', '👨‍🦯', '👩‍🦯', '👨‍🦼', '👩‍🦼', '🏃', '💃', '🕺', '🕴', '👯', '🧖', '🧗']
-  }]
-}, {
-  key: 'Animals',
-  array: [{
-    key: 'animal-mammal',
-    array: ['🐵', '🐒', '🦍', '🦧', '🐶', '🐕', '🦮', '🐕‍🦺', '🐩', '🐺', '🦊', '🦝', '🐱', '🐈', '🦁', '🐯', '🐅', '🐆', '🐴', '🐎', '🦄', '🦓', '🦌', '🐮', '🐂', '🐃', '🐄', '🐷', '🐖', '🐗', '🐽', '🐏', '🐑', '🐐', '🐪', '🐫', '🦙', '🦒', '🐘', '🦏', '🦛', '🐭', '🐁', '🐀', '🐹', '🐰', '🐇', '🐿️', '🐿', '🦔', '🦇', '🐻', '🐨', '🐼', '🦥', '🦦', '🦨', '🦘', '🦡', '🐾']
-  }, {
-    key: 'animal-bird',
-    array: ['🦃', '🐔', '🐓', '🐣', '🐤', '🐥', '🐦', '🐧', '🕊️', '🕊', '🦅', '🦆', '🦢', '🦉', '🦩', '🦚', '🦜']
-  }, {
-    key: 'animal-amphibian',
-    array: ['🐸']
-  }, {
-    key: 'animal-reptile',
-    array: ['🐊', '🐢', '🦎', '🐍', '🐲', '🐉', '🦕', '🦖']
-  }, {
-    key: 'animal-marine',
-    array: ['🐳', '🐋', '🐬', '🐟', '🐠', '🐡', '🦈', '🐙', '🐚']
-  }, {
-    key: 'animal-bug',
-    array: ['🐌', '🦋', '🐛', '🐜', '🐝', '🐞', '🦗', '🕷️', '🕸️', '🦂', '🦟', '🦠']
-  }, {
-    key: 'plant-flower',
-    array: ['💐', '🌸', '💮', '🏵️', '🏵', '🌹', '🥀', '🌺', '🌻', '🌼', '🌷']
-  }, {
-    key: 'plant-other',
-    array: ['🌱', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '☘', '🍀', '🍁', '🍂', '🍃']
-  }]
-}, {
-  key: 'Food',
-  array: [{
-    key: 'food-fruit',
-    array: ['🍇', '🍈', '🍉', '🍊', '🍋', '🍌', '🍍', '🥭', '🍎', '🍏', '🍐', '🍑', '🍒', '🍓', '🥝', '🍅', '🥥']
-  }, {
-    key: 'food-vegetable',
-    array: ['🥑', '🍆', '🥔', '🥕', '🌽', '🌶️', '🌶', '🥒', '🥬', '🥦', '🧄', '🧅', '🍄', '🥜', '🌰']
-  }, {
-    key: 'food-prepared',
-    array: ['🍞', '🥐', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🍖', '🍗', '🥩', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥙', '🧆', '🥚', '🍳', '🥘', '🍲', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫']
-  }, {
-    key: 'food-asian',
-    array: ['🍱', '🍘', '🍙', '🍚', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍥', '🥮', '🍡', '🥟', '🥠', '🥡']
-  }, {
-    key: 'food-marine',
-    array: ['🦀', '🦞', '🦐', '🦑', '🦪']
-  }, {
-    key: 'food-sweet',
-    array: ['🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯']
-  }, {
-    key: 'drink',
-    array: ['🍼', '🥛', '☕', '🍵', '🍶', '🍾', '🍷', '🍸', '🍹', '🍺', '🍻', '🥂', '🥃', '🥤', '🧃', '🧉', '🧊']
-  }, {
-    key: 'dishware',
-    array: ['🥢', '🍽️', '🍽', '🍴', '🥄', '🔪', '🏺']
-  }]
-}, {
-  key: 'Travel',
-  array: [{
-    key: 'place-map',
-    array: ['🌍', '🌎', '🌏', '🌐', '🗺', '🗾', '🧭']
-  }, {
-    key: 'place-geographic',
-    array: ['🏔️', '🏔', '⛰️', '⛰', '🌋', '🗻', '🏕️', '🏕', '🏖️', '🏖', '🏜️', '🏜', '🏝️', '🏝', '🏞️', '🏞']
-  }, {
-    key: 'place-building',
-    array: ['🏟️', '🏛️', '🏗️', '🏗', '🧱', '🏘️', '🏚️', '🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽']
-  }, {
-    key: 'place-religious',
-    array: ['⛪', '🕌', '🛕', '🕍', '⛩️', '🕋']
-  }, {
-    key: 'place-other',
-    array: ['⛲', '⛺', '🌁', '🌃', '🏙️', '🏙', '🌄', '🌅', '🌆', '🌇', '🌉', '♨️', '♨', '🎠', '🎡', '🎢', '💈', '🎪']
-  }, {
-    key: 'transport-ground',
-    array: ['🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊', '🚝', '🚞', '🚋', '🚌', '🚍', '🚎', '🚐', '🚑', '🚒', '🚓', '🚔', '🚕', '🚖', '🚗', '🚘', '🚙', '🚚', '🚛', '🚜', '🏎️', '🏎', '🏍️', '🏍', '🛵', '🦽', '🦼', '🛺', '🚲', '🛴', '🛹', '🚏', '🛣️', '🛤️', '🛢️', '⛽', '🚨', '🚥', '🚦', '🛑', '🚧']
-  }, {
-    key: 'transport-water',
-    array: ['⚓', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🛥', '🚢']
-  }, {
-    key: 'transport-air',
-    array: ['✈️', '✈', '🛩️', '🛫', '🛬', '🪂', '💺', '🚁', '🚟', '🚠', '🚡', '🛰️', '🛰', '🚀', '🛸']
-  }, {
-    key: 'hotel',
-    array: ['🛎️', '🧳']
-  }, {
-    key: 'time',
-    array: ['⌛', '⏳', '⌚', '⏰', '⏱️', '⏲️', '🕰️', '🕛', '🕧', '🕐', '🕜', '🕑', '🕝', '🕒', '🕞', '🕓', '🕟', '🕔', '🕠', '🕕', '🕡', '🕖', '🕢', '🕗', '🕣', '🕘', '🕤', '🕙', '🕥', '🕚', '🕦']
-  }, {
-    key: 'sky weather',
-    array: ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘', '🌙', '🌚', '🌛', '🌜', '🌡️', '🌡', '☀️', '☀', '🌝', '🌞', '🪐', '⭐', '🌟', '🌠', '🌌', '☁️', '☁', '⛅', '⛈️', '⛈', '🌤️', '🌤', '🌥️', '🌥', '🌦️', '🌦', '🌧️', '🌧', '🌨️', '🌨', '🌩️', '🌩', '🌪️', '🌪', '🌫️', '🌫', '🌬️', '🌬', '🌀', '🌈', '🌂', '☂️', '☂', '☔', '⛱️', '⛱', '⚡', '❄️', '❄', '☃️', '☃', '⛄', '☄️', '☄', '🔥', '💧', '🌊']
-  }]
-}, {
-  key: 'Objects',
-  array: [{
-    key: 'event',
-    array: ['🎃', '🎄', '🎆', '🎇', '🧨', '✨', '🎈', '🎉', '🎊', '🎋', '🎍', '🎎', '🎏', '🎐', '🎑', '🧧', '🎀', '🎁', '🎗️', '🎟️', '🎫']
-  }, {
-    key: 'award-medal',
-    array: ['🎖️', '🏆', '🏅', '🥇', '🥈', '🥉']
-  }, {
-    key: 'sport',
-    array: ['⚽', '⚾', '🥎', '🏀', '🏐', '🏈', '🏉', '🎾', '🥏', '🎳', '🏏', '🏑', '🏒', '🥍', '🏓', '🏸', '🥊', '🥋', '🥅', '⛳', '⛸️', '🎣', '🤿', '🎽', '🎿', '🛷', '🥌']
-  }, {
-    key: 'game',
-    array: ['🎯', '🪀', '🪁', '🎱', '🔮', '🧿', '🎮', '🕹️', '🎰', '🎲', '🧩', '🧸', '♠️', '♥️', '♦️', '♣️', '♟️', '🃏', '🀄', '🎴']
-  }, {
-    key: 'arts crafts',
-    array: ['🎭', '🖼️', '🎨', '🧵', '🧶']
-  }, {
-    key: 'clothing',
-    array: ['👓', '🕶️', '🥽', '🥼', '🦺', '👔', '👕', '👖', '🧣', '🧤', '🧥', '🧦', '👗', '👘', '🥻', '🩱', '🩲', '🩳', '👙', '👚', '👛', '👜', '👝', '🛍️', '🎒', '👞', '👟', '🥾', '🥿', '👠', '👡', '🩰', '👢', '👑', '👒', '🎩', '🎓', '🧢', '⛑', '📿', '💄', '💍', '💎']
-  }, {
-    key: 'sound',
-    array: ['🔇', '🔈', '🔉', '🔊', '📢', '📣', '📯', '🔔', '🔕']
-  }, {
-    key: 'music',
-    array: ['🎼', '🎵', '🎶', '🎙️', '🎙', '🎚', '🎛', '🎤', '🎧', '📻']
-  }, {
-    key: 'musical-instrument',
-    array: ['🎷', '🎸', '🎹', '🎺', '🎻', '🪕', '🥁']
-  }, {
-    key: 'phone',
-    array: ['📱', '📲', '☎️', '☎', '📞', '📟', '📠']
-  }, {
-    key: 'computer',
-    array: ['🔋', '🔌', '💻', '🖥️', '🖨️', '⌨️', '⌨', '🖱️', '🖲️', '💽', '💾', '💿', '📀', '🧮']
-  }, {
-    key: 'light video',
-    array: ['🎥', '🎞', '📽️', '📽', '🎬', '📺', '📷', '📸', '📹', '📼', '🔍', '🔎', '🕯️', '💡', '🔦', '🏮', '🪔']
-  }, {
-    key: 'book-paper',
-    array: ['📔', '📕', '📖', '📗', '📘', '📙', '📚', '📓', '📒', '📃', '📜', '📄', '📰', '🗞️', '📑', '🔖', '🏷️']
-  }, {
-    key: 'money',
-    array: ['💰', '💴', '💵', '💶', '💷', '💸', '💳', '🧾', '💹', '💱', '💲']
-  }, {
-    key: 'mail',
-    array: ['✉️', '📧', '📨', '📩', '📤', '📦', '📫', '📪', '📬', '📭', '📮', '🗳️']
-  }, {
-    key: 'writing',
-    array: ['✏️', '✏', '✒️', '✒', '🖋️', '🖊️', '🖌️', '🖍️', '🖍', '📝']
-  }, {
-    key: 'office',
-    array: ['💼', '📁', '🗂️', '📅', '📆', '🗒️', '🗓️', '📇', '📈', '📉', '📊', '📋', '📌', '📍', '📎', '🖇️', '📏', '📐', '✂️', '✂', '🗃️', '🗄', '🗑️']
-  }, {
-    key: 'lock',
-    array: ['🔒', '🔓', '🔏', '🔐', '🔑', '🗝️']
-  }, {
-    key: 'tool',
-    array: ['🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '⚔', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜', '⚖️', '🦯', '🔗', '⛓️', '🧰', '🧲']
-  }, {
-    key: 'science',
-    array: ['⚗️', '⚗', '🧪', '🧫', '🧬', '🔬', '🔭', '📡']
-  }, {
-    key: 'medical',
-    array: ['💉', '🩸', '💊', '🩹', '🩺']
-  }, {
-    key: 'household',
-    array: ['🚪', '🛏️', '🛋️', '🛋', '🪑', '🚽', '🚿', '🛁', '🪒', '🧴', '🧷', '🧹', '🧺', '🧻', '🧼', '🧽', '🧯', '🛒']
-  }, {
-    key: 'other-object',
-    array: ['🚬', '⚰️', '⚱️', '🗿']
-  }]
-}, {
-  key: 'Flags',
-  array: [{
-    key: 'country-flag',
-    array: ['🇦🇨', '🇦🇩', '🇦🇪', '🇦🇫', '🇦🇬', '🇦🇮', '🇦🇱', '🇦🇲', '🇦🇴', '🇦🇶', '🇦🇷', '🇦🇸', '🇦🇹', '🇦🇺', '🇦🇼', '🇦🇽', '🇦🇿', '🇧🇦', '🇧🇧', '🇧🇩', '🇧🇪', '🇧🇫', '🇧🇬', '🇧🇭', '🇧🇮', '🇧🇯', '🇧🇱', '🇧🇲', '🇧🇳', '🇧🇴', '🇧🇶', '🇧🇷', '🇧🇸', '🇧🇹', '🇧🇻', '🇧🇼', '🇧🇾', '🇧🇿', '🇨🇦', '🇨🇨', '🇨🇩', '🇨🇫', '🇨🇬', '🇨🇭', '🇨🇮', '🇨🇰', '🇨🇱', '🇨🇲', '🇨🇳', '🇨🇴', '🇨🇵', '🇨🇷', '🇨🇺', '🇨🇻', '🇨🇼', '🇨🇽', '🇨🇾', '🇨🇿', '🇩🇪', '🇩🇬', '🇩🇯', '🇩🇰', '🇩🇲', '🇩🇴', '🇩🇿', '🇪🇦', '🇪🇨', '🇪🇪', '🇪🇬', '🇪🇭', '🇪🇷', '🇪🇸', '🇪🇹', '🇪🇺', '🇫🇮', '🇫🇯', '🇫🇰', '🇫🇲', '🇫🇴', '🇫🇷', '🇬🇦', '🇬🇧', '🇬🇩', '🇬🇪', '🇬🇫', '🇬🇬', '🇬🇭', '🇬🇮', '🇬🇱', '🇬🇲', '🇬🇳', '🇬🇵', '🇬🇶', '🇬🇷', '🇬🇸', '🇬🇹', '🇬🇺', '🇬🇼', '🇬🇾', '🇭🇰', '🇭🇲', '🇭🇳', '🇭🇷', '🇭🇹', '🇭🇺', '🇮🇨', '🇮🇩', '🇮🇪', '🇮🇱', '🇮🇲', '🇮🇳', '🇮🇴', '🇮🇶', '🇮🇷', '🇮🇸', '🇮🇹', '🇯🇪', '🇯🇲', '🇯🇴', '🇯🇵', '🇰🇪', '🇰🇬', '🇰🇭', '🇰🇮', '🇰🇲', '🇰🇳', '🇰🇵', '🇰🇷', '🇰🇼', '🇰🇾', '🇰🇿', '🇱🇦', '🇱🇧', '🇱🇨', '🇱🇮', '🇱🇰', '🇱🇷', '🇱🇸', '🇱🇹', '🇱🇺', '🇱🇻', '🇱🇾', '🇲🇦', '🇲🇨', '🇲🇩', '🇲🇪', '🇲🇫', '🇲🇬', '🇲🇭', '🇲🇰', '🇲🇱', '🇲🇲', '🇲🇳', '🇲🇴', '🇲🇵', '🇲🇶', '🇲🇷', '🇲🇸', '🇲🇹', '🇲🇺', '🇲🇻', '🇲🇼', '🇲🇽', '🇲🇾', '🇲🇿', '🇳🇦', '🇳🇨', '🇳🇪', '🇳🇫', '🇳🇬', '🇳🇮', '🇳🇱', '🇳🇴', '🇳🇵', '🇳🇷', '🇳🇺', '🇳🇿', '🇴🇲', '🇵🇦', '🇵🇪', '🇵🇫', '🇵🇬', '🇵🇭', '🇵🇰', '🇵🇱', '🇵🇲', '🇵🇳', '🇵🇷', '🇵🇸', '🇵🇹', '🇵🇼', '🇵🇾', '🇶🇦', '🇷🇪', '🇷🇴', '🇷🇸', '🇷🇺', '🇷🇼', '🇸🇦', '🇸🇧', '🇸🇨', '🇸🇩', '🇸🇪', '🇸🇬', '🇸🇭', '🇸🇮', '🇸🇯', '🇸🇰', '🇸🇱', '🇸🇲', '🇸🇳', '🇸🇴', '🇸🇷', '🇸🇸', '🇸🇹', '🇸🇻', '🇸🇽', '🇸🇾', '🇸🇿', '🇹🇦', '🇹🇨', '🇹🇩', '🇹🇫', '🇹🇬', '🇹🇭', '🇹🇯', '🇹🇰', '🇹🇱', '🇹🇲', '🇹🇳', '🇹🇴', '🇹🇷', '🇹🇹', '🇹🇻', '🇹🇼', '🇹🇿', '🇺🇦', '🇺🇬', '🇺🇲', '🇺🇳', '🇺🇸', '🇺🇾', '🇺🇿', '🇻🇦', '🇻🇨', '🇻🇪', '🇻🇬', '🇻🇮', '🇻🇳', '🇻🇺', '🇼🇫', '🇼🇸', '🇽🇰', '🇾🇪', '🇾🇹', '🇿🇦', '🇿🇲', '🇿🇼']
-  }, {
-    key: 'subdivision-flag',
-    array: ['🏴󠁧󠁢󠁥󠁮󠁧󠁿', '🏴󠁧󠁢󠁳󠁣󠁴󠁿', '🏴󠁧󠁢󠁷󠁬󠁳󠁿']
-  }]
-}, {
-  key: 'Symbols',
-  array: [{
-    key: 'transport-sign',
-    array: ['🏧', '🚮', '🚰', '♿', '🚹', '🚺', '🚻', '🚼', '🚾', '🛂', '🛃', '🛄', '🛅']
-  }, {
-    key: 'warning',
-    array: ['⚠️', '⚠', '🚸', '⛔', '🚫', '🚳', '🚭', '🚯', '🚱', '🚷', '📵', '🔞', '☢️', '☣️']
-  }, {
-    key: 'arrow',
-    array: ['⬆️', '↗️', '➡️', '↘️', '⬇️', '↙️', '⬅️', '↖️', '↕️', '↔️', '↔', '↩️', '↩', '↪️', '↪', '⤴️', '⤴', '⤵️', '⤵', '🔃', '🔄', '🔙', '🔚', '🔛', '🔜', '🔝']
-  }, {
-    key: 'religion',
-    array: ['🛐', '⚛️', '🕉️', '🕉', '✡️', '☸️', '☯️', '✝️', '☮️', '🕎', '🔯']
-  }, {
-    key: 'zodiac',
-    array: ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓', '⛎']
-  }, {
-    key: 'other-symbol',
-    array: ['♻️', '⚜️', '🔱', '📛', '🔰', '⭕', '✅', '☑️', '✔️', '✖️', '✖', '❌', '❎', '➕', '➖', '➗', '➰', '➿', '〽️', '✳️', '✴️', '❇️', '‼️', '⁉️', '❓', '❗']
-  }]
-}];
-
 var _templateObject$A, _templateObject2$w, _templateObject3$p, _templateObject4$l, _templateObject5$j, _templateObject6$g, _templateObject7$e, _templateObject8$d;
 
 var EmojiIcon$1 = function EmojiIcon(_ref) {
@@ -31563,7 +31402,7 @@ function EmojisPopup$1(_ref2) {
       setCollectionHeights = _useState3[1];
 
   var emojiContainerRef = useRef(null);
-  var collectionsRef = useRef(EMOJIS$1.map(function (col) {
+  var collectionsRef = useRef(EMOJIS.map(function (col) {
     return {
       collectionName: col.key,
       elem: /*#__PURE__*/createRef()
@@ -31596,7 +31435,6 @@ function EmojisPopup$1(_ref2) {
         var selection = $getSelection();
 
         if (!$isRangeSelection(selection)) {
-          console.log('close.  ...............................>>>>>>> ');
           return;
         }
 
@@ -31648,7 +31486,7 @@ function EmojisPopup$1(_ref2) {
   }, emojisCategoryIconsPosition === 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter$1, {
     borderColor: colors.hoverBackgroundColor,
     emojisCategoryIconsPosition: emojisCategoryIconsPosition
-  }, EMOJIS$1.map(function (emoji) {
+  }, EMOJIS.map(function (emoji) {
     return /*#__PURE__*/React__default.createElement(EmojiCollection$1, {
       activeCollection: activeCollection === emoji.key,
       key: "" + emoji.key,
@@ -31663,7 +31501,7 @@ function EmojisPopup$1(_ref2) {
   }, getEmojisCategoryTitle(activeCollection)), /*#__PURE__*/React__default.createElement(EmojiSection$1, {
     ref: emojiContainerRef,
     onScroll: handleEmojiListScroll
-  }, /*#__PURE__*/React__default.createElement(AllEmojis$1, null, EMOJIS$1.map(function (emojiBigCollection, bigColIndex) {
+  }, /*#__PURE__*/React__default.createElement(AllEmojis$1, null, EMOJIS.map(function (emojiBigCollection, bigColIndex) {
     var mainCollectionKey = emojiBigCollection.key;
     return /*#__PURE__*/React__default.createElement(React__default.Fragment, {
       key: mainCollectionKey
@@ -31691,7 +31529,7 @@ function EmojisPopup$1(_ref2) {
         }, emoji));
       });
     }));
-  }))), emojisCategoryIconsPosition !== 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter$1, null, EMOJIS$1.map(function (emoji) {
+  }))), emojisCategoryIconsPosition !== 'top' && /*#__PURE__*/React__default.createElement(EmojiFooter$1, null, EMOJIS.map(function (emoji) {
     return /*#__PURE__*/React__default.createElement(EmojiCollection$1, {
       activeCollection: activeCollection === emoji.key,
       key: "" + emoji.key,
@@ -31744,9 +31582,9 @@ var Emoji$1 = styled.li(_templateObject8$d || (_templateObject8$d = _taggedTempl
 
 var CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
 
-var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1, _templateObject32$1, _templateObject33$1;
+var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1;
 
-function MyCustomAutoFocusPlugin() {
+function AutoFocusPlugin() {
   var _useLexicalComposerCo = useLexicalComposerContext(),
       editor = _useLexicalComposerCo[0];
 
@@ -31913,43 +31751,47 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       browser = _useState14[0],
       setBrowser = _useState14[1];
 
-  var _useState15 = useState(),
-      inputContainerHeight = _useState15[0],
-      setInputContainerHeight = _useState15[1];
+  var _useState15 = useState(false),
+      mentionsIsOpen = _useState15[0],
+      setMentionsIsOpen = _useState15[1];
+
+  var _useState16 = useState(),
+      inputContainerHeight = _useState16[0],
+      setInputContainerHeight = _useState16[1];
 
   var selectedText = useRef(null);
 
-  var _useState16 = useState(),
-      typingTimout = _useState16[0],
-      setTypingTimout = _useState16[1];
-
   var _useState17 = useState(),
-      inTypingStateTimout = _useState17[0],
-      setInTypingStateTimout = _useState17[1];
+      typingTimout = _useState17[0],
+      setTypingTimout = _useState17[1];
 
-  var _useState18 = useState(false),
-      inTypingState = _useState18[0],
-      setInTypingState = _useState18[1];
+  var _useState18 = useState(),
+      inTypingStateTimout = _useState18[0],
+      setInTypingStateTimout = _useState18[1];
 
   var _useState19 = useState(false),
-      sendMessageIsActive = _useState19[0],
-      setSendMessageIsActive = _useState19[1];
+      inTypingState = _useState19[0],
+      setInTypingState = _useState19[1];
 
-  var _useState20 = useState([]),
-      attachments = _useState20[0],
-      setAttachments = _useState20[1];
+  var _useState20 = useState(false),
+      sendMessageIsActive = _useState20[0],
+      setSendMessageIsActive = _useState20[1];
 
-  var _useState21 = useState(false),
-      forwardPopupOpen = _useState21[0],
-      setForwardPopupOpen = _useState21[1];
+  var _useState21 = useState([]),
+      attachments = _useState21[0],
+      setAttachments = _useState21[1];
 
   var _useState22 = useState(false),
-      deletePopupOpen = _useState22[0],
-      setDeletePopupOpen = _useState22[1];
+      forwardPopupOpen = _useState22[0],
+      setForwardPopupOpen = _useState22[1];
 
   var _useState23 = useState(false),
-      isIncomingMessage = _useState23[0],
-      setIsIncomingMessage = _useState23[1];
+      deletePopupOpen = _useState23[0],
+      setDeletePopupOpen = _useState23[1];
+
+  var _useState24 = useState(false),
+      isIncomingMessage = _useState24[0],
+      setIsIncomingMessage = _useState24[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
@@ -31959,19 +31801,18 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   var messageInputRef = useRef(null);
   var emojiBtnRef = useRef(null);
   var addAttachmentsBtnRef = useRef(null);
-  var editorRef = useRef(null);
 
-  var _useState24 = useState(),
-      realEditorState = _useState24[0],
-      setRealEditorState = _useState24[1];
+  var _useState25 = useState(),
+      realEditorState = _useState25[0],
+      setRealEditorState = _useState25[1];
 
-  var _useState25 = useState(null),
-      floatingAnchorElem = _useState25[0],
-      setFloatingAnchorElem = _useState25[1];
+  var _useState26 = useState(null),
+      floatingAnchorElem = _useState26[0],
+      setFloatingAnchorElem = _useState26[1];
 
-  var _useState26 = useState(false),
-      isSmallWidthViewport = _useState26[0],
-      setIsSmallWidthViewport = _useState26[1];
+  var _useState27 = useState(false),
+      isSmallWidthViewport = _useState27[0],
+      setIsSmallWidthViewport = _useState27[1];
 
   function onChange(editorState) {
     setRealEditorState(editorState);
@@ -32044,7 +31885,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       event.preventDefault();
     }
 
-    if (shouldSend) {
+    if (shouldSend && !mentionsIsOpen) {
       event.preventDefault();
       event.stopPropagation();
 
@@ -32052,6 +31893,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
         handleEditMessage();
       } else if (messageText || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
+        console.log('messageTexToSend . . . . .', messageTexToSend);
         var messageToSend = {
           body: messageTexToSend,
           bodyAttributes: messageBodyAttributes,
@@ -32111,7 +31953,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
 
         if (attachments.length) {
           var sendAsSeparateMessage = getSendAttachmentsAsSeparateMessages();
-          console.log('send as separate message ... ', sendAsSeparateMessage);
           messageToSend.attachments = attachments.map(function (attachment, index) {
             var attachmentToSend = {
               name: attachment.data.name,
@@ -32733,6 +32574,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
           dispatch(setMessageForReplyAC(draftMessage.messageForReply));
         }
 
+        console.log('set message text from draft>  >>');
         setMessageText(draftMessage.text);
         setMentionedMembers(draftMessage.mentionedMembers);
       }
@@ -32884,10 +32726,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
 
     if (messageContRef && messageContRef.current) {
       dispatch(setSendMessageInputHeightAC(messageContRef.current.getBoundingClientRect().height));
-    }
-
-    if (editorRef.current) {
-      editorRef.current.focus();
     }
   }, [messageForReply]);
   useDidUpdate(function () {
@@ -33084,7 +32922,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     borderRadius: inputBorderRadius
   }, /*#__PURE__*/React__default.createElement(LexicalComposer, {
     initialConfig: initialConfig
-  }, /*#__PURE__*/React__default.createElement(MyCustomAutoFocusPlugin, null), /*#__PURE__*/React__default.createElement(ClearEditorPlugin, {
+  }, /*#__PURE__*/React__default.createElement(AutoFocusPlugin, null), /*#__PURE__*/React__default.createElement(ClearEditorPlugin, {
     shouldClearEditor: shouldClearEditor,
     setEditorCleared: function setEditorCleared() {
       return setShouldClearEditor({
@@ -33114,7 +32952,8 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     contactsMap: contactsMap,
     userId: user.id,
     getFromContacts: getFromContacts,
-    members: activeChannelMembers
+    members: activeChannelMembers,
+    setMentionsIsOpen: setMentionsIsOpen
   }), /*#__PURE__*/React__default.createElement(RichTextPlugin, {
     contentEditable: /*#__PURE__*/React__default.createElement("div", {
       onKeyDown: handleSendEditMessage,
@@ -33153,21 +32992,14 @@ var Container$i = styled.div(_templateObject$B || (_templateObject$B = _taggedTe
 }, function (props) {
   return props.mentionColor || colors.primary;
 });
-var MentionsPopup = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  width: 300px;\n  transition: all 0.2s;\n  overflow: auto;\n  max-height: 240px;\n  padding: 2px 0 0;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: 6px;\n  visibility: ", ";\n"])), function (props) {
-  return props.backgroundColor || colors.white;
-}, function (props) {
-  return props.withBorder && "1px solid " + colors.borderColor;
-}, function (props) {
-  return props.hidden ? 'hidden' : 'visible';
-});
-var EditReplyMessageCont = styled.div(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
-var EditMessageText = styled.p(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
-var UserName$1 = styled.span(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled.h4(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var EditReplyMessageCont = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
+var EditMessageText = styled.p(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled.span(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
+var UserName$1 = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageHeader = styled.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
-var AddAttachmentIcon = styled.span(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled.span(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
@@ -33176,21 +33008,21 @@ var AddAttachmentIcon = styled.span(_templateObject8$e || (_templateObject8$e = 
 }, function (props) {
   return props.color || colors.primary;
 });
-var SendMessageInputContainer = styled.div(_templateObject9$c || (_templateObject9$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n\n    & ", " {\n      & > svg {\n        color: ", ";\n      }\n    ;\n    }\n  }\n}\n"])), function (props) {
+var SendMessageInputContainer = styled.div(_templateObject8$e || (_templateObject8$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: flex-end;\n  position: relative;\n  min-height: ", ";\n  box-sizing: border-box;\n  border-radius: ", ";\n\n  & .dropdown-trigger.open {\n    color: #ccc;\n\n    & ", " {\n      & > svg {\n        color: ", ";\n      }\n    ;\n    }\n  }\n}\n"])), function (props) {
   return props.minHeight || '36px';
 }, function (props) {
   return props.messageForReply ? '0 0 4px 4px' : '4px';
 }, AddAttachmentIcon, function (props) {
   return props.iconColor || colors.primary;
 });
-var MessageInputWrapper = styled.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 100%;\n  max-width: calc(100% - 50px);\n  //max-width: ", ";\n  //max-width: calc(100% - 110px);\n  background-color: ", ";\n  border-radius: ", ";\n  position: relative;\n"])), function (props) {
+var MessageInputWrapper = styled.div(_templateObject9$c || (_templateObject9$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 100%;\n  max-width: calc(100% - 50px);\n  //max-width: ", ";\n  //max-width: calc(100% - 110px);\n  background-color: ", ";\n  border-radius: ", ";\n  position: relative;\n"])), function (props) {
   return props.channelDetailsIsOpen ? "calc(100% - " + (props.channelDetailsIsOpen ? 362 : 0) + "px)" : '';
 }, function (props) {
   return props.backgroundColor || colors.backgroundColor;
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var LexicalWrapper = styled.div(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & span.mention {\n      color: ", ";\n      user-modify: ", ";\n      background-color: inherit !important;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: bold;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
+var LexicalWrapper = styled.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      //user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: bold;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.borderRadius;
@@ -33206,13 +33038,11 @@ var LexicalWrapper = styled.div(_templateObject11$8 || (_templateObject11$8 = _t
   return props.selectionBackgroundColor || colors.primary;
 }, function (props) {
   return props.mentionColor || colors.primary;
-}, function (props) {
-  return props.isChrome && 'read-only';
 });
-var Placeholder = styled.span(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  color: ", ";\n  margin: 8px 6px;\n\n  padding: ", ";\n"])), colors.placeholderTextColor, function (props) {
+var Placeholder = styled.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  color: ", ";\n  margin: 8px 6px;\n\n  padding: ", ";\n"])), colors.placeholderTextColor, function (props) {
   return props.paddings;
 });
-var EmojiButton = styled.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var EmojiButton = styled.span(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 2;
@@ -33221,46 +33051,45 @@ var EmojiButton = styled.span(_templateObject13$5 || (_templateObject13$5 = _tag
 }, function (props) {
   return props.hoverColor || colors.primary;
 });
-var MentionsContainer$1 = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  bottom: 100%;\n  z-index: 9998;\n  animation: fadeIn 0.2s ease-in-out;\n  @keyframes fadeIn {\n    from {\n      opacity: 0;\n    }\n    to {\n      opacity: 1;\n    }\n  }\n"])));
-var SendMessageIcon = styled.span(_templateObject15$4 || (_templateObject15$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
+var SendMessageIcon = styled.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
   return props.isActive ? colors.primary : props.color;
 });
-var ChosenAttachments = styled.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
-var TypingIndicator$1 = styled.div(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
-var TypingIndicatorCont = styled.div(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
-var TypingFrom = styled.h5(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
-var sizeAnimation = keyframes(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
-var DotOne = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
-var DotTwo = styled.span(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose([""])));
-var DotThree = styled.span(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose([""])));
-var TypingAnimation = styled.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", "\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
-var Loading = styled.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
-var BlockedUserInfo = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
-var JoinChannelCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
+var ChosenAttachments = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
+var TypingIndicator$1 = styled.div(_templateObject15$4 || (_templateObject15$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
+var TypingIndicatorCont = styled.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
+var TypingFrom = styled.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
+var sizeAnimation = keyframes(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var DotOne = styled.span(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose([""])));
+var DotTwo = styled.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
+var DotThree = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
+var TypingAnimation = styled.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", "\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
+var Loading = styled.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
+var BlockedUserInfo = styled.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
+var JoinChannelCont = styled.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
 }, colors.backgroundColor);
-var ReadOnlyCont = styled.div(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReadOnlyCont = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.iconColor || colors.primary;
 });
-var ReplyMessageCont = styled.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
-var ReplyIconWrapper = styled.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
+var ReplyIconWrapper = styled.span(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, colors.white);
-var SelectedMessagesWrapper = styled.div(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
-var CustomButton = styled.span(_templateObject32$1 || (_templateObject32$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
+var SelectedMessagesWrapper = styled.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
+var CustomButton = styled.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.backgroundColor || colors.primaryLight;
 }, function (props) {
   return props.marginLeft || '8px';
 });
-var CloseIconWrapper = styled.span(_templateObject33$1 || (_templateObject33$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
+var CloseIconWrapper = styled.span(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
 
 var _path$16;
 
@@ -34281,7 +34110,12 @@ var Members = function Members(_ref) {
     }
   };
 
-  var toggleKickMemberPopup = function toggleKickMemberPopup() {
+  var toggleKickMemberPopup = function toggleKickMemberPopup(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+
     if (kickMemberPopupOpen) {
       setSelectedMember(null);
     }
@@ -34289,7 +34123,12 @@ var Members = function Members(_ref) {
     setKickMemberPopupOpen(!kickMemberPopupOpen);
   };
 
-  var toggleBlockMemberPopup = function toggleBlockMemberPopup() {
+  var toggleBlockMemberPopup = function toggleBlockMemberPopup(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+
     if (blockMemberPopupOpen) {
       setSelectedMember(null);
     }
@@ -34297,7 +34136,12 @@ var Members = function Members(_ref) {
     setBlockMemberPopupOpen(!blockMemberPopupOpen);
   };
 
-  var toggleChangeRolePopup = function toggleChangeRolePopup() {
+  var toggleChangeRolePopup = function toggleChangeRolePopup(e) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+
     if (changeMemberRolePopup) {
       setSelectedMember(null);
     }
@@ -34305,7 +34149,12 @@ var Members = function Members(_ref) {
     setChangeMemberRolePopup(!changeMemberRolePopup);
   };
 
-  var toggleMakeAdminPopup = function toggleMakeAdminPopup(revoke) {
+  var toggleMakeAdminPopup = function toggleMakeAdminPopup(e, revoke) {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+
     if (revoke) {
       if (revokeAdminPopup) {
         setSelectedMember(null);
@@ -34413,24 +34262,24 @@ var Members = function Members(_ref) {
       },
       trigger: /*#__PURE__*/React__default.createElement(EditMemberIcon, null, /*#__PURE__*/React__default.createElement(SvgMoreVert, null))
     }, /*#__PURE__*/React__default.createElement(DropdownOptionsUl, null, showChangeMemberRole && checkActionPermission('changeMemberRole') && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
-      onClick: function onClick() {
+      onClick: function onClick(e) {
         setSelectedMember(member);
-        toggleChangeRolePopup();
+        toggleChangeRolePopup(e);
       },
       key: 1,
       hoverBackground: colors.hoverBackgroundColor
     }, "Change role"), showMakeMemberAdmin && checkActionPermission('changeMemberRole') && member.role !== 'owner' && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
-      onClick: function onClick() {
+      onClick: function onClick(e) {
         setSelectedMember(member);
-        toggleMakeAdminPopup(member.role === 'admin');
+        toggleMakeAdminPopup(e, member.role === 'admin');
       },
       textColor: member.role === 'admin' ? colors.red1 : '',
       key: 2,
       hoverBackground: colors.hoverBackgroundColor
     }, member.role === 'admin' ? 'Revoke Admin' : 'Make Admin'), showKickMember && checkActionPermission('kickMember') && member.role !== 'owner' && /*#__PURE__*/React__default.createElement(DropdownOptionLi, {
-      onClick: function onClick() {
+      onClick: function onClick(e) {
         setSelectedMember(member);
-        toggleKickMemberPopup();
+        toggleKickMemberPopup(e);
       },
       textColor: colors.red1,
       key: 3,
@@ -34439,9 +34288,9 @@ var Members = function Members(_ref) {
       textColor: colors.red1,
       key: 4,
       hoverBackground: colors.hoverBackgroundColor,
-      onClick: function onClick() {
+      onClick: function onClick(e) {
         setSelectedMember(member);
-        toggleBlockMemberPopup();
+        toggleBlockMemberPopup(e);
       }
     }, "Remove and Block member"))));
   }))), kickMemberPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
@@ -34462,7 +34311,7 @@ var Members = function Members(_ref) {
     theme: theme,
     handleFunction: handleMakeAdmin,
     togglePopup: function togglePopup() {
-      return toggleMakeAdminPopup(false);
+      return toggleMakeAdminPopup(undefined, false);
     },
     buttonText: 'Promote',
     buttonBackground: colors.primary,
@@ -34471,7 +34320,7 @@ var Members = function Members(_ref) {
   }), revokeAdminPopup && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
     handleFunction: handleRevokeAdmin,
     togglePopup: function togglePopup() {
-      return toggleMakeAdminPopup(true);
+      return toggleMakeAdminPopup(undefined, true);
     },
     buttonText: 'Revoke',
     title: 'Revoke admin',
@@ -34499,7 +34348,7 @@ var ActionsMenu$1 = styled.div(_templateObject2$A || (_templateObject2$A = _tagg
 var MemberNamePresence = styled.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
 var MemberNameWrapper = styled.div(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
 var MemberName$3 = styled.h4(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
-var EditMemberIcon = styled.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 2px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var EditMemberIcon = styled.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 15px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
 var MembersList = styled.ul(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var MemberItem$1 = styled.li(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n  cursor: pointer;\n\n  &:first-child {\n    cursor: pointer;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;

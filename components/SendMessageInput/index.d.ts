@@ -41,7 +41,4 @@ interface SendMessageProps {
     textSelectionBackgroundColor?: string;
 }
 declare const SendMessageInput: React.FC<SendMessageProps>;
-export declare const MentionsContainer: import("styled-components").StyledComponent<"div", any, {
-    mentionsIsOpen?: boolean | undefined;
-}, never>;
 export default SendMessageInput;
