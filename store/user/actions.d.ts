@@ -81,15 +81,9 @@ export declare function browserTabIsActiveAC(state: boolean): {
         state: boolean;
     };
 };
-export declare function checkUserStatusAC(usersMap: {
-    [key: string]: string;
-}): {
+export declare function checkUserStatusAC(): {
     type: string;
-    payload: {
-        usersMap: {
-            [key: string]: string;
-        };
-    };
+    payload: {};
 };
 export declare function updateUserStatusOnMapAC(usersMap: {
     [key: string]: IUser;

@@ -10,7 +10,7 @@ import LinkifyIt from 'linkify-it';
 import Cropper from 'react-easy-crop';
 import Carousel from 'react-elastic-carousel';
 import { CircularProgressbar } from 'react-circular-progressbar';
-import { $applyNodeReplacement, TextNode, $createTextNode, KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, SELECTION_CHANGE_COMMAND, $getRoot, $createParagraphNode } from 'lexical';
+import { $applyNodeReplacement, TextNode, $createTextNode, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, KEY_ENTER_COMMAND, COMMAND_PRIORITY_LOW, SELECTION_CHANGE_COMMAND, $getRoot, $createParagraphNode } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -10389,6 +10389,9 @@ var setAllowEditDeleteIncomingMessage = function setAllowEditDeleteIncomingMessa
 var getAllowEditDeleteIncomingMessage = function getAllowEditDeleteIncomingMessage() {
   return allowEditDeleteIncomingMessage;
 };
+var compareMessageBodyAttributes = function compareMessageBodyAttributes(attributes1, attributes2) {
+  return JSON.stringify(attributes1) === JSON.stringify(attributes2);
+};
 var bodyAttributesMapByType = {
   1: ['bold'],
   2: ['italic'],
@@ -11194,12 +11197,10 @@ function browserTabIsActiveAC(state) {
     }
   };
 }
-function checkUserStatusAC(usersMap) {
+function checkUserStatusAC() {
   return {
     type: CHECK_USER_STATUS,
-    payload: {
-      usersMap: usersMap
-    }
+    payload: {}
   };
 }
 function updateUserStatusOnMapAC(usersMap) {
@@ -20218,20 +20219,28 @@ function useUpdatePresence(channel, isVisible) {
     deleteUserFromMap(userId);
   }
 
-  if (userId && !usersMap[userId] && isVisible && directChannelUser) {
-    setUserToMap(directChannelUser);
-  }
-
   if (Object.keys(usersMap).length && connectionStatus === CONNECTION_STATUS.CONNECTED) {
     clearInterval(updateInterval);
     updateInterval = setInterval(function () {
-      dispatch(checkUserStatusAC(usersMap));
+      dispatch(checkUserStatusAC());
     }, 4000);
   } else if (!Object.keys(usersMap).length && updateInterval) {
     clearInterval(updateInterval);
     updateInterval = undefined;
   }
 
+  useEffect(function () {
+    if (userId && isVisible && directChannelUser) {
+      if (!usersMap[userId]) {
+        setUserToMap(directChannelUser);
+      } else if (usersMap[userId].presence.state !== directChannelUser.presence.state) {
+        var _updateUserStatusOnCh;
+
+        updateUserOnMap(directChannelUser);
+        dispatch(updateUserStatusOnChannelAC((_updateUserStatusOnCh = {}, _updateUserStatusOnCh[directChannelUser.id] = directChannelUser, _updateUserStatusOnCh)));
+      }
+    }
+  });
   useEffect(function () {
     clearInterval(updateInterval);
   }, [usersMap]);
@@ -20242,9 +20251,9 @@ function useUpdatePresence(channel, isVisible) {
   }, [connectionStatus]);
   useEffect(function () {
     if (directChannelUser && usersMap[directChannelUser.id] && directChannelUser.presence && (directChannelUser.presence.state !== usersMap[directChannelUser.id].state || directChannelUser.presence.lastActiveAt && new Date(directChannelUser.presence.lastActiveAt).getTime() !== new Date(usersMap[directChannelUser.id].lastActiveAt).getTime())) {
-      var _updateUserStatusOnCh;
+      var _updateUserStatusOnCh2;
 
-      dispatch(updateUserStatusOnChannelAC((_updateUserStatusOnCh = {}, _updateUserStatusOnCh[directChannelUser.id] = directChannelUser, _updateUserStatusOnCh)));
+      dispatch(updateUserStatusOnChannelAC((_updateUserStatusOnCh2 = {}, _updateUserStatusOnCh2[directChannelUser.id] = directChannelUser, _updateUserStatusOnCh2)));
       updateUserOnMap(directChannelUser);
     }
   }, []);
@@ -26830,7 +26839,7 @@ var Container$d = styled.div(_templateObject$t || (_templateObject$t = _taggedTe
 }, colors.white);
 var UserNamePresence$1 = styled.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
 var MemberName$1 = styled.h3(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var ReactionsList = styled.ul(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 45px); ;\n"])), function (props) {
+var ReactionsList = styled.ul(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 57px);\n"])), function (props) {
   return !props.popupHeight && 'hidden';
 });
 var ReactionScoresCont = styled.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
@@ -30240,7 +30249,7 @@ function MentionsTypeaheadMenuItem(_ref) {
   }
 
   return /*#__PURE__*/React__default.createElement(MemberItem, {
-    key: option.key,
+    key: option.id,
     tabIndex: -1,
     className: className,
     ref: option.setRefElement,
@@ -30307,15 +30316,13 @@ function MentionsContainer(_ref2) {
       index: i,
       isSelected: selectedIndex === i,
       onClick: function onClick() {
-        console.log('click on option >>>>>>>>>>>>>>>>> i - ', i);
-        console.log('click on option >>>>>>>>>>>>>>>>> option - ', option);
         setHighlightedIndex(i);
         selectOptionAndCleanUp(option);
       },
       onMouseEnter: function onMouseEnter() {
         setHighlightedIndex(i);
       },
-      key: option.key,
+      key: option.id,
       option: option
     });
   })));
@@ -30370,11 +30377,6 @@ function MentionsPlugin(_ref3) {
 
     return getPossibleQueryMatch(text);
   }, [checkForSlashTriggerMatch, editor]);
-  useEffect(function () {
-    editor.registerCommand(KEY_ENTER_COMMAND, function () {
-      return true;
-    }, COMMAND_PRIORITY_LOW);
-  }, []);
   return /*#__PURE__*/React__default.createElement(LexicalTypeaheadMenuPlugin, {
     onQueryChange: setQueryString,
     onSelectOption: onSelectOption,
@@ -30671,12 +30673,10 @@ function TextFormatFloatingToolbar(_ref) {
       isItalic = _ref.isItalic,
       isUnderline = _ref.isUnderline,
       isCode = _ref.isCode,
-      isStrikethrough = _ref.isStrikethrough;
+      isStrikethrough = _ref.isStrikethrough,
+      setShowMenu = _ref.setShowMenu,
+      showMenu = _ref.showMenu;
   var popupCharStylesEditorRef = useRef(null);
-
-  var _useState = useState(false),
-      showMenu = _useState[0],
-      setShowMenu = _useState[1];
 
   function mouseMoveListener(e) {
     if (popupCharStylesEditorRef !== null && popupCharStylesEditorRef !== void 0 && popupCharStylesEditorRef.current && (e.buttons === 1 || e.buttons === 3)) {
@@ -30744,6 +30744,7 @@ function TextFormatFloatingToolbar(_ref) {
 
     return function () {
       window.removeEventListener('resize', update);
+      setShowMenu(false);
 
       if (scrollerElem) {
         scrollerElem.removeEventListener('scroll', update);
@@ -30832,37 +30833,41 @@ function TextFormatFloatingToolbar(_ref) {
 }
 
 function useFloatingTextFormatToolbar(editor, anchorElem) {
+  var _useState = useState(false),
+      isText = _useState[0],
+      setIsText = _useState[1];
+
   var _useState2 = useState(false),
-      isText = _useState2[0],
-      setIsText = _useState2[1];
+      isBold = _useState2[0],
+      setIsBold = _useState2[1];
 
   var _useState3 = useState(false),
-      isBold = _useState3[0],
-      setIsBold = _useState3[1];
+      isItalic = _useState3[0],
+      setIsItalic = _useState3[1];
 
   var _useState4 = useState(false),
-      isItalic = _useState4[0],
-      setIsItalic = _useState4[1];
+      isUnderline = _useState4[0],
+      setIsUnderline = _useState4[1];
 
   var _useState5 = useState(false),
-      isUnderline = _useState5[0],
-      setIsUnderline = _useState5[1];
+      isStrikethrough = _useState5[0],
+      setIsStrikethrough = _useState5[1];
 
   var _useState6 = useState(false),
-      isStrikethrough = _useState6[0],
-      setIsStrikethrough = _useState6[1];
+      isSubscript = _useState6[0],
+      setIsSubscript = _useState6[1];
 
   var _useState7 = useState(false),
-      isSubscript = _useState7[0],
-      setIsSubscript = _useState7[1];
+      isSuperscript = _useState7[0],
+      setIsSuperscript = _useState7[1];
 
   var _useState8 = useState(false),
-      isSuperscript = _useState8[0],
-      setIsSuperscript = _useState8[1];
+      isCode = _useState8[0],
+      setIsCode = _useState8[1];
 
   var _useState9 = useState(false),
-      isCode = _useState9[0],
-      setIsCode = _useState9[1];
+      showMenu = _useState9[0],
+      setShowMenu = _useState9[1];
 
   var handleClick = function handleClick(e) {
     if (!e.target.closest('.rich_text_editor')) {
@@ -30890,8 +30895,6 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
       }
 
       var node = getSelectedNode(selection);
-      var textContent = node.getTextContent();
-      var lastChar = textContent.slice(-1);
       setIsBold(selection.hasFormat('bold'));
       setIsItalic(selection.hasFormat('italic'));
       setIsUnderline(selection.hasFormat('underline'));
@@ -30906,7 +30909,29 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
         setIsText(false);
       }
 
-      if (lastChar === ' ' || !textContent) {
+      var rawTextContent = selection.getTextContent().replace(/\n/g, '');
+
+      if (!selection.isCollapsed() && rawTextContent === '') {
+        setIsText(false);
+      }
+    });
+  }, [editor, showMenu]);
+  useEventListener('click', handleClick);
+  useEffect(function () {
+    document.addEventListener('selectionchange', updatePopup);
+    return function () {
+      document.removeEventListener('selectionchange', updatePopup);
+    };
+  }, [updatePopup]);
+  useEffect(function () {
+    editor.getEditorState().read(function () {
+      var selection = $getSelection();
+
+      if (!$isRangeSelection(selection)) {
+        return;
+      }
+
+      if (!showMenu) {
         if (selection.hasFormat('bold')) {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
         }
@@ -30935,21 +30960,8 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
           editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
         }
       }
-
-      var rawTextContent = selection.getTextContent().replace(/\n/g, '');
-
-      if (!selection.isCollapsed() && rawTextContent === '') {
-        setIsText(false);
-      }
     });
-  }, [editor]);
-  useEventListener('click', handleClick);
-  useEffect(function () {
-    document.addEventListener('selectionchange', updatePopup);
-    return function () {
-      document.removeEventListener('selectionchange', updatePopup);
-    };
-  }, [updatePopup]);
+  }, [showMenu]);
   useEffect(function () {
     return mergeRegister(editor.registerUpdateListener(function () {
       updatePopup();
@@ -30959,6 +30971,12 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
       }
     }));
   }, [editor, updatePopup]);
+  useEffect(function () {
+    console.log('register command .....>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
+    editor.registerCommand(KEY_ENTER_COMMAND, function () {
+      return true;
+    }, COMMAND_PRIORITY_LOW);
+  }, []);
 
   if (!isText) {
     return null;
@@ -30973,7 +30991,9 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
     isSubscript: isSubscript,
     isSuperscript: isSuperscript,
     isUnderline: isUnderline,
-    isCode: isCode
+    isCode: isCode,
+    setShowMenu: setShowMenu,
+    showMenu: showMenu
   }), anchorElem);
 }
 
@@ -31048,7 +31068,6 @@ function EditMessagePlugin(_ref) {
                 paragraphNode.append($createTextNode(firstPart));
               }
 
-              console.log('attribute. . . ..  ', attribute);
               var textNode = $createTextNode(textPart.slice(attributeOffset, attributeOffset + attribute.length));
 
               switch (attribute.type) {
@@ -31161,6 +31180,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
                   attributeTypes.forEach(function (attributeType) {
                     messageBodyAttributes.push({
                       type: attributeType,
+                      metadata: '',
                       offset: attIndex,
                       length: _length
                     });
@@ -31168,6 +31188,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
                 } else {
                   messageBodyAttributes.push({
                     type: attributeTypes[0],
+                    metadata: '',
                     offset: attIndex,
                     length: _length
                   });
@@ -31182,6 +31203,8 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
           } else {
             setMessageText(messageToEdit ? messageToEdit.body : '');
           }
+        } else {
+          setMessageBodyAttributes([]);
         }
       });
     }
@@ -31824,20 +31847,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
         setMessageText(plainText);
       }
     });
-
-    if (typingTimout) {
-      if (!inTypingStateTimout) {
-        handleSendTypingState(true);
-      }
-
-      clearTimeout(typingTimout);
-    } else {
-      handleSendTypingState(true);
-    }
-
-    setTypingTimout(setTimeout(function () {
-      setTypingTimout(0);
-    }, 2000));
   }
 
   var onRef = function onRef(_floatingAnchorElem) {
@@ -31875,6 +31884,19 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   };
 
   var handleSendEditMessage = function handleSendEditMessage(event) {
+    if (typingTimout) {
+      if (!inTypingStateTimout) {
+        handleSendTypingState(true);
+      }
+
+      clearTimeout(typingTimout);
+    } else {
+      handleSendTypingState(true);
+    }
+
+    setTypingTimout(setTimeout(function () {
+      setTypingTimout(0);
+    }, 2000));
     var shiftKey = event.shiftKey,
         type = event.type,
         code = event.code;
@@ -32025,7 +32047,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   var handleEditMessage = function handleEditMessage() {
     var messageTexToSend = editMessageText.trim();
 
-    if (messageTexToSend && messageTexToSend !== messageToEdit.body) {
+    if (messageTexToSend) {
       var mentionedMembersPositions = [];
       var mentionMembersToSend = [];
 
@@ -32619,7 +32641,15 @@ var SendMessageInput = function SendMessageInput(_ref2) {
         setSendMessageIsActive(true);
       }
     } else {
-      setSendMessageIsActive(false);
+      if (editMessageText && messageBodyAttributes !== messageToEdit.bodyAttributes) {
+        if (!compareMessageBodyAttributes(messageBodyAttributes, messageToEdit.bodyAttributes)) {
+          setSendMessageIsActive(true);
+        } else {
+          setSendMessageIsActive(false);
+        }
+      } else {
+        setSendMessageIsActive(false);
+      }
     }
 
     if (messageText.trim()) {
@@ -32654,7 +32684,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
         document.body.removeAttribute('onbeforeunload');
       }
     }
-  }, [messageText, attachments, editMessageText, readyVideoAttachments]);
+  }, [messageText, attachments, editMessageText, readyVideoAttachments, messageBodyAttributes]);
   useDidUpdate(function () {
     if (mentionedMembers && mentionedMembers.length) {
       setDraftMessageToMap(activeChannel.id, {
@@ -33066,7 +33096,7 @@ var sizeAnimation = keyframes(_templateObject18$3 || (_templateObject18$3 = _tag
 var DotOne = styled.span(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose([""])));
 var DotTwo = styled.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
 var DotThree = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
-var TypingAnimation = styled.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", "\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
+var TypingAnimation = styled.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", ";\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
 var Loading = styled.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
 var BlockedUserInfo = styled.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
 var JoinChannelCont = styled.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {

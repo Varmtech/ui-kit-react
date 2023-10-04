@@ -24,6 +24,7 @@ export declare const lastMessageDateFormat: (date: Date | number) => string;
 export declare const getDuplicateMentionsFromMeta: (mentionsMetas: any[], mentionedMembers: any[]) => any[];
 export declare const setAllowEditDeleteIncomingMessage: (allow: boolean) => void;
 export declare const getAllowEditDeleteIncomingMessage: () => boolean;
+export declare const compareMessageBodyAttributes: (attributes1: IBodyAttribute[], attributes2: IBodyAttribute[]) => boolean;
 export declare const bodyAttributesMapByType: {
     1: string[];
     2: string[];
