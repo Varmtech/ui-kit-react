@@ -31203,7 +31203,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
                   attributeTypes.forEach(function (attributeType) {
                     messageBodyAttributes.push({
                       type: attributeType,
-                      metadata: '',
+                      metadata: child.metadata || '',
                       offset: attIndex,
                       length: _length
                     });
@@ -31211,7 +31211,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
                 } else {
                   messageBodyAttributes.push({
                     type: attributeTypes[0],
-                    metadata: '',
+                    metadata: child.metadata || '',
                     offset: attIndex,
                     length: _length
                   });
@@ -33075,7 +33075,7 @@ var MessageInputWrapper = styled__default.div(_templateObject9$c || (_templateOb
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      //user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: bold;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
+var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: bold;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.borderRadius;
