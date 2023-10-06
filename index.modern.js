@@ -9629,7 +9629,7 @@ function setIsDraggingAC(isDragging) {
     }
   };
 }
-function setDraggedAttachments(attachments, type) {
+function setDraggedAttachmentsAC(attachments, type) {
   return {
     type: SET_DRAGGED_ATTACHMENTS,
     payload: {
@@ -25759,6 +25759,12 @@ var Attachment = function Attachment(_ref) {
     });
   };
 
+  var handleDeleteSelectedAttachment = function handleDeleteSelectedAttachment(attachmentTid) {
+    if (removeSelected) {
+      removeSelected(attachmentTid);
+    }
+  };
+
   var handleDownloadFile = function handleDownloadFile() {
     try {
       var _temp2 = function () {
@@ -25977,7 +25983,7 @@ var Attachment = function Attachment(_ref) {
   })), sizeProgress && /*#__PURE__*/React__default.createElement(SizeProgress, null, bytesToSize(sizeProgress.loaded, 1), " / ", bytesToSize(sizeProgress.total, 1))))) : null, isPreview && /*#__PURE__*/React__default.createElement(RemoveChosenFile, {
     color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
-      return removeSelected && removeSelected(attachment.tid);
+      return handleDeleteSelectedAttachment(attachment.tid);
     }
   })) : attachment.type === 'video' ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !isPreview ? /*#__PURE__*/React__default.createElement(VideoCont, {
     onClick: function onClick() {
@@ -26047,7 +26053,7 @@ var Attachment = function Attachment(_ref) {
   }), /*#__PURE__*/React__default.createElement(RemoveChosenFile, {
     color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
-      return removeSelected && removeSelected(attachment.tid);
+      return handleDeleteSelectedAttachment(attachment.tid);
     }
   }))) : attachment.type === attachmentTypes.voice ? /*#__PURE__*/React__default.createElement(AudioPlayer, {
     url: attachment.attachmentUrl || attachmentUrl,
@@ -26132,7 +26138,7 @@ var Attachment = function Attachment(_ref) {
   }, (isInUploadingState || downloadingFile) && sizeProgress ? bytesToSize(sizeProgress.loaded, 1) + " \u2022 " + bytesToSize(sizeProgress.total, 1) : (attachment.data && attachment.data.size || attachment.size) && bytesToSize(isPreview ? attachment.data.size : +attachment.size))), isPreview && /*#__PURE__*/React__default.createElement(RemoveChosenFile, {
     color: theme === THEME.DARK ? colors.backgroundColor : colors.textColor3,
     onClick: function onClick() {
-      return removeSelected && removeSelected(attachment.tid);
+      return handleDeleteSelectedAttachment(attachment.tid);
     }
   })));
 };
@@ -29229,6 +29235,7 @@ var MessageList = function MessageList(_ref2) {
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       var fileList = Object.values(e.dataTransfer.files);
+      console.log('dropped fileList.>> >>>>...', fileList);
       var attachmentsFiles = [];
       new Promise(function (resolve) {
         fileList.forEach(function (attachment, index) {
@@ -29250,7 +29257,7 @@ var MessageList = function MessageList(_ref2) {
           fileReader.readAsDataURL(attachment);
         });
       }).then(function () {
-        dispatch(setDraggedAttachments(attachmentsFiles, 'file'));
+        dispatch(setDraggedAttachmentsAC(attachmentsFiles, 'file'));
       });
       e.dataTransfer.clearData();
     }
@@ -29260,19 +29267,13 @@ var MessageList = function MessageList(_ref2) {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    var fileList = Array.from(e.dataTransfer.items);
-    fileList.forEach(function (file) {
-      var fileType = file.type.split('/')[0];
-      console.log('file. .. . ', file.getAsFile());
-      console.log('fileType. .. . ', fileType);
-    });
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      var _fileList = Object.values(e.dataTransfer.files);
-
+      var fileList = Object.values(e.dataTransfer.files);
       var attachmentsFiles = [];
       new Promise(function (resolve) {
-        _fileList.forEach(function (attachment, index) {
+        var readFiles = 0;
+        fileList.forEach(function (attachment) {
           var fileReader = new FileReader();
 
           fileReader.onload = function (event) {
@@ -29282,8 +29283,9 @@ var MessageList = function MessageList(_ref2) {
               data: file,
               type: attachment.type
             });
+            readFiles++;
 
-            if (_fileList.length - 1 === index) {
+            if (fileList.length === readFiles) {
               resolve();
             }
           };
@@ -29291,7 +29293,7 @@ var MessageList = function MessageList(_ref2) {
           fileReader.readAsDataURL(attachment);
         });
       }).then(function () {
-        dispatch(setDraggedAttachments(attachmentsFiles, 'media'));
+        dispatch(setDraggedAttachmentsAC(attachmentsFiles, 'media'));
       });
       e.dataTransfer.clearData();
     }
@@ -30781,6 +30783,7 @@ function TextFormatFloatingToolbar(_ref) {
     };
   }, [editor, updateTextFormatFloatingToolbar, anchorElem]);
   useEffect(function () {
+    console.log('should add register >>>>>>>>>>>>>>>>>>>>>>>>>>> ');
     editor.getEditorState().read(function () {
       updateTextFormatFloatingToolbar();
     });
@@ -31940,14 +31943,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
 
   function onChange(editorState) {
     setRealEditorState(editorState);
-    editorState.read(function () {
-      var rootNode = $getRoot();
-      var plainText = rootNode.getTextContent();
-
-      if (!messageToEdit) {
-        setMessageText(plainText);
-      }
-    });
   }
 
   var onRef = function onRef(_floatingAnchorElem) {
@@ -32395,6 +32390,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                   if (fileType === 'image') {
                     resizeImage(file).then(function (resizedFile) {
                       try {
+                        console.log('set attachments ... 1');
                         setAttachments(function (prevState) {
                           return [].concat(prevState, [{
                             data: file,
@@ -32413,6 +32409,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                       }
                     });
                   } else if (fileType === 'video') {
+                    console.log('set attachments ... 2');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -32426,6 +32423,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                       }]);
                     });
                   } else {
+                    console.log('set attachments ... 3');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -32445,6 +32443,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                         if (isMediaAttachment) {
                           var _temp15 = function _temp15() {
                             if (file.type === 'image/gif') {
+                              console.log('set attachments ... 4');
                               setAttachments(function (prevState) {
                                 return [].concat(prevState, [{
                                   data: file,
@@ -32463,7 +32462,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                               });
                             } else {
                               if (dataFromDb) {
-                                console.log('data from db . . . . set metas. ... .. ', _metas);
+                                console.log('set attachments ... 5');
                                 setAttachments(function (prevState) {
                                   return [].concat(prevState, [{
                                     data: file,
@@ -32480,6 +32479,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                                 resizeImage(file).then(function (resizedFileData) {
                                   try {
                                     var resizedFile = new File([resizedFileData.blob], resizedFileData.file.name);
+                                    console.log('set attachments ... 7');
                                     setAttachments(function (prevState) {
                                       return [].concat(prevState, [{
                                         data: resizedFile,
@@ -32524,6 +32524,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                           return _temp16 && _temp16.then ? _temp16.then(_temp15) : _temp15(_temp16);
                         } else {
                           var _temp17 = function _temp17() {
+                            console.log('set attachments ... 9');
                             setAttachments(function (prevState) {
                               return [].concat(prevState, [{
                                 data: file,
@@ -32562,6 +32563,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                       var _temp19 = function () {
                         if (fileType === 'video') {
                           var _temp20 = function _temp20() {
+                            console.log('set attachments ... 10');
                             setAttachments(function (prevState) {
                               return [].concat(prevState, [{
                                 data: file,
@@ -32596,6 +32598,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
 
                           return _temp21 && _temp21.then ? _temp21.then(_temp20) : _temp20(_temp21);
                         } else {
+                          console.log('set attachments ... 11');
                           setAttachments(function (prevState) {
                             return [].concat(prevState, [{
                               data: file,
@@ -32678,7 +32681,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
           return Promise.reject(e);
         }
       });
-      dispatch(setDraggedAttachments([], ''));
+      dispatch(setDraggedAttachmentsAC([], ''));
     }
   }, [draggedAttachments]);
   useEffect(function () {
@@ -32826,6 +32829,8 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     }
   }, [connectionStatus]);
   useDidUpdate(function () {
+    console.log('attachemnts changes .>>>>>>>> .>. ', attachments);
+
     if (handleAttachmentSelected) {
       handleAttachmentSelected(!!attachments.length);
     }
