@@ -9772,7 +9772,7 @@ function SvgSearch(props) {
   })));
 }
 
-var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44, _templateObject45;
+var _templateObject$1, _templateObject2$1, _templateObject3$1, _templateObject4$1, _templateObject5$1, _templateObject6, _templateObject7, _templateObject8, _templateObject9, _templateObject10, _templateObject11, _templateObject12, _templateObject13, _templateObject14, _templateObject15, _templateObject16, _templateObject17, _templateObject18, _templateObject19, _templateObject20, _templateObject21, _templateObject22, _templateObject23, _templateObject24, _templateObject25, _templateObject26, _templateObject27, _templateObject28, _templateObject29, _templateObject30, _templateObject31, _templateObject32, _templateObject33, _templateObject34, _templateObject35, _templateObject36, _templateObject37, _templateObject38, _templateObject39, _templateObject40, _templateObject41, _templateObject42, _templateObject43, _templateObject44;
 function md5(inputString) {
   var hc = '0123456789abcdef';
 
@@ -10122,12 +10122,7 @@ var CustomSwitcher = styled__default.div(_templateObject26 || (_templateObject26
 var SwitcherLabel = styled__default.label(_templateObject27 || (_templateObject27 = _taggedTemplateLiteralLoose(["\n  width: 48px;\n  height: 28px;\n  background: rgb(226, 226, 226);\n  display: inline-block;\n  border-radius: 50px;\n  position: relative;\n  transition: all 0.3s ease;\n  transform-origin: 20% center;\n  border: 3px solid #fff;\n  cursor: pointer;\n\n  &:before {\n    content: '';\n    position: absolute;\n    display: block;\n    transition: all 0.2s ease;\n    width: 24px;\n    height: 24px;\n    top: 2px;\n    left: 2px;\n    border-radius: 20px;\n    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.251475), 0 2px 6px rgba(0, 0, 0, 0.404256);\n    background: #fff;\n  }\n"])));
 var UploadAvatarButton = styled__default.button(_templateObject28 || (_templateObject28 = _taggedTemplateLiteralLoose(["\n  display: block;\n  height: 32px;\n  margin-top: 8px;\n  border: none;\n  color: #fff;\n  font-weight: 500;\n  font-size: 14px;\n  background: ", ";\n  border-radius: 4px;\n  outline: none !important;\n  cursor: pointer;\n  padding: 7px 12px;\n  line-height: 10px;\n"])), colors.primary);
 var UploadAvatarHandler = styled__default.div(_templateObject29 || (_templateObject29 = _taggedTemplateLiteralLoose(["\n  margin-left: 18px;\n  font-size: 13px;\n  color: ", ";\n"])), colors.textColor1);
-var MentionedUser = styled__default.span(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  font-weight: ", ";\n"])), function (props) {
-  return props.isLastMessage ? colors.textColor2 : props.color || colors.primary;
-}, function (props) {
-  return props.isLastMessage && '500';
-});
-var StyledText = styled__default.span(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  font-weight: ", ";\n  font-family: ", ";\n  font-style: ", ";\n  text-decoration: ", ";\n  letter-spacing: ", ";\n  &.bold {\n    font-weight: bold;\n  }\n  &.italic {\n    font-style: italic;\n  }\n  &.underline {\n    text-decoration: underline;\n  }\n  &.strikethrough {\n    text-decoration: line-through;\n  }\n  &.underline.strikethrough {\n    text-decoration: underline line-through;\n  }\n  &.monospace {\n    letter-spacing: 4px;\n  }\n"])), function (props) {
+var StyledText = styled__default.span(_templateObject30 || (_templateObject30 = _taggedTemplateLiteralLoose(["\n  font-weight: ", ";\n  font-family: ", ";\n  font-style: ", ";\n  text-decoration: ", ";\n  letter-spacing: ", ";\n\n  &.mention {\n    color: ", ";\n    font-weight: ", ";\n  }\n  &.bold {\n    font-weight: 600;\n  }\n  &.italic {\n    font-style: italic;\n  }\n  &.underline {\n    text-decoration: underline;\n  }\n  &.strikethrough {\n    text-decoration: line-through;\n  }\n  &.underline.strikethrough {\n    text-decoration: underline line-through;\n  }\n  &.monospace {\n    letter-spacing: 4px;\n  }\n"])), function (props) {
   return props.fontWeight || props.isLastMessage && '500';
 }, function (props) {
   return props.fontFamily;
@@ -10137,8 +10132,12 @@ var StyledText = styled__default.span(_templateObject31 || (_templateObject31 = 
   return props.textDecoration;
 }, function (props) {
   return props.letterSpacing;
+}, function (props) {
+  return props.isLastMessage ? colors.textColor2 : props.color || colors.primary;
+}, function (props) {
+  return props.isLastMessage && '500';
 });
-var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 4px 0;\n  white-space: nowrap;\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n  cursor: ", ";\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
+var MessageOwner = styled__default.h3(_templateObject31 || (_templateObject31 = _taggedTemplateLiteralLoose(["\n  margin: 0 12px 4px 0;\n  white-space: nowrap;\n  color: ", ";\n  margin-left: ", ";\n  font-weight: 500;\n  font-size: ", ";\n  line-height: ", ";\n  cursor: ", ";\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])), function (props) {
   return props.color || colors.primary;
 }, function (props) {
   return props.rtlDirection && 'auto';
@@ -10149,7 +10148,7 @@ var MessageOwner = styled__default.h3(_templateObject32 || (_templateObject32 = 
 }, function (props) {
   return props.clickable && 'pointer';
 });
-var MessageText = styled__default.pre(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+var MessageText = styled__default.pre(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'sans-serif';
 }, function (props) {
   return props.withAttachment && (props.showMessageSenderName ? props.withPaddings ? '0 12px 10px' : '0 0 10px' : props.isForwarded ? props.withPaddings ? '4px 12px 10px' : '4px 0px 10px' : '8px 12px 10px');
@@ -10166,29 +10165,29 @@ var MessageText = styled__default.pre(_templateObject33 || (_templateObject33 = 
 }, function (props) {
   return props.isRepliedMessage && "\n      display: -webkit-box;\n      -webkit-line-clamp: 1;\n      -webkit-box-orient: vertical;\n      overflow: hidden;\n      text-overflow: ellipsis;\n  ";
 }, colors.blue);
-var ReplyMessageText = styled__default.span(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageText = styled__default.span(_templateObject33 || (_templateObject33 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  position: relative;\n  margin: 0;\n  padding: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  line-height: ", ";\n  letter-spacing: -0.2px;\n  color: ", ";\n  user-select: text;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.withAttachment && props.showMessageSenderName ? '0 12px 10px' : props.withAttachment ? '8px 12px 10px' : '';
 }, function (props) {
   return props.fontSize || '15px';
 }, function (props) {
   return props.lineHeight || '20px';
 }, colors.textColor1, colors.blue);
-var CloseIcon = styled__default(SvgClose)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  box-sizing: content-box;\n  color: ", ";\n"])), function (props) {
+var CloseIcon = styled__default(SvgClose)(_templateObject34 || (_templateObject34 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 13px;\n  right: 13px;\n  cursor: pointer;\n  padding: 15px;\n  box-sizing: content-box;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var ClearTypedText = styled__default(CloseIcon)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
-var StyledSearchSvg = styled__default(SvgSearch)(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: ", ";\n"])), function (props) {
+var ClearTypedText = styled__default(CloseIcon)(_templateObject35 || (_templateObject35 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 10px;\n  cursor: pointer;\n  padding: 4px;\n"])));
+var StyledSearchSvg = styled__default(SvgSearch)(_templateObject36 || (_templateObject36 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  position: absolute;\n  top: 12px;\n  left: ", ";\n"])), function (props) {
   return props.left || '14px';
 });
-var SubTitle = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  margin: ", ";\n"])), function (props) {
+var SubTitle = styled__default.span(_templateObject37 || (_templateObject37 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  margin: ", ";\n"])), function (props) {
   return props.color || colors.textColor2;
 }, function (props) {
   return props.margin;
 });
-var AttachmentIconCont = styled__default.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n"])), function (props) {
+var AttachmentIconCont = styled__default.span(_templateObject38 || (_templateObject38 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 });
-var UploadingIcon = styled__default.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border-style: solid;\n  border-color: ", ";\n  border-width: ", ";\n  border-top-width: ", ";\n  border-top-color: rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
+var UploadingIcon = styled__default.span(_templateObject39 || (_templateObject39 = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  border-style: solid;\n  border-color: ", ";\n  border-width: ", ";\n  border-top-width: ", ";\n  border-top-color: rgba(0, 0, 0, 0);\n  border-radius: 50%;\n  width: ", ";\n  height: ", ";\n\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])), function (props) {
   return props.color || 'rgba(255, 255, 255, 0.8)';
 }, function (props) {
   return props.borderWidth || (props.fileAttachment ? '2px' : '3px');
@@ -10199,9 +10198,9 @@ var UploadingIcon = styled__default.span(_templateObject40 || (_templateObject40
 }, function (props) {
   return props.height || (props.fileAttachment ? '26px' : props.isRepliedMessage ? '28px' : '40px');
 });
-var TextInOneLine = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CancelResumeWrapper = styled__default.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px;\n  z-index: 3;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])));
-var UploadPercent = styled__default.span(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  //background-color: rgba(0,0,0,0.4);\n  background-color: ", ";\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
+var TextInOneLine = styled__default.span(_templateObject40 || (_templateObject40 = _taggedTemplateLiteralLoose(["\n  display: -webkit-box;\n  -webkit-line-clamp: 1;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CancelResumeWrapper = styled__default.span(_templateObject41 || (_templateObject41 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px;\n  z-index: 3;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])));
+var UploadPercent = styled__default.span(_templateObject42 || (_templateObject42 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  position: absolute;\n  color: #fff;\n  width: ", ";\n  height: ", ";\n  //background-color: rgba(0,0,0,0.4);\n  background-color: ", ";\n  border-radius: ", ";\n}\n  ", "\n"])), function (props) {
   return props.fileAttachment || props.isRepliedMessage || props.isDetailsView ? '40px' : '56px';
 }, function (props) {
   return props.fileAttachment || props.isRepliedMessage || props.isDetailsView ? '40px' : '56px';
@@ -10212,7 +10211,7 @@ var UploadPercent = styled__default.span(_templateObject43 || (_templateObject43
 }, function (props) {
   return (props.fileAttachment || props.isRepliedMessage) && "& > svg {\n    width: 15px;\n    height: 15px;\n  }";
 });
-var UploadProgress = styled__default.div(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  background-position: center;\n  border-radius: ", ";\n  z-index: ", ";\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
+var UploadProgress = styled__default.div(_templateObject43 || (_templateObject43 = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  top: ", ";\n  left: ", ";\n  width: ", ";\n  height: ", ";\n  min-width: ", ";\n  min-height: ", ";\n  display: flex;\n  //display: none;\n  align-items: center;\n  justify-content: center;\n  //border-radius: ", ";\n  background-image: url(", ");\n  background-size: cover;\n  background-position: center;\n  border-radius: ", ";\n  z-index: ", ";\n  cursor: pointer;\n  border: ", ";\n  box-sizing: border-box;\n  /* ", "*/\n  ", "\n  ", "\n"])), function (props) {
   return !props.positionStatic && 'absolute';
 }, function (props) {
   return props.fileAttachment ? '8px' : '0';
@@ -10243,7 +10242,7 @@ var UploadProgress = styled__default.div(_templateObject44 || (_templateObject44
 }, function (props) {
   return props.isDetailsView && "\n    width: 100%;\n    height: 100%;\n    min-width: inherit;\n  ";
 });
-var AttachmentPreviewTitle = styled__default.span(_templateObject45 || (_templateObject45 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
+var AttachmentPreviewTitle = styled__default.span(_templateObject44 || (_templateObject44 = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 20px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 15px;\n  line-height: 20px;\n  height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
@@ -10300,16 +10299,18 @@ var linkifyTextPart = function linkifyTextPart(textPart, match) {
 };
 
 var combineMessageAttributes = function combineMessageAttributes(attributes) {
-  var attributesPositions = attributes.sort(function (a, b) {
+  var sortedAttributes = attributes.sort(function (a, b) {
     return a.offset - b.offset;
   });
   var combinedAttributes = {};
-  attributesPositions.forEach(function (attribute) {
+  sortedAttributes.forEach(function (attribute) {
     var offset = attribute.offset;
     var typeValue = attribute.type;
 
     if (offset in combinedAttributes) {
       combinedAttributes[offset].type += " " + typeValue;
+      var metadata = combinedAttributes[offset].metadata += " " + attribute.metadata;
+      combinedAttributes[offset].metadata = metadata.trim();
     } else {
       combinedAttributes[offset] = {
         type: typeValue,
@@ -10354,18 +10355,46 @@ var MessageTextFormat = function MessageTextFormat(_ref2) {
           secondPart = linkifyTextPart(secondPart, secondPartMatch);
         }
 
-        if (attribute.type === 'mention') {
+        if (attribute.type.includes('mention')) {
           var mentionDisplay = message.mentionedUsers && message.mentionedUsers.find(function (men) {
             return men.id === attribute.metadata;
           });
           var user = getClient().user;
-          var mentionDisplayName = "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim();
-          nextPartIndex = attribute.offset + attribute.length;
-          messageText.push(firstPart, asSampleText ? mentionDisplayName : /*#__PURE__*/React__default.createElement(MentionedUser, {
-            isLastMessage: isLastMessage,
-            color: colors.primary,
-            key: attributeOffset
-          }, mentionDisplayName), index === combinedAttributesList.length - 1 ? secondPart : '');
+          var mentionDisplayName = text.slice(attributeOffset, attributeOffset + attribute.length);
+
+          if (mentionDisplay) {
+            mentionDisplayName = "@" + makeUsername(user.id === mentionDisplay.id ? mentionDisplay : contactsMap[mentionDisplay.id], mentionDisplay, getFromContacts).trim();
+          }
+
+          if (nextPartIndex > attributeOffset) {
+            messageText = messageText.slice(0, -2);
+            var prevAtt = combinedAttributesList[index - 1];
+            var start = nextPartIndex - prevAtt.length;
+            var currentTextPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(start || 0, start + prevAtt.length) : '');
+            var currentMentionIndex = currentTextPart.indexOf("@" + attribute.metadata);
+            var firsTextPart = "" + currentTextPart.substring(0, currentMentionIndex);
+            var secondTextPart = "" + currentTextPart.substring(currentMentionIndex + attribute.length, prevAtt.length);
+            secondPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(prevAtt.offset + prevAtt.length) : '');
+            nextPartIndex = prevAtt.offset + prevAtt.length;
+            messageText.push(asSampleText ? currentTextPart : /*#__PURE__*/React__default.createElement(StyledText, {
+              className: "" + combinedAttributesList[index - 1].type,
+              isLastMessage: isLastMessage,
+              key: attributeOffset + index
+            }, firsTextPart, /*#__PURE__*/React__default.createElement(StyledText, {
+              className: 'mention',
+              isLastMessage: isLastMessage,
+              color: colors.primary,
+              key: attributeOffset + index
+            }, mentionDisplayName), secondTextPart), index === combinedAttributesList.length - 1 ? secondPart : '');
+          } else {
+            nextPartIndex = attribute.offset + attribute.length;
+            messageText.push(firstPart, asSampleText ? mentionDisplayName : /*#__PURE__*/React__default.createElement(StyledText, {
+              className: attribute.type,
+              isLastMessage: isLastMessage,
+              color: colors.primary,
+              key: attributeOffset
+            }, mentionDisplayName), index === combinedAttributesList.length - 1 ? secondPart : '');
+          }
         } else {
           nextPartIndex = attributeOffset + attribute.length;
           messageText.push(firstPart, asSampleText ? "" + text.slice(attributeOffset, attributeOffset + attribute.length) : /*#__PURE__*/React__default.createElement(StyledText, {
@@ -30994,12 +31023,6 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
       }
     }));
   }, [editor, updatePopup]);
-  React.useEffect(function () {
-    console.log('register command .....>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-    editor.registerCommand(lexical.KEY_ENTER_COMMAND, function () {
-      return true;
-    }, lexical.COMMAND_PRIORITY_LOW);
-  }, []);
 
   if (!isText) {
     return null;
@@ -31063,14 +31086,50 @@ function EditMessagePlugin(_ref) {
         var nextPartIndex;
 
         if (editMessage.bodyAttributes && editMessage.bodyAttributes.length) {
-          var combinedAttributes = combineMessageAttributes(editMessage.bodyAttributes);
+          var bodyAttributes = JSON.parse(JSON.stringify(editMessage.bodyAttributes));
+          var modifiedAttributes = [];
+          bodyAttributes.sort(function (a, b) {
+            return a.offset - b.offset;
+          }).forEach(function (attribute, index) {
+            if (attribute.type === 'mention') {
+              var prevAttribute = bodyAttributes[index - 1];
+
+              if (prevAttribute && attribute.offset < prevAttribute.offset + prevAttribute.length) {
+                modifiedAttributes.pop();
+
+                var modifiedAttribute = _extends({}, prevAttribute, {
+                  offset: prevAttribute.offset,
+                  length: attribute.offset - prevAttribute.offset
+                });
+
+                modifiedAttributes.push(modifiedAttribute);
+                modifiedAttributes.push(attribute);
+                modifiedAttributes.push(_extends({}, attribute, {
+                  type: modifiedAttribute.type,
+                  metadata: ''
+                }));
+
+                var modifiedNextAttribute = _extends({}, prevAttribute, {
+                  offset: attribute.offset + attribute.length,
+                  length: prevAttribute.offset + prevAttribute.length - (attribute.offset + attribute.length)
+                });
+
+                modifiedAttributes.push(modifiedNextAttribute);
+              } else {
+                modifiedAttributes.push(attribute);
+              }
+            } else {
+              modifiedAttributes.push(attribute);
+            }
+          });
+          var combinedAttributes = combineMessageAttributes(modifiedAttributes);
           combinedAttributes.forEach(function (attribute, index) {
             var attributeOffset = attribute.offset;
             var firstPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(nextPartIndex || 0, attributeOffset) : '');
             var secondPart = "" + (textPart ? textPart === null || textPart === void 0 ? void 0 : textPart.substring(attributeOffset + attribute.length) : '');
             nextPartIndex = attribute.offset + attribute.length;
 
-            if (attribute.type === 'mention') {
+            if (attribute.type.includes('mention')) {
               var mentionUser = editMessage.mentionedUsers.find(function (mention) {
                 return mention.id === attribute.metadata;
               });
@@ -31084,9 +31143,28 @@ function EditMessagePlugin(_ref) {
                   paragraphNode.append(lexical.$createTextNode(firstPart));
                 }
 
+                if (attribute.type.length > 7) {
+                  var styleNumber = 0;
+                  var attTypes = attribute.type.replace('mention', '').trim();
+
+                  for (var style in bodyAttributesMapByType) {
+                    var stylesStr = bodyAttributesMapByType[style].join(' ');
+
+                    if (stylesStr === attTypes) {
+                      styleNumber = Number(style);
+                    }
+                  }
+
+                  mentionNode.setFormat(styleNumber);
+                }
+
                 paragraphNode.append(mentionNode);
               }
             } else {
+              if (combinedAttributes[index + 1] && combinedAttributes[index + 1].type.includes('mention') && combinedAttributes[index + 1].offset < attributeOffset + attribute.length) {
+                return;
+              }
+
               if (firstPart) {
                 paragraphNode.append(lexical.$createTextNode(firstPart));
               }
@@ -31189,18 +31267,40 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
                 offset: menIndex,
                 length: idLength
               });
-            } else {
-              var attributeTypes = bodyAttributesMapByType[child.format];
 
-              if (attributeTypes) {
+              if (child.format) {
+                var attributeTypes = bodyAttributesMapByType[child.format];
+
+                if (attributeTypes.length > 1) {
+                  attributeTypes.forEach(function (attributeType) {
+                    messageBodyAttributes.push({
+                      type: attributeType,
+                      metadata: child.metadata || '',
+                      offset: menIndex,
+                      length: length
+                    });
+                  });
+                } else {
+                  messageBodyAttributes.push({
+                    type: attributeTypes[0],
+                    metadata: child.metadata || '',
+                    offset: menIndex,
+                    length: length
+                  });
+                }
+              }
+            } else {
+              var _attributeTypes = bodyAttributesMapByType[child.format];
+
+              if (_attributeTypes) {
                 var _offset = offsetList[index].start;
 
                 var _length = offsetList[index].end - offsetList[index].start;
 
                 var attIndex = _offset + currentOffsetDiff;
 
-                if (attributeTypes.length > 1) {
-                  attributeTypes.forEach(function (attributeType) {
+                if (_attributeTypes.length > 1) {
+                  _attributeTypes.forEach(function (attributeType) {
                     messageBodyAttributes.push({
                       type: attributeType,
                       metadata: child.metadata || '',
@@ -31210,7 +31310,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
                   });
                 } else {
                   messageBodyAttributes.push({
-                    type: attributeTypes[0],
+                    type: _attributeTypes[0],
                     metadata: child.metadata || '',
                     offset: attIndex,
                     length: _length
@@ -31227,6 +31327,7 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
             setMessageText(messageToEdit ? messageToEdit.body : '');
           }
         } else {
+          setMessageText(messageText);
           setMessageBodyAttributes([]);
         }
       });
@@ -31630,19 +31731,21 @@ var CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'u
 
 var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1;
 
-function AutoFocusPlugin() {
+function AutoFocusPlugin(_ref) {
+  var messageForReply = _ref.messageForReply;
+
   var _useLexicalComposerCo = LexicalComposerContext.useLexicalComposerContext(),
       editor = _useLexicalComposerCo[0];
 
   React.useEffect(function () {
     editor.focus();
-  }, [editor]);
+  }, [editor, messageForReply]);
   return null;
 }
 
-function ClearEditorPlugin(_ref) {
-  var shouldClearEditor = _ref.shouldClearEditor,
-      setEditorCleared = _ref.setEditorCleared;
+function ClearEditorPlugin(_ref2) {
+  var shouldClearEditor = _ref2.shouldClearEditor,
+      setEditorCleared = _ref2.setEditorCleared;
 
   var _useLexicalComposerCo2 = LexicalComposerContext.useLexicalComposerContext(),
       editor = _useLexicalComposerCo2[0];
@@ -31672,48 +31775,46 @@ function onError(error) {
 
 var prevActiveChannelId;
 
-var SendMessageInput = function SendMessageInput(_ref2) {
-  var handleAttachmentSelected = _ref2.handleAttachmentSelected,
-      handleSendMessage = _ref2.handleSendMessage,
-      _ref2$disabled = _ref2.disabled,
-      disabled = _ref2$disabled === void 0 ? false : _ref2$disabled,
-      sendIconOrder = _ref2.sendIconOrder,
-      _ref2$inputOrder = _ref2.inputOrder,
-      inputOrder = _ref2$inputOrder === void 0 ? 1 : _ref2$inputOrder,
-      _ref2$showAddEmojis = _ref2.showAddEmojis,
-      showAddEmojis = _ref2$showAddEmojis === void 0 ? true : _ref2$showAddEmojis,
-      AddEmojisIcon = _ref2.AddEmojisIcon,
-      _ref2$emojiIcoOrder = _ref2.emojiIcoOrder,
-      emojiIcoOrder = _ref2$emojiIcoOrder === void 0 ? 2 : _ref2$emojiIcoOrder,
-      _ref2$showAddAttachme = _ref2.showAddAttachments,
-      showAddAttachments = _ref2$showAddAttachme === void 0 ? true : _ref2$showAddAttachme,
-      AddAttachmentsIcon = _ref2.AddAttachmentsIcon,
-      _ref2$attachmentIcoOr = _ref2.attachmentIcoOrder,
-      attachmentIcoOrder = _ref2$attachmentIcoOr === void 0 ? 0 : _ref2$attachmentIcoOr,
-      CustomTypingIndicator = _ref2.CustomTypingIndicator,
-      margin = _ref2.margin,
-      border = _ref2.border,
-      minHeight = _ref2.minHeight,
-      borderRadius = _ref2.borderRadius,
-      inputBorderRadius = _ref2.inputBorderRadius,
-      backgroundColor = _ref2.backgroundColor,
-      inputBackgroundColor = _ref2.inputBackgroundColor,
-      inputCustomClassname = _ref2.inputCustomClassname,
-      _ref2$inputAutofocus = _ref2.inputAutofocus,
-      inputAutofocus = _ref2$inputAutofocus === void 0 ? true : _ref2$inputAutofocus,
-      inputPaddings = _ref2.inputPaddings,
-      selectedAttachmentsBorderRadius = _ref2.selectedAttachmentsBorderRadius,
-      selectedFileAttachmentsIcon = _ref2.selectedFileAttachmentsIcon,
-      selectedFileAttachmentsBoxBackground = _ref2.selectedFileAttachmentsBoxBackground,
-      selectedFileAttachmentsBoxBorder = _ref2.selectedFileAttachmentsBoxBorder,
-      selectedFileAttachmentsTitleColor = _ref2.selectedFileAttachmentsTitleColor,
-      selectedFileAttachmentsSizeColor = _ref2.selectedFileAttachmentsSizeColor,
-      replyMessageIcon = _ref2.replyMessageIcon,
-      editMessageIcon = _ref2.editMessageIcon,
-      sendAttachmentSeparately = _ref2.sendAttachmentSeparately,
-      _ref2$allowMentionUse = _ref2.allowMentionUser,
-      allowMentionUser = _ref2$allowMentionUse === void 0 ? true : _ref2$allowMentionUse,
-      textSelectionBackgroundColor = _ref2.textSelectionBackgroundColor;
+var SendMessageInput = function SendMessageInput(_ref3) {
+  var handleAttachmentSelected = _ref3.handleAttachmentSelected,
+      handleSendMessage = _ref3.handleSendMessage,
+      _ref3$disabled = _ref3.disabled,
+      disabled = _ref3$disabled === void 0 ? false : _ref3$disabled,
+      sendIconOrder = _ref3.sendIconOrder,
+      _ref3$inputOrder = _ref3.inputOrder,
+      inputOrder = _ref3$inputOrder === void 0 ? 1 : _ref3$inputOrder,
+      _ref3$showAddEmojis = _ref3.showAddEmojis,
+      showAddEmojis = _ref3$showAddEmojis === void 0 ? true : _ref3$showAddEmojis,
+      AddEmojisIcon = _ref3.AddEmojisIcon,
+      _ref3$emojiIcoOrder = _ref3.emojiIcoOrder,
+      emojiIcoOrder = _ref3$emojiIcoOrder === void 0 ? 2 : _ref3$emojiIcoOrder,
+      _ref3$showAddAttachme = _ref3.showAddAttachments,
+      showAddAttachments = _ref3$showAddAttachme === void 0 ? true : _ref3$showAddAttachme,
+      AddAttachmentsIcon = _ref3.AddAttachmentsIcon,
+      _ref3$attachmentIcoOr = _ref3.attachmentIcoOrder,
+      attachmentIcoOrder = _ref3$attachmentIcoOr === void 0 ? 0 : _ref3$attachmentIcoOr,
+      CustomTypingIndicator = _ref3.CustomTypingIndicator,
+      margin = _ref3.margin,
+      border = _ref3.border,
+      minHeight = _ref3.minHeight,
+      borderRadius = _ref3.borderRadius,
+      inputBorderRadius = _ref3.inputBorderRadius,
+      backgroundColor = _ref3.backgroundColor,
+      inputBackgroundColor = _ref3.inputBackgroundColor,
+      inputCustomClassname = _ref3.inputCustomClassname,
+      inputPaddings = _ref3.inputPaddings,
+      selectedAttachmentsBorderRadius = _ref3.selectedAttachmentsBorderRadius,
+      selectedFileAttachmentsIcon = _ref3.selectedFileAttachmentsIcon,
+      selectedFileAttachmentsBoxBackground = _ref3.selectedFileAttachmentsBoxBackground,
+      selectedFileAttachmentsBoxBorder = _ref3.selectedFileAttachmentsBoxBorder,
+      selectedFileAttachmentsTitleColor = _ref3.selectedFileAttachmentsTitleColor,
+      selectedFileAttachmentsSizeColor = _ref3.selectedFileAttachmentsSizeColor,
+      replyMessageIcon = _ref3.replyMessageIcon,
+      editMessageIcon = _ref3.editMessageIcon,
+      sendAttachmentSeparately = _ref3.sendAttachmentSeparately,
+      _ref3$allowMentionUse = _ref3.allowMentionUser,
+      allowMentionUser = _ref3$allowMentionUse === void 0 ? true : _ref3$allowMentionUse,
+      textSelectionBackgroundColor = _ref3.textSelectionBackgroundColor;
   var dispatch = reactRedux.useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
@@ -31906,6 +32007,19 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     dispatch(setMessageForReplyAC(null));
   };
 
+  var handleDoubleClick = function handleDoubleClick(e) {
+    if (e.target.matches('.mention') || e.target.closest('.mention')) {
+      var selection = window.getSelection();
+      var range = document.createRange();
+      range.selectNodeContents(e.target);
+
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  };
+
   var handleSendEditMessage = function handleSendEditMessage(event) {
     if (typingTimout) {
       if (!inTypingStateTimout) {
@@ -31923,7 +32037,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     var shiftKey = event.shiftKey,
         type = event.type,
         code = event.code;
-    var isEnter = code === 'Enter' && shiftKey === false;
+    var isEnter = (code === 'Enter' || code === 'NumpadEnter') && shiftKey === false;
     var shouldSend = (isEnter || type === 'click') && (messageToEdit || messageText || attachments.length && attachments.length > 0);
 
     if (isEnter) {
@@ -32419,10 +32533,10 @@ var SendMessageInput = function SendMessageInput(_ref2) {
                             if (dataFromDb) {
                               _metas = dataFromDb.metadata;
                             } else {
-                              return Promise.resolve(createImageThumbnail(file)).then(function (_ref3) {
-                                var thumbnail = _ref3.thumbnail,
-                                    imageWidth = _ref3.imageWidth,
-                                    imageHeight = _ref3.imageHeight;
+                              return Promise.resolve(createImageThumbnail(file)).then(function (_ref4) {
+                                var thumbnail = _ref4.thumbnail,
+                                    imageWidth = _ref4.imageWidth,
+                                    imageHeight = _ref4.imageHeight;
                                 _metas.imageHeight = imageHeight;
                                 _metas.imageWidth = imageWidth;
                                 _metas.thumbnail = thumbnail;
@@ -32455,8 +32569,8 @@ var SendMessageInput = function SendMessageInput(_ref2) {
                             if (dataFromDb) {
                               _metas2 = dataFromDb.metadata;
                             } else {
-                              return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref4) {
-                                var thumbnail = _ref4.thumbnail;
+                              return Promise.resolve(createImageThumbnail(file, undefined, 50, 50)).then(function (_ref5) {
+                                var thumbnail = _ref5.thumbnail;
                                 _metas2.thumbnail = thumbnail;
                               });
                             }
@@ -32491,10 +32605,10 @@ var SendMessageInput = function SendMessageInput(_ref2) {
                             if (dataFromDb) {
                               _metas3 = dataFromDb.metadata;
                             } else {
-                              return Promise.resolve(getFrame(URL.createObjectURL(file), 0)).then(function (_ref5) {
-                                var thumb = _ref5.thumb,
-                                    width = _ref5.width,
-                                    height = _ref5.height;
+                              return Promise.resolve(getFrame(URL.createObjectURL(file), 0)).then(function (_ref6) {
+                                var thumb = _ref6.thumb,
+                                    width = _ref6.width,
+                                    height = _ref6.height;
                                 _metas3.thumb = thumb;
                                 _metas3.width = width;
                                 _metas3.height = height;
@@ -32634,10 +32748,6 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       prevActiveChannelId = activeChannel.id;
     }
 
-    if (messageInputRef.current && inputAutofocus) {
-      messageInputRef.current.focus();
-    }
-
     dispatch(getMembersAC(activeChannel.id));
     setMentionedMembers([]);
   }, [activeChannel.id]);
@@ -32664,8 +32774,8 @@ var SendMessageInput = function SendMessageInput(_ref2) {
         setSendMessageIsActive(true);
       }
     } else {
-      if (editMessageText && messageBodyAttributes !== messageToEdit.bodyAttributes) {
-        if (!compareMessageBodyAttributes(messageBodyAttributes, messageToEdit.bodyAttributes)) {
+      if (editMessageText) {
+        if (editMessageText.trim() !== messageToEdit.body || !compareMessageBodyAttributes(messageBodyAttributes, messageToEdit.bodyAttributes)) {
           setSendMessageIsActive(true);
         } else {
           setSendMessageIsActive(false);
@@ -32786,6 +32896,10 @@ var SendMessageInput = function SendMessageInput(_ref2) {
       if (messageForReply) {
         handleCloseReply();
       }
+    } else {
+      setShouldClearEditor({
+        clear: true
+      });
     }
 
     if (messageContRef && messageContRef.current) {
@@ -32975,7 +33089,9 @@ var SendMessageInput = function SendMessageInput(_ref2) {
     borderRadius: inputBorderRadius
   }, /*#__PURE__*/React__default.createElement(LexicalComposer.LexicalComposer, {
     initialConfig: initialConfig
-  }, /*#__PURE__*/React__default.createElement(AutoFocusPlugin, null), /*#__PURE__*/React__default.createElement(ClearEditorPlugin, {
+  }, /*#__PURE__*/React__default.createElement(AutoFocusPlugin, {
+    messageForReply: messageForReply
+  }), /*#__PURE__*/React__default.createElement(ClearEditorPlugin, {
     shouldClearEditor: shouldClearEditor,
     setEditorCleared: function setEditorCleared() {
       return setShouldClearEditor({
@@ -33010,6 +33126,7 @@ var SendMessageInput = function SendMessageInput(_ref2) {
   }), /*#__PURE__*/React__default.createElement(LexicalRichTextPlugin.RichTextPlugin, {
     contentEditable: /*#__PURE__*/React__default.createElement("div", {
       onKeyDown: handleSendEditMessage,
+      onDoubleClick: handleDoubleClick,
       className: 'rich_text_editor',
       ref: onRef
     }, /*#__PURE__*/React__default.createElement(LexicalContentEditable.ContentEditable, {
@@ -33075,7 +33192,7 @@ var MessageInputWrapper = styled__default.div(_templateObject9$c || (_templateOb
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: bold;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
+var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & *::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: 600;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
   return props.color;
 }, function (props) {
   return props.borderRadius;
@@ -33085,6 +33202,8 @@ var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject
   return props.paddings;
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
+}, function (props) {
+  return props.selectionBackgroundColor || colors.primary;
 }, function (props) {
   return props.selectionBackgroundColor || colors.primary;
 }, function (props) {

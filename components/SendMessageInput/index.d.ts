@@ -5,7 +5,6 @@ interface SendMessageProps {
     handleAttachmentSelected?: (state: boolean) => void;
     handleSendMessage?: (message: IMessage, channelId: string) => Promise<IMessage>;
     inputCustomClassname?: string;
-    inputAutofocus?: boolean;
     disabled?: boolean;
     showAddEmojis?: boolean;
     AddEmojisIcon?: JSX.Element;

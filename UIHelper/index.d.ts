@@ -86,10 +86,6 @@ export declare const CustomSwitcher: import("styled-components").StyledComponent
 export declare const SwitcherLabel: import("styled-components").StyledComponent<"label", any, {}, never>;
 export declare const UploadAvatarButton: import("styled-components").StyledComponent<"button", any, {}, never>;
 export declare const UploadAvatarHandler: import("styled-components").StyledComponent<"div", any, {}, never>;
-export declare const MentionedUser: import("styled-components").StyledComponent<"span", any, {
-    color?: string | undefined;
-    isLastMessage?: boolean | undefined;
-}, never>;
 export declare const StyledText: import("styled-components").StyledComponent<"span", any, {
     color?: string | undefined;
     fontWeight?: string | undefined;
