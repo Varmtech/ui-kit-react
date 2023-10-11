@@ -37,6 +37,7 @@ interface SendMessageProps {
     voiceMessage?: boolean;
     sendAttachmentSeparately?: boolean;
     allowMentionUser?: boolean;
+    allowTextEdit?: boolean;
     textSelectionBackgroundColor?: string;
 }
 declare const SendMessageInput: React.FC<SendMessageProps>;

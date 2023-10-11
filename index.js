@@ -30822,7 +30822,6 @@ function TextFormatFloatingToolbar(_ref) {
     };
   }, [editor, updateTextFormatFloatingToolbar, anchorElem]);
   React.useEffect(function () {
-    console.log('should add register >>>>>>>>>>>>>>>>>>>>>>>>>>> ');
     editor.getEditorState().read(function () {
       updateTextFormatFloatingToolbar();
     });
@@ -30942,6 +30941,7 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
 
   var handleClick = function handleClick(e) {
     if (!e.target.closest('.rich_text_editor')) {
+      console.log('setIsText >>>>>. false >>> >>..');
       setIsText(false);
     }
   };
@@ -31002,7 +31002,7 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
         return;
       }
 
-      if (!showMenu) {
+      if (!showMenu && !selection.getTextContent()) {
         if (selection.hasFormat('bold')) {
           editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'bold');
         }
@@ -31832,6 +31832,8 @@ var SendMessageInput = function SendMessageInput(_ref3) {
       sendAttachmentSeparately = _ref3.sendAttachmentSeparately,
       _ref3$allowMentionUse = _ref3.allowMentionUser,
       allowMentionUser = _ref3$allowMentionUse === void 0 ? true : _ref3$allowMentionUse,
+      _ref3$allowTextEdit = _ref3.allowTextEdit,
+      allowTextEdit = _ref3$allowTextEdit === void 0 ? true : _ref3$allowTextEdit,
       textSelectionBackgroundColor = _ref3.textSelectionBackgroundColor;
   var dispatch = reactRedux.useDispatch();
   var ChatClient = getClient();
@@ -32846,15 +32848,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     }
   }, [mentionedMembers]);
   React.useEffect(function () {
-    if (emojiBtnRef && emojiBtnRef.current) {
-      var _emojiBtnRef$current$ = emojiBtnRef.current.getBoundingClientRect(),
-          left = _emojiBtnRef$current$.left,
-          width = _emojiBtnRef$current$.width;
-
-      setEmojisPopupLeftPosition(left - width / 2);
-    }
-  }, [emojiBtnRef.current]);
-  React.useEffect(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       setTimeout(function () {
         var pendingMessagesMap = getPendingMessagesMap();
@@ -32880,8 +32873,20 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     }
   }, [attachments]);
   React.useEffect(function () {
-    if (emojiBtnRef.current && messageInputRef.current && emojiBtnRef.current.getBoundingClientRect().left > messageInputRef.current.getBoundingClientRect().left) {
-      setEmojisInRightSide(true);
+    if (emojiBtnRef.current && messageInputRef.current) {
+      var windowHeight = window.innerHeight;
+
+      var _emojiBtnRef$current$ = emojiBtnRef.current.getBoundingClientRect(),
+          left = _emojiBtnRef$current$.left,
+          width = _emojiBtnRef$current$.width,
+          top = _emojiBtnRef$current$.top;
+
+      setEmojisPopupBottomPosition(windowHeight - top);
+      setEmojisPopupLeftPosition(left - width / 2);
+
+      if (emojiBtnRef.current.getBoundingClientRect().left > messageInputRef.current.getBoundingClientRect().left) {
+        setEmojisInRightSide(true);
+      }
     }
 
     if (attachmentIcoOrder > inputOrder) {
@@ -32936,7 +32941,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     if (messageContRef && messageContRef.current) {
       inputHeightTimeout = setTimeout(function () {
         var inputContHeight = messageContRef.current.getBoundingClientRect().height;
-        setEmojisPopupBottomPosition(inputContHeight);
         dispatch(setSendMessageInputHeightAC(inputContHeight));
       }, 800);
     }
@@ -33154,7 +33158,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
       paddings: inputPaddings
     }, "Type message here ..."),
     ErrorBoundary: LexicalErrorBoundary
-  }), floatingAnchorElem && !isSmallWidthViewport && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FloatingTextFormatToolbarPlugin, {
+  }), floatingAnchorElem && !isSmallWidthViewport && allowTextEdit && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FloatingTextFormatToolbarPlugin, {
     anchorElem: floatingAnchorElem
   })))))), /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
