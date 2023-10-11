@@ -1084,7 +1084,8 @@ var CHANNEL_EVENT_TYPES = {
   CHANGE_ROLE: 'CHANGE_ROLE',
   CHANGE_OWNER: 'CHANGE_OWNER',
   MEMBER_BLOCKED: 'MEMBER_BLOCKED',
-  MEMBER_UNBLOCKED: 'MEMBER_UNBLOCKED'
+  MEMBER_UNBLOCKED: 'MEMBER_UNBLOCKED',
+  CHANNEL_EVENT: 'CHANNEL_EVENT'
 };
 
 var MESSAGE_DELIVERY_STATUS = {
@@ -11858,6 +11859,17 @@ function watchForEvents() {
               });
             };
 
+            channelListener.onReceivedChannelEvent = function (channelId, user, eventName) {
+              return emitter({
+                type: CHANNEL_EVENT_TYPES.CHANNEL_EVENT,
+                args: {
+                  channelId: channelId,
+                  user: user,
+                  eventName: eventName
+                }
+              });
+            };
+
             SceytChatClient.addChannelListener('CHANNEL_EVENTS', channelListener);
             SceytChatClient.addConnectionListener('CONNECTION_EVENTS', connectionListener);
             return function () {
@@ -11876,7 +11888,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 28 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 36 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 60 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 67 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 69 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 98 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 121 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 132 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 198 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 202 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 207 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 214 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 231 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 246 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 270 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 286 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 293 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 311 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 317 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 323 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 328 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 333 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 341 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 349 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 368 : 376;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 28 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 36 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 60 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 67 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 69 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 98 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 121 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 132 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 198 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 202 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 207 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 214 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 231 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 246 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 270 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 286 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 293 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 311 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 317 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 323 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 328 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 333 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 341 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 349 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_EVENT ? 368 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 370 : 378;
           break;
 
         case 14:
@@ -11908,7 +11920,7 @@ function watchForEvents() {
 
         case 26:
           addChannelToAllChannels(createdChannel);
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 28:
           channel = args.channel;
@@ -11919,7 +11931,7 @@ function watchForEvents() {
         case 32:
 
           addChannelToAllChannels(channel);
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 36:
           _channel = args.channel, member = args.member;
@@ -11985,7 +11997,7 @@ function watchForEvents() {
           });
 
         case 59:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 60:
           console.log('channel BLOCK ... ');
@@ -12001,11 +12013,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 66:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 67:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 69:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -12084,7 +12096,7 @@ function watchForEvents() {
             muted: _channel3.muted,
             mutedTill: _channel3.mutedTill
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 98:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -12144,7 +12156,7 @@ function watchForEvents() {
             muted: _channel4.muted,
             mutedTill: _channel4.mutedTill
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 121:
           updatedChannel = args.updatedChannel;
@@ -12181,7 +12193,7 @@ function watchForEvents() {
             muted: muted,
             mutedTill: mutedTill
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 132:
           _channel5 = args.channel, message = args.message;
@@ -12344,7 +12356,7 @@ function watchForEvents() {
           updateChannelLastMessageOnAllChannels(_channel5.id, _channel5.lastMessage);
 
         case 193:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 194:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -12439,7 +12451,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 198:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
@@ -12479,7 +12491,7 @@ function watchForEvents() {
             break;
           }
 
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 202:
           _channel6 = args.channel, from = args.from;
@@ -12492,7 +12504,7 @@ function watchForEvents() {
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
         case 206:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 207:
           channelId = args.channelId;
@@ -12503,7 +12515,7 @@ function watchForEvents() {
 
         case 212:
           deleteChannelFromAllChannels(channelId);
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 214:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
@@ -12553,7 +12565,7 @@ function watchForEvents() {
             muted: _channel8.muted,
             mutedTill: _channel8.mutedTill
           }, deletedMessage);
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 231:
           _channel9 = args.channel, _message = args.message;
@@ -12609,7 +12621,7 @@ function watchForEvents() {
           }
 
           updateChannelOnAllChannels(_channel9.id, {}, _message);
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 246:
           _channel10 = args.channel, user = args.user, _message2 = args.message, reaction = args.reaction;
@@ -12692,7 +12704,7 @@ function watchForEvents() {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 270:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
@@ -12729,7 +12741,7 @@ function watchForEvents() {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 286:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
@@ -12740,7 +12752,7 @@ function watchForEvents() {
 
         case 291:
           updateChannelOnAllChannels(_channel12.id, _updatedChannel);
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 293:
           _channel13 = args.channel;
@@ -12792,7 +12804,7 @@ function watchForEvents() {
             muted: _channel13.muted,
             mutedTill: _channel13.mutedTill
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 311:
           _channel14 = args.channel;
@@ -12808,7 +12820,7 @@ function watchForEvents() {
             muted: _channel14.muted,
             mutedTill: _channel14.mutedTill
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 317:
           _channel15 = args.channel;
@@ -12824,7 +12836,7 @@ function watchForEvents() {
             muted: _channel15.muted,
             mutedTill: _channel15.mutedTill
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 323:
           _channel16 = args.channel;
@@ -12833,7 +12845,7 @@ function watchForEvents() {
           return put(setChannelToHideAC(_channel16));
 
         case 327:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 328:
           _channel17 = args.channel;
@@ -12842,7 +12854,7 @@ function watchForEvents() {
           return put(setChannelToUnHideAC(_channel17));
 
         case 332:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 333:
           _channel18 = args.channel;
@@ -12864,7 +12876,7 @@ function watchForEvents() {
           updateChannelOnAllChannels(_channel18.id, {
             unread: _channel18.unread
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 341:
           _channel19 = args.channel;
@@ -12886,7 +12898,7 @@ function watchForEvents() {
           updateChannelOnAllChannels(_channel19.id, {
             unread: _channel19.unread
           });
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 349:
           _channel20 = args.channel, members = args.members;
@@ -12940,34 +12952,38 @@ function watchForEvents() {
           break;
 
         case 367:
-          return _context3.abrupt("break", 377);
+          return _context3.abrupt("break", 379);
 
         case 368:
+          console.log('channel event received >>>... . . . . . ', args);
+          return _context3.abrupt("break", 379);
+
+        case 370:
           status = args.status;
           console.log('connection status changed . . . . . ', status);
-          _context3.next = 372;
+          _context3.next = 374;
           return put(setConnectionStatusAC(status));
 
-        case 372:
+        case 374:
           if (!(status === CONNECTION_STATUS.CONNECTED)) {
-            _context3.next = 375;
+            _context3.next = 377;
             break;
           }
 
-          _context3.next = 375;
+          _context3.next = 377;
           return put(getRolesAC());
 
-        case 375:
-          return _context3.abrupt("break", 377);
+        case 377:
+          return _context3.abrupt("break", 379);
 
-        case 376:
+        case 378:
           console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
 
-        case 377:
+        case 379:
           _context3.next = 5;
           break;
 
-        case 379:
+        case 381:
         case "end":
           return _context3.stop();
       }
@@ -14684,7 +14700,7 @@ function sendTyping(action) {
         case 18:
           _context21.prev = 18;
           _context21.t0 = _context21["catch"](7);
-          console.log('ERROR in send typing');
+          console.log('ERROR in send typing', _context21.t0);
 
         case 21:
         case "end":
@@ -22442,7 +22458,6 @@ var ChannelList = function ChannelList(_ref) {
       });
     }
 
-    console.log('dispatch setChannel s.... ', updatedChannels);
     dispatch(setChannelsAC(updatedChannels));
   };
 
@@ -25634,7 +25649,7 @@ var Attachment = function Attachment(_ref) {
   var customDownloader = getCustomDownloader();
   var previewFileType = isPreview && attachment.data.type.split('/')[0];
 
-  var _ref2 = attachment.metadata && attachment.metadata.szw && attachment.metadata.szh ? calculateRenderedImageWidth(attachment.metadata.szw, attachment.metadata.szh, attachment.type === attachmentTypes.image ? imageAttachmentMaxWidth : videoAttachmentMaxWidth, attachment.type === attachmentTypes.image ? imageAttachmentMaxHeight : videoAttachmentMaxHeight) : [],
+  var _ref2 = attachment.metadata && attachment.metadata.szw && attachment.metadata.szh ? calculateRenderedImageWidth(attachment.metadata.szw, attachment.metadata.szh, attachment.type === attachmentTypes.image ? imageAttachmentMaxWidth : videoAttachmentMaxWidth, attachment.type === attachmentTypes.image ? imageAttachmentMaxHeight || 400 : videoAttachmentMaxHeight) : [],
       renderWidth = _ref2[0],
       renderHeight = _ref2[1];
 
@@ -25939,7 +25954,7 @@ var Attachment = function Attachment(_ref) {
     isRepliedMessage: isRepliedMessage,
     withBorder: !isPreview && !isDetailsView,
     fitTheContainer: isDetailsView,
-    imageMaxHeight: attachment.metadata && (attachment.metadata.szh > 400 ? '400px' : attachment.metadata.szh + "px"),
+    imageMaxHeight: renderHeight + "px",
     onLoad: function onLoad() {
       return setImageLoading(false);
     }
@@ -30398,6 +30413,7 @@ function MentionsPlugin(_ref3) {
 
       closeMenu();
     });
+    console.log('selectedOption ..>>>....', selectedOption);
   }, [editor]);
   var checkForMentionMatch = useCallback(function (text) {
     var slashMatch = checkForSlashTriggerMatch(text, editor);
@@ -31503,7 +31519,6 @@ function EmojisPopup$1(_ref2) {
       emojisPopupPosition = _ref2.emojisPopupPosition,
       relativePosition = _ref2.relativePosition,
       leftPosition = _ref2.leftPosition;
-  console.log('EmojisPopup leftPosition', leftPosition);
   var theme = useSelector(themeSelector);
   var richTextEditor;
 
@@ -31671,7 +31686,7 @@ function EmojisPopup$1(_ref2) {
 var Container$h = styled.div(_templateObject$A || (_templateObject$A = _taggedTemplateLiteralLoose(["\n  position: ", ";\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  bottom: ", ";\n  width: 306px;\n  border: ", ";\n  box-sizing: border-box;\n  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);\n  border-radius: ", ";\n  background: ", ";\n  z-index: 35;\n  //transform: scaleY(0);\n  height: 0;\n  overflow: hidden;\n  transform-origin: ", ";\n  transition: all 0.2s ease-in-out;\n  ", ";\n"])), function (props) {
   return props.leftPosition ? 'fixed' : props.relativePosition ? 'relative' : 'absolute';
 }, function (props) {
-  return props.leftPosition || (props.rtlDirection ? '' : props.rightSide ? '' : '5px');
+  return props.rightSide ? "calc(" + props.leftPosition + " - 250px)" : props.leftPosition || (props.rtlDirection ? '' : props.rightSide ? '' : '5px');
 }, function (props) {
   return props.rtlDirection ? '0' : props.rightSide ? '65px' : '';
 }, function (props) {
@@ -32829,8 +32844,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     }
   }, [connectionStatus]);
   useDidUpdate(function () {
-    console.log('attachemnts changes .>>>>>>>> .>. ', attachments);
-
     if (handleAttachmentSelected) {
       handleAttachmentSelected(!!attachments.length);
     }
@@ -32844,7 +32857,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     }
   }, [attachments]);
   useEffect(function () {
-    if (emojiBtnRef.current && messageInputRef.current && emojiBtnRef.current.offsetLeft > messageInputRef.current.offsetWidth) {
+    if (emojiBtnRef.current && messageInputRef.current && emojiBtnRef.current.getBoundingClientRect().left > messageInputRef.current.getBoundingClientRect().left) {
       setEmojisInRightSide(true);
     }
 
@@ -33174,9 +33187,7 @@ var MessageInputWrapper = styled.div(_templateObject9$c || (_templateObject9$c =
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var LexicalWrapper = styled.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    color: ", ";\n    box-sizing: border-box;\n    outline: none !important;\n    font-size: 15px;\n    line-height: 20px;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n\n    &::selection {\n      background-color: ", ";\n    }\n    & *::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: 600;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
-  return props.color;
-}, function (props) {
+var LexicalWrapper = styled.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    box-sizing: border-box;\n    outline: none !important;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n    & p {\n      font-size: 15px;\n      line-height: 20px;\n      color: ", ";\n    }\n\n    &::selection {\n      background-color: ", ";\n    }\n    & *::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      //user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: 600;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
   return props.borderRadius;
 }, function (props) {
   return props.backgroundColor;
@@ -33184,6 +33195,8 @@ var LexicalWrapper = styled.div(_templateObject10$b || (_templateObject10$b = _t
   return props.paddings;
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
+}, function (props) {
+  return props.color;
 }, function (props) {
   return props.selectionBackgroundColor || colors.primary;
 }, function (props) {
@@ -33193,9 +33206,7 @@ var LexicalWrapper = styled.div(_templateObject10$b || (_templateObject10$b = _t
 }, function (props) {
   return props.mentionColor || colors.primary;
 });
-var Placeholder = styled.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 0;\n  left: 0;\n  pointer-events: none;\n  color: ", ";\n  margin: 8px 6px;\n\n  padding: ", ";\n"])), colors.placeholderTextColor, function (props) {
-  return props.paddings;
-});
+var Placeholder = styled.span(_templateObject11$8 || (_templateObject11$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: calc(50% - 10px);\n  left: 0;\n  pointer-events: none;\n  color: ", ";\n  margin-left: 6px;\n"])), colors.placeholderTextColor);
 var EmojiButton = styled.span(_templateObject12$5 || (_templateObject12$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  position: relative;\n  margin: auto 8px 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  > svg {\n    ", ";\n    width: 24px;\n    height: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {

@@ -85,4 +85,5 @@ export declare const CHANNEL_EVENT_TYPES: {
     CHANGE_OWNER: string;
     MEMBER_BLOCKED: string;
     MEMBER_UNBLOCKED: string;
+    CHANNEL_EVENT: string;
 };
