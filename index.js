@@ -473,6 +473,7 @@ function configureStore(options) {
     var composedEnhancer = finalCompose.apply(void 0, storeEnhancers);
     return redux.createStore(rootReducer, preloadedState, composedEnhancer);
 }
+//# sourceMappingURL=redux-toolkit.esm.js.map
 
 function _regeneratorRuntime() {
   /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
@@ -20658,7 +20659,7 @@ var DropDownTriggerContainer = styled__default.div(_templateObject2$6 || (_templ
 }, function (props) {
   return props.isOpen && "\n        &::after {\n            transform: translateY(-50%) rotate(-45deg);\n            top: calc(50% + 2px);\n        }\n        ";
 });
-var DropDownBody = styled__default.div(_templateObject3$4 || (_templateObject3$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 300;\n  min-width: 200px;\n  right: ", ";\n  left: ", ";\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: ", ";\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
+var DropDownBody = styled__default.div(_templateObject3$4 || (_templateObject3$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 30;\n  min-width: 200px;\n  right: ", ";\n  left: ", ";\n  top: 100%;\n  display: flex;\n  direction: initial;\n  flex-direction: column;\n  background: ", ";\n  border-radius: 8px;\n  max-height: 220px;\n  overflow-y: auto;\n  box-shadow: 0.8px 0.8px 0 rgba(31, 35, 60, 0.06), 0 0 2px rgba(31, 35, 60, 0.08), 0 2px 6px rgba(31, 35, 60, 0.16);\n\n  & > * {\n    &:first-child {\n      margin-top: 5px;\n    }\n\n    &:first-child {\n      margin-bottom: 5px;\n    }\n  }\n\n  ", "\n"])), function (props) {
   return props.position !== 'left' && '0';
 }, function (props) {
   return props.position === 'left' && '0';
@@ -26730,6 +26731,7 @@ function ReactionsPopup(_ref) {
       reactionsDetailsPopupHeaderItemsStyle = _ref.reactionsDetailsPopupHeaderItemsStyle,
       rtlDirection = _ref.rtlDirection;
   var popupRef = React.useRef(null);
+  var scoresRef = React.useRef(null);
   var reactions = reactRedux.useSelector(reactionsListSelector, reactRedux.shallowEqual);
   var messageInputHeight = reactRedux.useSelector(sendMessageInputHeightSelector, reactRedux.shallowEqual);
   var reactionsHasNext = reactRedux.useSelector(reactionsHasNextSelector, reactRedux.shallowEqual);
@@ -26749,16 +26751,19 @@ function ReactionsPopup(_ref) {
       popupHeight = _useState3[0],
       setPopupHeight = _useState3[1];
 
-  var _useState4 = React.useState(false),
-      calculateSizes = _useState4[0],
-      setCalculateSizes = _useState4[1];
+  var _useState4 = React.useState(0),
+      scoresHeight = _useState4[0],
+      setScoresHeight = _useState4[1];
 
   var _useState5 = React.useState(false),
-      closeIsApproved = _useState5[0],
-      setCloseIsApproved = _useState5[1];
+      calculateSizes = _useState5[0],
+      setCalculateSizes = _useState5[1];
+
+  var _useState6 = React.useState(false),
+      closeIsApproved = _useState6[0],
+      setCloseIsApproved = _useState6[1];
 
   var totalReactions = 0;
-  console.log('reactionTotals. . . . ', reactionTotals);
 
   if (reactionTotals) {
     reactionTotals.forEach(function (summery) {
@@ -26802,6 +26807,13 @@ function ReactionsPopup(_ref) {
     };
   }, [messageId]);
   React.useEffect(function () {
+    var scoresElem = scoresRef.current;
+
+    if (scoresElem) {
+      setScoresHeight(scoresElem.offsetHeight);
+    }
+  });
+  React.useEffect(function () {
     if (!reactionTotals || !reactionTotals.length) {
       handleReactionsPopupClose();
     }
@@ -26839,7 +26851,9 @@ function ReactionsPopup(_ref) {
     visible: !calculateSizes,
     rtlDirection: rtlDirection,
     borderRadius: reactionsDetailsPopupBorderRadius
-  }, /*#__PURE__*/React__default.createElement(ReactionScoresCont, null, /*#__PURE__*/React__default.createElement(ReactionScoresList, {
+  }, /*#__PURE__*/React__default.createElement(ReactionScoresCont, {
+    ref: scoresRef
+  }, /*#__PURE__*/React__default.createElement(ReactionScoresList, {
     borderBottom: reactionsDetailsPopupHeaderItemsStyle !== 'bubbles'
   }, /*#__PURE__*/React__default.createElement(ReactionScoreItem, {
     bubbleStyle: reactionsDetailsPopupHeaderItemsStyle === 'bubbles',
@@ -26859,6 +26873,7 @@ function ReactionsPopup(_ref) {
       activeColor: colors.primary
     }, /*#__PURE__*/React__default.createElement("span", null, /*#__PURE__*/React__default.createElement(TabKey, null, reaction.key), reaction.count));
   }))), /*#__PURE__*/React__default.createElement(ReactionsList, {
+    scoresHeight: scoresHeight,
     onScroll: handleReactionsListScroll,
     popupHeight: popupHeight
   }, reactions.map(function (reaction) {
@@ -26912,8 +26927,10 @@ var Container$d = styled__default.div(_templateObject$t || (_templateObject$t = 
 }, colors.white);
 var UserNamePresence$1 = styled__default.div(_templateObject2$p || (_templateObject2$p = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
 var MemberName$1 = styled__default.h3(_templateObject3$j || (_templateObject3$j = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n\n  & > span {\n    color: #abadb7;\n  }\n"])));
-var ReactionsList = styled__default.ul(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: calc(100% - 57px);\n"])), function (props) {
+var ReactionsList = styled__default.ul(_templateObject4$g || (_templateObject4$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow: ", ";\n  overflow-x: hidden;\n  list-style: none;\n  transition: all 0.2s;\n  height: ", ";\n    calc(100% - 57px);\n"])), function (props) {
   return !props.popupHeight && 'hidden';
+}, function (props) {
+  return "calc(100% - " + (props.scoresHeight || 57) + "px)";
 });
 var ReactionScoresCont = styled__default.div(_templateObject5$e || (_templateObject5$e = _taggedTemplateLiteralLoose(["\n  max-width: 100%;\n  overflow-y: auto;\n"])));
 var ReactionScoresList = styled__default.div(_templateObject6$c || (_templateObject6$c = _taggedTemplateLiteralLoose(["\n  display: flex;\n  border-bottom: ", ";\n  padding: 2px 8px 0;\n"])), function (props) {
@@ -30188,6 +30205,9 @@ function $createMentionNode(mention) {
   mentionNode.setMode('segmented').toggleDirectionless();
   return lexical.$applyNodeReplacement(mentionNode);
 }
+function $isMentionNode(node) {
+  return node instanceof MentionNode;
+}
 
 var _templateObject$y, _templateObject2$u, _templateObject3$o, _templateObject4$k, _templateObject5$i;
 var PUNCTUATION = '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
@@ -30373,7 +30393,22 @@ function MentionsContainer(_ref2) {
   }, [selectedIndex]);
   React.useEffect(function () {
     setMentionsIsOpen(true);
+    var menuTimeOut = setTimeout(function () {
+      var menuElement = document.getElementById('typeahead-menu');
+
+      if (menuElement) {
+        menuElement.style.zIndex = 'inherit';
+      }
+    }, 200);
     return function () {
+      clearTimeout(menuTimeOut);
+      var menuElement = document.getElementById('typeahead-menu');
+
+      if (menuElement) {
+        menuElement.style.zIndex = '-1';
+      }
+
+      selectOptionAndCleanUp(null);
       setMentionsIsOpen(false);
     };
   }, []);
@@ -30421,22 +30456,34 @@ function MentionsPlugin(_ref3) {
       return new MentionTypeaheadOption(result.name, result.id, result.presence, result.avatar);
     }).slice(0, SUGGESTION_LIST_LENGTH_LIMIT);
   }, [results]);
+
+  var handleOnOpen = function handleOnOpen() {
+    var menuElement = document.getElementById('typeahead-menu');
+
+    if (menuElement) {
+      menuElement.style.zIndex = 'inherit';
+    }
+  };
+
   var onSelectOption = React.useCallback(function (selectedOption, nodeToReplace, closeMenu) {
-    setMentionMember(membersMap[selectedOption.id]);
-    editor.update(function () {
-      var mentionNode = $createMentionNode(_extends({}, selectedOption, {
-        name: "@" + selectedOption.name
-      }));
+    if (selectedOption) {
+      setMentionMember(membersMap[selectedOption.id]);
+      editor.update(function () {
+        var mentionNode = $createMentionNode(_extends({}, selectedOption, {
+          name: "@" + selectedOption.name
+        }));
 
-      if (nodeToReplace) {
-        var replacedNode = nodeToReplace.replace(mentionNode);
-        var appendedNode = replacedNode.insertAfter(lexical.$createTextNode(' '));
-        appendedNode.select();
-      }
+        if (nodeToReplace) {
+          var replacedNode = nodeToReplace.replace(mentionNode);
+          var appendedNode = replacedNode.insertAfter(lexical.$createTextNode(' '));
+          appendedNode.select();
+        }
 
+        closeMenu();
+      });
+    } else {
       closeMenu();
-    });
-    console.log('selectedOption ..>>>....', selectedOption);
+    }
   }, [editor]);
   var checkForMentionMatch = React.useCallback(function (text) {
     var slashMatch = checkForSlashTriggerMatch(text, editor);
@@ -30452,6 +30499,7 @@ function MentionsPlugin(_ref3) {
     onSelectOption: onSelectOption,
     triggerFn: checkForMentionMatch,
     options: options,
+    onOpen: handleOnOpen,
     menuRenderFn: function menuRenderFn(anchorElementRef, _ref4) {
       var selectedIndex = _ref4.selectedIndex,
           selectOptionAndCleanUp = _ref4.selectOptionAndCleanUp,
@@ -30478,7 +30526,7 @@ var MentionsList = styled__default.ul(_templateObject2$u || (_templateObject2$u 
 var MemberItem = styled__default.li(_templateObject3$o || (_templateObject3$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  cursor: pointer;\n  background-color: ", ";\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), function (props) {
   return props.isActiveItem && (props.activeBackgroundColor || colors.hoverBackgroundColor);
 }, UserStatus);
-var UserNamePresence$2 = styled__default.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  margin-left: 12px;\n"])));
+var UserNamePresence$2 = styled__default.div(_templateObject4$k || (_templateObject4$k = _taggedTemplateLiteralLoose(["\n  width: calc(100% - 44px);\n  margin-left: 12px;\n"])));
 var MemberName$2 = styled__default.h3(_templateObject5$i || (_templateObject5$i = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  max-width: calc(100% - 1px);\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
@@ -30941,7 +30989,6 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
 
   var handleClick = function handleClick(e) {
     if (!e.target.closest('.rich_text_editor')) {
-      console.log('setIsText >>>>>. false >>> >>..');
       setIsText(false);
     }
   };
@@ -30966,6 +31013,18 @@ function useFloatingTextFormatToolbar(editor, anchorElem) {
       }
 
       var node = getSelectedNode(selection);
+
+      if ($isMentionNode(node)) {
+        var nextSibling = node.getNextSibling();
+
+        if (!nextSibling) {
+          editor.update(function () {
+            var appendedNode = node.insertAfter(lexical.$createTextNode(' '));
+            appendedNode.select(0, 0);
+          });
+        }
+      }
+
       setIsBold(selection.hasFormat('bold'));
       setIsItalic(selection.hasFormat('italic'));
       setIsUnderline(selection.hasFormat('underline'));
@@ -31071,7 +31130,7 @@ function FloatingTextFormatToolbarPlugin(_ref3) {
 
   return useFloatingTextFormatToolbar(editor, anchorElem);
 }
-var FloatingTextFormatPopup = styled__default.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  display: flex;\n  background: #fff;\n  vertical-align: middle;\n  position: absolute;\n  top: 0;\n  left: 0;\n  opacity: 0;\n  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);\n  border-radius: 8px;\n  transition: opacity 0.5s;\n  padding: 12px;\n  will-change: transform;\n  z-index: 99;\n\n  & button.popup-item {\n    border: 0;\n    display: flex;\n    background: none;\n    border-radius: 10px;\n    padding: 8px;\n    cursor: pointer;\n    vertical-align: middle;\n  }\n  & button.popup-item:disabled {\n    cursor: not-allowed;\n  }\n  & button.popup-item.spaced {\n    margin-right: 2px;\n  }\n  & button.popup-item i.format {\n    background-size: contain;\n    height: 18px;\n    width: 18px;\n    margin-top: 2px;\n    vertical-align: -0.25em;\n    display: flex;\n    opacity: 0.6;\n  }\n\n  & button.popup-item:disabled i.format {\n    opacity: 0.2;\n  }\n  & button.popup-item.active {\n    background-color: rgba(223, 232, 250, 0.3);\n  }\n  & button.popup-item.active i {\n    opacity: 1;\n  }\n  & .popup-item:hover:not([disabled]) {\n    background-color: #eee;\n  }\n  & select.popup-item {\n    border: 0;\n    display: flex;\n    background: none;\n    border-radius: 10px;\n    padding: 8px;\n    vertical-align: middle;\n    -webkit-appearance: none;\n    -moz-appearance: none;\n    width: 70px;\n    font-size: 14px;\n    color: #777;\n    text-overflow: ellipsis;\n  }\n  & select.code-language {\n    text-transform: capitalize;\n    width: 130px;\n  }\n\n  & .popup-item .text {\n    display: flex;\n    line-height: 20px;\n    vertical-align: middle;\n    font-size: 14px;\n    color: #777;\n    text-overflow: ellipsis;\n    width: 70px;\n    overflow: hidden;\n    height: 20px;\n    text-align: left;\n  }\n\n  & .popup-item .icon {\n    display: flex;\n    width: 20px;\n    height: 20px;\n    user-select: none;\n    margin-right: 8px;\n    line-height: 16px;\n    background-size: contain;\n  }\n  & i.chevron-down {\n    margin-top: 3px;\n    width: 16px;\n    height: 16px;\n    display: flex;\n    user-select: none;\n  }\n  & i.chevron-down.inside {\n    width: 16px;\n    height: 16px;\n    display: flex;\n    margin-left: -25px;\n    margin-top: 11px;\n    margin-right: 10px;\n    pointer-events: none;\n  }\n  & .divider {\n    width: 1px;\n    background-color: #eee;\n    margin: 0 4px;\n  }\n  @media (max-width: 1024px) {\n    & button.insert-comment {\n      display: none;\n    }\n  }\n"])));
+var FloatingTextFormatPopup = styled__default.div(_templateObject$z || (_templateObject$z = _taggedTemplateLiteralLoose(["\n  display: flex;\n  background: #fff;\n  vertical-align: middle;\n  position: absolute;\n  top: 0;\n  left: 0;\n  opacity: 0;\n  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);\n  border-radius: 8px;\n  transition: opacity 0.5s;\n  padding: 12px;\n  will-change: transform;\n  z-index: 99;\n\n  & button.popup-item {\n    border: 0;\n    display: flex;\n    background: none;\n    border-radius: 10px;\n    padding: 8px;\n    cursor: pointer;\n    vertical-align: middle;\n  }\n  & button.popup-item:disabled {\n    cursor: not-allowed;\n  }\n  & button.popup-item.spaced {\n    margin-right: 2px;\n  }\n  & button.popup-item i.format {\n    background-size: contain;\n    height: 18px;\n    width: 18px;\n    margin-top: 2px;\n    vertical-align: -0.25em;\n    display: flex;\n    opacity: 0.6;\n  }\n\n  & button.popup-item:disabled i.format {\n    opacity: 0.2;\n  }\n  & button.popup-item.active {\n    background-color: rgba(223, 232, 250, 0.3);\n  }\n  & button.popup-item.active i {\n    opacity: 1;\n  }\n  & .popup-item:hover:not([disabled]) {\n    background-color: #eee;\n  }\n  & select.popup-item {\n    border: 0;\n    display: flex;\n    background: none;\n    border-radius: 10px;\n    padding: 8px;\n    vertical-align: middle;\n    -webkit-appearance: none;\n    -moz-appearance: none;\n    width: 70px;\n    font-size: 14px;\n    color: #777;\n    text-overflow: ellipsis;\n  }\n  & select.code-language {\n    text-transform: capitalize;\n    width: 130px;\n  }\n\n  & .popup-item .text {\n    display: flex;\n    line-height: 20px;\n    vertical-align: middle;\n    font-size: 14px;\n    color: #777;\n    text-overflow: ellipsis;\n    width: 70px;\n    overflow: hidden;\n    height: 20px;\n    text-align: left;\n  }\n\n  & .popup-item .icon {\n    display: flex;\n    width: 20px;\n    height: 20px;\n    user-select: none;\n    margin-right: 8px;\n    line-height: 16px;\n    background-size: contain;\n  }\n  & i.chevron-down {\n    margin-top: 3px;\n    width: 16px;\n    height: 16px;\n    display: flex;\n    user-select: none;\n  }\n  & i.chevron-down.inside {\n    width: 16px;\n    height: 16px;\n    display: flex;\n    margin-left: -25px;\n    margin-top: 11px;\n    margin-right: 10px;\n    pointer-events: none;\n  }\n  & .divider {\n    width: 1px;\n    background-color: #eee;\n    margin: 0 4px;\n  }\n  @media (max-width: 1024px) {\n    & button.insert-comment {\n      display: none;\n    }\n  }\n"])));
 var Action$1 = styled__default.button(_templateObject2$v || (_templateObject2$v = _taggedTemplateLiteralLoose(["\n  border: 0;\n  display: flex;\n  background-color: inherit;\n  vertical-align: middle;\n  position: relative;\n  padding: 3px;\n  margin-right: 10px;\n  //margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  color: ", ";\n  border-radius: 50%;\n  ", "\n\n  &:last-child {\n    margin-right: 0;\n  }\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.iconColor || colors.textColor2;
 }, function (props) {
@@ -31159,24 +31218,26 @@ function EditMessagePlugin(_ref) {
                 var mentionNode = $createMentionNode(mentionNodeParams);
 
                 if (firstPart) {
+                  console.log('men .append first part .>.... ', firstPart);
                   paragraphNode.append(lexical.$createTextNode(firstPart));
                 }
 
+                console.log('attribute.type... .>>>> .', attribute.type);
+
                 if (attribute.type.length > 7) {
-                  var styleNumber = 0;
-                  var attTypes = attribute.type.replace('mention', '').trim();
-
-                  for (var style in bodyAttributesMapByType) {
-                    var stylesStr = bodyAttributesMapByType[style].join(' ');
-
-                    if (stylesStr === attTypes) {
-                      styleNumber = Number(style);
-                    }
-                  }
-
-                  mentionNode.setFormat(styleNumber);
+                  var typeArray = attribute.type.split(' ').filter(function (type) {
+                    return type !== 'mention';
+                  });
+                  console.log('typeArray ..', typeArray);
+                  typeArray.forEach(function (type) {
+                    console.log('toggle Format .... ', type);
+                    var format = type === 'monospace' ? 'code' : type;
+                    console.log('set format to ...', format);
+                    mentionNode.toggleFormat(format);
+                  });
                 }
 
+                console.log('mentionNode.... .>>>. .. .', mentionNode);
                 paragraphNode.append(mentionNode);
               }
             } else {
@@ -31185,10 +31246,12 @@ function EditMessagePlugin(_ref) {
               }
 
               if (firstPart) {
+                console.log('append firs node.... ', firstPart);
                 paragraphNode.append(lexical.$createTextNode(firstPart));
               }
 
               var textNode = lexical.$createTextNode(textPart.slice(attributeOffset, attributeOffset + attribute.length));
+              console.log('attribute.type.. . .. .  .', attribute.type);
 
               switch (attribute.type) {
                 case 'bold':
@@ -31223,30 +31286,33 @@ function EditMessagePlugin(_ref) {
 
                 default:
                   {
-                    var typeArray = attribute.type.split(' ');
+                    var _typeArray = attribute.type.split(' ');
 
-                    if (typeArray.length > 1) {
-                      typeArray.forEach(function (type) {
+                    if (_typeArray.length > 1) {
+                      _typeArray.forEach(function (type) {
+                        console.log('toggle Format .... ', type);
                         textNode.toggleFormat(type === 'monospace' ? 'code' : type);
                       });
                     }
                   }
               }
 
+              console.log('append text node. .. ', textNode);
               paragraphNode.append(textNode);
             }
 
             if (index === combinedAttributes.length - 1) {
               if (secondPart) {
+                console.log('append second part.... ', secondPart);
                 paragraphNode.append(lexical.$createTextNode(secondPart));
               } else {
                 paragraphNode.append(lexical.$createTextNode(' '));
               }
             }
-
-            rootNode.append(paragraphNode);
-            rootNode.selectEnd();
           });
+          console.log('paragraphNode.... .>>>. .. .', paragraphNode);
+          rootNode.append(paragraphNode);
+          rootNode.selectEnd();
         } else {
           paragraphNode.append(lexical.$createTextNode(editMessage.body));
           rootNode.append(paragraphNode);
@@ -31365,136 +31431,6 @@ function FormatMessagePlugin(_ref) {
 
   useFormatMessage(editor, editorState, setMessageBodyAttributes, setMessageText, messageToEdit);
   return null;
-}
-
-var _circle$5, _path$12;
-
-function _extends$16() {
-  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$16.apply(this, arguments);
-}
-
-function SvgSend(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$16({
-    width: 32,
-    height: 32,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
-  })));
-}
-
-var _path$13;
-
-function _extends$17() {
-  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$17.apply(this, arguments);
-}
-
-function SvgEye(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$17({
-    width: 25,
-    height: 24,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$14;
-
-function _extends$18() {
-  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$18.apply(this, arguments);
-}
-
-function SvgAddAttachment(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$18({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24.01 24.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
-    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$15;
-
-function _extends$19() {
-  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$19.apply(this, arguments);
-}
-
-function SvgErrorCircle(props) {
-  return /*#__PURE__*/React.createElement("svg", _extends$19({
-    width: 25,
-    height: 24,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
-    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
-    fill: "#FFB73D"
-  })));
 }
 
 var _templateObject$A, _templateObject2$w, _templateObject3$p, _templateObject4$l, _templateObject5$j, _templateObject6$g, _templateObject7$e, _templateObject8$d;
@@ -31747,6 +31683,136 @@ var Emoji$1 = styled__default.li(_templateObject8$d || (_templateObject8$d = _ta
 
 var CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
 
+var _circle$5, _path$12;
+
+function _extends$16() {
+  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$16.apply(this, arguments);
+}
+
+function SvgSend(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$16({
+    width: 32,
+    height: 32,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/React.createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$12 || (_path$12 = /*#__PURE__*/React.createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
+  })));
+}
+
+var _path$13;
+
+function _extends$17() {
+  _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$17.apply(this, arguments);
+}
+
+function SvgEye(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$17({
+    width: 25,
+    height: 24,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$13 || (_path$13 = /*#__PURE__*/React.createElement("path", {
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$14;
+
+function _extends$18() {
+  _extends$18 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$18.apply(this, arguments);
+}
+
+function SvgAddAttachment(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$18({
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24.01 24.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$14 || (_path$14 = /*#__PURE__*/React.createElement("path", {
+    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$15;
+
+function _extends$19() {
+  _extends$19 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$19.apply(this, arguments);
+}
+
+function SvgErrorCircle(props) {
+  return /*#__PURE__*/React.createElement("svg", _extends$19({
+    width: 25,
+    height: 24,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$15 || (_path$15 = /*#__PURE__*/React.createElement("path", {
+    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
+    fill: "#FFB73D"
+  })));
+}
+
 var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1;
 
 function AutoFocusPlugin(_ref) {
@@ -31778,6 +31844,41 @@ function ClearEditorPlugin(_ref2) {
           var paragraphNode = lexical.$createParagraphNode();
           paragraphNode.append(lexical.$createTextNode(shouldClearEditor.draftMessage.text));
           editor.setEditorState(shouldClearEditor.draftMessage.editorState);
+        } else {
+          var _paragraphNode = lexical.$createParagraphNode();
+
+          rootNode.append(_paragraphNode);
+          rootNode.selectEnd();
+        }
+
+        var selection = lexical.$getSelection();
+
+        if (selection.hasFormat('bold')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'bold');
+        }
+
+        if (selection.hasFormat('italic')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'italic');
+        }
+
+        if (selection.hasFormat('underline')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'underline');
+        }
+
+        if (selection.hasFormat('strikethrough')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'strikethrough');
+        }
+
+        if (selection.hasFormat('subscript')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'subscript');
+        }
+
+        if (selection.hasFormat('superscript')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'superscript');
+        }
+
+        if (selection.hasFormat('code')) {
+          editor.dispatchCommand(lexical.FORMAT_TEXT_COMMAND, 'code');
         }
 
         setEditorCleared();
@@ -32219,6 +32320,8 @@ var SendMessageInput = function SendMessageInput(_ref3) {
           });
         }
       }
+
+      console.log('messageBodyAttributes. to send  .>>> .... ', messageBodyAttributes);
 
       var messageToSend = _extends({}, messageToEdit, {
         metadata: mentionedMembersPositions,
@@ -33214,7 +33317,7 @@ var MessageInputWrapper = styled__default.div(_templateObject9$c || (_templateOb
 }, function (props) {
   return props.borderRadius || '18px';
 });
-var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    box-sizing: border-box;\n    outline: none !important;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n    & p {\n      font-size: 15px;\n      line-height: 20px;\n      color: ", ";\n    }\n\n    &::selection {\n      background-color: ", ";\n    }\n    & *::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      //user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: 600;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
+var LexicalWrapper = styled__default.div(_templateObject10$b || (_templateObject10$b = _taggedTemplateLiteralLoose(["\n  position: relative;\n  width: 100%;\n\n  & .rich_text_editor {\n    margin: 8px 6px;\n    width: 100%;\n    max-height: 80px;\n    min-height: 20px;\n    display: block;\n    border: none;\n    box-sizing: border-box;\n    outline: none !important;\n    overflow: auto;\n    border-radius: ", ";\n    background-color: ", ";\n    padding: ", ";\n    order: ", ";\n    & p {\n      font-size: 15px;\n      line-height: 20px;\n      color: ", ";\n    }\n\n    &::selection {\n      background-color: ", ";\n    }\n    & *::selection {\n      background-color: ", ";\n    }\n    & span::selection {\n      background-color: ", ";\n    }\n\n    &:empty:before {\n      content: attr(data-placeholder);\n    }\n\n    & .content_editable_input {\n      border: none !important;\n      outline: none !important;\n    }\n    & .mention {\n      color: ", ";\n      background-color: inherit !important;\n      user-modify: read-only;\n    }\n\n    & span.bold {\n      font-weight: bold;\n    }\n    & .editor_paragraph {\n      margin: 0;\n    }\n    & .text_bold {\n      font-weight: 600;\n    }\n    & .text_italic {\n      font-style: italic;\n    }\n    & .text_underline {\n      text-decoration: underline;\n    }\n    & .text_strikethrough {\n      text-decoration: line-through;\n    }\n    & .text_underlineStrikethrough {\n      text-decoration: underline line-through;\n    }\n    & code {\n      font-family: inherit;\n      letter-spacing: 4px;\n    }\n  }\n"])), function (props) {
   return props.borderRadius;
 }, function (props) {
   return props.backgroundColor;
@@ -34457,6 +34560,7 @@ var Members = function Members(_ref) {
       onClick: function onClick(e) {
         setSelectedMember(member);
         toggleChangeRolePopup(e);
+        setCloseMenu('1');
       },
       key: 1,
       hoverBackground: colors.hoverBackgroundColor
@@ -34464,6 +34568,7 @@ var Members = function Members(_ref) {
       onClick: function onClick(e) {
         setSelectedMember(member);
         toggleMakeAdminPopup(e, member.role === 'admin');
+        setCloseMenu('1');
       },
       textColor: member.role === 'admin' ? colors.red1 : '',
       key: 2,
@@ -34472,6 +34577,7 @@ var Members = function Members(_ref) {
       onClick: function onClick(e) {
         setSelectedMember(member);
         toggleKickMemberPopup(e);
+        setCloseMenu('1');
       },
       textColor: colors.red1,
       key: 3,
@@ -34483,6 +34589,7 @@ var Members = function Members(_ref) {
       onClick: function onClick(e) {
         setSelectedMember(member);
         toggleBlockMemberPopup(e);
+        setCloseMenu('1');
       }
     }, "Remove and Block member"))));
   }))), kickMemberPopupOpen && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
@@ -34537,7 +34644,7 @@ var Members = function Members(_ref) {
 };
 var Container$k = styled__default.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose([""])));
 var ActionsMenu$1 = styled__default.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled__default.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 54px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
+var MemberNamePresence = styled__default.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 84px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
 var MemberNameWrapper = styled__default.div(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
 var MemberName$3 = styled__default.h4(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
 var EditMemberIcon = styled__default.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 15px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
