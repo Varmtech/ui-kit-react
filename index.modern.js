@@ -10231,7 +10231,7 @@ var makeUsername = function makeUsername(contact, user, fromContact, getFirstNam
     return user.id.toUpperCase();
   }
 
-  return fromContact && contact ? contact.firstName ? getFirstNameOnly ? "" + contact.firstName.split(' ')[0] : contact.firstName.trim() + " " + ((_contact$lastName = contact.lastName) === null || _contact$lastName === void 0 ? void 0 : _contact$lastName.trim()) : contact.id : user ? user.firstName ? getFirstNameOnly ? "" + (fromContact ? '~' : '') + user.firstName.split(' ')[0] : "" + (fromContact ? '~' : '') + user.firstName.trim() + " " + user.lastName.trim() : user.id || 'Deleted user' : 'Deleted user';
+  return fromContact && contact ? contact.firstName ? getFirstNameOnly ? "" + contact.firstName.split(' ')[0] : (contact.firstName.trim() + " " + ((_contact$lastName = contact.lastName) === null || _contact$lastName === void 0 ? void 0 : _contact$lastName.trim())).trim() : contact.id : user ? user.firstName ? getFirstNameOnly ? "" + (fromContact ? '~' : '') + user.firstName.split(' ')[0] : ("" + (fromContact ? '~' : '') + user.firstName.trim() + " " + user.lastName.trim()).trim() : user.id || 'Deleted user' : 'Deleted user';
 };
 var isJSON = function isJSON(str) {
   try {
@@ -24668,6 +24668,7 @@ function MessageActions(_ref) {
       handleCopyMessage = _ref.handleCopyMessage,
       handleReportMessage = _ref.handleReportMessage,
       messageStatus = _ref.messageStatus,
+      handleSelectMessage = _ref.handleSelectMessage,
       handleReplyMessage = _ref.handleReplyMessage,
       isThreadMessage = _ref.isThreadMessage,
       rtlDirection = _ref.rtlDirection,
@@ -24812,7 +24813,7 @@ function MessageActions(_ref) {
     hoverBackgroundColor: colors.hoverBackgroundColor,
     hoverIconColor: colors.primary,
     onClick: function onClick() {
-      return handleOpenDeleteMessage();
+      return handleSelectMessage();
     }
   }, /*#__PURE__*/React__default.createElement(ItemNote, {
     direction: 'top'
@@ -27967,7 +27968,8 @@ var Message = function Message(_ref) {
       contactsMap = _ref.contactsMap,
       openedMessageMenuId = _ref.openedMessageMenuId,
       tabIsActive = _ref.tabIsActive,
-      connectionStatus = _ref.connectionStatus;
+      connectionStatus = _ref.connectionStatus,
+      theme = _ref.theme;
   var dispatch = useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
@@ -28500,6 +28502,7 @@ var Message = function Message(_ref) {
     leftPadding: message.incoming ? incomingMessageBackground !== 'inherit' : ownMessageBackground !== 'inherit',
     color: colors.primary
   }, /*#__PURE__*/React__default.createElement(SvgForward, null), "Forwarded message"), /*#__PURE__*/React__default.createElement(MessageText, {
+    theme: theme,
     draggable: false,
     color: colors.textColor1,
     showMessageSenderName: showMessageSenderName,
@@ -28651,7 +28654,7 @@ var Message = function Message(_ref) {
 };
 
 var Message$1 = /*#__PURE__*/React__default.memo(Message, function (prevProps, nextProps) {
-  return prevProps.message.deliveryStatus === nextProps.message.deliveryStatus && prevProps.message.state === nextProps.message.state && prevProps.message.userReactions === nextProps.message.userReactions && prevProps.message.body === nextProps.message.body && prevProps.message.reactionTotals === nextProps.message.reactionTotals && prevProps.message.attachments === nextProps.message.attachments && prevProps.message.userMarkers === nextProps.message.userMarkers && prevProps.prevMessage === nextProps.prevMessage && prevProps.nextMessage === nextProps.nextMessage && prevProps.selectedMessagesMap === nextProps.selectedMessagesMap && prevProps.contactsMap === nextProps.contactsMap && prevProps.connectionStatus === nextProps.connectionStatus && prevProps.openedMessageMenuId === nextProps.openedMessageMenuId && prevProps.tabIsActive === nextProps.tabIsActive;
+  return prevProps.theme === nextProps.theme;
 });
 var MessageReactionKey = styled.span(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  align-items: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
 var ReactionItemCount = styled.span(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
@@ -29630,6 +29633,7 @@ var MessageList = function MessageList(_ref2) {
       message: _extends({}, message, {
         metadata: messageMetas
       }),
+      theme: theme,
       channel: channel,
       stopScrolling: setStopScrolling,
       handleMediaItemClick: function handleMediaItemClick(attachment) {
@@ -33263,7 +33267,7 @@ var Container$i = styled.div(_templateObject$B || (_templateObject$B = _taggedTe
 }, function (props) {
   return props.mentionColor || colors.primary;
 });
-var EditReplyMessageCont = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
+var EditReplyMessageCont = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n  box-sizing: content-box;\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
 var EditMessageText = styled.p(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
 var CloseEditMode = styled.span(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
 var UserName$1 = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));

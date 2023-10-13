@@ -112,6 +112,7 @@ export declare const MessageText: import("styled-components").StyledComponent<"p
     withMediaAttachment?: boolean | undefined;
     isForwarded?: boolean | undefined;
     withPaddings?: boolean | undefined;
+    theme: string;
 }, never>;
 export declare const ReplyMessageText: import("styled-components").StyledComponent<"span", any, {
     withAttachment?: boolean | undefined;
