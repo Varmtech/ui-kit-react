@@ -28421,6 +28421,7 @@ var Message = function Message(_ref) {
     handleResendMessage: handleResendMessage,
     handleReplyMessage: _handleReplyMessage,
     handleReportMessage: handleToggleReportPopupOpen,
+    handleSelectMessage: handleSelectMessage,
     handleOpenEmojis: handleOpenEmojis,
     selfMessage: message.user && messageUserID === user.id,
     isThreadMessage: isThreadMessage,
