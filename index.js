@@ -24748,7 +24748,7 @@ function MessageActions(_ref) {
     return member.id !== user.id;
   });
   var editMessagePermitted = isIncoming ? checkActionPermission('editAnyMessage') : checkActionPermission('editOwnMessage');
-  var replyMessagePermitted = isIncoming ? checkActionPermission('replyAnyMessage') : checkActionPermission('replyOwnMessage');
+  var replyMessagePermitted = checkActionPermission('replyMessage');
   var forwardMessagePermitted = checkActionPermission('forwardMessage');
 
   var handleOpenReaction = function handleOpenReaction(e) {
@@ -28317,10 +28317,6 @@ var Message = function Message(_ref) {
       handleSendReadMarker();
     }
   }, [tabIsActive]);
-  useDidUpdate(function () {
-    console.log('selectedMessagesMap .... .', selectedMessagesMap);
-    console.log('selectionIsActive .... .', selectionIsActive);
-  }, [selectedMessagesMap]);
   useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       handleSendReadMarker();
