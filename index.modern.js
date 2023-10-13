@@ -28295,6 +28295,10 @@ var Message = function Message(_ref) {
     }
   }, [tabIsActive]);
   useDidUpdate(function () {
+    console.log('selectedMessagesMap .... .', selectedMessagesMap);
+    console.log('selectionIsActive .... .', selectionIsActive);
+  }, [selectedMessagesMap]);
+  useDidUpdate(function () {
     if (connectionStatus === CONNECTION_STATUS.CONNECTED) {
       handleSendReadMarker();
     }
@@ -28655,7 +28659,7 @@ var Message = function Message(_ref) {
 };
 
 var Message$1 = /*#__PURE__*/React__default.memo(Message, function (prevProps, nextProps) {
-  return prevProps.theme === nextProps.theme;
+  return prevProps.message.deliveryStatus === nextProps.message.deliveryStatus && prevProps.message.state === nextProps.message.state && prevProps.message.userReactions === nextProps.message.userReactions && prevProps.message.body === nextProps.message.body && prevProps.message.reactionTotals === nextProps.message.reactionTotals && prevProps.message.attachments === nextProps.message.attachments && prevProps.message.userMarkers === nextProps.message.userMarkers && prevProps.prevMessage === nextProps.prevMessage && prevProps.nextMessage === nextProps.nextMessage && prevProps.selectedMessagesMap === nextProps.selectedMessagesMap && prevProps.contactsMap === nextProps.contactsMap && prevProps.connectionStatus === nextProps.connectionStatus && prevProps.openedMessageMenuId === nextProps.openedMessageMenuId && prevProps.tabIsActive === nextProps.tabIsActive && prevProps.theme === nextProps.theme;
 });
 var MessageReactionKey = styled.span(_templateObject$w || (_templateObject$w = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  align-items: center;\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n"])));
 var ReactionItemCount = styled.span(_templateObject2$s || (_templateObject2$s = _taggedTemplateLiteralLoose(["\n  margin-left: 2px;\n  font-family: Inter, sans-serif;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
