@@ -20,6 +20,7 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { createPortal } from 'react-dom';
 import { useBasicTypeaheadTriggerMatch, LexicalTypeaheadMenuPlugin, MenuOption } from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import { $createOffsetView } from '@lexical/offset';
+import MicRecorder from 'mic-recorder-to-mp3';
 
 /** A function that accepts a potential "extra argument" value to be injected later,
  * and returns an instance of the thunk middleware that uses that value
@@ -1400,6 +1401,7 @@ var ChannelReducer = (function (state, _temp) {
         var config = payload.config,
             _channelId = payload.channelId,
             moveUp = payload.moveUp;
+        console.log('UPDATE_CHANNEL_DATA reducer .>>.... .', _channelId, '.. config ...', config);
 
         if (moveUp) {
           var updateChannel;
@@ -8128,7 +8130,7 @@ function addMessageToMap(channelId, message) {
 }
 function updateMessageOnMap(channelId, updatedMessage) {
   if (updatedMessage.params.deliveryStatus !== MESSAGE_DELIVERY_STATUS.PENDING && pendingMessagesMap[channelId]) {
-    if (updatedMessage.params.state === MESSAGE_STATUS.FAILED) {
+    if (updatedMessage.params.state === MESSAGE_STATUS.FAILED || updatedMessage.params.state === MESSAGE_STATUS.UNMODIFIED) {
       pendingMessagesMap[channelId] = pendingMessagesMap[channelId].map(function (msg) {
         if (msg.tid === updatedMessage.messageId) {
           return _extends({}, msg, updatedMessage.params);
@@ -10126,7 +10128,7 @@ var MessageOwner = styled.h3(_templateObject31 || (_templateObject31 = _taggedTe
 }, function (props) {
   return props.clickable && 'pointer';
 });
-var MessageText = styled.pre(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
+var MessageText = styled.pre(_templateObject32 || (_templateObject32 = _taggedTemplateLiteralLoose(["\n  display: flow-root;\n  position: relative;\n  font-family: ", ";\n  margin: 0;\n  padding: ", ";\n  padding-bottom: ", ";\n  //font-size: ", ";\n  font-size: ", ";\n  font-weight: 400;\n  word-wrap: break-word;\n  white-space: pre-wrap;\n  //white-space: normal;\n  line-height: ", ";\n  //letter-spacing: -0.2px;\n  letter-spacing: 0.3px;\n  color: ", ";\n  user-select: text;\n  overflow: hidden;\n\n  ", "\n\n  &::after {\n    content: '';\n    position: absolute;\n    left: 0;\n    bottom: 0;\n    height: 1px;\n  }\n\n  & a {\n    color: ", ";\n  }\n"])), function (props) {
   return props.fontFamily || 'sans-serif';
 }, function (props) {
   return props.withAttachment && (props.showMessageSenderName ? props.withPaddings ? '0 12px 10px' : '0 0 10px' : props.isForwarded ? props.withPaddings ? '4px 12px 10px' : '4px 0px 10px' : '8px 12px 10px');
@@ -11888,7 +11890,7 @@ function watchForEvents() {
           type = _yield$take.type;
           args = _yield$take.args;
           _context3.t0 = type;
-          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 28 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 36 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 60 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 67 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 69 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 98 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 121 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 132 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 194 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 198 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 202 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 207 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 214 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 231 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 246 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 270 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 286 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 293 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 311 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 317 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 323 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 328 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 333 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 341 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 349 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_EVENT ? 368 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 370 : 378;
+          _context3.next = _context3.t0 === CHANNEL_EVENT_TYPES.CREATE ? 14 : _context3.t0 === CHANNEL_EVENT_TYPES.JOIN ? 28 : _context3.t0 === CHANNEL_EVENT_TYPES.LEAVE ? 36 : _context3.t0 === CHANNEL_EVENT_TYPES.BLOCK ? 60 : _context3.t0 === CHANNEL_EVENT_TYPES.UNBLOCK ? 67 : _context3.t0 === CHANNEL_EVENT_TYPES.KICK_MEMBERS ? 69 : _context3.t0 === CHANNEL_EVENT_TYPES.ADD_MEMBERS ? 98 : _context3.t0 === CHANNEL_EVENT_TYPES.UPDATE_CHANNEL ? 121 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE ? 132 : _context3.t0 === CHANNEL_EVENT_TYPES.MESSAGE_MARKERS_RECEIVED ? 195 : _context3.t0 === CHANNEL_EVENT_TYPES.START_TYPING ? 199 : _context3.t0 === CHANNEL_EVENT_TYPES.STOP_TYPING ? 203 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE ? 208 : _context3.t0 === CHANNEL_EVENT_TYPES.DELETE_MESSAGE ? 215 : _context3.t0 === CHANNEL_EVENT_TYPES.EDIT_MESSAGE ? 232 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_ADDED ? 247 : _context3.t0 === CHANNEL_EVENT_TYPES.REACTION_DELETED ? 271 : _context3.t0 === CHANNEL_EVENT_TYPES.UNREAD_MESSAGES_INFO ? 287 : _context3.t0 === CHANNEL_EVENT_TYPES.CLEAR_HISTORY ? 294 : _context3.t0 === CHANNEL_EVENT_TYPES.MUTE ? 312 : _context3.t0 === CHANNEL_EVENT_TYPES.UNMUTE ? 318 : _context3.t0 === CHANNEL_EVENT_TYPES.HIDE ? 324 : _context3.t0 === CHANNEL_EVENT_TYPES.UNHIDE ? 329 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_UNREAD ? 334 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_MARKED_AS_READ ? 342 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANGE_ROLE ? 350 : _context3.t0 === CHANNEL_EVENT_TYPES.CHANNEL_EVENT ? 369 : _context3.t0 === CONNECTION_EVENT_TYPES.CONNECTION_STATUS_CHANGED ? 371 : 379;
           break;
 
         case 14:
@@ -11920,7 +11922,7 @@ function watchForEvents() {
 
         case 26:
           addChannelToAllChannels(createdChannel);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 28:
           channel = args.channel;
@@ -11931,7 +11933,7 @@ function watchForEvents() {
         case 32:
 
           addChannelToAllChannels(channel);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 36:
           _channel = args.channel, member = args.member;
@@ -11997,7 +11999,7 @@ function watchForEvents() {
           });
 
         case 59:
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 60:
           console.log('channel BLOCK ... ');
@@ -12013,11 +12015,11 @@ function watchForEvents() {
           return put(removeChannelAC(_channel2.id));
 
         case 66:
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 67:
           console.log('channel UNBLOCK ... ');
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 69:
           _channel3 = args.channel, removedMembers = args.removedMembers;
@@ -12096,7 +12098,7 @@ function watchForEvents() {
             muted: _channel3.muted,
             mutedTill: _channel3.mutedTill
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 98:
           _channel4 = args.channel, addedMembers = args.addedMembers;
@@ -12156,7 +12158,7 @@ function watchForEvents() {
             muted: _channel4.muted,
             mutedTill: _channel4.mutedTill
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 121:
           updatedChannel = args.updatedChannel;
@@ -12193,7 +12195,7 @@ function watchForEvents() {
             muted: muted,
             mutedTill: mutedTill
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
         case 132:
           _channel5 = args.channel, message = args.message;
@@ -12201,7 +12203,7 @@ function watchForEvents() {
           messageToHandle = handleNewMessages ? handleNewMessages(message, _channel5) : message;
 
           if (!(messageToHandle && _channel5)) {
-            _context3.next = 193;
+            _context3.next = 194;
             break;
           }
 
@@ -12291,7 +12293,7 @@ function watchForEvents() {
           showNotifications = getShowNotifications();
 
           if (!(showNotifications && !message.silent && message.user.id !== SceytChatClient.user.id && !_channel5.muted)) {
-            _context3.next = 191;
+            _context3.next = 192;
             break;
           }
 
@@ -12332,33 +12334,35 @@ function watchForEvents() {
           }) : undefined);
 
         case 184:
+          console.log('send delivered for message . .. . ', message);
+
           if (!(message.repliedInThread && message.parentMessage.id)) {
-            _context3.next = 189;
+            _context3.next = 190;
             break;
           }
 
-          _context3.next = 187;
+          _context3.next = 188;
           return put(markMessagesAsDeliveredAC(message.parentMessage.id, [message.id]));
 
-        case 187:
-          _context3.next = 191;
+        case 188:
+          _context3.next = 192;
           break;
 
-        case 189:
-          _context3.next = 191;
+        case 190:
+          _context3.next = 192;
           return put(markMessagesAsDeliveredAC(_channel5.id, [message.id]));
 
-        case 191:
+        case 192:
           updateChannelOnAllChannels(_channel5.id, _extends({}, channelForAdd, {
             userMessageReactions: [],
             lastReactedMessage: null
           }));
           updateChannelLastMessageOnAllChannels(_channel5.id, _channel5.lastMessage);
 
-        case 193:
-          return _context3.abrupt("break", 379);
-
         case 194:
+          return _context3.abrupt("break", 380);
+
+        case 195:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
             var channelId, markerList, channel, _activeChannelId5, updateLastMessage, markersMap, lastMessage;
 
@@ -12441,19 +12445,19 @@ function watchForEvents() {
                 }
               }
             }, _callee);
-          })(), "t1", 195);
+          })(), "t1", 196);
 
-        case 195:
+        case 196:
           _ret = _context3.t1;
 
           if (!(_ret === "break")) {
-            _context3.next = 198;
+            _context3.next = 199;
             break;
           }
 
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 198:
+        case 199:
           return _context3.delegateYield( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2() {
             var channel, from;
             return _regeneratorRuntime().wrap(function _callee2$(_context2) {
@@ -12481,104 +12485,104 @@ function watchForEvents() {
                 }
               }
             }, _callee2);
-          })(), "t2", 199);
+          })(), "t2", 200);
 
-        case 199:
+        case 200:
           _ret2 = _context3.t2;
 
           if (!(_ret2 === "break")) {
-            _context3.next = 202;
+            _context3.next = 203;
             break;
           }
 
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 202:
+        case 203:
           _channel6 = args.channel, from = args.from;
 
           if (typingUsersTimeout[from.id]) {
             clearTimeout(typingUsersTimeout[from.id]);
           }
 
-          _context3.next = 206;
+          _context3.next = 207;
           return put(switchTypingIndicatorAC(false, _channel6.id, from));
 
-        case 206:
-          return _context3.abrupt("break", 379);
-
         case 207:
+          return _context3.abrupt("break", 380);
+
+        case 208:
           channelId = args.channelId;
           console.log('channel DELETE ... ');
           _channel7 = getChannelFromMap(channelId);
-          _context3.next = 212;
+          _context3.next = 213;
           return put(setChannelToRemoveAC(_channel7));
 
-        case 212:
+        case 213:
           deleteChannelFromAllChannels(channelId);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 214:
+        case 215:
           _channel8 = args.channel, deletedMessage = args.deletedMessage;
           _activeChannelId6 = getActiveChannelId();
           console.log('channel DELETE_MESSAGE ... ');
           _channelExists7 = checkChannelExists(_channel8.id);
 
           if (!(_channel8.id === _activeChannelId6)) {
-            _context3.next = 222;
+            _context3.next = 223;
             break;
           }
 
           updateMessageOnAllMessages(deletedMessage.id, deletedMessage);
-          _context3.next = 222;
+          _context3.next = 223;
           return put(updateMessageAC(deletedMessage.id, deletedMessage));
 
-        case 222:
+        case 223:
           updateMessageOnMap(_channel8.id, {
             messageId: deletedMessage.id,
             params: deletedMessage
           });
 
           if (!_channelExists7) {
-            _context3.next = 229;
+            _context3.next = 230;
             break;
           }
 
-          _context3.next = 226;
+          _context3.next = 227;
           return put(updateChannelDataAC(_channel8.id, {
             newMessageCount: _channel8.newMessageCount,
             muted: _channel8.muted,
             mutedTill: _channel8.mutedTill
           }));
 
-        case 226:
+        case 227:
           if (!(_channel8.lastMessage.id === deletedMessage.id)) {
-            _context3.next = 229;
+            _context3.next = 230;
             break;
           }
 
-          _context3.next = 229;
+          _context3.next = 230;
           return put(updateChannelLastMessageAC(deletedMessage, _channel8));
 
-        case 229:
+        case 230:
           updateChannelOnAllChannels(_channel8.id, {
             newMessageCount: _channel8.newMessageCount,
             muted: _channel8.muted,
             mutedTill: _channel8.mutedTill
           }, deletedMessage);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 231:
+        case 232:
           _channel9 = args.channel, _message = args.message;
           console.log('channel EDIT_MESSAGE ... ', _message);
           _activeChannelId7 = getActiveChannelId();
           _channelExists8 = checkChannelExists(_channel9.id);
 
           if (!(_channel9.id === _activeChannelId7)) {
-            _context3.next = 239;
+            _context3.next = 240;
             break;
           }
 
-          _context3.next = 238;
+          _context3.next = 239;
           return put(updateMessageAC(_message.id, {
             body: _message.body,
             state: _message.state,
@@ -12588,7 +12592,7 @@ function watchForEvents() {
             updatedAt: _message.updatedAt
           }));
 
-        case 238:
+        case 239:
           updateMessageOnAllMessages(_message.id, {
             body: _message.body,
             state: _message.state,
@@ -12598,21 +12602,21 @@ function watchForEvents() {
             updatedAt: _message.updatedAt
           });
 
-        case 239:
+        case 240:
           if (!_channelExists8) {
-            _context3.next = 243;
+            _context3.next = 244;
             break;
           }
 
           if (!(_channel9.lastMessage.id === _message.id)) {
-            _context3.next = 243;
+            _context3.next = 244;
             break;
           }
 
-          _context3.next = 243;
+          _context3.next = 244;
           return put(updateChannelLastMessageAC(_message, _channel9));
 
-        case 243:
+        case 244:
           if (checkChannelExistsOnMessagesMap(_channel9.id)) {
             updateMessageOnMap(_channel9.id, {
               messageId: _message.id,
@@ -12621,45 +12625,45 @@ function watchForEvents() {
           }
 
           updateChannelOnAllChannels(_channel9.id, {}, _message);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 246:
+        case 247:
           _channel10 = args.channel, user = args.user, _message2 = args.message, reaction = args.reaction;
           console.log('channel REACTION_ADDED ... ', args);
           isSelf = user.id === SceytChatClient.user.id;
           _activeChannelId8 = getActiveChannelId();
 
           if (!(_channel10.id === _activeChannelId8)) {
-            _context3.next = 254;
+            _context3.next = 255;
             break;
           }
 
-          _context3.next = 253;
+          _context3.next = 254;
           return put(addReactionToMessageAC(_message2, reaction, isSelf));
 
-        case 253:
+        case 254:
           addReactionOnAllMessages(_message2, reaction, true);
 
-        case 254:
+        case 255:
           if (!(_message2.user.id === SceytChatClient.user.id)) {
-            _context3.next = 268;
+            _context3.next = 269;
             break;
           }
 
           if (!(!isSelf && Notification.permission === 'granted')) {
-            _context3.next = 263;
+            _context3.next = 264;
             break;
           }
 
           if (!(document.visibilityState !== 'visible' || _channel10.id !== _activeChannelId8)) {
-            _context3.next = 263;
+            _context3.next = 264;
             break;
           }
 
-          _context3.next = 259;
+          _context3.next = 260;
           return select(contactsMapSelector);
 
-        case 259:
+        case 260:
           _contactsMap = _context3.sent;
           _getFromContacts2 = getShowOnlyContactUsers();
           _messageBody = MessageTextFormat({
@@ -12674,9 +12678,9 @@ function watchForEvents() {
             return att.type !== attachmentTypes.link;
           }) : undefined);
 
-        case 263:
+        case 264:
           if (!(_channel10.newReactions && _channel10.newReactions.length)) {
-            _context3.next = 267;
+            _context3.next = 268;
             break;
           }
 
@@ -12687,10 +12691,10 @@ function watchForEvents() {
             muted: _channel10.muted,
             mutedTill: _channel10.mutedTill
           };
-          _context3.next = 267;
+          _context3.next = 268;
           return put(updateChannelDataAC(_channel10.id, channelUpdateParams));
 
-        case 267:
+        case 268:
           updateChannelOnAllChannels(_channel10.id, {
             userMessageReactions: _channel10.newReactions,
             lastReactedMessage: _message2,
@@ -12699,14 +12703,14 @@ function watchForEvents() {
             mutedTill: _channel10.mutedTill
           });
 
-        case 268:
+        case 269:
           if (checkChannelExistsOnMessagesMap(_channel10.id)) {
             addReactionToMessageOnMap(_channel10.id, _message2, reaction, true);
           }
 
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 270:
+        case 271:
           _channel11 = args.channel, _user = args.user, _message3 = args.message, _reaction = args.reaction;
           console.log('channel REACTION_DELETED ... ', _channel11);
           channelFromMap = getChannelFromMap(_channel11.id);
@@ -12714,80 +12718,80 @@ function watchForEvents() {
           _activeChannelId9 = getActiveChannelId();
 
           if (!(_channel11.id === _activeChannelId9)) {
-            _context3.next = 279;
+            _context3.next = 280;
             break;
           }
 
-          _context3.next = 278;
+          _context3.next = 279;
           return put(deleteReactionFromMessageAC(_message3, _reaction, _isSelf));
 
-        case 278:
+        case 279:
           removeReactionOnAllMessages(_message3, _reaction, true);
 
-        case 279:
+        case 280:
           _channelUpdateParams = JSON.parse(JSON.stringify(_channel11));
 
           if (channelFromMap && channelFromMap.lastReactedMessage && channelFromMap.lastReactedMessage.id === _message3.id) {
             _channelUpdateParams.lastReactedMessage = null;
           }
 
-          _context3.next = 283;
+          _context3.next = 284;
           return put(updateChannelDataAC(_channel11.id, _channelUpdateParams));
 
-        case 283:
+        case 284:
           updateChannelOnAllChannels(_channel11.id, _channelUpdateParams);
 
           if (checkChannelExistsOnMessagesMap(_channel11.id)) {
             removeReactionToMessageOnMap(_channel11.id, _message3, _reaction, true);
           }
 
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 286:
+        case 287:
           _channel12 = args.channel, channelUnreadCount = args.channelUnreadCount;
           console.log('channel UNREAD_MESSAGES_INFO .channelUnreadCount', channelUnreadCount, 'channel: ', _channel12);
           _updatedChannel = JSON.parse(JSON.stringify(_channel12));
-          _context3.next = 291;
+          _context3.next = 292;
           return put(updateChannelDataAC(_channel12.id, _updatedChannel));
 
-        case 291:
+        case 292:
           updateChannelOnAllChannels(_channel12.id, _updatedChannel);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 293:
+        case 294:
           _channel13 = args.channel;
           console.log('CLEAR_HISTORY: ', _channel13);
-          _context3.next = 297;
+          _context3.next = 298;
           return call(getActiveChannelId);
 
-        case 297:
+        case 298:
           _activeChannelId10 = _context3.sent;
-          _context3.next = 300;
+          _context3.next = 301;
           return call(checkChannelExists, _channel13.id);
 
-        case 300:
+        case 301:
           channelExist = _context3.sent;
 
           if (!(_channel13.id === _activeChannelId10)) {
-            _context3.next = 305;
+            _context3.next = 306;
             break;
           }
 
-          _context3.next = 304;
+          _context3.next = 305;
           return put(clearMessagesAC());
 
-        case 304:
+        case 305:
           removeAllMessages();
 
-        case 305:
+        case 306:
           removeMessagesFromMap(_channel13.id);
 
           if (!channelExist) {
-            _context3.next = 309;
+            _context3.next = 310;
             break;
           }
 
-          _context3.next = 309;
+          _context3.next = 310;
           return put(updateChannelDataAC(_channel13.id, {
             lastMessage: null,
             newMessageCount: 0,
@@ -12796,7 +12800,7 @@ function watchForEvents() {
             mutedTill: _channel13.mutedTill
           }));
 
-        case 309:
+        case 310:
           updateChannelOnAllChannels(_channel13.id, {
             lastMessage: null,
             newMessageCount: 0,
@@ -12804,186 +12808,186 @@ function watchForEvents() {
             muted: _channel13.muted,
             mutedTill: _channel13.mutedTill
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 311:
+        case 312:
           _channel14 = args.channel;
           console.log('channel MUTE ... ');
-          _context3.next = 315;
+          _context3.next = 316;
           return put(updateChannelDataAC(_channel14.id, {
             muted: _channel14.muted,
             mutedTill: _channel14.mutedTill
           }));
 
-        case 315:
+        case 316:
           updateChannelOnAllChannels(_channel14.id, {
             muted: _channel14.muted,
             mutedTill: _channel14.mutedTill
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 317:
+        case 318:
           _channel15 = args.channel;
           console.log('channel UNMUTE ... ');
-          _context3.next = 321;
+          _context3.next = 322;
           return put(updateChannelDataAC(_channel15.id, {
             muted: _channel15.muted,
             mutedTill: _channel15.mutedTill
           }));
 
-        case 321:
+        case 322:
           updateChannelOnAllChannels(_channel15.id, {
             muted: _channel15.muted,
             mutedTill: _channel15.mutedTill
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 323:
+        case 324:
           _channel16 = args.channel;
           console.log('channel HIDE ... ');
-          _context3.next = 327;
+          _context3.next = 328;
           return put(setChannelToHideAC(_channel16));
 
-        case 327:
-          return _context3.abrupt("break", 379);
-
         case 328:
+          return _context3.abrupt("break", 380);
+
+        case 329:
           _channel17 = args.channel;
           console.log('channel UNHIDE ... ');
-          _context3.next = 332;
+          _context3.next = 333;
           return put(setChannelToUnHideAC(_channel17));
 
-        case 332:
-          return _context3.abrupt("break", 379);
-
         case 333:
+          return _context3.abrupt("break", 380);
+
+        case 334:
           _channel18 = args.channel;
-          _context3.next = 336;
+          _context3.next = 337;
           return put(updateChannelDataAC(_channel18.id, {
             unread: _channel18.unread,
             muted: _channel18.muted,
             mutedTill: _channel18.mutedTill
           }));
 
-        case 336:
+        case 337:
           _groupName5 = getChannelGroupName(_channel18);
-          _context3.next = 339;
+          _context3.next = 340;
           return put(updateSearchedChannelDataAC(_channel18.id, {
             unread: _channel18.unread
           }, _groupName5));
 
-        case 339:
+        case 340:
           updateChannelOnAllChannels(_channel18.id, {
             unread: _channel18.unread
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 341:
+        case 342:
           _channel19 = args.channel;
-          _context3.next = 344;
+          _context3.next = 345;
           return put(updateChannelDataAC(_channel19.id, {
             unread: _channel19.unread,
             muted: _channel19.muted,
             mutedTill: _channel19.mutedTill
           }));
 
-        case 344:
+        case 345:
           _groupName6 = getChannelGroupName(_channel19);
-          _context3.next = 347;
+          _context3.next = 348;
           return put(updateSearchedChannelDataAC(_channel19.id, {
             unread: _channel19.unread
           }, _groupName6));
 
-        case 347:
+        case 348:
           updateChannelOnAllChannels(_channel19.id, {
             unread: _channel19.unread
           });
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 349:
+        case 350:
           _channel20 = args.channel, members = args.members;
           console.log('channel CHANGE_ROLE  channel ... ', _channel20);
           console.log('channel CHANGE_ROLE  member ... ', members);
-          _context3.next = 354;
+          _context3.next = 355;
           return call(getActiveChannelId);
 
-        case 354:
+        case 355:
           _activeChannelId11 = _context3.sent;
 
           if (!(_channel20.id === _activeChannelId11)) {
-            _context3.next = 358;
+            _context3.next = 359;
             break;
           }
 
-          _context3.next = 358;
+          _context3.next = 359;
           return put(updateMembersAC(members));
 
-        case 358:
+        case 359:
           i = 0;
 
-        case 359:
+        case 360:
           if (!(i < members.length)) {
-            _context3.next = 367;
+            _context3.next = 368;
             break;
           }
 
           if (!(members[i].id === SceytChatClient.user.id)) {
-            _context3.next = 364;
+            _context3.next = 365;
             break;
           }
 
-          _context3.next = 363;
+          _context3.next = 364;
           return put(updateChannelDataAC(_channel20.id, {
             userRole: members[i].role,
             muted: _channel20.muted,
             mutedTill: _channel20.mutedTill
           }));
 
-        case 363:
+        case 364:
           updateChannelOnAllChannels(_channel20.id, {
             userRole: members[i].role,
             muted: _channel20.muted,
             mutedTill: _channel20.mutedTill
           });
 
-        case 364:
+        case 365:
           i++;
-          _context3.next = 359;
+          _context3.next = 360;
           break;
 
-        case 367:
-          return _context3.abrupt("break", 379);
-
         case 368:
-          console.log('channel event received >>>... . . . . . ', args);
-          return _context3.abrupt("break", 379);
+          return _context3.abrupt("break", 380);
 
-        case 370:
+        case 369:
+          console.log('channel event received >>>... . . . . . ', args);
+          return _context3.abrupt("break", 380);
+
+        case 371:
           status = args.status;
           console.log('connection status changed . . . . . ', status);
-          _context3.next = 374;
+          _context3.next = 375;
           return put(setConnectionStatusAC(status));
 
-        case 374:
+        case 375:
           if (!(status === CONNECTION_STATUS.CONNECTED)) {
-            _context3.next = 377;
+            _context3.next = 378;
             break;
           }
 
-          _context3.next = 377;
+          _context3.next = 378;
           return put(getRolesAC());
 
-        case 377:
-          return _context3.abrupt("break", 379);
-
         case 378:
-          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+          return _context3.abrupt("break", 380);
 
         case 379:
+          console.warn('UNHANDLED EVENT FROM REDUX-SAGA EVENT-CHANNEL');
+
+        case 380:
           _context3.next = 5;
           break;
 
-        case 381:
+        case 382:
         case "end":
           return _context3.stop();
       }
@@ -14008,28 +14012,29 @@ function markMessagesDelivered(action) {
           }
 
           if (!channel) {
-            _context9.next = 10;
+            _context9.next = 11;
             break;
           }
 
-          _context9.next = 10;
+          console.log('send delivered marker ', messageIds);
+          _context9.next = 11;
           return call(channel.markMessagesAsReceived, messageIds);
 
-        case 10:
-          _context9.next = 15;
+        case 11:
+          _context9.next = 16;
           break;
 
-        case 12:
-          _context9.prev = 12;
+        case 13:
+          _context9.prev = 13;
           _context9.t0 = _context9["catch"](2);
           console.log(_context9.t0, 'Error on mark messages delivered');
 
-        case 15:
+        case 16:
         case "end":
           return _context9.stop();
       }
     }
-  }, _marked9, null, [[2, 12]]);
+  }, _marked9, null, [[2, 13]]);
 }
 
 function switchChannel(action) {
@@ -14188,7 +14193,7 @@ function notificationsTurnOn() {
 }
 
 function markChannelAsRead(action) {
-  var channelId, channel;
+  var channelId, channel, updateData;
   return _regeneratorRuntime().wrap(function markChannelAsRead$(_context13) {
     while (1) {
       switch (_context13.prev = _context13.next) {
@@ -14209,29 +14214,30 @@ function markChannelAsRead(action) {
           return call(channel.markAsRead);
 
         case 8:
-          updateChannelOnAllChannels(channel.id, {
-            unread: false
-          });
-          _context13.next = 11;
-          return put(updateChannelDataAC(channel.id, {
-            unread: false
-          }));
+          updateData = {
+            unread: false,
+            newMessageCount: 0,
+            newMentionCount: 0
+          };
+          updateChannelOnAllChannels(channel.id, updateData);
+          _context13.next = 12;
+          return put(updateChannelDataAC(channel.id, updateData));
 
-        case 11:
-          _context13.next = 16;
+        case 12:
+          _context13.next = 17;
           break;
 
-        case 13:
-          _context13.prev = 13;
+        case 14:
+          _context13.prev = 14;
           _context13.t0 = _context13["catch"](0);
           console.log(_context13.t0, 'Error in set channel unread');
 
-        case 16:
+        case 17:
         case "end":
           return _context13.stop();
       }
     }
-  }, _marked13, null, [[0, 13]]);
+  }, _marked13, null, [[0, 14]]);
 }
 
 function markChannelAsUnRead(action) {
@@ -15700,12 +15706,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 225;
+            _context.next = 228;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 167;
+            _context.next = 170;
             break;
           }
 
@@ -15719,7 +15725,7 @@ function sendMessage(action) {
           fileType = messageAttachment.url.type.split('/')[0];
 
           if (messageAttachment.cachedUrl) {
-            _context.next = 44;
+            _context.next = 45;
             break;
           }
 
@@ -15747,14 +15753,16 @@ function sendMessage(action) {
           break;
 
         case 42:
-          if (fileType === attachmentTypes.voice) {
+          if (messageAttachment.type === attachmentTypes.voice) {
+            console.log('set thumb metas .... from ... ', messageAttachment.metadata);
             thumbnailMetas = {
-              duration: 3,
+              duration: messageAttachment.metadata.dur,
               thumbnail: messageAttachment.metadata.tmb
             };
           }
 
         case 43:
+          console.log('thumbnailMetas. . . . . .', thumbnailMetas);
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, thumbnailMetas && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -15762,8 +15770,8 @@ function sendMessage(action) {
             dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
 
-        case 44:
-          setPendingAttachment(messageAttachment.tid, messageAttachment.data);
+        case 45:
+          console.log('messageAttachment. . . . . ', messageAttachment);
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments([]).setBodyAttributes(message.bodyAttributes).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
@@ -15776,6 +15784,10 @@ function sendMessage(action) {
           }
 
           messageToSend = messageBuilder.create();
+          setPendingAttachment(messageAttachment.tid, _extends({}, messageAttachment.data, {
+            messageTid: messageToSend.tid,
+            channelId: channel.id
+          }));
           messageCopy = _extends({}, messageToSend, {
             attachments: [].concat(messageAttachment)
           });
@@ -15784,56 +15796,56 @@ function sendMessage(action) {
             mentionedUsers: message.mentionedMembers,
             parentMessage: message.parentMessage
           })));
-          _context.next = 54;
+          _context.next = 56;
           return select(messagesHasNextSelector);
 
-        case 54:
+        case 56:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 63;
+            _context.next = 65;
             break;
           }
 
           if (!hasNextMessages) {
-            _context.next = 61;
+            _context.next = 63;
             break;
           }
 
-          _context.next = 59;
+          _context.next = 61;
           return put(getMessagesAC(channel));
 
-        case 59:
-          _context.next = 63;
+        case 61:
+          _context.next = 65;
           break;
 
-        case 61:
-          _context.next = 63;
+        case 63:
+          _context.next = 65;
           return put(addMessageAC(JSON.parse(JSON.stringify(pendingMessage))));
 
-        case 63:
+        case 65:
           addMessageToMap(channel.id, pendingMessage);
           addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
           messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context.next = 68;
+          _context.next = 70;
           return put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
 
-        case 68:
-          _context.next = 70;
+        case 70:
+          _context.next = 72;
           return put(scrollToNewMessageAC(true));
 
-        case 70:
+        case 72:
           if (messageAttachment.cachedUrl) {
-            _context.next = 73;
+            _context.next = 75;
             break;
           }
 
-          _context.next = 73;
+          _context.next = 75;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.tid));
 
-        case 73:
+        case 75:
           if (!customUploader) {
-            _context.next = 140;
+            _context.next = 143;
             break;
           }
 
@@ -15873,15 +15885,15 @@ function sendMessage(action) {
             }
           };
 
-          _context.prev = 77;
+          _context.prev = 79;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 126;
+            _context.next = 129;
             break;
           }
 
           if (!messageAttachment.cachedUrl) {
-            _context.next = 84;
+            _context.next = 86;
             break;
           }
 
@@ -15895,38 +15907,38 @@ function sendMessage(action) {
               attachmentId: messageAttachment.tid
             }
           });
-          _context.next = 87;
+          _context.next = 89;
           break;
 
-        case 84:
-          _context.next = 86;
+        case 86:
+          _context.next = 88;
           return call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 86:
+        case 88:
           uri = _context.sent;
 
-        case 87:
-          _context.next = 89;
+        case 89:
+          _context.next = 91;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.tid));
 
-        case 89:
+        case 91:
           if (!(!messageAttachment.cachedUrl && messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 96;
+            _context.next = 98;
             break;
           }
 
-          _context.next = 92;
+          _context.next = 94;
           return call(getImageSize, filePath);
 
-        case 92:
+        case 94:
           fileSize = _context.sent;
-          _context.next = 95;
+          _context.next = 97;
           return call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 95:
+        case 97:
           thumbnailMetas = _context.sent;
 
-        case 96:
+        case 98:
           attachmentMeta = messageAttachment.cachedUrl ? messageAttachment.metadata : JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -15946,10 +15958,11 @@ function sendMessage(action) {
             messageToSend.attachments = [attachmentToSend];
           }
 
-          _context.next = 103;
+          console.log('message to send. .. . . .', messageToSend);
+          _context.next = 106;
           return call(channel.sendMessage, messageToSend);
 
-        case 103:
+        case 106:
           messageResponse = _context.sent;
           messageResponse.attachments[0] = _extends({}, messageResponse.attachments[0], {
             user: JSON.parse(JSON.stringify(messageResponse.user)),
@@ -15959,15 +15972,18 @@ function sendMessage(action) {
           pendingAttachment = getPendingAttachment(messageAttachment.tid);
 
           if (!messageAttachment.cachedUrl) {
+            console.log('set data to db. . . . .', [_extends({}, messageResponse.attachments[0], {
+              checksum: pendingAttachment.checksum
+            })]);
             setDataToDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, [_extends({}, messageResponse.attachments[0], {
               checksum: pendingAttachment.checksum
             })], 'checksum');
           }
 
-          _context.next = 109;
+          _context.next = 112;
           return put(removeAttachmentProgressAC(messageAttachment.tid));
 
-        case 109:
+        case 112:
           deletePendingAttachment(messageAttachment.tid);
           messageUpdateData = {
             id: messageResponse.id,
@@ -15984,10 +16000,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 113;
+          _context.next = 116;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 113:
+        case 116:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.tid);
           }
@@ -16005,36 +16021,36 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 122;
+            _context.next = 125;
             break;
           }
 
-          _context.next = 122;
+          _context.next = 125;
           return put(markChannelAsReadAC(channel.id));
 
-        case 122:
-          _context.next = 124;
+        case 125:
+          _context.next = 127;
           return put(updateChannelDataAC(channel.id, channelUpdateParam, true));
 
-        case 124:
-          _context.next = 127;
-          break;
-
-        case 126:
-          throw Error('Network error');
-
         case 127:
-          _context.next = 138;
+          _context.next = 130;
           break;
 
         case 129:
-          _context.prev = 129;
-          _context.t0 = _context["catch"](77);
+          throw Error('Network error');
+
+        case 130:
+          _context.next = 141;
+          break;
+
+        case 132:
+          _context.prev = 132;
+          _context.t0 = _context["catch"](79);
           console.log('Error on uploading attachment', messageAttachment.tid);
-          _context.next = 134;
+          _context.next = 137;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.tid));
 
-        case 134:
+        case 137:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -16044,16 +16060,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 138;
+          _context.next = 141;
           return put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 138:
-          _context.next = 165;
+        case 141:
+          _context.next = 168;
           break;
 
-        case 140:
+        case 143:
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
 
@@ -16074,10 +16090,10 @@ function sendMessage(action) {
           _attachmentToSend.tid = messageAttachment.tid;
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
-          _context.next = 148;
+          _context.next = 151;
           return call(channel.sendMessage, messageToSend);
 
-        case 148:
+        case 151:
           _messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.tid);
           _messageUpdateData = {
@@ -16095,10 +16111,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 153;
+          _context.next = 156;
           return put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData))));
 
-        case 153:
+        case 156:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.tid);
           }
@@ -16116,25 +16132,25 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 162;
+            _context.next = 165;
             break;
           }
 
-          _context.next = 162;
+          _context.next = 165;
           return put(markChannelAsReadAC(channel.id));
 
-        case 162:
-          _context.next = 164;
+        case 165:
+          _context.next = 167;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam, true));
 
-        case 164:
+        case 167:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam);
 
-        case 165:
-          _context.next = 225;
+        case 168:
+          _context.next = 228;
           break;
 
-        case 167:
+        case 170:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var uri;
 
@@ -16228,7 +16244,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 185;
+            _context.next = 188;
             break;
           }
 
@@ -16278,12 +16294,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 179;
+          _context.next = 182;
           return call(uploadAllAttachments);
 
-        case 179:
+        case 182:
           uploadedAttachments = _context.sent;
-          _context.next = 182;
+          _context.next = 185;
           return call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -16326,12 +16342,12 @@ function sendMessage(action) {
             }
           });
 
-        case 182:
+        case 185:
           attachmentsToSend = _context.sent;
-          _context.next = 204;
+          _context.next = 207;
           break;
 
-        case 185:
+        case 188:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -16343,56 +16359,56 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 188;
+          _context.next = 191;
           return select(messagesHasNextSelector);
 
-        case 188:
+        case 191:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 197;
+            _context.next = 200;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 195;
+            _context.next = 198;
             break;
           }
 
-          _context.next = 193;
+          _context.next = 196;
           return put(getMessagesAC(channel));
 
-        case 193:
-          _context.next = 197;
+        case 196:
+          _context.next = 200;
           break;
 
-        case 195:
-          _context.next = 197;
+        case 198:
+          _context.next = 200;
           return put(addMessageAC(JSON.parse(JSON.stringify(_messageCopy2))));
 
-        case 197:
+        case 200:
           addMessageToMap(channel.id, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
           _messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context.next = 202;
+          _context.next = 205;
           return put(setMessagesAC(JSON.parse(JSON.stringify(_messagesToAdd))));
 
-        case 202:
-          _context.next = 204;
+        case 205:
+          _context.next = 207;
           return put(scrollToNewMessageAC(true));
 
-        case 204:
+        case 207:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 225;
+            _context.next = 228;
             break;
           }
 
-          _context.next = 208;
+          _context.next = 211;
           return call(channel.sendMessage, _messageToSend);
 
-        case 208:
+        case 211:
           _messageResponse2 = _context.sent;
           attachmentsToUpdate = [];
 
@@ -16428,10 +16444,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 214;
+          _context.next = 217;
           return put(updateMessageAC(_messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData2))));
 
-        case 214:
+        case 217:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
@@ -16445,35 +16461,35 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 222;
+            _context.next = 225;
             break;
           }
 
-          _context.next = 222;
+          _context.next = 225;
           return put(markChannelAsReadAC(channel.id));
 
-        case 222:
-          _context.next = 224;
+        case 225:
+          _context.next = 227;
           return put(updateChannelDataAC(channel.id, _channelUpdateParam2, true));
 
-        case 224:
+        case 227:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam2);
 
-        case 225:
-          _context.next = 230;
+        case 228:
+          _context.next = 233;
           break;
 
-        case 227:
-          _context.prev = 227;
+        case 230:
+          _context.prev = 230;
           _context.t1 = _context["catch"](2);
           console.log('error on send message ... ', _context.t1);
 
-        case 230:
+        case 233:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[2, 227], [77, 129]]);
+  }, _marked$2, null, [[2, 230], [79, 132]]);
 }
 
 function sendTextMessage(action) {
@@ -17001,7 +17017,7 @@ function resendMessage(action) {
           });
 
           if (!(message.attachments && message.attachments.length && message.state === MESSAGE_STATUS.FAILED)) {
-            _context4.next = 95;
+            _context4.next = 96;
             break;
           }
 
@@ -17017,7 +17033,7 @@ function resendMessage(action) {
           console.log('attachmentCompilation. .. . .', attachmentCompilation);
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED && attachmentCompilation[_messageAttachment.tid] && attachmentCompilation[_messageAttachment.tid] === UPLOAD_STATE.FAIL)) {
-            _context4.next = 93;
+            _context4.next = 94;
             break;
           }
 
@@ -17026,7 +17042,7 @@ function resendMessage(action) {
 
         case 27:
           if (!customUploader) {
-            _context4.next = 93;
+            _context4.next = 94;
             break;
           }
 
@@ -17131,7 +17147,7 @@ function resendMessage(action) {
           _messageCopy3.attachments = [attachmentToSend];
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 82;
+            _context4.next = 83;
             break;
           }
 
@@ -17159,10 +17175,11 @@ function resendMessage(action) {
             bodyAttributes: messageResponse.bodyAttributes,
             createdAt: messageResponse.createdAt
           };
-          _context4.next = 74;
+          removePendingMessageFromMap(channel.id, _messageCopy3.tid);
+          _context4.next = 75;
           return put(updateMessageAC(_messageCopy3.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 74:
+        case 75:
           _fileType = _messageAttachment.data && _messageAttachment.data.type ? _messageAttachment.data.type.split('/')[0] : _messageAttachment.type;
 
           if (_fileType === 'video') {
@@ -17176,23 +17193,23 @@ function resendMessage(action) {
           updateMessageOnAllMessages(_messageCopy3.tid, messageUpdateData);
           messageToUpdate = JSON.parse(JSON.stringify(messageResponse));
           updateChannelLastMessageOnAllChannels(channel.id, messageToUpdate);
-          _context4.next = 82;
+          _context4.next = 83;
           return put(updateChannelLastMessageAC(messageToUpdate, {
             id: channel.id
           }));
 
-        case 82:
-          _context4.next = 93;
+        case 83:
+          _context4.next = 94;
           break;
 
-        case 84:
-          _context4.prev = 84;
+        case 85:
+          _context4.prev = 85;
           _context4.t0 = _context4["catch"](29);
           console.log('fail upload attachment on resend message ... ', _context4.t0);
-          _context4.next = 89;
+          _context4.next = 90;
           return put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, _messageAttachment.tid));
 
-        case 89:
+        case 90:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy3.tid,
             params: {
@@ -17202,18 +17219,18 @@ function resendMessage(action) {
           updateMessageOnAllMessages(_messageCopy3.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context4.next = 93;
+          _context4.next = 94;
           return put(updateMessageAC(_messageCopy3.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 93:
-          _context4.next = 120;
+        case 94:
+          _context4.next = 121;
           break;
 
-        case 95:
+        case 96:
           if (!(message.state === MESSAGE_STATUS.FAILED)) {
-            _context4.next = 120;
+            _context4.next = 121;
             break;
           }
 
@@ -17222,14 +17239,14 @@ function resendMessage(action) {
           delete _messageCopy4.createdAt;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context4.next = 120;
+            _context4.next = 121;
             break;
           }
 
-          _context4.next = 102;
+          _context4.next = 103;
           return call(channel.sendMessage, _messageCopy4);
 
-        case 102:
+        case 103:
           _messageResponse3 = _context4.sent;
           console.log('resend message response ... ', _messageResponse3);
           _messageUpdateData3 = {
@@ -17248,10 +17265,10 @@ function resendMessage(action) {
             createdAt: _messageResponse3.createdAt
           };
           removePendingMessageFromMap(channel.id, _messageCopy4.tid);
-          _context4.next = 108;
+          _context4.next = 109;
           return put(updateMessageAC(_messageCopy4.tid, _messageUpdateData3));
 
-        case 108:
+        case 109:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
@@ -17259,47 +17276,47 @@ function resendMessage(action) {
           activeChannelId = getActiveChannelId();
 
           if (!(channelId === activeChannelId)) {
-            _context4.next = 115;
+            _context4.next = 116;
             break;
           }
 
-          _context4.next = 113;
+          _context4.next = 114;
           return put(updateMessageAC(_messageCopy4.tid, JSON.parse(JSON.stringify(_messageResponse3))));
 
-        case 113:
+        case 114:
           updateMessageOnMap(channel.id, {
             messageId: _messageCopy4.tid,
             params: _messageUpdateData3
           });
           updateMessageOnAllMessages(_messageCopy4.tid, _messageUpdateData3);
 
-        case 115:
+        case 116:
           updateChannelOnAllChannels(channel.id, channel);
           _messageToUpdate3 = JSON.parse(JSON.stringify(_messageResponse3));
           updateChannelLastMessageOnAllChannels(channel.id, _messageToUpdate3);
-          _context4.next = 120;
+          _context4.next = 121;
           return put(updateChannelLastMessageAC(_messageToUpdate3, {
             id: channel.id
           }));
 
-        case 120:
-          _context4.next = 122;
+        case 121:
+          _context4.next = 123;
           return put(scrollToNewMessageAC(true));
 
-        case 122:
-          _context4.next = 131;
+        case 123:
+          _context4.next = 132;
           break;
 
-        case 124:
-          _context4.prev = 124;
+        case 125:
+          _context4.prev = 125;
           _context4.t1 = _context4["catch"](7);
           console.log('ERROR in resend message', _context4.t1.message, 'channel.. . ', channel);
-          _context4.next = 129;
+          _context4.next = 130;
           return put(updateMessageAC(message.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 129:
+        case 130:
           updateMessageOnMap(channel.id, {
             messageId: message.tid,
             params: {
@@ -17310,16 +17327,16 @@ function resendMessage(action) {
             state: MESSAGE_STATUS.FAILED
           });
 
-        case 131:
-          _context4.next = 133;
+        case 132:
+          _context4.next = 134;
           return put(setMessagesLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 133:
+        case 134:
         case "end":
           return _context4.stop();
       }
     }
-  }, _marked4$1, null, [[7, 124], [29, 84]]);
+  }, _marked4$1, null, [[7, 125], [29, 85]]);
 }
 
 function deleteMessage(action) {
@@ -20413,7 +20430,6 @@ var Channel = function Channel(_ref) {
   useEffect(function () {
     if (channel.muted) {
       var dateDiff = moment(channel.mutedTill).diff(moment());
-      console.log('channel is muted. .. ', channel.subject || directChannelUser && (directChannelUser.firstName || directChannelUser.id), dateDiff);
 
       if (dateDiff <= 0) {
         dispatch(updateChannelDataAC(channel.id, {
@@ -20459,8 +20475,7 @@ var Channel = function Channel(_ref) {
     markedAsUnread: !!(channel.unread || channel.newMessageCount && channel.newMessageCount > 0),
     unreadMentions: !!(channel.newMentionCount && channel.newMentionCount > 0)
   }, typingIndicator ? !isDirectChannel ? /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
-    theme: theme,
-    typing: typingIndicator
+    theme: theme
   }, /*#__PURE__*/React__default.createElement("span", {
     ref: messageAuthorRef
   }, makeUsername(contactsMap[typingIndicator.from.id], typingIndicator.from, getFromContacts, true))) : null : draftMessageText ? /*#__PURE__*/React__default.createElement(DraftMessageTitle, null, "Draft") : channel.lastReactedMessage && channel.newReactions && channel.newReactions[0] ? lastMessage.state !== MESSAGE_STATUS.DELETE && (channel.newReactions[0].user && channel.newReactions[0].user.id === user.id || !isDirectChannel) && lastMessage.type !== 'system' && /*#__PURE__*/React__default.createElement(LastMessageAuthor, {
@@ -20531,9 +20546,7 @@ var UserStatus = styled.span(_templateObject6$1 || (_templateObject6$1 = _tagged
 });
 var DraftMessageTitle = styled.span(_templateObject7$1 || (_templateObject7$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.red1);
 var DraftMessageText = styled.span(_templateObject8$1 || (_templateObject8$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n"])), colors.textColor2);
-var LastMessageAuthor = styled.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  font-style: ", ";\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
-  return props.typing && 'italic';
-}, function (props) {
+var LastMessageAuthor = styled.div(_templateObject9$1 || (_templateObject9$1 = _taggedTemplateLiteralLoose(["\n  max-width: 120px;\n  font-weight: 500;\n  color: ", ";\n\n  & > span {\n    display: block;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n    max-width: 100%;\n  }\n"])), function (props) {
   return props.theme === THEME.DARK ? colors.darkModeTextColor1 : colors.textColor1;
 });
 var Points = styled.span(_templateObject10$1 || (_templateObject10$1 = _taggedTemplateLiteralLoose(["\n  margin-right: 4px;\n  color: ", ";\n"])), function (props) {
@@ -25160,9 +25173,8 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
             if (intervalCount >= 8) {
               if (setVideoIsReadyToSend) {
                 setVideoIsReadyToSend(file.tid);
+                clearInterval(checkVideoInterval);
               }
-
-              clearInterval(checkVideoInterval);
             }
           };
 
@@ -25507,15 +25519,25 @@ var AudioPlayer = function AudioPlayer(_ref) {
               progressColor: colors.primary,
               audioRate: audioRate,
               barWidth: 1,
-              barHeight: 3,
+              barHeight: 1,
               hideScrollbar: true,
               barRadius: 1.5,
               cursorWidth: 0,
               barGap: 2,
-              barMinHeight: 1,
+              barMinHeight: 1.5,
               height: 20
             });
-            wavesurfer.current.load(url);
+            var peaks;
+
+            if (file.metadata && file.metadata.tmb) {
+              var maxVal = Math.max.apply(Math, file.metadata.tmb);
+              var dec = maxVal / 100;
+              peaks = file.metadata.tmb.map(function (peak) {
+                return peak / dec / 100;
+              });
+            }
+
+            wavesurfer.current.load(url, peaks);
             wavesurfer.current.on('ready', function () {
               var audioDuration = wavesurfer.current.getDuration();
               setCurrentTime(formatAudioVideoTime(audioDuration));
@@ -25630,21 +25652,25 @@ var Attachment = function Attachment(_ref) {
       attachmentUrl = _useState3[0],
       setAttachmentUrl = _useState3[1];
 
-  var _useState4 = useState(3),
-      progress = _useState4[0],
-      setProgress = _useState4[1];
+  var _useState4 = useState(),
+      failTimeout = _useState4[0],
+      setFailTimeout = _useState4[1];
 
-  var _useState5 = useState(),
-      sizeProgress = _useState5[0],
-      setSizeProgress = _useState5[1];
+  var _useState5 = useState(3),
+      progress = _useState5[0],
+      setProgress = _useState5[1];
 
-  var _useState6 = useState(true),
-      isCached = _useState6[0],
-      setIsCached = _useState6[1];
+  var _useState6 = useState(),
+      sizeProgress = _useState6[0],
+      setSizeProgress = _useState6[1];
 
-  var _useState7 = useState(false),
-      downloadIsCancelled = _useState7[0],
-      setDownloadIsCancelled = _useState7[1];
+  var _useState7 = useState(true),
+      isCached = _useState7[0],
+      setIsCached = _useState7[1];
+
+  var _useState8 = useState(false),
+      downloadIsCancelled = _useState8[0],
+      setDownloadIsCancelled = _useState8[1];
 
   var fileNameRef = useRef(null);
   var customDownloader = getCustomDownloader();
@@ -25907,10 +25933,42 @@ var Attachment = function Attachment(_ref) {
       });
     }
   }, [attachment.id]);
+  useDidUpdate(function () {
+    if (connectionStatus === CONNECTION_STATUS.CONNECTED && isInUploadingState) {
+      setFailTimeout(setTimeout(function () {
+        var pendingAttachment = getPendingAttachment(attachment.tid);
+        dispatch(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, attachment.tid));
+
+        if (pendingAttachment && pendingAttachment.messageTid && pendingAttachment.channelId) {
+          updateMessageOnMap(pendingAttachment.channelId, {
+            messageId: pendingAttachment.messageTid,
+            params: {
+              state: MESSAGE_STATUS.FAILED
+            }
+          });
+          updateMessageOnAllMessages(pendingAttachment.messageTid, {
+            state: MESSAGE_STATUS.FAILED
+          });
+          dispatch(updateMessageAC(pendingAttachment.messageTid, {
+            state: MESSAGE_STATUS.FAILED
+          }));
+        }
+      }, 20000));
+    }
+
+    return function () {
+      return clearTimeout(failTimeout);
+    };
+  }, [connectionStatus]);
   useEffect(function () {
     var attachmentIndex = attachment.tid || attachment.id;
 
     if (attachmentIndex && attachmentsUploadProgress[attachmentIndex]) {
+      if (failTimeout) {
+        clearTimeout(failTimeout);
+        setFailTimeout();
+      }
+
       var uploadProgress = attachmentsUploadProgress[attachmentIndex];
 
       if (getCustomUploader()) {
@@ -29270,7 +29328,6 @@ var MessageList = function MessageList(_ref2) {
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       var fileList = Object.values(e.dataTransfer.files);
-      console.log('dropped fileList.>> >>>>...', fileList);
       var attachmentsFiles = [];
       new Promise(function (resolve) {
         fileList.forEach(function (attachment, index) {
@@ -30214,14 +30271,13 @@ function useMentionLookupService(mentionString, contactsMap, userId, members, ge
       results = _useState[0],
       setResults = _useState[1];
 
-  var membersMapMemo = useMemo(function () {
+  membersMap = useMemo(function () {
     mentionsCache.clear();
     return members.reduce(function (acc, member) {
       acc[member.id] = member;
       return acc;
     }, {});
   }, [members]);
-  membersMap = membersMapMemo;
   useEffect(function () {
     var cachedResults = mentionsCache.get(mentionString);
 
@@ -30791,7 +30847,7 @@ function TextFormatFloatingToolbar(_ref) {
     }
   }
 
-  function mouseUpListener(e) {
+  function mouseUpListener() {
     if (popupCharStylesEditorRef !== null && popupCharStylesEditorRef !== void 0 && popupCharStylesEditorRef.current) {
       if (popupCharStylesEditorRef.current.style.pointerEvents !== 'auto') {
         popupCharStylesEditorRef.current.style.pointerEvents = 'auto';
@@ -31199,26 +31255,19 @@ function EditMessagePlugin(_ref) {
                 var mentionNode = $createMentionNode(mentionNodeParams);
 
                 if (firstPart) {
-                  console.log('men .append first part .>.... ', firstPart);
                   paragraphNode.append($createTextNode(firstPart));
                 }
-
-                console.log('attribute.type... .>>>> .', attribute.type);
 
                 if (attribute.type.length > 7) {
                   var typeArray = attribute.type.split(' ').filter(function (type) {
                     return type !== 'mention';
                   });
-                  console.log('typeArray ..', typeArray);
                   typeArray.forEach(function (type) {
-                    console.log('toggle Format .... ', type);
                     var format = type === 'monospace' ? 'code' : type;
-                    console.log('set format to ...', format);
                     mentionNode.toggleFormat(format);
                   });
                 }
 
-                console.log('mentionNode.... .>>>. .. .', mentionNode);
                 paragraphNode.append(mentionNode);
               }
             } else {
@@ -31227,12 +31276,10 @@ function EditMessagePlugin(_ref) {
               }
 
               if (firstPart) {
-                console.log('append firs node.... ', firstPart);
                 paragraphNode.append($createTextNode(firstPart));
               }
 
               var textNode = $createTextNode(textPart.slice(attributeOffset, attributeOffset + attribute.length));
-              console.log('attribute.type.. . .. .  .', attribute.type);
 
               switch (attribute.type) {
                 case 'bold':
@@ -31271,27 +31318,23 @@ function EditMessagePlugin(_ref) {
 
                     if (_typeArray.length > 1) {
                       _typeArray.forEach(function (type) {
-                        console.log('toggle Format .... ', type);
                         textNode.toggleFormat(type === 'monospace' ? 'code' : type);
                       });
                     }
                   }
               }
 
-              console.log('append text node. .. ', textNode);
               paragraphNode.append(textNode);
             }
 
             if (index === combinedAttributes.length - 1) {
               if (secondPart) {
-                console.log('append second part.... ', secondPart);
                 paragraphNode.append($createTextNode(secondPart));
               } else {
                 paragraphNode.append($createTextNode(' '));
               }
             }
           });
-          console.log('paragraphNode.... .>>>. .. .', paragraphNode);
           rootNode.append(paragraphNode);
           rootNode.selectEnd();
         } else {
@@ -31794,7 +31837,546 @@ function SvgErrorCircle(props) {
   })));
 }
 
-var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1;
+var _path$16;
+
+function _extends$1a() {
+  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1a.apply(this, arguments);
+}
+
+function SvgPlayRecord(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1a({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$17;
+
+function _extends$1b() {
+  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1b.apply(this, arguments);
+}
+
+function SvgPauseRecord(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1b({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$18;
+
+function _extends$1c() {
+  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1c.apply(this, arguments);
+}
+
+function SvgStopRecord(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1c({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M4.421 5.441c-.254.5-.254 1.153-.254 2.46v4.2c0 1.306 0 1.96.254 2.459.224.439.581.796 1.02 1.02.5.254 1.153.254 2.46.254h4.2c1.306 0 1.96 0 2.459-.255.439-.223.796-.58 1.02-1.02.254-.498.254-1.152.254-2.459V7.9c0-1.306 0-1.96-.255-2.459a2.333 2.333 0 00-1.02-1.02c-.498-.254-1.152-.254-2.459-.254H7.9c-1.306 0-1.96 0-2.459.254-.439.224-.796.581-1.02 1.02z",
+    fill: "#FA4C56"
+  })));
+}
+
+var _circle$6, _path$19, _path2$6;
+
+function _extends$1d() {
+  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1d.apply(this, arguments);
+}
+
+function SvgRecordButton(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1d({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$6 || (_circle$6 = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "CurrentColor"
+  })), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
+    d: "M12.875 10.375a3.125 3.125 0 116.25 0v5a3.125 3.125 0 11-6.25 0v-5zM15.219 22.406a.781.781 0 111.562 0v1.563a.781.781 0 11-1.562 0v-1.563zM23.5 14.906a.781.781 0 11-1.563 0 .781.781 0 011.563 0zM10.063 14.906a.781.781 0 11-1.563 0 .781.781 0 011.563 0z",
+    fill: "#fff"
+  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
+    d: "M16 22.25a7.5 7.5 0 007.5-7.5h-1.563a5.937 5.937 0 11-11.875 0H8.5a7.5 7.5 0 007.5 7.5z",
+    fill: "#fff"
+  })));
+}
+
+var _templateObject$B, _templateObject2$x, _templateObject3$q, _templateObject4$m, _templateObject5$k, _templateObject6$h, _templateObject7$f;
+var shouldDraw = false;
+var WaveSurfer;
+
+var AudioRecord = function AudioRecord(_ref) {
+  var sendRecordedFile = _ref.sendRecordedFile,
+      setShowRecording = _ref.setShowRecording,
+      showRecording = _ref.showRecording;
+
+  var _useState = useState(null),
+      recording = _useState[0],
+      setStartRecording = _useState[1];
+
+  var _useState2 = useState(null),
+      recorder = _useState2[0],
+      setRecorder = _useState2[1];
+
+  var _useState3 = useState(null),
+      recordedFile = _useState3[0],
+      setRecordedFile = _useState3[1];
+
+  var _useState4 = useState(false),
+      recordingIsReadyToPlay = _useState4[0],
+      setRecordingIsReadyToPlay = _useState4[1];
+
+  var _useState5 = useState(0),
+      currentTime = _useState5[0],
+      setCurrentTime = _useState5[1];
+
+  var _useState6 = useState(false),
+      playAudio = _useState6[0],
+      setPlayAudio = _useState6[1];
+
+  var wavesurfer = useRef(null);
+  var wavesurferContainer = useRef(null);
+  var intervalRef = useRef(null);
+
+  function startRecording() {
+    setShowRecording(true);
+
+    if (recording) {
+      stopRecording(true);
+    } else if (recordedFile) {
+      sendRecordedFile(recordedFile);
+      setRecordedFile(null);
+      setPlayAudio(false);
+
+      if (wavesurfer.current) {
+        wavesurfer.current.destroy();
+      }
+
+      setStartRecording(false);
+      setShowRecording(false);
+    } else {
+      recorder.start().then(function () {
+        setStartRecording(true);
+        shouldDraw = true;
+        var stream = recorder.activeStream;
+        var obj = {};
+
+        function init() {
+          obj.canvas = document.getElementById('waveform');
+          obj.ctx = obj.canvas.getContext('2d');
+          obj.width = 360;
+          obj.height = 28;
+          obj.canvas.width = obj.width;
+          obj.canvas.height = obj.height;
+          obj.canvas.style.width = obj.width + 'px';
+          obj.canvas.style.height = obj.height + 'px';
+        }
+
+        var timeOffset = 100;
+        var now = parseInt(performance.now()) / timeOffset;
+
+        function loop() {
+          if (!shouldDraw) {
+            obj.x = 0;
+            obj.ctx.clearRect(0, 0, obj.canvas.width, obj.canvas.height);
+            return;
+          }
+
+          obj.ctx.clearRect(0, 0, obj.canvas.width, obj.canvas.height);
+          var max = 0;
+
+          if (parseInt(performance.now() / timeOffset) > now) {
+            now = parseInt(performance.now() / timeOffset);
+            obj.analyser.getFloatTimeDomainData(obj.frequencyArray);
+
+            for (var i = 0; i < obj.frequencyArray.length; i++) {
+              if (obj.frequencyArray[i] > max) {
+                max = obj.frequencyArray[i];
+              }
+            }
+
+            var freq = Math.floor(max * 90);
+
+            if (freq === 0) {
+              freq = 1;
+            }
+
+            obj.bars.push({
+              x: obj.width,
+              y: obj.height / 2 - freq / 2,
+              height: freq,
+              width: 3
+            });
+          }
+
+          draw();
+          requestAnimationFrame(loop);
+        }
+
+        obj.bars = [];
+
+        function draw() {
+          for (var i = 0; i < obj.bars.length; i++) {
+            var bar = obj.bars[i];
+            obj.ctx.fillStyle = colors.textColor2;
+            obj.ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
+            bar.x = bar.x - 1;
+
+            if (bar.x < 1) {
+              obj.bars.splice(i, 1);
+            }
+          }
+        }
+
+        function soundAllowed(stream) {
+          var AudioContext = window.AudioContext || window.webkitAudioContext;
+          var audioContent = new AudioContext();
+          var streamSource = audioContent.createMediaStreamSource(stream);
+          obj.analyser = audioContent.createAnalyser();
+          streamSource.connect(obj.analyser);
+          obj.analyser.fftSize = 512;
+          obj.frequencyArray = new Float32Array(obj.analyser.fftSize);
+          init();
+          loop();
+        }
+
+        soundAllowed(stream);
+      })["catch"](function (e) {
+        console.error(e);
+      });
+    }
+  }
+
+  function cancelRecording() {
+    if (recordedFile) {
+      setRecordedFile(null);
+      setPlayAudio(false);
+
+      if (wavesurfer.current) {
+        wavesurfer.current.destroy();
+      }
+    } else {
+      shouldDraw = false;
+      recorder.stop();
+    }
+
+    setRecordingIsReadyToPlay(false);
+    setStartRecording(false);
+    setCurrentTime(0);
+    setShowRecording(false);
+  }
+
+  function stopRecording(send) {
+    shouldDraw = false;
+    recorder.stop().getMp3().then(function (_ref2) {
+      var buffer = _ref2[0],
+          blob = _ref2[1];
+      setCurrentTime(0);
+      console.log(buffer, blob);
+      var file = new File(buffer, 'record.mp3', {
+        type: blob.type,
+        lastModified: Date.now()
+      });
+      var audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      var reader = new FileReader();
+
+      reader.onload = function (event) {
+        audioContext.decodeAudioData(event.target.result, function (audioBuffer) {
+          var numberOfSegments = 50;
+          var segmentSize = Math.floor(audioBuffer.length / numberOfSegments);
+          var waveform = [];
+
+          for (var i = 0; i < numberOfSegments; i++) {
+            var start = i * segmentSize;
+            var end = start + segmentSize;
+            var segment = audioBuffer.getChannelData(0).slice(start, end);
+            var maxAmplitude = Math.max.apply(Math, segment.map(Math.abs));
+            waveform.push(Math.floor(maxAmplitude * 1000));
+          }
+
+          setStartRecording(false);
+          var objectUrl = URL.createObjectURL(blob);
+
+          if (send) {
+            sendRecordedFile({
+              file: file,
+              objectUrl: objectUrl,
+              thumb: waveform,
+              dur: audioBuffer.duration
+            });
+            setShowRecording(false);
+          } else {
+            setRecordedFile({
+              file: file,
+              objectUrl: objectUrl,
+              thumb: waveform,
+              dur: audioBuffer.duration
+            });
+          }
+        }, function (e) {
+          console.log('Error decoding audio data: ' + e.err);
+        });
+      };
+
+      reader.readAsArrayBuffer(blob);
+    })["catch"](function (e) {
+      console.error(e);
+    });
+  }
+
+  var handlePlayPause = function handlePlayPause() {
+    if (wavesurfer.current) {
+      if (!wavesurfer.current.isPlaying()) {
+        setPlayAudio(true);
+        intervalRef.current = setInterval(function () {
+          var currentTime = wavesurfer.current.getCurrentTime();
+
+          if (currentTime >= 0) {
+            setCurrentTime(currentTime);
+          }
+        }, 10);
+      }
+
+      wavesurfer.current.playPause();
+    }
+  };
+
+  useEffect(function () {
+    var MAX_RECORDER_TIME = 250;
+    var recordingInterval = null;
+
+    if (recording) {
+      setTimeout(function () {
+        recordingInterval = setInterval(function () {
+          setCurrentTime(function (prevState) {
+            if (prevState.recordingSeconds === MAX_RECORDER_TIME && prevState.recordingMilliseconds === 0) {
+              clearInterval(recordingInterval);
+              stopRecording();
+              return 0;
+            }
+
+            return prevState + 1;
+          });
+        }, 1000);
+      }, 150);
+    } else clearInterval(recordingInterval);
+
+    return function () {
+      return clearInterval(recordingInterval);
+    };
+  }, [recording]);
+  useDidUpdate(function () {
+    if (recordedFile) {
+      var initWaveSurfer = function initWaveSurfer() {
+        try {
+          var _temp3 = function _temp3() {
+            if (wavesurfer.current) {
+              wavesurfer.current.destroy();
+            }
+
+            wavesurfer.current = WaveSurfer["default"].create({
+              container: wavesurferContainer.current,
+              waveColor: colors.textColor2,
+              skipLength: 0,
+              progressColor: colors.primary,
+              barWidth: 1,
+              barHeight: 2,
+              audioRate: 1,
+              hideScrollbar: true,
+              barRadius: 1.5,
+              cursorWidth: 0,
+              barGap: 2.5,
+              barMinHeight: 1.5,
+              height: 28
+            });
+            wavesurfer.current.load(recordedFile.objectUrl);
+            wavesurfer.current.on('ready', function () {
+              setRecordingIsReadyToPlay(true);
+              var audioDuration = wavesurfer.current.getDuration();
+              setCurrentTime(audioDuration);
+            });
+            wavesurfer.current.on('finish', function () {
+              setPlayAudio(false);
+              wavesurfer.current.seekTo(0);
+              var audioDuration = wavesurfer.current.getDuration();
+              setCurrentTime(audioDuration);
+              clearInterval(intervalRef.current);
+            });
+            wavesurfer.current.on('pause', function () {
+              setPlayAudio(false);
+              clearInterval(intervalRef.current);
+            });
+            wavesurfer.current.on('interaction', function () {
+              var currentTime = wavesurfer.current.getCurrentTime();
+              setCurrentTime(currentTime);
+            });
+          };
+
+          var _temp4 = function () {
+            if (!WaveSurfer) {
+              return Promise.resolve(import('wavesurfer.js')).then(function (_import) {
+                WaveSurfer = _import;
+              });
+            }
+          }();
+
+          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      initWaveSurfer();
+    } else {
+      setRecordingIsReadyToPlay(false);
+      clearInterval(intervalRef.current);
+      wavesurfer.current = null;
+    }
+
+    return function () {
+      clearInterval(intervalRef.current);
+    };
+  }, [recordedFile]);
+  useEffect(function () {
+    setRecorder(new MicRecorder({
+      bitRate: 128
+    }));
+  }, []);
+  return /*#__PURE__*/React__default.createElement(Container$i, {
+    recording: showRecording
+  }, showRecording && /*#__PURE__*/React__default.createElement(PlayPause$1, {
+    onClick: function onClick() {
+      return cancelRecording();
+    }
+  }, /*#__PURE__*/React__default.createElement(SvgClose, null)), /*#__PURE__*/React__default.createElement(AudioWrapper, {
+    recording: recording || recordedFile
+  }, recording && /*#__PURE__*/React__default.createElement(PlayPause$1, {
+    onClick: function onClick() {
+      return stopRecording();
+    }
+  }, /*#__PURE__*/React__default.createElement(SvgStopRecord, null)), /*#__PURE__*/React__default.createElement(Canvas, {
+    hide: recordedFile,
+    id: 'waveform',
+    recording: recording
+  }), recording && /*#__PURE__*/React__default.createElement(Timer$1, null, formatAudioVideoTime(currentTime)), recordingIsReadyToPlay && /*#__PURE__*/React__default.createElement(PlayPause$1, {
+    onClick: handlePlayPause
+  }, playAudio ? /*#__PURE__*/React__default.createElement(SvgPauseRecord, null) : /*#__PURE__*/React__default.createElement(SvgPlayRecord, null)), /*#__PURE__*/React__default.createElement(AudioVisualization$1, {
+    ref: wavesurferContainer,
+    show: recordedFile
+  }), recordingIsReadyToPlay && /*#__PURE__*/React__default.createElement(Timer$1, null, formatAudioVideoTime(currentTime))), /*#__PURE__*/React__default.createElement(RecordIconWrapper, {
+    onClick: function onClick() {
+      return startRecording();
+    }
+  }, showRecording ? /*#__PURE__*/React__default.createElement(SvgSend, null) : /*#__PURE__*/React__default.createElement(SvgRecordButton, null)));
+};
+var Container$i = styled.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  width: 32px;\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  ", ";\n  transition: all 0.3s ease-in-out;\n"])), function (props) {
+  return props.recording && "width: 400px";
+});
+var AudioWrapper = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  height: 36px;\n  width: ", ";\n  overflow: hidden;\n  margin: ", ";\n  background-color: ", ";\n  padding: ", ";\n  border-radius: 20px;\n"])), function (props) {
+  return props.recording ? 'calc(100% - 84px)' : '0';
+}, function (props) {
+  return props.recording ? '0 8px' : '0';
+}, colors.backgroundColor, function (props) {
+  return props.recording ? '0 12px 0 0' : '0';
+});
+var RecordIconWrapper = styled.span(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n"])));
+var AudioVisualization$1 = styled.div(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  opacity: ", ";\n  z-index: ", ";\n  visibility: ", ";\n  width: 300px;\n  height: 28px;\n  max-width: calc(100% - 100px);\n  left: 40px;\n"])), function (_ref3) {
+  var show = _ref3.show;
+  return show ? '1' : '0';
+}, function (_ref4) {
+  var show = _ref4.show;
+  return !show && '-1';
+}, function (_ref5) {
+  var show = _ref5.show;
+  return show ? 'visible' : 'hidden';
+});
+var PlayPause$1 = styled.div(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  padding: 10px;\n"])));
+var Canvas = styled.canvas(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  height: 28px;\n  width: ", ";\n  max-width: calc(100% - 110px);\n  position: absolute;\n  opacity: ", ";\n  z-index: ", ";\n  left: 42px;\n"])), function (_ref6) {
+  var recording = _ref6.recording;
+  return recording ? '300px' : '0';
+}, function (_ref7) {
+  var hide = _ref7.hide;
+  return hide ? '0' : '1';
+}, function (_ref8) {
+  var hide = _ref8.hide;
+  return hide && '-1';
+});
+var Timer$1 = styled.div(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  font-weight: 400;\n  font-size: 16px;\n  line-height: 12px;\n  color: ", ";\n  margin-left: auto;\n"])), colors.textColor2);
+
+var _templateObject$C, _templateObject2$y, _templateObject3$r, _templateObject4$n, _templateObject5$l, _templateObject6$i, _templateObject7$g, _templateObject8$e, _templateObject9$c, _templateObject10$b, _templateObject11$8, _templateObject12$5, _templateObject13$5, _templateObject14$4, _templateObject15$4, _templateObject16$3, _templateObject17$3, _templateObject18$3, _templateObject19$3, _templateObject20$2, _templateObject21$2, _templateObject22$2, _templateObject23$2, _templateObject24$2, _templateObject25$2, _templateObject26$1, _templateObject27$1, _templateObject28$1, _templateObject29$1, _templateObject30$1, _templateObject31$1, _templateObject32$1;
 
 function AutoFocusPlugin(_ref) {
   var messageForReply = _ref.messageForReply;
@@ -31937,131 +32519,139 @@ var SendMessageInput = function SendMessageInput(_ref3) {
   var isBlockedUserChat = directChannelUser && directChannelUser.blocked;
   var isDeletedUserChat = directChannelUser && directChannelUser.state === USER_STATE.DELETED;
   var allowSetMention = allowMentionUser && (activeChannel.type === CHANNEL_TYPE.PRIVATE || activeChannel.type === CHANNEL_TYPE.GROUP);
-  var messageContRef = useRef(null);
+
+  var _useState = useState(false),
+      showRecording = _useState[0],
+      setShowRecording = _useState[1];
+
+  var _useState2 = useState(null),
+      recordedFile = _useState2[0],
+      setRecordedFile = _useState2[1];
 
   var _usePermissions = usePermissions(activeChannel.userRole),
       checkActionPermission = _usePermissions[0];
 
-  var _useState = useState(false),
-      listenerIsAdded = _useState[0],
-      setListenerIsAdded = _useState[1];
+  var _useState3 = useState(false),
+      listenerIsAdded = _useState3[0],
+      setListenerIsAdded = _useState3[1];
 
-  var _useState2 = useState(''),
-      messageText = _useState2[0],
-      setMessageText = _useState2[1];
+  var _useState4 = useState(''),
+      messageText = _useState4[0],
+      setMessageText = _useState4[1];
 
-  var _useState3 = useState(''),
-      editMessageText = _useState3[0],
-      setEditMessageText = _useState3[1];
+  var _useState5 = useState(''),
+      editMessageText = _useState5[0],
+      setEditMessageText = _useState5[1];
 
-  var _useState4 = useState({}),
-      readyVideoAttachments = _useState4[0],
-      setReadyVideoAttachments = _useState4[1];
-
-  var _useState5 = useState(false),
-      showChooseAttachmentType = _useState5[0],
-      setShowChooseAttachmentType = _useState5[1];
-
-  var _useState6 = useState(false),
-      isEmojisOpened = _useState6[0],
-      setIsEmojisOpened = _useState6[1];
+  var _useState6 = useState({}),
+      readyVideoAttachments = _useState6[0],
+      setReadyVideoAttachments = _useState6[1];
 
   var _useState7 = useState(false),
-      emojisInRightSide = _useState7[0],
-      setEmojisInRightSide = _useState7[1];
+      showChooseAttachmentType = _useState7[0],
+      setShowChooseAttachmentType = _useState7[1];
 
-  var _useState8 = useState(0),
-      emojisPopupLeftPosition = _useState8[0],
-      setEmojisPopupLeftPosition = _useState8[1];
+  var _useState8 = useState(false),
+      isEmojisOpened = _useState8[0],
+      setIsEmojisOpened = _useState8[1];
 
-  var _useState9 = useState(0),
-      emojisPopupBottomPosition = _useState9[0],
-      setEmojisPopupBottomPosition = _useState9[1];
+  var _useState9 = useState(false),
+      emojisInRightSide = _useState9[0],
+      setEmojisInRightSide = _useState9[1];
 
-  var _useState10 = useState(false),
-      addAttachmentsInRightSide = _useState10[0],
-      setAddAttachmentsInRightSide = _useState10[1];
+  var _useState10 = useState(0),
+      emojisPopupLeftPosition = _useState10[0],
+      setEmojisPopupLeftPosition = _useState10[1];
 
-  var _useState11 = useState({
+  var _useState11 = useState(0),
+      emojisPopupBottomPosition = _useState11[0],
+      setEmojisPopupBottomPosition = _useState11[1];
+
+  var _useState12 = useState(false),
+      addAttachmentsInRightSide = _useState12[0],
+      setAddAttachmentsInRightSide = _useState12[1];
+
+  var _useState13 = useState({
     clear: false
   }),
-      shouldClearEditor = _useState11[0],
-      setShouldClearEditor = _useState11[1];
+      shouldClearEditor = _useState13[0],
+      setShouldClearEditor = _useState13[1];
 
-  var _useState12 = useState([]),
-      messageBodyAttributes = _useState12[0],
-      setMessageBodyAttributes = _useState12[1];
+  var _useState14 = useState([]),
+      messageBodyAttributes = _useState14[0],
+      setMessageBodyAttributes = _useState14[1];
 
-  var _useState13 = useState([]),
-      mentionedMembers = _useState13[0],
-      setMentionedMembers = _useState13[1];
+  var _useState15 = useState([]),
+      mentionedMembers = _useState15[0],
+      setMentionedMembers = _useState15[1];
 
-  var _useState14 = useState(''),
-      browser = _useState14[0],
-      setBrowser = _useState14[1];
+  var _useState16 = useState(''),
+      browser = _useState16[0],
+      setBrowser = _useState16[1];
 
-  var _useState15 = useState(false),
-      mentionsIsOpen = _useState15[0],
-      setMentionsIsOpen = _useState15[1];
+  var _useState17 = useState(false),
+      mentionsIsOpen = _useState17[0],
+      setMentionsIsOpen = _useState17[1];
 
-  var _useState16 = useState(),
-      inputContainerHeight = _useState16[0],
-      setInputContainerHeight = _useState16[1];
+  var _useState18 = useState(),
+      inputContainerHeight = _useState18[0],
+      setInputContainerHeight = _useState18[1];
 
   var selectedText = useRef(null);
 
-  var _useState17 = useState(),
-      typingTimout = _useState17[0],
-      setTypingTimout = _useState17[1];
+  var _useState19 = useState(),
+      typingTimout = _useState19[0],
+      setTypingTimout = _useState19[1];
 
-  var _useState18 = useState(),
-      inTypingStateTimout = _useState18[0],
-      setInTypingStateTimout = _useState18[1];
+  var _useState20 = useState(),
+      inTypingStateTimout = _useState20[0],
+      setInTypingStateTimout = _useState20[1];
 
-  var _useState19 = useState(false),
-      inTypingState = _useState19[0],
-      setInTypingState = _useState19[1];
-
-  var _useState20 = useState(false),
-      sendMessageIsActive = _useState20[0],
-      setSendMessageIsActive = _useState20[1];
-
-  var _useState21 = useState([]),
-      attachments = _useState21[0],
-      setAttachments = _useState21[1];
+  var _useState21 = useState(false),
+      inTypingState = _useState21[0],
+      setInTypingState = _useState21[1];
 
   var _useState22 = useState(false),
-      forwardPopupOpen = _useState22[0],
-      setForwardPopupOpen = _useState22[1];
+      sendMessageIsActive = _useState22[0],
+      setSendMessageIsActive = _useState22[1];
 
-  var _useState23 = useState(false),
-      deletePopupOpen = _useState23[0],
-      setDeletePopupOpen = _useState23[1];
+  var _useState23 = useState([]),
+      attachments = _useState23[0],
+      setAttachments = _useState23[1];
 
   var _useState24 = useState(false),
-      isIncomingMessage = _useState24[0],
-      setIsIncomingMessage = _useState24[1];
+      forwardPopupOpen = _useState24[0],
+      setForwardPopupOpen = _useState24[1];
+
+  var _useState25 = useState(false),
+      deletePopupOpen = _useState25[0],
+      setDeletePopupOpen = _useState25[1];
+
+  var _useState26 = useState(false),
+      isIncomingMessage = _useState26[0],
+      setIsIncomingMessage = _useState26[1];
 
   var typingIndicator = useSelector(typingIndicatorSelector(activeChannel.id));
   var contactsMap = useSelector(contactsMapSelector);
   var connectionStatus = useSelector(connectionStatusSelector, shallowEqual);
+  var messageContRef = useRef(null);
   var fileUploader = useRef(null);
   var inputWrapperRef = useRef(null);
   var messageInputRef = useRef(null);
   var emojiBtnRef = useRef(null);
   var addAttachmentsBtnRef = useRef(null);
 
-  var _useState25 = useState(),
-      realEditorState = _useState25[0],
-      setRealEditorState = _useState25[1];
+  var _useState27 = useState(),
+      realEditorState = _useState27[0],
+      setRealEditorState = _useState27[1];
 
-  var _useState26 = useState(null),
-      floatingAnchorElem = _useState26[0],
-      setFloatingAnchorElem = _useState26[1];
+  var _useState28 = useState(null),
+      floatingAnchorElem = _useState28[0],
+      setFloatingAnchorElem = _useState28[1];
 
-  var _useState27 = useState(false),
-      isSmallWidthViewport = _useState27[0],
-      setIsSmallWidthViewport = _useState27[1];
+  var _useState29 = useState(false),
+      isSmallWidthViewport = _useState29[0],
+      setIsSmallWidthViewport = _useState29[1];
 
   function onChange(editorState) {
     setRealEditorState(editorState);
@@ -32302,8 +32892,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
         }
       }
 
-      console.log('messageBodyAttributes. to send  .>>> .... ', messageBodyAttributes);
-
       var messageToSend = _extends({}, messageToEdit, {
         metadata: mentionedMembersPositions,
         bodyAttributes: messageBodyAttributes,
@@ -32514,7 +33102,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                   if (fileType === 'image') {
                     resizeImage(file).then(function (resizedFile) {
                       try {
-                        console.log('set attachments ... 1');
                         setAttachments(function (prevState) {
                           return [].concat(prevState, [{
                             data: file,
@@ -32533,7 +33120,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                       }
                     });
                   } else if (fileType === 'video') {
-                    console.log('set attachments ... 2');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -32547,7 +33133,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                       }]);
                     });
                   } else {
-                    console.log('set attachments ... 3');
                     setAttachments(function (prevState) {
                       return [].concat(prevState, [{
                         data: file,
@@ -32567,7 +33152,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                         if (isMediaAttachment) {
                           var _temp15 = function _temp15() {
                             if (file.type === 'image/gif') {
-                              console.log('set attachments ... 4');
                               setAttachments(function (prevState) {
                                 return [].concat(prevState, [{
                                   data: file,
@@ -32586,7 +33170,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                               });
                             } else {
                               if (dataFromDb) {
-                                console.log('set attachments ... 5');
                                 setAttachments(function (prevState) {
                                   return [].concat(prevState, [{
                                     data: file,
@@ -32603,7 +33186,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                                 resizeImage(file).then(function (resizedFileData) {
                                   try {
                                     var resizedFile = new File([resizedFileData.blob], resizedFileData.file.name);
-                                    console.log('set attachments ... 7');
                                     setAttachments(function (prevState) {
                                       return [].concat(prevState, [{
                                         data: resizedFile,
@@ -32648,7 +33230,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                           return _temp16 && _temp16.then ? _temp16.then(_temp15) : _temp15(_temp16);
                         } else {
                           var _temp17 = function _temp17() {
-                            console.log('set attachments ... 9');
                             setAttachments(function (prevState) {
                               return [].concat(prevState, [{
                                 data: file,
@@ -32687,7 +33268,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
                       var _temp19 = function () {
                         if (fileType === 'video') {
                           var _temp20 = function _temp20() {
-                            console.log('set attachments ... 10');
                             setAttachments(function (prevState) {
                               return [].concat(prevState, [{
                                 data: file,
@@ -32722,7 +33302,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
 
                           return _temp21 && _temp21.then ? _temp21.then(_temp20) : _temp20(_temp21);
                         } else {
-                          console.log('set attachments ... 11');
                           setAttachments(function (prevState) {
                             return [].concat(prevState, [{
                               data: file,
@@ -32809,6 +33388,64 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     }
   }, [draggedAttachments]);
   useEffect(function () {
+    if (recordedFile) {
+      console.log('recorded file ........', recordedFile);
+      var tid = v4();
+      var reader = new FileReader();
+
+      reader.onload = function () {
+        try {
+          var length = reader.result && reader.result.length;
+          var fileChecksum;
+
+          if (length > 3000) {
+            var firstPart = reader.result && reader.result.slice(0, 1000);
+            var middlePart = reader.result && reader.result.slice(length / 2 - 500, length / 2 + 500);
+            var lastPart = reader.result && reader.result.slice(length - 1000, length);
+            fileChecksum = "" + firstPart + middlePart + lastPart;
+          } else {
+            fileChecksum = "" + reader.result;
+          }
+
+          return Promise.resolve(hashString(fileChecksum || '')).then(function (checksumHash) {
+            setPendingAttachment(tid, {
+              file: recordedFile,
+              checksum: checksumHash
+            });
+            var messageToSend = {
+              metadata: '',
+              body: '',
+              mentionedMembers: [],
+              attachments: [{
+                name: v4() + ".mp3",
+                data: recordedFile.file,
+                tid: tid,
+                upload: true,
+                size: recordedFile.file.size,
+                attachmentUrl: recordedFile.objectUrl,
+                metadata: {
+                  tmb: recordedFile.thumb,
+                  dur: recordedFile.dur
+                },
+                type: attachmentTypes.voice
+              }],
+              type: 'text'
+            };
+            dispatch(sendMessageAC(messageToSend, activeChannel.id, connectionStatus, true));
+          });
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      reader.onerror = function (e) {
+        console.log(' error on read file onError', e);
+      };
+
+      reader.readAsBinaryString(recordedFile.file);
+    }
+  }, [recordedFile]);
+  useEffect(function () {
     var updateViewPortWidth = function updateViewPortWidth() {
       var isNextSmallWidthViewport = CAN_USE_DOM && window.matchMedia('(max-width: 1025px)').matches;
 
@@ -32837,7 +33474,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
           dispatch(setMessageForReplyAC(draftMessage.messageForReply));
         }
 
-        console.log('set message text from draft>  >>');
         setMessageText(draftMessage.text);
         setMentionedMembers(draftMessage.mentionedMembers);
       }
@@ -33046,7 +33682,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
       }
     };
   }, []);
-  return /*#__PURE__*/React__default.createElement(Container$i, {
+  return /*#__PURE__*/React__default.createElement(Container$j, {
     margin: margin,
     border: border,
     ref: messageContRef,
@@ -33138,7 +33774,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     onChange: handleFileUpload,
     multiple: true,
     type: 'file'
-  }), /*#__PURE__*/React__default.createElement(MessageInputWrapper, {
+  }), showRecording ? /*#__PURE__*/React__default.createElement(AudioCont, null) : /*#__PURE__*/React__default.createElement(MessageInputWrapper, {
     className: 'message_input_wrapper',
     borderRadius: borderRadius,
     ref: inputWrapperRef,
@@ -33244,16 +33880,26 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     ErrorBoundary: LexicalErrorBoundary
   }), floatingAnchorElem && !isSmallWidthViewport && allowTextEdit && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FloatingTextFormatToolbarPlugin, {
     anchorElem: floatingAnchorElem
-  })))))), /*#__PURE__*/React__default.createElement(SendMessageIcon, {
+  })))))), sendMessageIsActive ? /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     color: colors.backgroundColor,
     height: inputContainerHeight || minHeight,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
-  }, /*#__PURE__*/React__default.createElement(SvgSend, null))))));
+  }, /*#__PURE__*/React__default.createElement(SvgSend, null)) :
+  /*#__PURE__*/
+  React__default.createElement(SendMessageIcon, {
+    order: sendIconOrder,
+    height: inputContainerHeight || minHeight,
+    color: colors.primary
+  }, /*#__PURE__*/React__default.createElement(AudioRecord, {
+    sendRecordedFile: setRecordedFile,
+    setShowRecording: setShowRecording,
+    showRecording: showRecording
+  }))))));
 };
 
-var Container$i = styled.div(_templateObject$B || (_templateObject$B = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .text_formatting_toolbar {\n    display: ", ";\n    position: fixed;\n    top: ", ";\n    left: ", ";\n  }\n\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n  & .custom_editor {\n    cursor: text;\n\n    & .rdw-mention-link {\n      color: ", ";\n    }\n  }\n"])), function (props) {
+var Container$j = styled.div(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  margin: ", ";\n  border: ", ";\n  border-radius: ", ";\n  position: relative;\n  padding: 0 12px;\n\n  & span.rdw-suggestion-dropdown {\n    position: absolute;\n    bottom: 100%;\n    height: 160px;\n    min-width: 150px;\n    display: flex;\n    flex-direction: column;\n    overflow: auto;\n    padding: 6px 12px;\n    border: 1px solid #ccc;\n    background: #fff;\n    z-index: 99;\n  }\n\n  & .text_formatting_toolbar {\n    display: ", ";\n    position: fixed;\n    top: ", ";\n    left: ", ";\n  }\n\n  & .rdw-suggestion-option-active {\n    background-color: rgb(243, 245, 248);\n  }\n  & .custom_editor {\n    cursor: text;\n\n    & .rdw-mention-link {\n      color: ", ";\n    }\n  }\n"])), function (props) {
   return props.margin || '30px 0 16px';
 }, function (props) {
   return props.border || '';
@@ -33268,14 +33914,14 @@ var Container$i = styled.div(_templateObject$B || (_templateObject$B = _taggedTe
 }, function (props) {
   return props.mentionColor || colors.primary;
 });
-var EditReplyMessageCont = styled.div(_templateObject2$x || (_templateObject2$x = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n  box-sizing: content-box;\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
-var EditMessageText = styled.p(_templateObject3$q || (_templateObject3$q = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
-var CloseEditMode = styled.span(_templateObject4$m || (_templateObject4$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
-var UserName$1 = styled.span(_templateObject5$k || (_templateObject5$k = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
-var EditReplyMessageHeader = styled.h4(_templateObject6$h || (_templateObject6$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
+var EditReplyMessageCont = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  position: relative;\n  left: -12px;\n  width: calc(100% - 8px);\n  padding: 8px 16px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  z-index: 19;\n  border-bottom: 1px solid ", ";\n  box-sizing: content-box;\n"])), colors.textColor1, colors.backgroundColor, colors.gray1);
+var EditMessageText = styled.p(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  display: -webkit-box;\n  -webkit-line-clamp: 3;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n  text-overflow: ellipsis;\n"])));
+var CloseEditMode = styled.span(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: 8px;\n  right: 12px;\n  width: 20px;\n  height: 20px;\n  text-align: center;\n  line-height: 22px;\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n  }\n"])), colors.textColor2);
+var UserName$1 = styled.span(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  margin-left: 4px;\n"])));
+var EditReplyMessageHeader = styled.h4(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin: 0 0 2px;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n\n  > svg {\n    margin-right: 4px;\n    width: 16px;\n    height: 16px;\n  }\n"])), function (props) {
   return props.color || colors.primary;
 });
-var AddAttachmentIcon = styled.span(_templateObject7$f || (_templateObject7$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
+var AddAttachmentIcon = styled.span(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  z-index: 2;\n  order: ", ";\n\n  > svg {\n    ", ";\n    width: 24px;\n  }\n\n  &:hover > svg {\n    color: ", ";\n  }\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 1;
@@ -33327,179 +33973,46 @@ var EmojiButton = styled.span(_templateObject12$5 || (_templateObject12$5 = _tag
 }, function (props) {
   return props.hoverColor || colors.primary;
 });
-var SendMessageIcon = styled.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
+var SendMessageIcon = styled.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px 0 auto;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
   return props.isActive ? colors.primary : props.color;
 });
-var ChosenAttachments = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
-var TypingIndicator$1 = styled.div(_templateObject15$4 || (_templateObject15$4 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
-var TypingIndicatorCont = styled.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
-var TypingFrom = styled.h5(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
-var sizeAnimation = keyframes(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
-var DotOne = styled.span(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose([""])));
-var DotTwo = styled.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
-var DotThree = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
-var TypingAnimation = styled.div(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", ";\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
-var Loading = styled.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
-var BlockedUserInfo = styled.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
-var JoinChannelCont = styled.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
+var AudioCont = styled.div(_templateObject14$4 || (_templateObject14$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  width: 100%;\n  justify-content: flex-end;\n"])));
+var ChosenAttachments = styled.div(_templateObject15$4 || (_templateObject15$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px 16px 14px;\n  overflow-x: auto;\n\n  & ", " {\n    width: 100%;\n    height: 100%;\n    border-radius: 4px;\n    object-fit: cover;\n  }\n\n  & ", " {\n    width: 240px;\n    padding: 5px 12px;\n    border-radius: 8px;\n    height: 50px;\n  }\n"])), AttachmentImg$1, AttachmentFile$1);
+var TypingIndicator$1 = styled.div(_templateObject16$3 || (_templateObject16$3 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 100%;\n  left: 16px;\n"])));
+var TypingIndicatorCont = styled.div(_templateObject17$3 || (_templateObject17$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 12px;\n"])));
+var TypingFrom = styled.h5(_templateObject18$3 || (_templateObject18$3 = _taggedTemplateLiteralLoose(["\n  margin: 0 4px 0 0;\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), colors.textColor2);
+var sizeAnimation = keyframes(_templateObject19$3 || (_templateObject19$3 = _taggedTemplateLiteralLoose(["\n  0% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  50% {\n    width: 2px;\n    height: 2px;\n    opacity: 0.4;\n  }\n  100% {\n    width: 6px;\n    height: 6px;\n    opacity: 1;\n  }\n"])));
+var DotOne = styled.span(_templateObject20$2 || (_templateObject20$2 = _taggedTemplateLiteralLoose([""])));
+var DotTwo = styled.span(_templateObject21$2 || (_templateObject21$2 = _taggedTemplateLiteralLoose([""])));
+var DotThree = styled.span(_templateObject22$2 || (_templateObject22$2 = _taggedTemplateLiteralLoose([""])));
+var TypingAnimation = styled.div(_templateObject23$2 || (_templateObject23$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n\n  & > span {\n    position: relative;\n    width: 6px;\n    height: 6px;\n    margin-right: 3px;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    animation-timing-function: linear;\n\n    &:after {\n      content: '';\n      position: absolute;\n\n      width: 3.5px;\n      height: 3.5px;\n      border-radius: 50%;\n      background-color: ", ";\n      animation-name: ", ";\n      animation-duration: 0.6s;\n      animation-iteration-count: infinite;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.2s;\n    }\n  }\n\n  & ", " {\n    &:after {\n      animation-delay: 0.3s;\n    }\n  }\n"])), colors.borderColor2, sizeAnimation, DotOne, DotTwo, DotThree);
+var Loading = styled.div(_templateObject24$2 || (_templateObject24$2 = _taggedTemplateLiteralLoose(["\n  height: 36px;\n"])));
+var BlockedUserInfo = styled.div(_templateObject25$2 || (_templateObject25$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 20px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n  }\n"])), colors.textColor1);
+var JoinChannelCont = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin: 0 -12px;\n  padding: 14px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  background-color: ", ";\n  cursor: pointer;\n"])), function (props) {
   return props.color || colors.primary;
 }, colors.backgroundColor);
-var ReadOnlyCont = styled.div(_templateObject26$1 || (_templateObject26$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReadOnlyCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  padding: 12px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  letter-spacing: -0.2px;\n  color: ", ";\n\n  & > svg {\n    margin-right: 12px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.iconColor || colors.primary;
 });
-var ReplyMessageCont = styled.div(_templateObject27$1 || (_templateObject27$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
-var ReplyIconWrapper = styled.span(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
+var ReplyMessageCont = styled.div(_templateObject28$1 || (_templateObject28$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
+var ReplyIconWrapper = styled.span(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  margin-right: 12px;\n  width: 40px;\n  height: 40px;\n  background-color: ", ";\n  border-radius: 50%;\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n    color: ", ";\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, colors.white);
-var SelectedMessagesWrapper = styled.div(_templateObject29$1 || (_templateObject29$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
-var CustomButton = styled.span(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
+var SelectedMessagesWrapper = styled.div(_templateObject30$1 || (_templateObject30$1 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 12px 16px;\n"])));
+var CustomButton = styled.span(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  color: ", ";\n  padding: 8px 16px;\n  background-color: ", ";\n  margin-left: ", ";\n  border-radius: 8px;\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  font-family: Inter, sans-serif;\n  font-size: 15px;\n  font-weight: 500;\n  cursor: pointer;\n\n  > svg {\n    width: 20px;\n    height: 20px;\n    margin-right: 8px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.backgroundColor || colors.primaryLight;
 }, function (props) {
   return props.marginLeft || '8px';
 });
-var CloseIconWrapper = styled.span(_templateObject31$1 || (_templateObject31$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
-
-var _path$16;
-
-function _extends$1a() {
-  _extends$1a = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1a.apply(this, arguments);
-}
-
-function SvgBottom(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1a({
-    width: 12,
-    height: 7,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _path$17, _path2$6;
-
-function _extends$1b() {
-  _extends$1b = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1b.apply(this, arguments);
-}
-
-function SvgMarkAsUnRead(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1b({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
-    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
-    fill: "currentColor"
-  })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
-    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
-    fill: "currentColor"
-  })));
-}
-
-var _path$18;
-
-function _extends$1c() {
-  _extends$1c = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1c.apply(this, arguments);
-}
-
-function SvgMarkAsRead(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1c({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
-    fill: "currentColor"
-  })));
-}
-
-var _path$19;
-
-function _extends$1d() {
-  _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1d.apply(this, arguments);
-}
-
-function SvgDeleteChannel(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1d({
-    width: 20,
-    height: 21,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
-    fill: "CurrentColor"
-  })));
-}
+var CloseIconWrapper = styled.span(_templateObject32$1 || (_templateObject32$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
 
 var _path$1a;
 
@@ -33520,21 +34033,22 @@ function _extends$1e() {
   return _extends$1e.apply(this, arguments);
 }
 
-function SvgClear(props) {
+function SvgBottom(props) {
   return /*#__PURE__*/createElement("svg", _extends$1e({
-    width: 20,
-    height: 21,
+    width: 12,
+    height: 7,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1a || (_path$1a = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
-    fill: "#FA4C56"
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$1b;
+var _path$1b, _path2$7;
 
 function _extends$1f() {
   _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
@@ -33553,20 +34067,23 @@ function _extends$1f() {
   return _extends$1f.apply(this, arguments);
 }
 
-function SvgBlockChannel(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$1f({
     width: 20,
-    height: 21,
-    viewBox: "0 0 20.01 21.01",
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1b || (_path$1b = /*#__PURE__*/createElement("path", {
-    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
-    fill: "CurrentColor"
+    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
+    fill: "currentColor"
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
+    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
+    fill: "currentColor"
   })));
 }
 
-var _path$1c, _path2$7;
+var _path$1c;
 
 function _extends$1g() {
   _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
@@ -33585,20 +34102,18 @@ function _extends$1g() {
   return _extends$1g.apply(this, arguments);
 }
 
-function SvgReport(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$1g({
     width: 20,
-    height: 21,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1c || (_path$1c = /*#__PURE__*/createElement("path", {
-    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
-    fill: "CurrentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
-    fill: "CurrentColor"
+    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    fill: "currentColor"
   })));
 }
 
@@ -33621,15 +34136,15 @@ function _extends$1h() {
   return _extends$1h.apply(this, arguments);
 }
 
-function SvgStar(props) {
+function SvgDeleteChannel(props) {
   return /*#__PURE__*/createElement("svg", _extends$1h({
     width: 20,
-    height: 20,
+    height: 21,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1d || (_path$1d = /*#__PURE__*/createElement("path", {
-    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
-    fill: "#B2B6BE"
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -33652,19 +34167,151 @@ function _extends$1i() {
   return _extends$1i.apply(this, arguments);
 }
 
-function SvgPin(props) {
+function SvgClear(props) {
   return /*#__PURE__*/createElement("svg", _extends$1i({
+    width: 20,
+    height: 21,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1e || (_path$1e = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 3.833a6.667 6.667 0 100 13.333 6.667 6.667 0 000-13.333zm-8.333 6.666a8.333 8.333 0 1116.667 0 8.333 8.333 0 01-16.667 0zM6.911 7.41a.833.833 0 011.179 0L10 9.32l1.911-1.91A.833.833 0 0113.09 8.59l-1.911 1.91 1.91 1.911a.833.833 0 01-1.178 1.179l-1.91-1.911-1.911 1.91A.833.833 0 016.91 12.41l1.91-1.91-1.91-1.911a.833.833 0 010-1.179z",
+    fill: "#FA4C56"
+  })));
+}
+
+var _path$1f;
+
+function _extends$1j() {
+  _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1j.apply(this, arguments);
+}
+
+function SvgBlockChannel(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1j({
+    width: 20,
+    height: 21,
+    viewBox: "0 0 20.01 21.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1f || (_path$1f = /*#__PURE__*/createElement("path", {
+    d: "M10 2.167A8.336 8.336 0 001.667 10.5c0 4.6 3.733 8.334 8.333 8.334s8.333-3.734 8.333-8.334S14.6 2.167 10 2.167zm0 15A6.665 6.665 0 013.333 10.5c0-1.541.525-2.958 1.409-4.083l9.341 9.342A6.586 6.586 0 0110 17.167zm5.258-2.583L5.917 5.242A6.585 6.585 0 0110 3.834a6.665 6.665 0 016.667 6.666 6.586 6.586 0 01-1.409 4.084z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$1g, _path2$8;
+
+function _extends$1k() {
+  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1k.apply(this, arguments);
+}
+
+function SvgReport(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1k({
+    width: 20,
+    height: 21,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1g || (_path$1g = /*#__PURE__*/createElement("path", {
+    d: "M9.096 10.402a.882.882 0 011.765 0v3.627a.882.882 0 11-1.765 0v-3.627zM9.979 6.088a.98.98 0 100 1.96.98.98 0 000-1.96z",
+    fill: "CurrentColor"
+  })), _path2$8 || (_path2$8 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10 17.27A6.77 6.77 0 1010 3.73a6.77 6.77 0 000 13.542zm0 1.563a8.333 8.333 0 100-16.667 8.333 8.333 0 000 16.667z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$1h;
+
+function _extends$1l() {
+  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1l.apply(this, arguments);
+}
+
+function SvgStar(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1l({
     width: 20,
     height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1e || (_path$1e = /*#__PURE__*/createElement("path", {
+  }, props), _path$1h || (_path$1h = /*#__PURE__*/createElement("path", {
+    d: "M12.888 7.002l3.823.367c1.33.128 1.739 1.43.711 2.285l-2.993 2.49 1.111 4.06c.365 1.332-.767 2.14-1.901 1.337l-3.637-2.573-3.637 2.573c-1.13.799-2.267-.005-1.902-1.338l1.111-4.058-2.993-2.491c-1.032-.86-.625-2.156.711-2.285l3.823-.367 1.684-3.889c.528-1.217 1.878-1.217 2.405 0l1.684 3.889z",
+    fill: "#B2B6BE"
+  })));
+}
+
+var _path$1i;
+
+function _extends$1m() {
+  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1m.apply(this, arguments);
+}
+
+function SvgPin(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1m({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$1i || (_path$1i = /*#__PURE__*/createElement("path", {
     d: "M12.253 2.663a.583.583 0 01.825 0l4.258 4.258a.583.583 0 01-.412.996h-1.509l-2.5 2.5v5.218a.6.6 0 01-1.024.424l-3.24-3.24-3.956 3.958a1.042 1.042 0 11-1.473-1.473l3.956-3.958L3.94 8.108a.6.6 0 01-.168-.33l-.007-.095a.6.6 0 01.6-.6h5.218l2.5-2.5V3.075c0-.155.061-.303.17-.412z",
     fill: "#B2B6BE"
   })));
 }
 
-var _templateObject$C, _templateObject2$y, _templateObject3$r, _templateObject4$n, _templateObject5$l, _templateObject6$i;
+var _templateObject$D, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$m, _templateObject6$j;
 
 var Actions$1 = function Actions(_ref) {
   var channel = _ref.channel,
@@ -33883,7 +34530,7 @@ var Actions$1 = function Actions(_ref) {
     }
   };
 
-  return /*#__PURE__*/React__default.createElement(Container$j, {
+  return /*#__PURE__*/React__default.createElement(Container$k, {
     isDirect: isDirectChannel,
     theme: theme,
     borderColor: colors.backgroundColor
@@ -34113,16 +34760,16 @@ var Actions$1 = function Actions(_ref) {
     title: popupTitle
   }));
 };
-var Container$j = styled.div(_templateObject$C || (_templateObject$C = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-bottom: 6px solid ", ";\n]"])), function (props) {
+var Container$k = styled.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  padding: 10px 16px;\n  border-bottom: 6px solid ", ";\n]"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ActionHeader = styled.div(_templateObject2$y || (_templateObject2$y = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
-var MenuTriggerIcon = styled.span(_templateObject3$r || (_templateObject3$r = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
+var ActionHeader = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  margin: 25px 0 22px;\n  cursor: pointer;\n"])));
+var MenuTriggerIcon = styled.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  transition: all 0.2s;\n  ", "\n"])), function (props) {
   return !props.isOpen && ' transform: rotate(-90deg);';
 });
-var ActionsMenu = styled.ul(_templateObject4$n || (_templateObject4$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DefaultMutedIcon = styled(SvgUnmuteNotifications)(_templateObject5$l || (_templateObject5$l = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionsMenu = styled.ul(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DefaultMutedIcon = styled(SvgUnmuteNotifications)(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose([""])));
+var ActionItem$1 = styled.li(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.order;
@@ -34134,10 +34781,10 @@ var ActionItem$1 = styled.li(_templateObject6$i || (_templateObject6$i = _tagged
   return props.hoverColor || colors.blue;
 });
 
-var _rect$2, _rect2, _path$1f;
+var _rect$2, _rect2, _path$1j;
 
-function _extends$1j() {
-  _extends$1j = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1n() {
+  _extends$1n = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -34150,11 +34797,11 @@ function _extends$1j() {
 
     return target;
   };
-  return _extends$1j.apply(this, arguments);
+  return _extends$1n.apply(this, arguments);
 }
 
 function SvgAddMember(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1j({
+  return /*#__PURE__*/createElement("svg", _extends$1n({
     width: 40,
     height: 40,
     viewBox: "0 0 40.01 40.01",
@@ -34174,16 +34821,16 @@ function SvgAddMember(props) {
     stroke: "#000",
     strokeOpacity: 0.08,
     strokeWidth: 0.5
-  })), _path$1f || (_path$1f = /*#__PURE__*/createElement("path", {
+  })), _path$1j || (_path$1j = /*#__PURE__*/createElement("path", {
     d: "M20 12a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0l-.001-6H13a1 1 0 110-2h5.999L19 13a1 1 0 011-1z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$1g;
+var _path$1k;
 
-function _extends$1k() {
-  _extends$1k = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1o() {
+  _extends$1o = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -34196,22 +34843,22 @@ function _extends$1k() {
 
     return target;
   };
-  return _extends$1k.apply(this, arguments);
+  return _extends$1o.apply(this, arguments);
 }
 
 function SvgMoreVert(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1k({
+  return /*#__PURE__*/createElement("svg", _extends$1o({
     width: 4,
     height: 14,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1g || (_path$1g = /*#__PURE__*/createElement("path", {
+  }, props), _path$1k || (_path$1k = /*#__PURE__*/createElement("path", {
     d: "M.532 11.012c.355-.355.764-.533 1.228-.533.464 0 .874.178 1.228.533.355.354.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 13.113 0 12.704 0 12.24c0-.464.177-.873.532-1.228zm0-5.24c.355-.355.764-.532 1.228-.532.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.873-.532 1.228-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 7.873 0 7.464 0 7c0-.464.177-.873.532-1.228zm2.456-2.784c-.354.355-.764.532-1.228.532-.464 0-.873-.177-1.228-.532C.177 2.634 0 2.224 0 1.76 0 1.296.177.887.532.532.887.177 1.296 0 1.76 0c.464 0 .874.177 1.228.532.355.355.532.764.532 1.228 0 .464-.177.874-.532 1.228z",
     fill: "#9B9DA8"
   })));
 }
 
-var _templateObject$D, _templateObject2$z, _templateObject3$s;
+var _templateObject$E, _templateObject2$A, _templateObject3$t;
 
 var ChangeMemberRole = function ChangeMemberRole(_ref) {
   var theme = _ref.theme,
@@ -34307,14 +34954,14 @@ var ChangeMemberRole = function ChangeMemberRole(_ref) {
   }, "Save"))));
 };
 
-var RolesSelect = styled.div(_templateObject$D || (_templateObject$D = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
-var RoleLabel = styled.div(_templateObject2$z || (_templateObject2$z = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: ", ";\n"])), function (_ref2) {
+var RolesSelect = styled.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose(["\n  margin-bottom: 32px;\n"])));
+var RoleLabel = styled.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  margin: 20px 0 8px;\n  color: ", ";\n"])), function (_ref2) {
   var color = _ref2.color;
   return color || colors.textColor1;
 });
-var RoleSpan = styled.span(_templateObject3$s || (_templateObject3$s = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  text-transform: capitalize;\n"])));
+var RoleSpan = styled.span(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  text-transform: capitalize;\n"])));
 
-var _templateObject$E, _templateObject2$A, _templateObject3$t, _templateObject4$o, _templateObject5$m, _templateObject6$j, _templateObject7$g, _templateObject8$f, _templateObject9$d;
+var _templateObject$F, _templateObject2$B, _templateObject3$u, _templateObject4$p, _templateObject5$n, _templateObject6$k, _templateObject7$h, _templateObject8$f, _templateObject9$d;
 
 var Members = function Members(_ref) {
   var channel = _ref.channel,
@@ -34499,7 +35146,7 @@ var Members = function Members(_ref) {
 
     dispatch(getMembersAC(channel.id));
   }, [channel]);
-  return /*#__PURE__*/React__default.createElement(Container$k, {
+  return /*#__PURE__*/React__default.createElement(Container$l, {
     theme: theme
   }, /*#__PURE__*/React__default.createElement(ActionsMenu$1, null, /*#__PURE__*/React__default.createElement(MembersList, {
     onScroll: handleMembersListScroll
@@ -34623,13 +35270,13 @@ var Members = function Members(_ref) {
     toggleCreatePopup: handleAddMemberPopup
   }));
 };
-var Container$k = styled.div(_templateObject$E || (_templateObject$E = _taggedTemplateLiteralLoose([""])));
-var ActionsMenu$1 = styled.div(_templateObject2$A || (_templateObject2$A = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
-var MemberNamePresence = styled.div(_templateObject3$t || (_templateObject3$t = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 84px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
-var MemberNameWrapper = styled.div(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
-var MemberName$3 = styled.h4(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
-var EditMemberIcon = styled.span(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 15px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
-var MembersList = styled.ul(_templateObject7$g || (_templateObject7$g = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$l = styled.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose([""])));
+var ActionsMenu$1 = styled.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  position: relative;\n  transition: all 0.2s;\n"])));
+var MemberNamePresence = styled.div(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  max-width: calc(100% - 84px);\n\n  & > ", " {\n    display: block;\n  }\n"])), SubTitle);
+var MemberNameWrapper = styled.div(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n"])));
+var MemberName$3 = styled.h4(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])));
+var EditMemberIcon = styled.span(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  margin-left: auto;\n  cursor: pointer;\n  padding: 15px;\n  opacity: 0;\n  visibility: hidden;\n  transition: all 0.2s;\n"])));
+var MembersList = styled.ul(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var MemberItem$1 = styled.li(_templateObject8$f || (_templateObject8$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  font-weight: 500;\n  padding: 6px 16px;\n  transition: all 0.2s;\n  color: ", ";\n  cursor: pointer;\n\n  &:first-child {\n    cursor: pointer;\n\n    > svg {\n      color: ", ";\n      margin-right: 12px;\n    }\n  }\n\n  &:hover {\n    background-color: ", ";\n  }\n\n  &:hover ", " {\n    opacity: 1;\n    visibility: visible;\n  }\n\n  & .dropdown-wrapper {\n    margin-left: auto;\n  }\n\n  & ", " {\n    width: 12px;\n    height: 12px;\n    right: -1px;\n    bottom: -1px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
@@ -34643,7 +35290,7 @@ var RoleBadge = styled.span(_templateObject9$d || (_templateObject9$d = _taggedT
   return props.color || colors.primary;
 });
 
-var _templateObject$F, _templateObject2$B;
+var _templateObject$G, _templateObject2$C;
 
 var Media = function Media(_ref) {
   var channelId = _ref.channelId;
@@ -34663,7 +35310,7 @@ var Media = function Media(_ref) {
     dispatch(setAttachmentsAC([]));
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
   }, [channelId]);
-  return /*#__PURE__*/React__default.createElement(Container$l, null, attachments.map(function (file) {
+  return /*#__PURE__*/React__default.createElement(Container$m, null, attachments.map(function (file) {
     return /*#__PURE__*/React__default.createElement(MediaItem, {
       key: file.id
     }, file.type === 'image' ? /*#__PURE__*/React__default.createElement(Attachment$1, {
@@ -34692,13 +35339,13 @@ var Media = function Media(_ref) {
     currentMediaFile: mediaFile
   }));
 };
-var Container$l = styled.div(_templateObject$F || (_templateObject$F = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
-var MediaItem = styled.div(_templateObject2$B || (_templateObject2$B = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
+var Container$m = styled.div(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  padding: 6px 4px;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n  align-items: flex-start;\n  display: flex;\n  flex-wrap: wrap;\n"])));
+var MediaItem = styled.div(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  width: calc(33.3333% - 4px);\n  height: 110px;\n  box-sizing: border-box;\n  //border: 1px solid #ccc;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  overflow: hidden;\n  margin: 2px;\n"])));
 
-var _path$1h, _path2$8, _path3$3;
+var _path$1l, _path2$9, _path3$3;
 
-function _extends$1l() {
-  _extends$1l = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1p() {
+  _extends$1p = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -34711,23 +35358,23 @@ function _extends$1l() {
 
     return target;
   };
-  return _extends$1l.apply(this, arguments);
+  return _extends$1p.apply(this, arguments);
 }
 
 function SvgFileIcon$1(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1l({
+  return /*#__PURE__*/createElement("svg", _extends$1p({
     width: 28,
     height: 28,
     viewBox: "0 0 30 30",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1h || (_path$1h = /*#__PURE__*/createElement("path", {
+  }, props), _path$1l || (_path$1l = /*#__PURE__*/createElement("path", {
     d: "M16.25 2.5H7.5A2.5 2.5 0 005 5v20a2.5 2.5 0 002.5 2.5h15A2.5 2.5 0 0025 25V11.25L16.25 2.5z",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path2$8 || (_path2$8 = /*#__PURE__*/createElement("path", {
+  })), _path2$9 || (_path2$9 = /*#__PURE__*/createElement("path", {
     d: "M16.25 2.5v8.75H25",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -34741,10 +35388,10 @@ function SvgFileIcon$1(props) {
   })));
 }
 
-var _path$1i, _path2$9;
+var _path$1m, _path2$a;
 
-function _extends$1m() {
-  _extends$1m = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1q() {
+  _extends$1q = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -34757,22 +35404,22 @@ function _extends$1m() {
 
     return target;
   };
-  return _extends$1m.apply(this, arguments);
+  return _extends$1q.apply(this, arguments);
 }
 
 function SvgDownloadFile(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1m({
+  return /*#__PURE__*/createElement("svg", _extends$1q({
     width: 18,
     height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1i || (_path$1i = /*#__PURE__*/createElement("path", {
+  }, props), _path$1m || (_path$1m = /*#__PURE__*/createElement("path", {
     d: "M16.5 11.5v3.333a1.666 1.666 0 01-1.667 1.667H3.167A1.667 1.667 0 011.5 14.833V11.5",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
     strokeLinecap: "round",
     strokeLinejoin: "round"
-  })), _path2$9 || (_path2$9 = /*#__PURE__*/createElement("path", {
+  })), _path2$a || (_path2$a = /*#__PURE__*/createElement("path", {
     d: "M4.833 7.334L9 11.501l4.167-4.167M9 11.5v-10",
     stroke: "#2F81FF",
     strokeWidth: 1.4,
@@ -34781,7 +35428,7 @@ function SvgDownloadFile(props) {
   })));
 }
 
-var _templateObject$G, _templateObject2$C, _templateObject3$u, _templateObject4$p, _templateObject5$n, _templateObject6$k, _templateObject7$h, _templateObject8$g;
+var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$q, _templateObject5$o, _templateObject6$l, _templateObject7$i, _templateObject8$g;
 
 var Files = function Files(_ref) {
   var channelId = _ref.channelId,
@@ -34835,7 +35482,7 @@ var Files = function Files(_ref) {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.file));
   }, [channelId]);
   console.log('attachments. .. . ', attachments);
-  return /*#__PURE__*/React__default.createElement(Container$m, {
+  return /*#__PURE__*/React__default.createElement(Container$n, {
     theme: theme
   }, attachments.map(function (file) {
     var metas = file.metadata && isJSON(file.metadata) ? JSON.parse(file.metadata) : file.metadata;
@@ -34891,15 +35538,15 @@ var Files = function Files(_ref) {
     })) : filePreviewDownloadIcon || /*#__PURE__*/React__default.createElement(SvgDownloadFile, null)));
   }));
 };
-var Container$m = styled.ul(_templateObject$G || (_templateObject$G = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
-var DownloadWrapper = styled.a(_templateObject2$C || (_templateObject2$C = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: ", ";\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])), function (props) {
+var Container$n = styled.ul(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var DownloadWrapper = styled.a(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  text-decoration: none;\n  visibility: ", ";\n  padding: 5px 6px;\n  position: absolute;\n  top: 25%;\n  right: 16px;\n  cursor: pointer;\n"])), function (props) {
   return props.visible ? 'visible' : 'hidden';
 });
-var ProgressWrapper$2 = styled.span(_templateObject3$u || (_templateObject3$u = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
-var FileIconCont = styled.span(_templateObject4$p || (_templateObject4$p = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileHoverIconCont = styled.span(_templateObject5$n || (_templateObject5$n = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
-var FileThumb = styled.img(_templateObject6$k || (_templateObject6$k = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
-var FileItem = styled.div(_templateObject7$h || (_templateObject7$h = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
+var ProgressWrapper$2 = styled.span(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 20px;\n  height: 20px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var FileIconCont = styled.span(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileHoverIconCont = styled.span(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: none;\n  & > svg {\n    width: 40px;\n    height: 40px;\n  }\n"])));
+var FileThumb = styled.img(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  width: 40px;\n  height: 40px;\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 8px;\n  object-fit: cover;\n"])));
+var FileItem = styled.div(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  padding: 11px 16px;\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  transition: all 0.2s;\n  div {\n    margin-left: 7px;\n    width: calc(100% - 48px);\n  }\n  &:hover {\n    background-color: ", ";\n    ", " {\n      visibility: visible;\n    }\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n  /*&.isHover {\n\n  }*/\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, DownloadWrapper, FileIconCont, FileHoverIconCont);
 var FileSizeAndDate = styled.span(_templateObject8$g || (_templateObject8$g = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  color: ", ";\n  margin-top: 2px;\n"])), function (props) {
@@ -34908,8 +35555,8 @@ var FileSizeAndDate = styled.span(_templateObject8$g || (_templateObject8$g = _t
 
 var _rect$3, _rect2$1, _g$3, _defs$2;
 
-function _extends$1n() {
-  _extends$1n = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1r() {
+  _extends$1r = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -34922,11 +35569,11 @@ function _extends$1n() {
 
     return target;
   };
-  return _extends$1n.apply(this, arguments);
+  return _extends$1r.apply(this, arguments);
 }
 
 function SvgLinkIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1n({
+  return /*#__PURE__*/createElement("svg", _extends$1r({
     width: 42,
     height: 42,
     fill: "none",
@@ -34959,7 +35606,7 @@ function SvgLinkIcon(props) {
   })))));
 }
 
-var _templateObject$H, _templateObject2$D, _templateObject3$v, _templateObject4$q, _templateObject5$o;
+var _templateObject$I, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$p;
 
 var LinkItem = function LinkItem(_ref) {
   var link = _ref.link,
@@ -34984,21 +35631,21 @@ var LinkItem = function LinkItem(_ref) {
     color: linkPreviewColor
   }, link))));
 };
-var LinkIconCont = styled.span(_templateObject$H || (_templateObject$H = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  color: ", ";\n"])), function (props) {
+var LinkIconCont = styled.span(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var LinkHoverIconCont = styled.span(_templateObject2$D || (_templateObject2$D = _taggedTemplateLiteralLoose(["\n  display: none;\n  color: ", ";\n"])), function (props) {
+var LinkHoverIconCont = styled.span(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  display: none;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var LinkInfoCont = styled.div(_templateObject3$v || (_templateObject3$v = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
-var FileItem$1 = styled.li(_templateObject4$q || (_templateObject4$q = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var LinkInfoCont = styled.div(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  width: calc(100% - 40px);\n"])));
+var FileItem$1 = styled.li(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  a {\n    display: flex;\n    align-items: center;\n    text-decoration: none;\n  }\n  &:hover {\n    background-color: ", ";\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, LinkIconCont, LinkHoverIconCont);
-var LinkUrl = styled.span(_templateObject5$o || (_templateObject5$o = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
+var LinkUrl = styled.span(_templateObject5$p || (_templateObject5$p = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 52px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 13px;\n  line-height: 16px;\n  text-decoration: underline;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
 
-var _templateObject$I;
+var _templateObject$J;
 
 var Links = function Links(_ref) {
   var channelId = _ref.channelId,
@@ -35013,7 +35660,7 @@ var Links = function Links(_ref) {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.link));
   }, [channelId]);
   console.log('attachments. .. . . ', attachments);
-  return /*#__PURE__*/React__default.createElement(Container$n, null, attachments.map(function (file) {
+  return /*#__PURE__*/React__default.createElement(Container$o, null, attachments.map(function (file) {
     return /*#__PURE__*/React__default.createElement(LinkItem, {
       key: file.id,
       link: file.url,
@@ -35025,12 +35672,12 @@ var Links = function Links(_ref) {
     });
   }));
 };
-var Container$n = styled.ul(_templateObject$I || (_templateObject$I = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$o = styled.ul(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _rect$4, _circle$6, _path$1j;
+var _rect$4, _circle$7, _path$1n;
 
-function _extends$1o() {
-  _extends$1o = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1s() {
+  _extends$1s = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -35043,11 +35690,11 @@ function _extends$1o() {
 
     return target;
   };
-  return _extends$1o.apply(this, arguments);
+  return _extends$1s.apply(this, arguments);
 }
 
 function SvgVoicePreview(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1o({
+  return /*#__PURE__*/createElement("svg", _extends$1s({
     width: 40,
     height: 40,
     fill: "none",
@@ -35057,21 +35704,21 @@ function SvgVoicePreview(props) {
     height: 40,
     rx: 8,
     fill: "#F3F5F7"
-  })), _circle$6 || (_circle$6 = /*#__PURE__*/createElement("circle", {
+  })), _circle$7 || (_circle$7 = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1j || (_path$1j = /*#__PURE__*/createElement("path", {
+  })), _path$1n || (_path$1n = /*#__PURE__*/createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$5, _circle$7, _path$1k;
+var _rect$5, _circle$8, _path$1o;
 
-function _extends$1p() {
-  _extends$1p = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1t() {
+  _extends$1t = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -35084,11 +35731,11 @@ function _extends$1p() {
 
     return target;
   };
-  return _extends$1p.apply(this, arguments);
+  return _extends$1t.apply(this, arguments);
 }
 
 function SvgVoicePreviewPause(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1p({
+  return /*#__PURE__*/createElement("svg", _extends$1t({
     width: 40,
     height: 40,
     fill: "none",
@@ -35098,21 +35745,21 @@ function SvgVoicePreviewPause(props) {
     height: 40,
     rx: 8,
     fill: "#F3F5F7"
-  })), _circle$7 || (_circle$7 = /*#__PURE__*/createElement("circle", {
+  })), _circle$8 || (_circle$8 = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1k || (_path$1k = /*#__PURE__*/createElement("path", {
+  })), _path$1o || (_path$1o = /*#__PURE__*/createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
 
-var _rect$6, _circle$8, _path$1l;
+var _rect$6, _circle$9, _path$1p;
 
-function _extends$1q() {
-  _extends$1q = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1u() {
+  _extends$1u = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -35125,11 +35772,11 @@ function _extends$1q() {
 
     return target;
   };
-  return _extends$1q.apply(this, arguments);
+  return _extends$1u.apply(this, arguments);
 }
 
 function SvgVoicePreviewHoverIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1q({
+  return /*#__PURE__*/createElement("svg", _extends$1u({
     width: 40,
     height: 40,
     fill: "none",
@@ -35139,21 +35786,21 @@ function SvgVoicePreviewHoverIcon(props) {
     height: 40,
     rx: 8,
     fill: "#fff"
-  })), _circle$8 || (_circle$8 = /*#__PURE__*/createElement("circle", {
+  })), _circle$9 || (_circle$9 = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1l || (_path$1l = /*#__PURE__*/createElement("path", {
+  })), _path$1p || (_path$1p = /*#__PURE__*/createElement("path", {
     d: "M25.024 19.13c.635.385.635 1.354 0 1.738l-6.612 3.997c-.63.38-1.412-.1-1.412-.868v-7.995c0-.768.783-1.25 1.412-.869l6.612 3.998z",
     fill: "#fff"
   })));
 }
 
-var _rect$7, _circle$9, _path$1m;
+var _rect$7, _circle$a, _path$1q;
 
-function _extends$1r() {
-  _extends$1r = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1v() {
+  _extends$1v = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -35166,11 +35813,11 @@ function _extends$1r() {
 
     return target;
   };
-  return _extends$1r.apply(this, arguments);
+  return _extends$1v.apply(this, arguments);
 }
 
 function SvgVoicePreviewPauseHover(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1r({
+  return /*#__PURE__*/createElement("svg", _extends$1v({
     width: 40,
     height: 40,
     fill: "none",
@@ -35180,18 +35827,18 @@ function SvgVoicePreviewPauseHover(props) {
     height: 40,
     rx: 8,
     fill: "#fff"
-  })), _circle$9 || (_circle$9 = /*#__PURE__*/createElement("circle", {
+  })), _circle$a || (_circle$a = /*#__PURE__*/createElement("circle", {
     cx: 20,
     cy: 20,
     r: 14,
     fill: "#0DBD8B"
-  })), _path$1m || (_path$1m = /*#__PURE__*/createElement("path", {
+  })), _path$1q || (_path$1q = /*#__PURE__*/createElement("path", {
     d: "M17.974 15c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948zm5 0c.357 0 .486.037.617.107.13.07.232.172.302.302.07.13.107.26.107.617v7.948c0 .357-.037.486-.107.617a.726.726 0 01-.302.302c-.13.07-.26.107-.617.107h-.948c-.357 0-.486-.037-.617-.107a.726.726 0 01-.302-.302c-.07-.13-.107-.26-.107-.617v-7.948c0-.357.037-.486.107-.617a.726.726 0 01.302-.302c.13-.07.26-.107.617-.107h.948z",
     fill: "#fff"
   })));
 }
 
-var _templateObject$J, _templateObject2$E, _templateObject3$w, _templateObject4$r, _templateObject5$p, _templateObject6$l, _templateObject7$i, _templateObject8$h;
+var _templateObject$K, _templateObject2$F, _templateObject3$x, _templateObject4$s, _templateObject5$q, _templateObject6$m, _templateObject7$j, _templateObject8$h;
 
 var VoiceItem = function VoiceItem(_ref) {
   var file = _ref.file,
@@ -35320,24 +35967,24 @@ var VoiceItem = function VoiceItem(_ref) {
     type: 'audio/mpeg'
   })));
 };
-var FileIconCont$1 = styled.span(_templateObject$J || (_templateObject$J = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
-var FileHoverIconCont$1 = styled.span(_templateObject2$E || (_templateObject2$E = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
-var FileItem$2 = styled.li(_templateObject3$w || (_templateObject3$w = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
+var FileIconCont$1 = styled.span(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: inline-flex;\n"])));
+var FileHoverIconCont$1 = styled.span(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  display: none;\n"])));
+var FileItem$2 = styled.li(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  padding: 9px 16px;\n  display: flex;\n  align-items: center;\n  text-decoration: none;\n\n  &:hover {\n    background-color: ", ";\n  }\n  div {\n    margin-left: 12px;\n    width: 100%;\n  }\n  img {\n    width: 42px;\n    height: 42px;\n    border: 0.5px solid rgba(0, 0, 0, 0.1);\n    box-sizing: border-box;\n    border-radius: 6px;\n  }\n\n  &.isHover {\n    & ", " {\n      display: none;\n    }\n    & ", " {\n      display: inline-flex;\n    }\n  }\n"])), function (props) {
   return props.hoverBackgroundColor || colors.gray0;
 }, FileIconCont$1, FileHoverIconCont$1);
-var AudioInfo = styled.div(_templateObject4$r || (_templateObject4$r = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
-var AudioTitle = styled.span(_templateObject5$p || (_templateObject5$p = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
+var AudioInfo = styled.div(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  position: relative;\n"])));
+var AudioTitle = styled.span(_templateObject5$q || (_templateObject5$q = _taggedTemplateLiteralLoose(["\n  display: block;\n  font-style: normal;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 20px;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
 });
-var AudioDate = styled.span(_templateObject6$l || (_templateObject6$l = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
+var AudioDate = styled.span(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  display: block;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  max-width: calc(100% - 72px);\n  font-style: normal;\n  font-weight: normal;\n  font-size: 12px;\n  line-height: 16px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor2;
 });
-var AudioSendTime = styled.span(_templateObject7$i || (_templateObject7$i = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
+var AudioSendTime = styled.span(_templateObject7$j || (_templateObject7$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: 0;\n  top: 11px;\n  color: ", ";\n  font-size: 12px;\n  line-height: 16px;\n"])), function (props) {
   return props.color || colors.textColor2;
 });
 var Audio = styled.audio(_templateObject8$h || (_templateObject8$h = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
 
-var _templateObject$K;
+var _templateObject$L;
 
 var Voices = function Voices(_ref) {
   var channelId = _ref.channelId,
@@ -35353,7 +36000,7 @@ var Voices = function Voices(_ref) {
   useEffect(function () {
     dispatch(getAttachmentsAC(channelId, channelDetailsTabs.voice));
   }, [channelId]);
-  return /*#__PURE__*/React__default.createElement(Container$o, null, attachments.map(function (file) {
+  return /*#__PURE__*/React__default.createElement(Container$p, null, attachments.map(function (file) {
     return /*#__PURE__*/React__default.createElement(VoiceItem, {
       key: file.id,
       file: _extends({}, file, {
@@ -35369,9 +36016,9 @@ var Voices = function Voices(_ref) {
     });
   }));
 };
-var Container$o = styled.ul(_templateObject$K || (_templateObject$K = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
+var Container$p = styled.ul(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  padding: 11px 0 0;\n  overflow-x: hidden;\n  overflow-y: auto;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 
-var _templateObject$L, _templateObject2$F;
+var _templateObject$M, _templateObject2$G;
 
 var DetailsTab = function DetailsTab(_ref) {
   var channel = _ref.channel,
@@ -35421,7 +36068,7 @@ var DetailsTab = function DetailsTab(_ref) {
       setActiveTab(channelDetailsTabs.member);
     }
   }, [showMembers]);
-  return /*#__PURE__*/React__default.createElement(Container$p, {
+  return /*#__PURE__*/React__default.createElement(Container$q, {
     theme: theme
   }, /*#__PURE__*/React__default.createElement(DetailsTabHeader, {
     activeTabColor: colors.primary,
@@ -35487,8 +36134,8 @@ var DetailsTab = function DetailsTab(_ref) {
     voicePreviewHoverBackgroundColor: voicePreviewHoverBackgroundColor
   }));
 };
-var Container$p = styled.div(_templateObject$L || (_templateObject$L = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
-var DetailsTabHeader = styled.div(_templateObject2$F || (_templateObject2$F = _taggedTemplateLiteralLoose(["\n  overflow: auto;\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  /* width */\n  &::-webkit-scrollbar {\n    width: 0;\n    height: 0;\n  }\n\n  /* Track */\n  &::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  /* Handle */\n  &::-webkit-scrollbar-thumb {\n    background: transparent;\n  }\n\n  /* Handle on hover */\n  &::-webkit-scrollbar-thumb:hover {\n    background: transparent;\n  }\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    min-width: 70px;\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
+var Container$q = styled.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  //border-top: 1px solid ", ";\n"])), colors.gray1);
+var DetailsTabHeader = styled.div(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  overflow: auto;\n  padding: 0 20px;\n  border-bottom: 1px solid ", ";\n  background-color: ", ";\n  display: flex;\n  justify-content: space-between;\n  position: sticky;\n  top: 0;\n  z-index: 12;\n  /* width */\n  &::-webkit-scrollbar {\n    width: 0;\n    height: 0;\n  }\n\n  /* Track */\n  &::-webkit-scrollbar-track {\n    background: transparent;\n  }\n\n  /* Handle */\n  &::-webkit-scrollbar-thumb {\n    background: transparent;\n  }\n\n  /* Handle on hover */\n  &::-webkit-scrollbar-thumb:hover {\n    background: transparent;\n  }\n  button {\n    position: relative;\n    border: none;\n    background: transparent;\n    outline: none;\n    padding: 13px 0 11px;\n    text-transform: capitalize;\n    font-style: normal;\n    font-weight: 500;\n    font-size: 15px;\n    line-height: 20px;\n    color: ", ";\n    min-width: 70px;\n    cursor: pointer;\n  }\n  & .active {\n    color: ", ";\n\n    &:after {\n      content: '';\n      width: 100%;\n      border-radius: 2px;\n      height: 2px;\n      background-color: ", ";\n      position: absolute;\n      top: calc(100% - 1px);\n      left: 0;\n    }\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
   return props.backgroundColor || colors.white;
@@ -35498,17 +36145,17 @@ var DetailsTabHeader = styled.div(_templateObject2$F || (_templateObject2$F = _t
   return props.activeTabColor || colors.primary;
 });
 
-var _templateObject$M, _templateObject2$G, _templateObject3$x, _templateObject4$s;
-var Container$q = styled.div(_templateObject$M || (_templateObject$M = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: ", ";\n  z-index: 25;\n"])), function (props) {
+var _templateObject$N, _templateObject2$H, _templateObject3$y, _templateObject4$t;
+var Container$r = styled.div(_templateObject$N || (_templateObject$N = _taggedTemplateLiteralLoose(["\n  ", ";\n  height: ", ";\n  position: absolute;\n  padding: 24px 16px;\n  background-color: ", ";\n  z-index: 25;\n"])), function (props) {
   return props.active ? 'display: block' : 'display: none';
 }, function (props) {
   return "calc(100vh - " + (props.heightOffset ? props.heightOffset + 48 : 48) + "px)";
 }, function (props) {
   return props.backgroundColor || colors.white;
 });
-var AvatarCont = styled.div(_templateObject2$G || (_templateObject2$G = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
-var DropDownWrapper = styled.div(_templateObject3$x || (_templateObject3$x = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
-var EditChannelFooter = styled(ButtonBlock)(_templateObject4$s || (_templateObject4$s = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
+var AvatarCont = styled.div(_templateObject2$H || (_templateObject2$H = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  position: relative;\n  margin-bottom: 4px;\n\n  &::after {\n    content: '';\n    position: absolute;\n    width: 120px;\n    height: 120px;\n    border-radius: 50%;\n    background-color: rgba(0, 0, 0, 0.4);\n  }\n  .dropdown-body {\n    top: inherit;\n    right: inherit;\n    bottom: -90px;\n  }\n"])));
+var DropDownWrapper = styled.div(_templateObject3$y || (_templateObject3$y = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  z-index: 4;\n  width: 40px;\n  height: 40px;\n"])));
+var EditChannelFooter = styled(ButtonBlock)(_templateObject4$t || (_templateObject4$t = _taggedTemplateLiteralLoose(["\n  margin-top: 24px;\n\n  & > button {\n    margin-left: 12px;\n  }\n"])));
 
 var EditChannel = function EditChannel(_ref) {
   var channel = _ref.channel,
@@ -35640,7 +36287,7 @@ var EditChannel = function EditChannel(_ref) {
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Container$q, {
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(Container$r, {
     ref: editContainer,
     heightOffset: offsetTop,
     active: isEditMode,
@@ -35721,7 +36368,7 @@ var EditChannel = function EditChannel(_ref) {
   }));
 };
 
-var _templateObject$N, _templateObject2$H, _templateObject3$y, _templateObject4$t, _templateObject5$q, _templateObject6$m, _templateObject7$j, _templateObject8$i, _templateObject9$e, _templateObject10$c, _templateObject11$9;
+var _templateObject$O, _templateObject2$I, _templateObject3$z, _templateObject4$u, _templateObject5$r, _templateObject6$n, _templateObject7$k, _templateObject8$i, _templateObject9$e, _templateObject10$c, _templateObject11$9;
 
 var Details = function Details(_ref) {
   var size = _ref.size,
@@ -35876,7 +36523,7 @@ var Details = function Details(_ref) {
       setChannelDetailsHeight(detailsContainer.offsetHeight);
     }
   }, []);
-  return /*#__PURE__*/React__default.createElement(Container$r, {
+  return /*#__PURE__*/React__default.createElement(Container$s, {
     mounted: mounted,
     size: size,
     theme: theme,
@@ -36019,27 +36666,27 @@ var Details = function Details(_ref) {
     showMakeMemberAdmin: showMakeMemberAdmin
   })));
 };
-var Container$r = styled.div(_templateObject$N || (_templateObject$N = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), function (props) {
+var Container$s = styled.div(_templateObject$O || (_templateObject$O = _taggedTemplateLiteralLoose(["\n  flex: 0 0 auto;\n  width: 0;\n  border-left: 1px solid ", ";\n  //transition: all 0.1s;\n  ", "\n}\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 }, function (props) {
   return props.mounted && " width: " + (props.size === 'small' ? '300px' : props.size === 'medium' ? '350px' : '400px') + ";";
 });
-var ChannelDetailsHeader = styled.div(_templateObject2$H || (_templateObject2$H = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
+var ChannelDetailsHeader = styled.div(_templateObject2$I || (_templateObject2$I = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  padding: 16px;\n  position: relative;\n  height: 64px;\n  box-sizing: border-box;\n  border-bottom: 1px solid ", ";\n\n  & svg {\n    cursor: pointer;\n  }\n"])), function (props) {
   return props.borderColor || colors.backgroundColor;
 });
-var ChatDetails = styled.div(_templateObject3$y || (_templateObject3$y = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: ", ";\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
+var ChatDetails = styled.div(_templateObject3$z || (_templateObject3$z = _taggedTemplateLiteralLoose(["\n  //position: relative;\n  width: ", ";\n  //height: ", ";\n  height: ", ";\n  overflow-y: auto;\n"])), function (props) {
   return props.size === 'small' ? '300px' : props.size === 'medium' ? '350px' : '400px';
 }, function (props) {
   return props.height ? "calc(100vh - " + props.heightOffset + "px)" : '100vh';
 }, function (props) {
   return props.height && props.height - (props.heightOffset ? props.heightOffset + 2 : 0) + "px";
 });
-var AboutChannel = styled.div(_templateObject4$t || (_templateObject4$t = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
-var AboutChannelTitle = styled.h4(_templateObject5$q || (_templateObject5$q = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
-var AboutChannelText = styled.h3(_templateObject6$m || (_templateObject6$m = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
+var AboutChannel = styled.div(_templateObject4$u || (_templateObject4$u = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
+var AboutChannelTitle = styled.h4(_templateObject5$r || (_templateObject5$r = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
+var AboutChannelText = styled.h3(_templateObject6$n || (_templateObject6$n = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
-var ChannelInfo$4 = styled.div(_templateObject7$j || (_templateObject7$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
+var ChannelInfo$4 = styled.div(_templateObject7$k || (_templateObject7$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
   return (!props.direction || props.direction !== 'column') && '16px';
 }, function (props) {
   return props.direction && props.direction === 'column' && '16px';
@@ -36059,7 +36706,7 @@ var ChannelName$1 = styled(SectionHeader)(_templateObject10$c || (_templateObjec
 });
 var EditButton = styled.span(_templateObject11$9 || (_templateObject11$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  right: -28px;\n  top: 8px;\n  margin-left: 8px;\n  cursor: pointer;\n  color: #b2b6be;\n"])));
 
-var _templateObject$O;
+var _templateObject$P;
 
 var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var _ref$size = _ref.size,
@@ -36225,12 +36872,12 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }));
 };
 
-var DetailsWrapper = styled.div(_templateObject$O || (_templateObject$O = _taggedTemplateLiteralLoose([""])));
+var DetailsWrapper = styled.div(_templateObject$P || (_templateObject$P = _taggedTemplateLiteralLoose([""])));
 
-var _path$1n;
+var _path$1r;
 
-function _extends$1s() {
-  _extends$1s = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$1w() {
+  _extends$1w = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -36243,22 +36890,22 @@ function _extends$1s() {
 
     return target;
   };
-  return _extends$1s.apply(this, arguments);
+  return _extends$1w.apply(this, arguments);
 }
 
 function SvgChevronDown(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1s({
+  return /*#__PURE__*/createElement("svg", _extends$1w({
     width: 32,
     height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1n || (_path$1n = /*#__PURE__*/createElement("path", {
+  }, props), _path$1r || (_path$1r = /*#__PURE__*/createElement("path", {
     d: "M9.298 12.937a1.056 1.056 0 10-1.374 1.603l7.39 6.333c.395.339.978.339 1.373 0l7.389-6.333a1.056 1.056 0 10-1.374-1.603L16 18.68l-6.702-5.744z",
     fill: "CurrentColor"
   })));
 }
 
-var _templateObject$P, _templateObject2$I;
+var _templateObject$Q, _templateObject2$J;
 
 var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
   var buttonIcon = _ref.buttonIcon,
@@ -36307,14 +36954,14 @@ var MessagesScrollToBottomButton = function MessagesScrollToBottomButton(_ref) {
     isMuted: channel.muted
   }, channel.newMessageCount ? channel.newMessageCount > 99 ? '99+' : channel.newMessageCount : ''), buttonIcon || /*#__PURE__*/React__default.createElement(SvgChevronDown, null)));
 };
-var BottomButton = styled.div(_templateObject$P || (_templateObject$P = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: ", ";\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
+var BottomButton = styled.div(_templateObject$Q || (_templateObject$Q = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: ", ";\n  right: ", ";\n  margin-right: 16px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  border: 0.5px solid rgba(0, 0, 0, 0.1);\n  border-radius: 50px;\n  width: 48px;\n  height: 48px;\n  cursor: pointer;\n  z-index: 14;\n\n  & > svg {\n    color: rgba(129, 140, 153, 1);\n  }\n\n  & > span {\n    bottom: 32px;\n    right: 0;\n  }\n"])), function (props) {
   return props.bottomOffset + (props.bottomPosition || 45) + "px";
 }, function (props) {
   return (props.rightPosition || 16) + "px";
 }, function (props) {
   return props.backgroundColor || colors.backgroundColor;
 });
-var UnreadCount$1 = styled.span(_templateObject2$I || (_templateObject2$I = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
+var UnreadCount$1 = styled.span(_templateObject2$J || (_templateObject2$J = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: 11px;\n  right: 16px;\n  flex: 0 0 auto;\n  margin-left: auto;\n  background-color: ", ";\n  padding: 0 4px;\n  font-size: ", ";\n  line-height: 20px;\n  min-width: ", ";\n  height: ", ";\n  text-align: center;\n  font-weight: 500;\n  color: ", ";\n  border-radius: 10px;\n  box-sizing: border-box;\n\n  /*", "*/\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
   return props.fontSize || '13px';

@@ -74,6 +74,8 @@ export declare const setPendingAttachment: (attachmentId: string, data: {
 export declare const getPendingAttachment: (attachmentId: string) => {
     file: File;
     checksum: string;
+    messageTid?: string | undefined;
+    channelId: string;
 };
 export declare const deletePendingAttachment: (attachmentId: string) => boolean;
 export declare const getPendingMessages: (channelId: string) => IMessage[];
