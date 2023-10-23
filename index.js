@@ -15729,12 +15729,12 @@ function sendMessage(action) {
           customUploader = getCustomUploader();
 
           if (!(message.attachments && message.attachments.length)) {
-            _context.next = 228;
+            _context.next = 225;
             break;
           }
 
           if (!sendAttachmentsAsSeparateMessage) {
-            _context.next = 170;
+            _context.next = 167;
             break;
           }
 
@@ -15748,7 +15748,7 @@ function sendMessage(action) {
           fileType = messageAttachment.url.type.split('/')[0];
 
           if (messageAttachment.cachedUrl) {
-            _context.next = 45;
+            _context.next = 44;
             break;
           }
 
@@ -15777,7 +15777,6 @@ function sendMessage(action) {
 
         case 42:
           if (messageAttachment.type === attachmentTypes.voice) {
-            console.log('set thumb metas .... from ... ', messageAttachment.metadata);
             thumbnailMetas = {
               duration: messageAttachment.metadata.dur,
               thumbnail: messageAttachment.metadata.tmb
@@ -15785,7 +15784,6 @@ function sendMessage(action) {
           }
 
         case 43:
-          console.log('thumbnailMetas. . . . . .', thumbnailMetas);
           messageAttachment.metadata = _extends({}, messageAttachment.metadata, thumbnailMetas && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -15793,8 +15791,7 @@ function sendMessage(action) {
             dur: thumbnailMetas.duration && Math.floor(thumbnailMetas.duration)
           });
 
-        case 45:
-          console.log('messageAttachment. . . . . ', messageAttachment);
+        case 44:
           messageBuilder = channel.createMessageBuilder();
           messageBuilder.setBody(message.body).setAttachments([]).setBodyAttributes(message.bodyAttributes).setMentionUserIds(mentionedUserIds).setType(message.type).setDisplayCount(message.type === 'system' ? 0 : 1).setSilent(message.type === 'system').setMetadata(JSON.stringify(message.metadata));
 
@@ -15819,56 +15816,56 @@ function sendMessage(action) {
             mentionedUsers: message.mentionedMembers,
             parentMessage: message.parentMessage
           })));
-          _context.next = 56;
+          _context.next = 54;
           return effects.select(messagesHasNextSelector);
 
-        case 56:
+        case 54:
           hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 65;
-            break;
-          }
-
-          if (!hasNextMessages) {
             _context.next = 63;
             break;
           }
 
-          _context.next = 61;
-          return effects.put(getMessagesAC(channel));
-
-        case 61:
-          _context.next = 65;
-          break;
-
-        case 63:
-          _context.next = 65;
-          return effects.put(addMessageAC(JSON.parse(JSON.stringify(pendingMessage))));
-
-        case 65:
-          addMessageToMap(channel.id, pendingMessage);
-          addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
-          messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context.next = 70;
-          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
-
-        case 70:
-          _context.next = 72;
-          return effects.put(scrollToNewMessageAC(true));
-
-        case 72:
-          if (messageAttachment.cachedUrl) {
-            _context.next = 75;
+          if (!hasNextMessages) {
+            _context.next = 61;
             break;
           }
 
-          _context.next = 75;
+          _context.next = 59;
+          return effects.put(getMessagesAC(channel));
+
+        case 59:
+          _context.next = 63;
+          break;
+
+        case 61:
+          _context.next = 63;
+          return effects.put(addMessageAC(JSON.parse(JSON.stringify(pendingMessage))));
+
+        case 63:
+          addMessageToMap(channel.id, pendingMessage);
+          addAllMessages([pendingMessage], MESSAGE_LOAD_DIRECTION.NEXT);
+          messagesToAdd = getFromAllMessagesByMessageId('', '', true);
+          _context.next = 68;
+          return effects.put(setMessagesAC(JSON.parse(JSON.stringify(messagesToAdd))));
+
+        case 68:
+          _context.next = 70;
+          return effects.put(scrollToNewMessageAC(true));
+
+        case 70:
+          if (messageAttachment.cachedUrl) {
+            _context.next = 73;
+            break;
+          }
+
+          _context.next = 73;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.UPLOADING, messageAttachment.tid));
 
-        case 75:
+        case 73:
           if (!customUploader) {
-            _context.next = 143;
+            _context.next = 140;
             break;
           }
 
@@ -15908,15 +15905,15 @@ function sendMessage(action) {
             }
           };
 
-          _context.prev = 79;
+          _context.prev = 77;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 129;
+            _context.next = 126;
             break;
           }
 
           if (!messageAttachment.cachedUrl) {
-            _context.next = 86;
+            _context.next = 84;
             break;
           }
 
@@ -15930,38 +15927,38 @@ function sendMessage(action) {
               attachmentId: messageAttachment.tid
             }
           });
-          _context.next = 89;
+          _context.next = 87;
           break;
 
-        case 86:
-          _context.next = 88;
+        case 84:
+          _context.next = 86;
           return effects.call(customUpload, messageAttachment, handleUploadProgress, handleUpdateLocalPath);
 
-        case 88:
+        case 86:
           uri = _context.sent;
 
-        case 89:
-          _context.next = 91;
+        case 87:
+          _context.next = 89;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.SUCCESS, messageAttachment.tid));
 
-        case 91:
+        case 89:
           if (!(!messageAttachment.cachedUrl && messageAttachment.url.type.split('/')[0] === 'image')) {
-            _context.next = 98;
+            _context.next = 96;
             break;
           }
 
-          _context.next = 94;
+          _context.next = 92;
           return effects.call(getImageSize, filePath);
 
-        case 94:
+        case 92:
           fileSize = _context.sent;
-          _context.next = 97;
+          _context.next = 95;
           return effects.call(createImageThumbnail, null, filePath, messageAttachment.type === 'file' ? 50 : undefined, messageAttachment.type === 'file' ? 50 : undefined);
 
-        case 97:
+        case 95:
           thumbnailMetas = _context.sent;
 
-        case 98:
+        case 96:
           attachmentMeta = messageAttachment.cachedUrl ? messageAttachment.metadata : JSON.stringify(_extends({}, messageAttachment.metadata, thumbnailMetas && thumbnailMetas.thumbnail && {
             tmb: thumbnailMetas.thumbnail,
             szw: thumbnailMetas.imageWidth,
@@ -15981,11 +15978,10 @@ function sendMessage(action) {
             messageToSend.attachments = [attachmentToSend];
           }
 
-          console.log('message to send. .. . . .', messageToSend);
-          _context.next = 106;
+          _context.next = 103;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 106:
+        case 103:
           messageResponse = _context.sent;
           messageResponse.attachments[0] = _extends({}, messageResponse.attachments[0], {
             user: JSON.parse(JSON.stringify(messageResponse.user)),
@@ -15995,18 +15991,15 @@ function sendMessage(action) {
           pendingAttachment = getPendingAttachment(messageAttachment.tid);
 
           if (!messageAttachment.cachedUrl) {
-            console.log('set data to db. . . . .', [_extends({}, messageResponse.attachments[0], {
-              checksum: pendingAttachment.checksum
-            })]);
             setDataToDB(DB_NAMES.FILES_STORAGE, DB_STORE_NAMES.ATTACHMENTS, [_extends({}, messageResponse.attachments[0], {
               checksum: pendingAttachment.checksum
             })], 'checksum');
           }
 
-          _context.next = 112;
+          _context.next = 109;
           return effects.put(removeAttachmentProgressAC(messageAttachment.tid));
 
-        case 112:
+        case 109:
           deletePendingAttachment(messageAttachment.tid);
           messageUpdateData = {
             id: messageResponse.id,
@@ -16023,10 +16016,10 @@ function sendMessage(action) {
             repliedInThread: messageResponse.repliedInThread,
             createdAt: messageResponse.createdAt
           };
-          _context.next = 116;
+          _context.next = 113;
           return effects.put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(messageUpdateData))));
 
-        case 116:
+        case 113:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.tid);
           }
@@ -16044,36 +16037,36 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 125;
+            _context.next = 122;
             break;
           }
 
-          _context.next = 125;
+          _context.next = 122;
           return effects.put(markChannelAsReadAC(channel.id));
 
-        case 125:
-          _context.next = 127;
+        case 122:
+          _context.next = 124;
           return effects.put(updateChannelDataAC(channel.id, channelUpdateParam, true));
 
+        case 124:
+          _context.next = 127;
+          break;
+
+        case 126:
+          throw Error('Network error');
+
         case 127:
-          _context.next = 130;
+          _context.next = 138;
           break;
 
         case 129:
-          throw Error('Network error');
-
-        case 130:
-          _context.next = 141;
-          break;
-
-        case 132:
-          _context.prev = 132;
-          _context.t0 = _context["catch"](79);
+          _context.prev = 129;
+          _context.t0 = _context["catch"](77);
           console.log('Error on uploading attachment', messageAttachment.tid);
-          _context.next = 137;
+          _context.next = 134;
           return effects.put(updateAttachmentUploadingStateAC(UPLOAD_STATE.FAIL, messageAttachment.tid));
 
-        case 137:
+        case 134:
           updateMessageOnMap(channel.id, {
             messageId: messageToSend.tid,
             params: {
@@ -16083,16 +16076,16 @@ function sendMessage(action) {
           updateMessageOnAllMessages(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           });
-          _context.next = 141;
+          _context.next = 138;
           return effects.put(updateMessageAC(messageToSend.tid, {
             state: MESSAGE_STATUS.FAILED
           }));
 
-        case 141:
-          _context.next = 168;
+        case 138:
+          _context.next = 165;
           break;
 
-        case 143:
+        case 140:
           _attachmentBuilder = channel.createAttachmentBuilder(messageAttachment.url, messageAttachment.type);
           _attachmentToSend = _attachmentBuilder.setName(messageAttachment.name).setMetadata(JSON.stringify(messageAttachment.metadata)).setUpload(messageAttachment.upload).create();
 
@@ -16113,10 +16106,10 @@ function sendMessage(action) {
           _attachmentToSend.tid = messageAttachment.tid;
           _attachmentToSend.attachmentUrl = messageAttachment.attachmentUrl;
           messageToSend.attachments = [_attachmentToSend];
-          _context.next = 151;
+          _context.next = 148;
           return effects.call(channel.sendMessage, messageToSend);
 
-        case 151:
+        case 148:
           _messageResponse = _context.sent;
           deletePendingAttachment(messageAttachment.tid);
           _messageUpdateData = {
@@ -16134,10 +16127,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse.repliedInThread,
             createdAt: _messageResponse.createdAt
           };
-          _context.next = 156;
+          _context.next = 153;
           return effects.put(updateMessageAC(messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData))));
 
-        case 156:
+        case 153:
           if (fileType === 'video') {
             deleteVideoThumb(messageAttachment.tid);
           }
@@ -16155,25 +16148,25 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 165;
+            _context.next = 162;
             break;
           }
 
-          _context.next = 165;
+          _context.next = 162;
           return effects.put(markChannelAsReadAC(channel.id));
 
-        case 165:
-          _context.next = 167;
+        case 162:
+          _context.next = 164;
           return effects.put(updateChannelDataAC(channel.id, _channelUpdateParam, true));
 
-        case 167:
+        case 164:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam);
 
-        case 168:
-          _context.next = 228;
+        case 165:
+          _context.next = 225;
           break;
 
-        case 170:
+        case 167:
           attachmentsToSend = message.attachments.map(function (attachment) {
             var uri;
 
@@ -16267,7 +16260,7 @@ function sendMessage(action) {
           _messageToSend = _messageBuilder.create();
 
           if (!customUploader) {
-            _context.next = 188;
+            _context.next = 185;
             break;
           }
 
@@ -16317,12 +16310,12 @@ function sendMessage(action) {
             }
           };
 
-          _context.next = 182;
+          _context.next = 179;
           return effects.call(uploadAllAttachments);
 
-        case 182:
+        case 179:
           uploadedAttachments = _context.sent;
-          _context.next = 185;
+          _context.next = 182;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(uploadedAttachments.map(function (att) {
@@ -16365,12 +16358,12 @@ function sendMessage(action) {
             }
           });
 
-        case 185:
+        case 182:
           attachmentsToSend = _context.sent;
-          _context.next = 207;
+          _context.next = 204;
           break;
 
-        case 188:
+        case 185:
           _messageCopy2 = _extends({}, _messageToSend, {
             attachments: message.attachments.map(function (att) {
               return {
@@ -16382,56 +16375,56 @@ function sendMessage(action) {
               };
             })
           });
-          _context.next = 191;
+          _context.next = 188;
           return effects.select(messagesHasNextSelector);
 
-        case 191:
+        case 188:
           _hasNextMessages = _context.sent;
 
           if (getHasNextCached()) {
-            _context.next = 200;
+            _context.next = 197;
             break;
           }
 
           if (!_hasNextMessages) {
-            _context.next = 198;
+            _context.next = 195;
             break;
           }
 
-          _context.next = 196;
+          _context.next = 193;
           return effects.put(getMessagesAC(channel));
 
-        case 196:
-          _context.next = 200;
+        case 193:
+          _context.next = 197;
           break;
 
-        case 198:
-          _context.next = 200;
+        case 195:
+          _context.next = 197;
           return effects.put(addMessageAC(JSON.parse(JSON.stringify(_messageCopy2))));
 
-        case 200:
+        case 197:
           addMessageToMap(channel.id, _messageCopy2);
           addAllMessages([_messageCopy2], MESSAGE_LOAD_DIRECTION.NEXT);
           _messagesToAdd = getFromAllMessagesByMessageId('', '', true);
-          _context.next = 205;
+          _context.next = 202;
           return effects.put(setMessagesAC(JSON.parse(JSON.stringify(_messagesToAdd))));
 
-        case 205:
-          _context.next = 207;
+        case 202:
+          _context.next = 204;
           return effects.put(scrollToNewMessageAC(true));
 
-        case 207:
+        case 204:
           _messageToSend.attachments = attachmentsToSend;
 
           if (!(connectionState === CONNECTION_STATUS.CONNECTED)) {
-            _context.next = 228;
+            _context.next = 225;
             break;
           }
 
-          _context.next = 211;
+          _context.next = 208;
           return effects.call(channel.sendMessage, _messageToSend);
 
-        case 211:
+        case 208:
           _messageResponse2 = _context.sent;
           attachmentsToUpdate = [];
 
@@ -16467,10 +16460,10 @@ function sendMessage(action) {
             repliedInThread: _messageResponse2.repliedInThread,
             createdAt: _messageResponse2.createdAt
           };
-          _context.next = 217;
+          _context.next = 214;
           return effects.put(updateMessageAC(_messageToSend.tid, JSON.parse(JSON.stringify(_messageUpdateData2))));
 
-        case 217:
+        case 214:
           updateMessageOnMap(channel.id, {
             messageId: _messageToSend.tid,
             params: _messageUpdateData2
@@ -16484,35 +16477,35 @@ function sendMessage(action) {
           };
 
           if (!channel.unread) {
-            _context.next = 225;
+            _context.next = 222;
             break;
           }
 
-          _context.next = 225;
+          _context.next = 222;
           return effects.put(markChannelAsReadAC(channel.id));
 
-        case 225:
-          _context.next = 227;
+        case 222:
+          _context.next = 224;
           return effects.put(updateChannelDataAC(channel.id, _channelUpdateParam2, true));
 
-        case 227:
+        case 224:
           updateChannelOnAllChannels(channel.id, _channelUpdateParam2);
 
-        case 228:
-          _context.next = 233;
+        case 225:
+          _context.next = 230;
           break;
 
-        case 230:
-          _context.prev = 230;
+        case 227:
+          _context.prev = 227;
           _context.t1 = _context["catch"](2);
           console.log('error on send message ... ', _context.t1);
 
-        case 233:
+        case 230:
         case "end":
           return _context.stop();
       }
     }
-  }, _marked$2, null, [[2, 230], [79, 132]]);
+  }, _marked$2, null, [[2, 227], [77, 129]]);
 }
 
 function sendTextMessage(action) {
@@ -25531,7 +25524,11 @@ var AudioPlayer = function AudioPlayer(_ref) {
     };
   }, [recording.initRecording]);
   React.useEffect(function () {
-    if (url && !isRendered) {
+    if (url) {
+      if (url !== '_' && !isRendered && wavesurfer && wavesurfer.current) {
+        wavesurfer.current.destroy();
+      }
+
       var initWaveSurfer = function initWaveSurfer() {
         try {
           return Promise.resolve(new Promise(function (resolve) { resolve(_interopNamespace(require('wavesurfer.js'))); })).then(function (WaveSurfer) {
@@ -25547,17 +25544,23 @@ var AudioPlayer = function AudioPlayer(_ref) {
               barRadius: 1.5,
               cursorWidth: 0,
               barGap: 2,
-              barMinHeight: 1.5,
+              barMinHeight: 2,
               height: 20
             });
             var peaks;
 
-            if (file.metadata && file.metadata.tmb) {
-              var maxVal = Math.max.apply(Math, file.metadata.tmb);
-              var dec = maxVal / 100;
-              peaks = file.metadata.tmb.map(function (peak) {
-                return peak / dec / 100;
-              });
+            if (file.metadata) {
+              if (file.metadata.dur) {
+                setCurrentTime(formatAudioVideoTime(file.metadata.dur));
+              }
+
+              if (file.metadata.tmb) {
+                var maxVal = Math.max.apply(Math, file.metadata.tmb);
+                var dec = maxVal / 100;
+                peaks = file.metadata.tmb.map(function (peak) {
+                  return peak / dec / 100;
+                });
+              }
             }
 
             wavesurfer.current.load(url, peaks);
@@ -25594,7 +25597,10 @@ var AudioPlayer = function AudioPlayer(_ref) {
               var currentTime = wavesurfer.current.getCurrentTime();
               setCurrentTime(formatAudioVideoTime(currentTime));
             });
-            setIsRendered(true);
+
+            if (url !== '_') {
+              setIsRendered(true);
+            }
           });
         } catch (e) {
           return Promise.reject(e);
@@ -25926,6 +25932,11 @@ var Attachment = function Attachment(_ref) {
               setIsCached(true);
             } else {
               setIsCached(false);
+
+              if (attachment.type === attachmentTypes.voice) {
+                setAttachmentUrl('_');
+              }
+
               handleDownloadFile();
             }
           }
@@ -32245,7 +32256,7 @@ var AudioRecord = function AudioRecord(_ref) {
       setTimeout(function () {
         recordingInterval = setInterval(function () {
           setCurrentTime(function (prevState) {
-            if (prevState.recordingSeconds === MAX_RECORDER_TIME && prevState.recordingMilliseconds === 0) {
+            if (prevState.recordingSeconds === MAX_RECORDER_TIME) {
               clearInterval(recordingInterval);
               stopRecording();
               return 0;
@@ -33412,7 +33423,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
   }, [draggedAttachments]);
   React.useEffect(function () {
     if (recordedFile) {
-      console.log('recorded file ........', recordedFile);
       var tid = uuid.v4();
       var reader = new FileReader();
 
@@ -33909,9 +33919,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     color: colors.backgroundColor,
     height: inputContainerHeight || minHeight,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
-  }, /*#__PURE__*/React__default.createElement(SvgSend, null)) :
-  /*#__PURE__*/
-  React__default.createElement(SendMessageIcon, {
+  }, /*#__PURE__*/React__default.createElement(SvgSend, null)) : /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     order: sendIconOrder,
     height: inputContainerHeight || minHeight,
     color: colors.primary
