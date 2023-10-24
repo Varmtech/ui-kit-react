@@ -45,6 +45,7 @@ var ReactDOM = require('react-dom');
 var LexicalTypeaheadMenuPlugin = require('@lexical/react/LexicalTypeaheadMenuPlugin');
 var offset = require('@lexical/offset');
 var MicRecorder = _interopDefault(require('mic-recorder-to-mp3'));
+var LexicalHistoryPlugin = require('@lexical/react/LexicalHistoryPlugin');
 
 /** A function that accepts a potential "extra argument" value to be injected later,
  * and returns an instance of the thunk middleware that uses that value
@@ -13250,11 +13251,12 @@ function getChannels(action) {
           _context2.prev = 0;
           payload = action.payload;
           params = payload.params;
+          console.log('get channels.. . ', payload);
           SceytChatClient = getClient();
-          _context2.next = 6;
+          _context2.next = 7;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADING));
 
-        case 6:
+        case 7:
           channelQueryBuilder = new SceytChatClient.ChannelListQueryBuilder();
 
           if (params.filter && params.filter.channelType) {
@@ -13263,63 +13265,64 @@ function getChannels(action) {
 
           channelQueryBuilder.order('lastMessage');
           channelQueryBuilder.limit(params.limit || 50);
-          _context2.next = 12;
+          _context2.next = 13;
           return effects.call(channelQueryBuilder.build);
 
-        case 12:
+        case 13:
           channelQuery = _context2.sent;
-          _context2.next = 15;
+          _context2.next = 16;
           return effects.call(channelQuery.loadNextPage);
 
-        case 15:
+        case 16:
           channelsData = _context2.sent;
-          _context2.next = 18;
+          console.log('channelsData. . . . . .', channelsData);
+          _context2.next = 20;
           return effects.put(channelHasNextAC(channelsData.hasNext));
 
-        case 18:
-          _context2.next = 20;
+        case 20:
+          _context2.next = 22;
           return effects.call(getActiveChannelId);
 
-        case 20:
+        case 22:
           channelId = _context2.sent;
 
           if (!channelId) {
-            _context2.next = 27;
+            _context2.next = 29;
             break;
           }
 
-          _context2.next = 24;
+          _context2.next = 26;
           return effects.call(getChannelFromMap, channelId);
 
-        case 24:
+        case 26:
           _context2.t0 = _context2.sent;
-          _context2.next = 28;
+          _context2.next = 30;
           break;
 
-        case 27:
+        case 29:
           _context2.t0 = null;
 
-        case 28:
+        case 30:
           activeChannel = _context2.t0;
-          _context2.next = 31;
+          _context2.next = 33;
           return effects.call(destroyChannelsMap);
 
-        case 31:
-          _context2.next = 33;
+        case 33:
+          _context2.next = 35;
           return effects.call(setChannelsInMap, channelsData.channels);
 
-        case 33:
+        case 35:
           _yield$call = _context2.sent;
           mappedChannels = _yield$call.channels;
           channelsForUpdateLastReactionMessage = _yield$call.channelsForUpdateLastReactionMessage;
 
           if (!channelsForUpdateLastReactionMessage.length) {
-            _context2.next = 41;
+            _context2.next = 43;
             break;
           }
 
           channelMessageMap = {};
-          _context2.next = 40;
+          _context2.next = 42;
           return effects.call(function () {
             try {
               return Promise.resolve(Promise.all(channelsForUpdateLastReactionMessage.map(function (channel) {
@@ -13342,7 +13345,7 @@ function getChannels(action) {
             }
           });
 
-        case 40:
+        case 42:
           mappedChannels = mappedChannels.map(function (channel) {
             if (channelMessageMap[channel.id]) {
               channel.lastReactedMessage = channelMessageMap[channel.id];
@@ -13351,11 +13354,11 @@ function getChannels(action) {
             return channel;
           });
 
-        case 41:
-          _context2.next = 43;
+        case 43:
+          _context2.next = 45;
           return effects.put(setChannelsAC(mappedChannels));
 
-        case 43:
+        case 45:
           if (!channelId) {
             _channelsData$channel = channelsData.channels;
             activeChannel = _channelsData$channel[0];
@@ -13364,76 +13367,77 @@ function getChannels(action) {
           query.channelQuery = channelQuery;
 
           if (!activeChannel) {
-            _context2.next = 48;
+            _context2.next = 51;
             break;
           }
 
-          _context2.next = 48;
+          console.log('switch channel .. . ', activeChannel);
+          _context2.next = 51;
           return effects.put(switchChannelActionAC(JSON.parse(JSON.stringify(activeChannel))));
 
-        case 48:
-          _context2.next = 50;
+        case 51:
+          _context2.next = 53;
           return effects.put(setChannelsLoadingStateAC(LOADING_STATE.LOADED));
 
-        case 50:
+        case 53:
           allChannelsQueryBuilder = new SceytChatClient.ChannelListQueryBuilder();
           allChannelsQueryBuilder.order('lastMessage');
           allChannelsQueryBuilder.limit(50);
-          _context2.next = 55;
+          _context2.next = 58;
           return effects.call(allChannelsQueryBuilder.build);
 
-        case 55:
+        case 58:
           allChannelsQuery = _context2.sent;
           hasNext = true;
           i = 0;
 
-        case 58:
+        case 61:
           if (!(i <= 4)) {
-            _context2.next = 74;
+            _context2.next = 77;
             break;
           }
 
           if (!hasNext) {
-            _context2.next = 71;
+            _context2.next = 74;
             break;
           }
 
-          _context2.prev = 60;
-          _context2.next = 63;
+          _context2.prev = 63;
+          _context2.next = 66;
           return effects.call(allChannelsQuery.loadNextPage);
 
-        case 63:
+        case 66:
           allChannelsData = _context2.sent;
           hasNext = allChannelsData.hasNext;
           addChannelsToAllChannels(allChannelsData.channels);
-          _context2.next = 71;
+          _context2.next = 74;
           break;
-
-        case 68:
-          _context2.prev = 68;
-          _context2.t1 = _context2["catch"](60);
-          console.log(_context2.t1, 'Error on get all channels');
 
         case 71:
-          i++;
-          _context2.next = 58;
-          break;
+          _context2.prev = 71;
+          _context2.t1 = _context2["catch"](63);
+          console.log(_context2.t1, 'Error on get all channels');
 
         case 74:
-          _context2.next = 80;
+          i++;
+          _context2.next = 61;
           break;
 
-        case 76:
-          _context2.prev = 76;
+        case 77:
+          _context2.next = 83;
+          break;
+
+        case 79:
+          _context2.prev = 79;
           _context2.t2 = _context2["catch"](0);
           console.log(_context2.t2, 'Error on get channels');
 
-        case 80:
+        case 83:
         case "end":
           return _context2.stop();
       }
     }
-  }, _marked2, null, [[0, 76], [60, 68]]);
+  }, _marked2, null, [[0, 79], [63, 71]]);
 }
 
 function searchChannels(action) {
@@ -29504,7 +29508,9 @@ var MessageList = function MessageList(_ref2) {
         clearVisibleMessagesMap();
       }
 
-      dispatch(getMessagesAC(channel));
+      if (channel) {
+        dispatch(getMessagesAC(channel));
+      }
 
       if (channel.id) {
         if (channel.newMessageCount && channel.newMessageCount > 0) {
@@ -33902,7 +33908,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     getFromContacts: getFromContacts,
     members: activeChannelMembers,
     setMentionsIsOpen: setMentionsIsOpen
-  }), /*#__PURE__*/React__default.createElement(LexicalRichTextPlugin.RichTextPlugin, {
+  }), /*#__PURE__*/React__default.createElement(LexicalHistoryPlugin.HistoryPlugin, null), /*#__PURE__*/React__default.createElement(LexicalRichTextPlugin.RichTextPlugin, {
     contentEditable: /*#__PURE__*/React__default.createElement("div", {
       onKeyDown: handleSendEditMessage,
       onDoubleClick: handleDoubleClick,
