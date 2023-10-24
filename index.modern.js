@@ -1286,10 +1286,6 @@ var ChannelReducer = (function (state, _temp) {
           newState.channels = [payload.channel].concat(newState.channels);
         }
 
-        if (newState.hideChannelList && (!newState.activeChannel || !newState.activeChannel.id)) {
-          newState.activeChannel = payload.channel;
-        }
-
         return newState;
       }
 
@@ -22902,6 +22898,7 @@ function Chat(_ref) {
   var channelListWidth = useSelector(channelListWidthSelector, shallowEqual);
   var channelDetailsIsOpen = useSelector(channelInfoIsOpenSelector, shallowEqual);
   var addedChannel = useSelector(addedToChannelSelector);
+  var channelCreated = useSelector(addedChannelSelector);
   var activeChannel = useSelector(activeChannelSelector);
 
   var _useState = useState(0),
@@ -22925,6 +22922,17 @@ function Chat(_ref) {
     }
   }, [activeChannel]);
   useDidUpdate(function () {
+    console.log('channelCreated.  ... . . . ', channelCreated);
+
+    if (hideChannelList && (!activeChannel || !activeChannel.id) && channelCreated && channelCreated.id) {
+      console.log('call set active channel. ... ', channelCreated);
+      setActiveChannelId(channelCreated.id);
+      dispatch(setActiveChannelAC(channelCreated));
+    }
+  }, [channelCreated]);
+  useDidUpdate(function () {
+    console.log('addedChannel.  ... . . . ', addedChannel);
+
     if (hideChannelList && (!activeChannel || !activeChannel.id) && addedChannel && addedChannel.id) {
       console.log('call set active channel. ... ', addedChannel);
       setActiveChannelId(addedChannel.id);
