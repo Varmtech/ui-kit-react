@@ -32511,7 +32511,9 @@ var SendMessageInput = function SendMessageInput(_ref3) {
       allowMentionUser = _ref3$allowMentionUse === void 0 ? true : _ref3$allowMentionUse,
       _ref3$allowTextEdit = _ref3.allowTextEdit,
       allowTextEdit = _ref3$allowTextEdit === void 0 ? true : _ref3$allowTextEdit,
-      textSelectionBackgroundColor = _ref3.textSelectionBackgroundColor;
+      textSelectionBackgroundColor = _ref3.textSelectionBackgroundColor,
+      _ref3$voiceMessage = _ref3.voiceMessage,
+      voiceMessage = _ref3$voiceMessage === void 0 ? true : _ref3$voiceMessage;
   var dispatch = useDispatch();
   var ChatClient = getClient();
   var user = ChatClient.user;
@@ -33892,13 +33894,14 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     ErrorBoundary: LexicalErrorBoundary
   }), floatingAnchorElem && !isSmallWidthViewport && allowTextEdit && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FloatingTextFormatToolbarPlugin, {
     anchorElem: floatingAnchorElem
-  })))))), sendMessageIsActive ? /*#__PURE__*/React__default.createElement(SendMessageIcon, {
+  })))))), sendMessageIsActive || !voiceMessage ? /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     color: colors.backgroundColor,
     height: inputContainerHeight || minHeight,
     onClick: sendMessageIsActive ? handleSendEditMessage : null
   }, /*#__PURE__*/React__default.createElement(SvgSend, null)) : /*#__PURE__*/React__default.createElement(SendMessageIcon, {
+    isActive: true,
     order: sendIconOrder,
     height: inputContainerHeight || minHeight,
     color: colors.primary
@@ -33983,8 +33986,10 @@ var EmojiButton = styled.span(_templateObject12$5 || (_templateObject12$5 = _tag
 }, function (props) {
   return props.hoverColor || colors.primary;
 });
-var SendMessageIcon = styled.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px 0 auto;\n  cursor: pointer;\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
+var SendMessageIcon = styled.span(_templateObject13$5 || (_templateObject13$5 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  height: ", ";\n  align-items: center;\n  margin: 0 8px 0 auto;\n  cursor: ", ";\n  line-height: 13px;\n  order: ", ";\n  -webkit-tap-highlight-color: transparent;\n\n  color: ", ";\n"])), function (props) {
   return props.height ? props.height + "px" : '36px';
+}, function (props) {
+  return props.isActive && 'pointer';
 }, function (props) {
   return props.order === 0 || props.order ? props.order : 4;
 }, function (props) {
