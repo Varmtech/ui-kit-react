@@ -12291,7 +12291,7 @@ function watchForEvents() {
           showNotifications = getShowNotifications();
 
           if (!(showNotifications && !message.silent && message.user.id !== SceytChatClient.user.id && !_channel5.muted)) {
-            _context3.next = 193;
+            _context3.next = 185;
             break;
           }
 
