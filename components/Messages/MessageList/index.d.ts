@@ -133,7 +133,17 @@ export declare const Container: import("styled-components").StyledComponent<"div
     stopScrolling?: boolean | undefined;
 }, never>;
 export declare const EmptyDiv: import("styled-components").StyledComponent<"div", any, {}, never>;
-export declare const MessageTopDate: import("styled-components").StyledComponent<"div", any, any, never>;
+export declare const MessageTopDate: import("styled-components").StyledComponent<"div", any, {
+    topOffset?: number | undefined;
+    marginTop?: string | undefined;
+    marginBottom?: string | undefined;
+    visible?: boolean | undefined;
+    dateDividerFontSize?: string | undefined;
+    dateDividerTextColor?: string | undefined;
+    dateDividerBackgroundColor?: string | undefined;
+    dateDividerBorder?: string | undefined;
+    dateDividerBorderRadius?: string | undefined;
+}, never>;
 export declare const DragAndDropContainer: import("styled-components").StyledComponent<"div", any, {
     topOffset?: number | undefined;
     height?: number | undefined;

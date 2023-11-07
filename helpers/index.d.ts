@@ -1,9 +1,9 @@
 /// <reference types="react" />
-import { IAttachment, IContact } from '../types';
+import { IAttachment, IContact, IUser } from '../types';
 export declare const messageStatusIcon: (messageStatus: string, messageStatusDisplayingType: string, iconColor?: string | undefined, readIconColor?: string | undefined) => JSX.Element;
 export declare const urlRegex: RegExp;
 export declare const bytesToSize: (bytes: number, decimals?: number) => string;
-export declare const systemMessageUserName: (contact: IContact, userId: string) => string;
+export declare const systemMessageUserName: (contact: IContact, userId: string, mentionedUsers?: IUser[] | undefined) => string;
 export declare const setDownloadFilePromise: (attachmentId: string, promise: any) => void;
 export declare const downloadFile: (attachment: IAttachment, download: boolean, done?: ((attachmentId: string, failed?: boolean | undefined) => void) | undefined, progressCallback?: ((progress: {
     loaded: number;
