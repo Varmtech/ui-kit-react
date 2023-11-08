@@ -10,7 +10,7 @@ import LinkifyIt from 'linkify-it';
 import Cropper from 'react-easy-crop';
 import Carousel from 'react-elastic-carousel';
 import { CircularProgressbar } from 'react-circular-progressbar';
-import { $applyNodeReplacement, TextNode, $createTextNode, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_LOW, $getRoot, $createParagraphNode } from 'lexical';
+import { $applyNodeReplacement, TextNode, $createTextNode, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_LOW, $getRoot, $createParagraphNode, PASTE_COMMAND, COMMAND_PRIORITY_NORMAL } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -10129,7 +10129,7 @@ var MessageOwner = styled.h3(_templateObject31 || (_templateObject31 = _taggedTe
 }, function (props) {
   return props.fontSize || '15px';
 }, function (props) {
-  return props.fontSize || '15px';
+  return props.fontSize || '18px';
 }, function (props) {
   return props.clickable && 'pointer';
 });
@@ -28116,7 +28116,7 @@ var Message = function Message(_ref) {
   var prevMessageUserID = prevMessage ? prevMessage.user ? prevMessage.user.id : 'deleted' : null;
   var nextMessageUserID = nextMessage ? nextMessage.user ? nextMessage.user.id : 'deleted' : null;
   var current = moment(message.createdAt).startOf('day');
-  var firstMessageInInterval = !(prevMessage && current.diff(moment(prevMessage.createdAt).startOf('day'), 'days') === 0) || (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system';
+  var firstMessageInInterval = !(prevMessage && current.diff(moment(prevMessage.createdAt).startOf('day'), 'days') === 0) || (prevMessage === null || prevMessage === void 0 ? void 0 : prevMessage.type) === 'system' || unreadMessageId === prevMessage.id;
   var lastMessageInInterval = !(nextMessage && current.diff(moment(nextMessage.createdAt).startOf('day'), 'days') === 0) || nextMessage.type === 'system';
   var messageTimeVisible = showMessageTime && (showMessageTimeForEachMessage || !nextMessage);
   var messageStatusVisible = !message.incoming && showMessageStatus && message.state !== MESSAGE_STATUS.DELETE && (showMessageStatusForEachMessage || !nextMessage);
@@ -28214,7 +28214,6 @@ var Message = function Message(_ref) {
   };
 
   var handleCopyMessage = function handleCopyMessage() {
-    console.log('messageTextRef.current.innerText. . . . .', messageTextRef.current.innerText);
     navigator.clipboard.writeText(messageTextRef.current.innerText);
     setMessageActionsShow(false);
   };
@@ -31024,6 +31023,7 @@ function TextFormatFloatingToolbar(_ref) {
     editor.getEditorState().read(function () {
       updateTextFormatFloatingToolbar();
     });
+    console.log('registering update listener. .. ');
     return mergeRegister(editor.registerUpdateListener(function (_ref2) {
       var editorState = _ref2.editorState;
       editorState.read(function () {
@@ -31454,6 +31454,7 @@ function EditMessagePlugin(_ref) {
         } else {
           paragraphNode.append($createTextNode(editMessage.body));
           rootNode.append(paragraphNode);
+          rootNode.selectEnd();
         }
       });
     }
@@ -31462,6 +31463,35 @@ function EditMessagePlugin(_ref) {
 }
 
 function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMessageText, messageToEdit) {
+  function $insertDataTransferForPlainText(dataTransfer, selection) {
+    var text = dataTransfer.getData('text/plain') || dataTransfer.getData('text/uri-list');
+
+    if (text != null) {
+      selection.insertRawText(text);
+    }
+  }
+
+  var handlePast = useCallback(function (e) {
+    var pastedTex = e.clipboardData.getData('text/plain');
+
+    if (pastedTex) {
+      editor.update(function () {
+        var selection = $getSelection();
+        var _event = event,
+            clipboardData = _event.clipboardData;
+
+        if (clipboardData != null && $isRangeSelection(selection)) {
+          $insertDataTransferForPlainText(clipboardData, selection);
+        }
+      });
+    }
+  }, [editor]);
+  useEffect(function () {
+    editor.registerCommand(PASTE_COMMAND, function (e) {
+      handlePast(e);
+      return true;
+    }, COMMAND_PRIORITY_NORMAL);
+  }, []);
   useDidUpdate(function () {
     if (editorState) {
       editorState.read(function () {
@@ -32093,6 +32123,129 @@ var shouldDraw = false;
 var WaveSurfer;
 
 var AudioRecord = function AudioRecord(_ref) {
+  var startRecording = function startRecording() {
+    try {
+      return Promise.resolve(navigator.permissions.query({
+        name: 'microphone'
+      })).then(function (permissionStatus) {
+        if (permissionStatus.state === 'granted') {
+          setShowRecording(true);
+        } else {
+          recordButtonRef.current.style.pointerEvents = 'none';
+        }
+
+        if (recording) {
+          stopRecording(true);
+        } else if (recordedFile) {
+          sendRecordedFile(recordedFile);
+          setRecordedFile(null);
+          setPlayAudio(false);
+
+          if (wavesurfer.current) {
+            wavesurfer.current.destroy();
+          }
+
+          setStartRecording(false);
+          setShowRecording(false);
+        } else {
+          recorder.start().then(function () {
+            recordButtonRef.current.style.pointerEvents = 'initial';
+            setShowRecording(true);
+            setStartRecording(true);
+            shouldDraw = true;
+            var stream = recorder.activeStream;
+            var obj = {};
+
+            function init() {
+              obj.canvas = document.getElementById('waveform');
+              obj.ctx = obj.canvas.getContext('2d');
+              obj.width = 360;
+              obj.height = 28;
+              obj.canvas.width = obj.width;
+              obj.canvas.height = obj.height;
+              obj.canvas.style.width = obj.width + 'px';
+              obj.canvas.style.height = obj.height + 'px';
+            }
+
+            var timeOffset = 100;
+            var now = parseInt(performance.now()) / timeOffset;
+
+            function loop() {
+              if (!shouldDraw) {
+                obj.x = 0;
+                obj.ctx.clearRect(0, 0, obj.canvas.width, obj.canvas.height);
+                return;
+              }
+
+              obj.ctx.clearRect(0, 0, obj.canvas.width, obj.canvas.height);
+              var max = 0;
+
+              if (parseInt(performance.now() / timeOffset) > now) {
+                now = parseInt(performance.now() / timeOffset);
+                obj.analyser.getFloatTimeDomainData(obj.frequencyArray);
+
+                for (var i = 0; i < obj.frequencyArray.length; i++) {
+                  if (obj.frequencyArray[i] > max) {
+                    max = obj.frequencyArray[i];
+                  }
+                }
+
+                var freq = Math.floor(max * 90);
+
+                if (freq === 0) {
+                  freq = 1;
+                }
+
+                obj.bars.push({
+                  x: obj.width,
+                  y: obj.height / 2 - freq / 2,
+                  height: freq,
+                  width: 3
+                });
+              }
+
+              draw();
+              requestAnimationFrame(loop);
+            }
+
+            obj.bars = [];
+
+            function draw() {
+              for (var i = 0; i < obj.bars.length; i++) {
+                var bar = obj.bars[i];
+                obj.ctx.fillStyle = colors.textColor2;
+                obj.ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
+                bar.x = bar.x - 1;
+
+                if (bar.x < 1) {
+                  obj.bars.splice(i, 1);
+                }
+              }
+            }
+
+            function soundAllowed(stream) {
+              var AudioContext = window.AudioContext || window.webkitAudioContext;
+              var audioContent = new AudioContext();
+              var streamSource = audioContent.createMediaStreamSource(stream);
+              obj.analyser = audioContent.createAnalyser();
+              streamSource.connect(obj.analyser);
+              obj.analyser.fftSize = 512;
+              obj.frequencyArray = new Float32Array(obj.analyser.fftSize);
+              init();
+              loop();
+            }
+
+            soundAllowed(stream);
+          })["catch"](function (e) {
+            console.error(e);
+          });
+        }
+      });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
   var sendRecordedFile = _ref.sendRecordedFile,
       setShowRecording = _ref.setShowRecording,
       showRecording = _ref.showRecording;
@@ -32124,115 +32277,7 @@ var AudioRecord = function AudioRecord(_ref) {
   var wavesurfer = useRef(null);
   var wavesurferContainer = useRef(null);
   var intervalRef = useRef(null);
-
-  function startRecording() {
-    setShowRecording(true);
-
-    if (recording) {
-      stopRecording(true);
-    } else if (recordedFile) {
-      sendRecordedFile(recordedFile);
-      setRecordedFile(null);
-      setPlayAudio(false);
-
-      if (wavesurfer.current) {
-        wavesurfer.current.destroy();
-      }
-
-      setStartRecording(false);
-      setShowRecording(false);
-    } else {
-      recorder.start().then(function () {
-        setStartRecording(true);
-        shouldDraw = true;
-        var stream = recorder.activeStream;
-        var obj = {};
-
-        function init() {
-          obj.canvas = document.getElementById('waveform');
-          obj.ctx = obj.canvas.getContext('2d');
-          obj.width = 360;
-          obj.height = 28;
-          obj.canvas.width = obj.width;
-          obj.canvas.height = obj.height;
-          obj.canvas.style.width = obj.width + 'px';
-          obj.canvas.style.height = obj.height + 'px';
-        }
-
-        var timeOffset = 100;
-        var now = parseInt(performance.now()) / timeOffset;
-
-        function loop() {
-          if (!shouldDraw) {
-            obj.x = 0;
-            obj.ctx.clearRect(0, 0, obj.canvas.width, obj.canvas.height);
-            return;
-          }
-
-          obj.ctx.clearRect(0, 0, obj.canvas.width, obj.canvas.height);
-          var max = 0;
-
-          if (parseInt(performance.now() / timeOffset) > now) {
-            now = parseInt(performance.now() / timeOffset);
-            obj.analyser.getFloatTimeDomainData(obj.frequencyArray);
-
-            for (var i = 0; i < obj.frequencyArray.length; i++) {
-              if (obj.frequencyArray[i] > max) {
-                max = obj.frequencyArray[i];
-              }
-            }
-
-            var freq = Math.floor(max * 90);
-
-            if (freq === 0) {
-              freq = 1;
-            }
-
-            obj.bars.push({
-              x: obj.width,
-              y: obj.height / 2 - freq / 2,
-              height: freq,
-              width: 3
-            });
-          }
-
-          draw();
-          requestAnimationFrame(loop);
-        }
-
-        obj.bars = [];
-
-        function draw() {
-          for (var i = 0; i < obj.bars.length; i++) {
-            var bar = obj.bars[i];
-            obj.ctx.fillStyle = colors.textColor2;
-            obj.ctx.fillRect(bar.x, bar.y, bar.width, bar.height);
-            bar.x = bar.x - 1;
-
-            if (bar.x < 1) {
-              obj.bars.splice(i, 1);
-            }
-          }
-        }
-
-        function soundAllowed(stream) {
-          var AudioContext = window.AudioContext || window.webkitAudioContext;
-          var audioContent = new AudioContext();
-          var streamSource = audioContent.createMediaStreamSource(stream);
-          obj.analyser = audioContent.createAnalyser();
-          streamSource.connect(obj.analyser);
-          obj.analyser.fftSize = 512;
-          obj.frequencyArray = new Float32Array(obj.analyser.fftSize);
-          init();
-          loop();
-        }
-
-        soundAllowed(stream);
-      })["catch"](function (e) {
-        console.error(e);
-      });
-    }
-  }
+  var recordButtonRef = useRef(null);
 
   function cancelRecording() {
     if (recordedFile) {
@@ -32451,6 +32496,7 @@ var AudioRecord = function AudioRecord(_ref) {
     ref: wavesurferContainer,
     show: recordedFile
   }), recordingIsReadyToPlay && /*#__PURE__*/React__default.createElement(Timer$1, null, formatAudioVideoTime(currentTime))), /*#__PURE__*/React__default.createElement(RecordIconWrapper, {
+    ref: recordButtonRef,
     onClick: function onClick() {
       return startRecording();
     }
@@ -32842,6 +32888,12 @@ var SendMessageInput = function SendMessageInput(_ref3) {
 
     if (isEnter) {
       event.preventDefault();
+
+      if (!messageText.trim() && !attachments.length && !messageToEdit) {
+        setShouldClearEditor({
+          clear: true
+        });
+      }
     }
 
     if (shouldSend && !mentionsIsOpen) {
@@ -32850,7 +32902,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
 
       if (messageToEdit) {
         handleEditMessage();
-      } else if (messageText || attachments.length && attachments.length > 0) {
+      } else if (messageText.trim() || attachments.length && attachments.length > 0) {
         var messageTexToSend = messageText.trim();
         console.log('messageTexToSend . . . . .', messageTexToSend);
         var messageToSend = {
@@ -33023,6 +33075,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
   };
 
   var handleCloseEditMode = function handleCloseEditMode() {
+    console.log('close edit mode. ................>... ');
     setEditMessageText('');
     setMentionedMembers([]);
     dispatch(setMessageToEditAC(null));
@@ -33965,7 +34018,6 @@ var SendMessageInput = function SendMessageInput(_ref3) {
   }), /*#__PURE__*/React__default.createElement(FormatMessagePlugin, {
     editorState: realEditorState,
     setMessageBodyAttributes: setMessageBodyAttributes,
-    messageText: messageToEdit ? editMessageText : messageText,
     setMessageText: messageToEdit ? setEditMessageText : setMessageText,
     messageToEdit: messageToEdit
   }), /*#__PURE__*/React__default.createElement(React__default.Fragment, null, isEmojisOpened && /*#__PURE__*/React__default.createElement(EmojisPopup$1, {
@@ -33995,7 +34047,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
     ErrorBoundary: LexicalErrorBoundary
   }), floatingAnchorElem && !isSmallWidthViewport && allowTextEdit && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(FloatingTextFormatToolbarPlugin, {
     anchorElem: floatingAnchorElem
-  })))))), sendMessageIsActive || !voiceMessage ? /*#__PURE__*/React__default.createElement(SendMessageIcon, {
+  })))))), sendMessageIsActive || !voiceMessage || messageToEdit ? /*#__PURE__*/React__default.createElement(SendMessageIcon, {
     isActive: sendMessageIsActive,
     order: sendIconOrder,
     color: colors.backgroundColor,
@@ -36489,6 +36541,7 @@ var _templateObject$P, _templateObject2$I, _templateObject3$z, _templateObject4$
 var Details = function Details(_ref) {
   var size = _ref.size,
       showAboutChannel = _ref.showAboutChannel,
+      showAboutChannelTitle = _ref.showAboutChannelTitle,
       avatarAndNameDirection = _ref.avatarAndNameDirection,
       channelEditIcon = _ref.channelEditIcon,
       editChannelSaveButtonBackgroundColor = _ref.editChannelSaveButtonBackgroundColor,
@@ -36691,7 +36744,7 @@ var Details = function Details(_ref) {
     onClick: function onClick() {
       return setEditMode(true);
     }
-  }, channelEditIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null)))), showAboutChannel && channel.metadata && channel.metadata.d && /*#__PURE__*/React__default.createElement(AboutChannel, null, /*#__PURE__*/React__default.createElement(AboutChannelTitle, null, "About"), /*#__PURE__*/React__default.createElement(AboutChannelText, {
+  }, channelEditIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null)))), showAboutChannel && channel.metadata && channel.metadata.d && /*#__PURE__*/React__default.createElement(AboutChannel, null, showAboutChannelTitle && /*#__PURE__*/React__default.createElement(AboutChannelTitle, null, "About"), /*#__PURE__*/React__default.createElement(AboutChannelText, {
     color: colors.textColor1
   }, channel.metadata && channel.metadata.d ? channel.metadata.d : ''))), channel.userRole && /*#__PURE__*/React__default.createElement(Actions$1, {
     theme: theme,
@@ -36799,7 +36852,7 @@ var ChatDetails = styled.div(_templateObject3$z || (_templateObject3$z = _tagged
 });
 var AboutChannel = styled.div(_templateObject4$u || (_templateObject4$u = _taggedTemplateLiteralLoose(["\n  margin-top: 20px;\n"])));
 var AboutChannelTitle = styled.h4(_templateObject5$r || (_templateObject5$r = _taggedTemplateLiteralLoose(["\n  font-size: 12px;\n  margin: 0;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor3);
-var AboutChannelText = styled.h3(_templateObject6$n || (_templateObject6$n = _taggedTemplateLiteralLoose(["\n  font-size: 16px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 22px;\n  color: ", ";\n"])), function (props) {
+var AboutChannelText = styled.h3(_templateObject6$n || (_templateObject6$n = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  margin: 0;\n  font-weight: 400;\n  line-height: 20px;\n  color: ", ";\n"])), function (props) {
   return props.color;
 });
 var ChannelInfo$4 = styled.div(_templateObject7$k || (_templateObject7$k = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: ", ";\n  margin-top: ", ";\n  text-align: ", ";\n"])), function (props) {
@@ -36828,9 +36881,12 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   var _ref$size = _ref.size,
       size = _ref$size === void 0 ? 'large' : _ref$size,
       channelEditIcon = _ref.channelEditIcon,
-      showAboutChannel = _ref.showAboutChannel,
+      _ref$showAboutChannel = _ref.showAboutChannel,
+      showAboutChannel = _ref$showAboutChannel === void 0 ? true : _ref$showAboutChannel,
+      _ref$showAboutChannel2 = _ref.showAboutChannelTitle,
+      showAboutChannelTitle = _ref$showAboutChannel2 === void 0 ? true : _ref$showAboutChannel2,
       _ref$avatarAndNameDir = _ref.avatarAndNameDirection,
-      avatarAndNameDirection = _ref$avatarAndNameDir === void 0 ? 'row' : _ref$avatarAndNameDir,
+      avatarAndNameDirection = _ref$avatarAndNameDir === void 0 ? 'column' : _ref$avatarAndNameDir,
       editChannelSaveButtonBackgroundColor = _ref.editChannelSaveButtonBackgroundColor,
       editChannelSaveButtonTextColor = _ref.editChannelSaveButtonTextColor,
       editChannelCancelButtonBackgroundColor = _ref.editChannelCancelButtonBackgroundColor,
@@ -36910,6 +36966,7 @@ var ChannelDetailsContainer = function ChannelDetailsContainer(_ref) {
   }, channelDetailsIsOpen && /*#__PURE__*/React__default.createElement(Details, {
     size: size,
     showAboutChannel: showAboutChannel,
+    showAboutChannelTitle: showAboutChannelTitle,
     avatarAndNameDirection: avatarAndNameDirection,
     channelEditIcon: channelEditIcon,
     editChannelSaveButtonBackgroundColor: editChannelSaveButtonBackgroundColor,
