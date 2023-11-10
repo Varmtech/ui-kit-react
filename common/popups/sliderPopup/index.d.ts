@@ -1,10 +1,11 @@
 /// <reference types="react" />
-import { IMedia } from '../../../types';
+import { IChannel, IMedia } from '../../../types';
 interface IProps {
-    channelId: string;
+    channel: IChannel;
     setIsSliderOpen: (state: any) => void;
     mediaFiles?: IMedia[];
     currentMediaFile: IMedia;
+    allowEditDeleteIncomingMessage?: boolean;
 }
-declare const SliderPopup: ({ channelId, setIsSliderOpen, mediaFiles, currentMediaFile }: IProps) => JSX.Element;
+declare const SliderPopup: ({ channel, setIsSliderOpen, mediaFiles, currentMediaFile, allowEditDeleteIncomingMessage }: IProps) => JSX.Element;
 export default SliderPopup;

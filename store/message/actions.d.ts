@@ -281,6 +281,12 @@ export declare function setAttachmentsAC(attachments: IAttachment[]): {
         attachments: IAttachment[];
     };
 };
+export declare function removeAttachmentAC(attachmentId: string): {
+    type: string;
+    payload: {
+        attachmentId: string;
+    };
+};
 export declare function setAttachmentsForPopupAC(attachments: IAttachment[]): {
     type: string;
     payload: {

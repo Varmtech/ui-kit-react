@@ -1,6 +1,7 @@
 /// <reference types="react" />
+import { IChannel } from '../../../../types';
 interface IProps {
-    channelId: string;
+    channel: IChannel;
 }
-declare const Media: ({ channelId }: IProps) => JSX.Element;
+declare const Media: ({ channel }: IProps) => JSX.Element;
 export default Media;

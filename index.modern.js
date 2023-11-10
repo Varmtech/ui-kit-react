@@ -10,7 +10,7 @@ import LinkifyIt from 'linkify-it';
 import Cropper from 'react-easy-crop';
 import Carousel from 'react-elastic-carousel';
 import { CircularProgressbar } from 'react-circular-progressbar';
-import { $applyNodeReplacement, TextNode, $createTextNode, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_LOW, $getRoot, $createParagraphNode, PASTE_COMMAND, COMMAND_PRIORITY_NORMAL } from 'lexical';
+import { $applyNodeReplacement, TextNode, $createTextNode, $getSelection, $isRangeSelection, $isTextNode, FORMAT_TEXT_COMMAND, SELECTION_CHANGE_COMMAND, COMMAND_PRIORITY_LOW, $getRoot, $createParagraphNode, KEY_BACKSPACE_COMMAND, KEY_DELETE_COMMAND, PASTE_COMMAND, COMMAND_PRIORITY_NORMAL } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -1699,6 +1699,7 @@ var REMOVE_UPLOAD_PROGRESS = 'REMOVE_UPLOAD_PROGRESS';
 var UPLOAD_ATTACHMENT_COMPILATION = 'UPLOAD_ATTACHMENT_COMPILATION';
 var GET_MESSAGES_ATTACHMENTS = 'GET_MESSAGES_ATTACHMENTS';
 var SET_ATTACHMENTS = 'SET_ATTACHMENTS';
+var REMOVE_ATTACHMENT = 'REMOVE_ATTACHMENT';
 var SET_ATTACHMENTS_FOR_POPUP = 'SET_ATTACHMENTS_FOR_POPUP';
 var EMPTY_CHANNEL_ATTACHMENTS = 'EMPTY_CHANNEL_ATTACHMENTS';
 var LOAD_MORE_MESSAGES_ATTACHMENTS = 'LOAD_MORE_MESSAGES_ATTACHMENTS';
@@ -8320,6 +8321,20 @@ var getPendingAttachment = function getPendingAttachment(attachmentId) {
 var deletePendingAttachment = function deletePendingAttachment(attachmentId) {
   return delete pendingAttachments[attachmentId];
 };
+var deletePendingMessage = function deletePendingMessage(channelId, message) {
+  if (message.attachments && message.attachments.length) {
+    var customUploader = getCustomUploader();
+    message.attachments.forEach(function (att) {
+      if (customUploader) {
+        cancelUpload(att.tid);
+        deletePendingAttachment(att.tid);
+      }
+    });
+  }
+
+  removeMessageFromMap(channelId, message.id || message.tid);
+  removeMessageFromAllMessages(message.id || message.tid);
+};
 var getPendingMessages = function getPendingMessages(channelId) {
   return pendingMessagesMap[channelId];
 };
@@ -8676,6 +8691,18 @@ var MessageReducer = (function (state, _temp) {
         return newState;
       }
 
+    case REMOVE_ATTACHMENT:
+      {
+        var attachmentId = payload.attachmentId;
+        newState.activeTabAttachments = [].concat(newState.activeTabAttachments).filter(function (item) {
+          return item.id !== attachmentId;
+        });
+        newState.attachmentsForPopup = [].concat(newState.attachmentsForPopup).filter(function (item) {
+          return item.id !== attachmentId;
+        });
+        return newState;
+      }
+
     case SET_ATTACHMENTS_FOR_POPUP:
       {
         var _attachments = payload.attachments;
@@ -8725,7 +8752,7 @@ var MessageReducer = (function (state, _temp) {
       {
         var uploaded = payload.uploaded,
             total = payload.total,
-            attachmentId = payload.attachmentId,
+            _attachmentId = payload.attachmentId,
             progress = payload.progress;
 
         var attachmentsUploadingProgressCopy = _extends({}, newState.attachmentsUploadingProgress);
@@ -8735,18 +8762,18 @@ var MessageReducer = (function (state, _temp) {
           total: total,
           progress: progress
         };
-        attachmentsUploadingProgressCopy[attachmentId] = _extends({}, attachmentsUploadingProgressCopy[attachmentId], updateData);
+        attachmentsUploadingProgressCopy[_attachmentId] = _extends({}, attachmentsUploadingProgressCopy[_attachmentId], updateData);
         newState.attachmentsUploadingProgress = attachmentsUploadingProgressCopy;
         return newState;
       }
 
     case REMOVE_UPLOAD_PROGRESS:
       {
-        var _attachmentId = payload.attachmentId;
+        var _attachmentId2 = payload.attachmentId;
 
         var _attachmentsUploadingProgressCopy = _extends({}, newState.attachmentsUploadingProgress);
 
-        delete _attachmentsUploadingProgressCopy[_attachmentId];
+        delete _attachmentsUploadingProgressCopy[_attachmentId2];
         newState.attachmentsUploadingProgress = _attachmentsUploadingProgressCopy;
         return newState;
       }
@@ -8781,8 +8808,8 @@ var MessageReducer = (function (state, _temp) {
         var _extends2;
 
         var attachmentUploadingState = payload.attachmentUploadingState,
-            _attachmentId2 = payload.attachmentId;
-        newState.attachmentsUploadingState = _extends({}, newState.attachmentsUploadingState, (_extends2 = {}, _extends2[_attachmentId2] = attachmentUploadingState, _extends2));
+            _attachmentId3 = payload.attachmentId;
+        newState.attachmentsUploadingState = _extends({}, newState.attachmentsUploadingState, (_extends2 = {}, _extends2[_attachmentId3] = attachmentUploadingState, _extends2));
         return newState;
       }
 
@@ -11002,6 +11029,14 @@ function setAttachmentsAC(attachments) {
     type: SET_ATTACHMENTS,
     payload: {
       attachments: attachments
+    }
+  };
+}
+function removeAttachmentAC(attachmentId) {
+  return {
+    type: REMOVE_ATTACHMENT,
+    payload: {
+      attachmentId: attachmentId
     }
   };
 }
@@ -23184,17 +23219,15 @@ function _extends$t() {
   return _extends$t.apply(this, arguments);
 }
 
-function SvgSliderButtonRight(props) {
+function SvgCancel(props) {
   return /*#__PURE__*/createElement("svg", _extends$t({
-    width: 28,
-    height: 28,
-    viewBox: "0 0 28.01 28.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$s || (_path$s = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
+    d: "M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z",
     fill: "#fff"
   })));
 }
@@ -23218,7 +23251,7 @@ function _extends$u() {
   return _extends$u.apply(this, arguments);
 }
 
-function SvgSliderButtonLeft(props) {
+function SvgSliderButtonRight(props) {
   return /*#__PURE__*/createElement("svg", _extends$u({
     width: 28,
     height: 28,
@@ -23228,8 +23261,113 @@ function SvgSliderButtonLeft(props) {
   }, props), _path$t || (_path$t = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
+    d: "M9.846 5.763a1.75 1.75 0 012.475 0l7 7a1.75 1.75 0 010 2.474l-7 7a1.75 1.75 0 11-2.475-2.474L15.61 14 9.846 8.237a1.75 1.75 0 010-2.474z",
+    fill: "#fff"
+  })));
+}
+
+var _path$u;
+
+function _extends$v() {
+  _extends$v = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$v.apply(this, arguments);
+}
+
+function SvgSliderButtonLeft(props) {
+  return /*#__PURE__*/createElement("svg", _extends$v({
+    width: 28,
+    height: 28,
+    viewBox: "0 0 28.01 28.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$u || (_path$u = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
     d: "M18.154 5.763a1.75 1.75 0 00-2.475 0l-7 7a1.75 1.75 0 000 2.474l7 7a1.75 1.75 0 102.475-2.474L12.392 14l5.762-5.763a1.75 1.75 0 000-2.474z",
     fill: "#fff"
+  })));
+}
+
+var _path$v, _path2$3;
+
+function _extends$w() {
+  _extends$w = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$w.apply(this, arguments);
+}
+
+function SvgForward(props) {
+  return /*#__PURE__*/createElement("svg", _extends$w({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$v || (_path$v = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
+    fill: "CurrentColor"
+  })), _path2$3 || (_path2$3 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$w;
+
+function _extends$x() {
+  _extends$x = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$x.apply(this, arguments);
+}
+
+function SvgDeleteChannel(props) {
+  return /*#__PURE__*/createElement("svg", _extends$x({
+    width: 20,
+    height: 21,
+    viewBox: "0 0 20.01 21.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$w || (_path$w = /*#__PURE__*/createElement("path", {
+    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -23282,102 +23420,6 @@ var getAttachmentUrlFromCache = function getAttachmentUrlFromCache(attachmentUrl
   }
 };
 
-var _path$u;
-
-function _extends$v() {
-  _extends$v = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$v.apply(this, arguments);
-}
-
-function SvgVideoPlayerPlay(props) {
-  return /*#__PURE__*/createElement("svg", _extends$v({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$u || (_path$u = /*#__PURE__*/createElement("path", {
-    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
-    fill: "#fff"
-  })));
-}
-
-var _path$v;
-
-function _extends$w() {
-  _extends$w = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$w.apply(this, arguments);
-}
-
-function SvgVideoPlayerPause(props) {
-  return /*#__PURE__*/createElement("svg", _extends$w({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$v || (_path$v = /*#__PURE__*/createElement("path", {
-    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
-    fill: "#fff"
-  })));
-}
-
-var _path$w;
-
-function _extends$x() {
-  _extends$x = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$x.apply(this, arguments);
-}
-
-function SvgVolume(props) {
-  return /*#__PURE__*/createElement("svg", _extends$x({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$w || (_path$w = /*#__PURE__*/createElement("path", {
-    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
-    fill: "#fff"
-  })));
-}
-
 var _path$x;
 
 function _extends$y() {
@@ -23397,7 +23439,7 @@ function _extends$y() {
   return _extends$y.apply(this, arguments);
 }
 
-function SvgVolumeMute(props) {
+function SvgVideoPlayerPlay(props) {
   return /*#__PURE__*/createElement("svg", _extends$y({
     width: 20,
     height: 20,
@@ -23405,7 +23447,7 @@ function SvgVolumeMute(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$x || (_path$x = /*#__PURE__*/createElement("path", {
-    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
     fill: "#fff"
   })));
 }
@@ -23429,7 +23471,7 @@ function _extends$z() {
   return _extends$z.apply(this, arguments);
 }
 
-function SvgFullscreen(props) {
+function SvgVideoPlayerPause(props) {
   return /*#__PURE__*/createElement("svg", _extends$z({
     width: 20,
     height: 20,
@@ -23437,9 +23479,7 @@ function SvgFullscreen(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$y || (_path$y = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
     fill: "#fff"
   })));
 }
@@ -23463,7 +23503,7 @@ function _extends$A() {
   return _extends$A.apply(this, arguments);
 }
 
-function SvgFullscreenExit(props) {
+function SvgVolume(props) {
   return /*#__PURE__*/createElement("svg", _extends$A({
     width: 20,
     height: 20,
@@ -23471,6 +23511,104 @@ function SvgFullscreenExit(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$z || (_path$z = /*#__PURE__*/createElement("path", {
+    d: "M11.667 2.5c.46 0 .833.373.833.833v13.334c0 .46-.373.833-.833.833a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l4.595-4.422c.385-.37.9-.578 1.434-.578zm4.487 2.786a.75.75 0 011.06 0 6.667 6.667 0 010 9.428.75.75 0 01-1.06-1.06 5.167 5.167 0 000-7.307.75.75 0 010-1.061zm-2.122 2.121a.75.75 0 011.061 0 3.667 3.667 0 010 5.186.75.75 0 01-1.06-1.06 2.167 2.167 0 000-3.065.75.75 0 010-1.06z",
+    fill: "#fff"
+  })));
+}
+
+var _path$A;
+
+function _extends$B() {
+  _extends$B = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$B.apply(this, arguments);
+}
+
+function SvgVolumeMute(props) {
+  return /*#__PURE__*/createElement("svg", _extends$B({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$A || (_path$A = /*#__PURE__*/createElement("path", {
+    d: "M4.763 2.746l11.655 11.658a.833.833 0 01-1.1 1.248l-.078-.07-2.74-2.74v3.825c0 .427-.321.78-.736.827l-.097.006a2.062 2.062 0 01-1.433-.579L5.66 12.5H3.334c-.92 0-1.667-.746-1.667-1.667V9.167c0-.92.746-1.667 1.667-1.667h2.304l.775-.747-2.829-2.828a.833.833 0 011.179-1.179zm6.904-.246c.46 0 .833.373.833.833v4.8L8.812 4.445l1.421-1.367a2.068 2.068 0 011.274-.572l.16-.006z",
+    fill: "#fff"
+  })));
+}
+
+var _path$B;
+
+function _extends$C() {
+  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$C.apply(this, arguments);
+}
+
+function SvgFullscreen(props) {
+  return /*#__PURE__*/createElement("svg", _extends$C({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$B || (_path$B = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M11.875 3.344c0-.466.378-.844.844-.844h3.937c.466 0 .844.378.844.844V7.28a.844.844 0 01-1.688 0v-1.9l-3.434 3.434a.844.844 0 01-1.193-1.193l3.434-3.434h-1.9a.844.844 0 01-.844-.844zM8.815 11.185c.33.33.33.863 0 1.193l-3.434 3.434H7.28a.844.844 0 010 1.688H3.344a.844.844 0 01-.844-.844V12.72a.844.844 0 111.688 0v1.9l3.434-3.434a.844.844 0 011.193 0z",
+    fill: "#fff"
+  })));
+}
+
+var _path$C;
+
+function _extends$D() {
+  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$D.apply(this, arguments);
+}
+
+function SvgFullscreenExit(props) {
+  return /*#__PURE__*/createElement("svg", _extends$D({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$C || (_path$C = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M3.438 11.781c0-.466.377-.844.843-.844H8.22c.466 0 .844.378.844.844v3.938a.844.844 0 01-1.688 0v-1.9L3.94 17.252a.844.844 0 11-1.193-1.193l3.435-3.435h-1.9a.844.844 0 01-.844-.844zM17.253 2.747c.33.33.33.864 0 1.193l-3.435 3.435h1.899a.844.844 0 110 1.688h-3.936a.844.844 0 01-.844-.844V4.28a.844.844 0 011.688 0v1.9l3.435-3.434a.844.844 0 011.193 0z",
@@ -23726,15 +23864,442 @@ var VolumeSlide = styled.input(_templateObject9$5 || (_templateObject9$5 = _tagg
 var Progress = styled.input(_templateObject10$4 || (_templateObject10$4 = _taggedTemplateLiteralLoose(["\n  -webkit-appearance: none;\n  margin-right: 15px;\n  width: 100%;\n  height: 4px;\n  background: rgba(255, 255, 255, 0.6);\n  border-radius: 5px;\n  background-image: linear-gradient(#fff, #fff);\n  //background-size: 70% 100%;\n  background-repeat: no-repeat;\n  cursor: pointer;\n\n  &::-webkit-slider-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-moz-range-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-ms-thumb {\n    -webkit-appearance: none;\n    height: 16px;\n    width: 16px;\n    border-radius: 50%;\n    background: #fff;\n    cursor: pointer;\n    box-shadow: 0 0 2px 0 #555;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-webkit-slider-thumb:hover {\n    background: #fff;\n  }\n  &::-moz-range-thumb:hover {\n    background: #fff;\n  }\n  &::-ms-thumb:hover {\n    background: #fff;\n  }\n\n  &::-webkit-slider-runnable-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n\n  &::-moz-range-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n  &::-ms-track {\n    -webkit-appearance: none;\n    box-shadow: none;\n    border: none;\n    background: transparent;\n    transition: all 0.3s ease-in-out;\n  }\n"])));
 var FullScreenWrapper = styled.div(_templateObject11$3 || (_templateObject11$3 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  margin-left: 16px;\n  cursor: pointer;\n  @media (max-width: 768px) {\n    margin-left: 12px;\n    & > svg {\n      width: 18px;\n      height: 18px;\n    }\n  }\n  @media (max-width: 480px) {\n    margin-left: auto;\n    & > svg {\n      width: 16px;\n      height: 16px;\n    }\n  }\n"])));
 
-var _templateObject$l, _templateObject2$h, _templateObject3$d, _templateObject4$b, _templateObject5$9, _templateObject6$7, _templateObject7$6, _templateObject8$6, _templateObject9$6, _templateObject10$5, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2;
+var _templateObject$l, _templateObject2$h, _templateObject3$d, _templateObject4$b, _templateObject5$9, _templateObject6$7, _templateObject7$6, _templateObject8$6, _templateObject9$6, _templateObject10$5;
+
+function ForwardMessagePopup(_ref) {
+  var title = _ref.title,
+      buttonText = _ref.buttonText,
+      togglePopup = _ref.togglePopup,
+      handleForward = _ref.handleForward,
+      loading = _ref.loading;
+  var ChatClient = getClient();
+  var user = ChatClient.user;
+  var dispatch = useDispatch();
+  var channels = useSelector(channelsForForwardSelector) || [];
+  var searchedChannels = useSelector(searchedChannelsForForwardSelector) || [];
+  var contactsMap = useSelector(contactsMapSelector);
+  var getFromContacts = getShowOnlyContactUsers();
+  var channelsLoading = useSelector(channelsLoadingStateForForwardSelector);
+  var channelsHasNext = useSelector(channelsForForwardHasNextSelector);
+
+  var _useState = useState(''),
+      searchValue = _useState[0],
+      setSearchValue = _useState[1];
+
+  var _useState2 = useState(0),
+      selectedChannelsContHeight = _useState2[0],
+      setSelectedChannelsHeight = _useState2[1];
+
+  var _useState3 = useState([]),
+      selectedChannels = _useState3[0],
+      setSelectedChannels = _useState3[1];
+
+  var selectedChannelsContRef = useRef();
+
+  var handleForwardMessage = function handleForwardMessage() {
+    handleForward(selectedChannels.map(function (channel) {
+      return channel.id;
+    }));
+    togglePopup();
+  };
+
+  var handleChannelListScroll = function handleChannelListScroll(event) {
+    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100) {
+      if (channelsLoading === LOADING_STATE.LOADED && channelsHasNext) {
+        dispatch(loadMoreChannelsForForward(15));
+      }
+    }
+  };
+
+  var handleSearchValueChange = function handleSearchValueChange(e) {
+    var value = e.target.value;
+    setSearchValue(value);
+  };
+
+  var getMyChannels = function getMyChannels() {
+    setSearchValue('');
+  };
+
+  var handleChannelSelect = function handleChannelSelect(event, channel) {
+    var newSelectedChannels = [].concat(selectedChannels);
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+
+    if (event.target.checked && selectedChannels.length < 5) {
+      newSelectedChannels.push({
+        id: channel.id,
+        displayName: channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')
+      });
+    } else {
+      var itemToDeleteIndex = newSelectedChannels.findIndex(function (chan) {
+        return channel.id === chan.id;
+      });
+
+      if (itemToDeleteIndex >= 0) {
+        newSelectedChannels.splice(itemToDeleteIndex, 1);
+      }
+    }
+
+    setSearchValue('');
+    setSelectedChannels(newSelectedChannels);
+  };
+
+  var removeChannel = function removeChannel(channel) {
+    var newSelectedChannels = [].concat(selectedChannels);
+    var itemToDeleteIndex = newSelectedChannels.findIndex(function (c) {
+      return channel.id === c.id;
+    });
+
+    if (itemToDeleteIndex >= 0) {
+      newSelectedChannels.splice(itemToDeleteIndex, 1);
+    }
+
+    setSelectedChannels(newSelectedChannels);
+  };
+
+  useEffect(function () {
+    if (selectedChannelsContRef.current) {
+      setSelectedChannelsHeight(selectedChannelsContRef.current.offsetHeight);
+    } else {
+      setSelectedChannelsHeight(0);
+    }
+  }, [selectedChannels]);
+  useEffect(function () {
+    dispatch(getChannelsForForwardAC());
+    return function () {
+      dispatch(setSearchedChannelsForForwardAC({
+        chats_groups: [],
+        channels: [],
+        contacts: []
+      }));
+    };
+  }, []);
+  useEffect(function () {
+    if (searchValue) {
+      dispatch(searchChannelsForForwardAC({
+        search: searchValue
+      }, contactsMap));
+    } else {
+      dispatch(setSearchedChannelsForForwardAC({
+        chats_groups: [],
+        channels: [],
+        contacts: []
+      }));
+    }
+  }, [searchValue]);
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
+    maxWidth: '522px',
+    minWidth: '522px',
+    height: '540px',
+    isLoading: loading,
+    padding: '0'
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
+    paddingH: '24px',
+    paddingV: '24px',
+    withFooter: true
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
+    isDelete: true,
+    marginBottom: '20px'
+  }, title), /*#__PURE__*/React__default.createElement(ChannelSearch, {
+    searchValue: searchValue,
+    handleSearchValueChange: handleSearchValueChange,
+    getMyChannels: getMyChannels
+  }), /*#__PURE__*/React__default.createElement(SelectedChannelsContainer, {
+    ref: selectedChannelsContRef
+  }, selectedChannels.map(function (channel) {
+    return /*#__PURE__*/React__default.createElement(SelectedChannelBuble, {
+      key: "selected-" + channel.id
+    }, /*#__PURE__*/React__default.createElement(SelectedChannelName, null, channel.displayName), /*#__PURE__*/React__default.createElement(StyledSubtractSvg$1, {
+      onClick: function onClick() {
+        return removeChannel(channel);
+      }
+    }));
+  })), /*#__PURE__*/React__default.createElement(ForwardChannelsCont, {
+    onScroll: handleChannelListScroll,
+    selectedChannelsHeight: selectedChannelsContHeight
+  }, searchValue ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !!(searchedChannels.chats_groups && searchedChannels.chats_groups.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, {
+    margin: '0 0 12px'
+  }, "Chats & Groups"), searchedChannels.chats_groups.map(function (channel) {
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : channel.subject || '',
+      image: directChannelUser ? directChannelUser.avatarUrl : channel.avatarUrl,
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: true
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, isDirectChannel ? directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User' : channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  })), !!(searchedChannels.channels && searchedChannels.channels.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, null, "Channels"), searchedChannels.channels.map(function (channel) {
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: channel.subject || '',
+      image: channel.avatarUrl,
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: false
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  }))) : channels.map(function (channel) {
+    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
+    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
+      return member.id !== user.id;
+    });
+    var isSelected = selectedChannels.findIndex(function (chan) {
+      return chan.id === channel.id;
+    }) >= 0;
+    return /*#__PURE__*/React__default.createElement(ChannelItem, {
+      key: channel.id
+    }, /*#__PURE__*/React__default.createElement(Avatar, {
+      name: channel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
+      image: channel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
+      size: 40,
+      textSize: 12,
+      setDefaultAvatar: isDirectChannel
+    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
+      index: channel.id,
+      disabled: selectedChannels.length >= 5 && !isSelected,
+      state: isSelected,
+      onChange: function onChange(e) {
+        return handleChannelSelect(e, channel);
+      },
+      size: '18px'
+    }));
+  }))), /*#__PURE__*/React__default.createElement(PopupFooter, {
+    backgroundColor: colors.backgroundColor
+  }, /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    color: colors.textColor1,
+    backgroundColor: 'transparent',
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    backgroundColor: colors.primary,
+    borderRadius: '8px',
+    onClick: handleForwardMessage
+  }, buttonText || 'Forward'))));
+}
+var ForwardChannelsCont = styled.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 22px;\n"])), function (props) {
+  return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
+});
+var ChannelItem = styled.div(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
+var ChannelInfo$3 = styled.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
+var ChannelsGroupTitle = styled.h4(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  margin: ", ";\n  color: ", ";\n"])), function (props) {
+  return props.margin || '20px 0 12px';
+}, colors.textColor2);
+var ChannelTitle = styled.h3(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
+var ChannelMembers = styled.h4(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
+var SelectedChannelsContainer = styled.div(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
+var SelectedChannelBuble = styled.div(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
+var SelectedChannelName = styled.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
+var StyledSubtractSvg$1 = styled(SvgCross)(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
+
+var _templateObject$m, _templateObject2$i;
+
+var CustomRadio$1 = function CustomRadio(_ref) {
+  var index = _ref.index,
+      state = _ref.state,
+      _onChange = _ref.onChange,
+      checkedBorder = _ref.checkedBorder,
+      border = _ref.border,
+      borderRadius = _ref.borderRadius,
+      size = _ref.size,
+      disabled = _ref.disabled;
+  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(CustomLabel$1, {
+    isChecked: state,
+    size: size,
+    checkedBorder: checkedBorder,
+    border: border,
+    borderRadius: borderRadius,
+    htmlFor: "radio-" + index
+  }), /*#__PURE__*/React__default.createElement(Radio, {
+    disabled: disabled,
+    type: 'radio',
+    id: "radio-" + index,
+    checked: state,
+    onChange: function onChange(e) {
+      return _onChange(e);
+    }
+  }));
+};
+var CustomLabel$1 = styled.label(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
+  return props.size || '12px';
+}, function (props) {
+  return props.size || '12px';
+}, function (props) {
+  return props.isChecked ? props.checkedBorder || "6px solid " + colors.primary : props.border || "1px solid " + colors.textColor2;
+}, function (props) {
+  return props.borderRadius || '50%';
+});
+var Radio = styled.input(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
+
+function usePermissions(myRole) {
+  var dispatch = useDispatch();
+  var rolesMap = useSelector(rolesMapSelector, shallowEqual);
+  var myPermissions = myRole && rolesMap && rolesMap[myRole] ? rolesMap[myRole].permissions : [];
+
+  var checkActionPermission = function checkActionPermission(actionName) {
+    return myPermissions.includes(actionName);
+  };
+
+  useEffect(function () {
+    dispatch(getRolesAC());
+  }, []);
+  return [checkActionPermission, myPermissions];
+}
+
+var _templateObject$n, _templateObject2$j;
+
+function ConfirmPopup(_ref) {
+  var title = _ref.title,
+      description = _ref.description,
+      theme = _ref.theme,
+      buttonText = _ref.buttonText,
+      buttonTextColor = _ref.buttonTextColor,
+      buttonBackground = _ref.buttonBackground,
+      togglePopup = _ref.togglePopup,
+      handleFunction = _ref.handleFunction,
+      isDeleteMessage = _ref.isDeleteMessage,
+      isIncomingMessage = _ref.isIncomingMessage,
+      allowDeleteIncoming = _ref.allowDeleteIncoming,
+      isDirectChannel = _ref.isDirectChannel,
+      _ref$myRole = _ref.myRole,
+      myRole = _ref$myRole === void 0 ? '' : _ref$myRole,
+      loading = _ref.loading;
+
+  var _usePermissions = usePermissions(myRole),
+      checkActionPermission = _usePermissions[0];
+
+  var _useState = useState(true),
+      initialRender = _useState[0],
+      setInitialRender = _useState[1];
+
+  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : isDirectChannel || checkActionPermission('deleteOwnMessage');
+
+  var _useState2 = useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
+      deleteMessageOption = _useState2[0],
+      setDeleteMessageOption = _useState2[1];
+
+  var handleDelete = function handleDelete() {
+    handleFunction(isDeleteMessage && deleteMessageOption);
+    togglePopup();
+  };
+
+  var handleChoseDeleteOption = function handleChoseDeleteOption(e, option) {
+    if (e.target.checked) {
+      setDeleteMessageOption(option);
+    }
+  };
+
+  useEffect(function () {
+    setInitialRender(false);
+  }, []);
+  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
+    theme: theme,
+    backgroundColor: colors.backgroundColor,
+    maxWidth: '520px',
+    minWidth: '520px',
+    isLoading: loading,
+    padding: '0'
+  }, /*#__PURE__*/React__default.createElement(PopupBody, {
+    paddingH: '24px',
+    paddingV: '24px'
+  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
+    color: colors.textColor1,
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }), /*#__PURE__*/React__default.createElement(PopupName, {
+    color: colors.textColor1,
+    isDelete: true,
+    marginBottom: '20px'
+  }, title), /*#__PURE__*/React__default.createElement(PopupDescription, null, description), isDeleteMessage && /*#__PURE__*/React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
+    onClick: function onClick() {
+      return setDeleteMessageOption('forEveryone');
+    }
+  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
+    index: '1',
+    size: '18px',
+    state: deleteMessageOption === 'forEveryone',
+    onChange: function onChange(e) {
+      return handleChoseDeleteOption(e, 'forEveryone');
+    }
+  }), "Delete for everyone"), /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
+    onClick: function onClick() {
+      return setDeleteMessageOption('forMe');
+    }
+  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
+    index: '2',
+    size: '18px',
+    state: deleteMessageOption === 'forMe',
+    onChange: function onChange(e) {
+      return handleChoseDeleteOption(e, 'forMe');
+    }
+  }), "Delete for me"))), /*#__PURE__*/React__default.createElement(PopupFooter, {
+    backgroundColor: colors.backgroundColor
+  }, /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    color: colors.textColor1,
+    backgroundColor: 'transparent',
+    onClick: function onClick() {
+      return togglePopup();
+    }
+  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
+    type: 'button',
+    backgroundColor: buttonBackground || colors.red1,
+    color: buttonTextColor,
+    borderRadius: '8px',
+    onClick: handleDelete,
+    disabled: initialRender
+  }, buttonText || 'Delete'))));
+}
+var DeleteMessageOptions = styled.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
+var DeleteOptionItem = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
+
+var _templateObject$o, _templateObject2$k, _templateObject3$e, _templateObject4$c, _templateObject5$a, _templateObject6$8, _templateObject7$7, _templateObject8$7, _templateObject9$7, _templateObject10$6, _templateObject11$4, _templateObject12$2, _templateObject13$2, _templateObject14$2, _templateObject15$2;
 
 var SliderPopup = function SliderPopup(_ref) {
-  var channelId = _ref.channelId,
+  var channel = _ref.channel,
       setIsSliderOpen = _ref.setIsSliderOpen,
       mediaFiles = _ref.mediaFiles,
-      currentMediaFile = _ref.currentMediaFile;
+      currentMediaFile = _ref.currentMediaFile,
+      allowEditDeleteIncomingMessage = _ref.allowEditDeleteIncomingMessage;
   var dispatch = useDispatch();
   var getFromContacts = getShowOnlyContactUsers();
+  var connectionStatus = useSelector(connectionStatusSelector);
   var ChatClient = getClient();
   var user = ChatClient.user;
 
@@ -23773,6 +24338,14 @@ var SliderPopup = function SliderPopup(_ref) {
   var _useState9 = useState(false),
       visibleSlide = _useState9[0],
       setVisibleSlide = _useState9[1];
+
+  var _useState10 = useState(false),
+      forwardPopupOpen = _useState10[0],
+      setForwardPopupOpen = _useState10[1];
+
+  var _useState11 = useState(),
+      messageToDelete = _useState11[0],
+      setMessageToDelete = _useState11[1];
 
   var customDownloader = getCustomDownloader();
   var contactsMap = useSelector(contactsMapSelector);
@@ -23843,6 +24416,111 @@ var SliderPopup = function SliderPopup(_ref) {
     if (!e.target.closest('.custom_carousel_item') && !e.target.closest('.custom_carousel_arrow')) {
       handleClosePopup();
     }
+  };
+
+  var handleForwardMessage = function handleForwardMessage(channelIds) {
+    try {
+      var _temp5 = function _temp5() {
+        if (channelIds && channelIds.length) {
+          channelIds.forEach(function (channelId) {
+            dispatch(forwardMessageAC(message, channelId, connectionStatus));
+          });
+        }
+
+        setIsSliderOpen(false);
+      };
+
+      var message = getAllMessages().find(function (message) {
+        return message.id === currentFile.messageId;
+      });
+
+      var _temp6 = function () {
+        if (!message) {
+          var _temp7 = function _temp7() {
+            return Promise.resolve(_channelInstance.getMessagesById([currentFile.messageId])).then(function (messages) {
+              message = messages[0];
+            });
+          };
+
+          var _channelInstance = getChannelFromMap(channel.id);
+
+          var _temp8 = function () {
+            if (!_channelInstance) {
+              return Promise.resolve(ChatClient.getChannelById(channel.id)).then(function (_ChatClient$getChanne) {
+                _channelInstance = _ChatClient$getChanne;
+              });
+            }
+          }();
+
+          return _temp8 && _temp8.then ? _temp8.then(_temp7) : _temp7(_temp8);
+        }
+      }();
+
+      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var handleToggleForwardMessagePopup = function handleToggleForwardMessagePopup() {
+    setForwardPopupOpen(!forwardPopupOpen);
+  };
+
+  var handleToggleDeleteMessagePopup = function handleToggleDeleteMessagePopup() {
+    try {
+      var _temp14 = function () {
+        if (!messageToDelete) {
+          var _temp15 = function _temp15() {
+            if (!_message.deliveryStatus || _message.deliveryStatus === MESSAGE_DELIVERY_STATUS.PENDING) {
+              deletePendingMessage(channel.id, _message);
+            } else {
+              setMessageToDelete(_message);
+            }
+          };
+
+          var _message = getAllMessages().find(function (message) {
+            return message.id === currentFile.messageId;
+          });
+
+          var _temp16 = function () {
+            if (!_message) {
+              var _temp17 = function _temp17() {
+                return Promise.resolve(_channelInstance2.getMessagesById([currentFile.messageId])).then(function (messages) {
+                  _message = messages[0];
+                });
+              };
+
+              var _channelInstance2 = getChannelFromMap(channel.id);
+
+              var _temp18 = function () {
+                if (!_channelInstance2) {
+                  return Promise.resolve(ChatClient.getChannelById(channel.id)).then(function (_ChatClient$getChanne2) {
+                    _channelInstance2 = _ChatClient$getChanne2;
+                  });
+                }
+              }();
+
+              return _temp18 && _temp18.then ? _temp18.then(_temp17) : _temp17(_temp18);
+            }
+          }();
+
+          return _temp16 && _temp16.then ? _temp16.then(_temp15) : _temp15(_temp16);
+        } else {
+          setMessageToDelete(undefined);
+        }
+      }();
+
+      return Promise.resolve(_temp14 && _temp14.then ? _temp14.then(function () {}) : void 0);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
+
+  var handleDeleteMessage = function handleDeleteMessage(deleteOption) {
+    dispatch(deleteMessageAC(channel.id, currentFile.messageId, deleteOption));
+    dispatch(removeAttachmentAC(currentFile.id));
+    setMessageToDelete(undefined);
+    setIsSliderOpen(false);
   };
 
   useDidUpdate(function () {
@@ -24005,7 +24683,7 @@ var SliderPopup = function SliderPopup(_ref) {
       if (mediaFiles) {
         setAttachmentsList(mediaFiles);
       } else {
-        dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media, 35, queryDirection.NEAR, currentMediaFile.id, true));
+        dispatch(getAttachmentsAC(channel.id, channelDetailsTabs.media, 35, queryDirection.NEAR, currentMediaFile.id, true));
       }
     }
 
@@ -24022,7 +24700,7 @@ var SliderPopup = function SliderPopup(_ref) {
     setDefaultAvatar: true,
     size: 36,
     image: currentFile && currentFile.user && currentFile.user.avatarUrl
-  }), /*#__PURE__*/React__default.createElement(Info, null, /*#__PURE__*/React__default.createElement(UserName, null, attachmentUserName), /*#__PURE__*/React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.createdAt).format('DD.MM.YYYY HH:mm'), ' ', /*#__PURE__*/React__default.createElement(FileSize, null, currentFile && currentFile.size && currentFile.size > 0 ? bytesToSize(currentFile.size, 1) : '')))), /*#__PURE__*/React__default.createElement(ActionDownload, {
+  }), /*#__PURE__*/React__default.createElement(Info, null, /*#__PURE__*/React__default.createElement(UserName, null, attachmentUserName), /*#__PURE__*/React__default.createElement(FileDateAndSize, null, moment(currentFile && currentFile.createdAt).format('DD.MM.YYYY HH:mm'), ' ', /*#__PURE__*/React__default.createElement(FileSize, null, currentFile && currentFile.size && currentFile.size > 0 ? bytesToSize(currentFile.size, 1) : '')))), /*#__PURE__*/React__default.createElement(ActionsWrapper, null, /*#__PURE__*/React__default.createElement(IconWrapper, {
     onClick: function onClick() {
       return handleDownloadFile(currentFile);
     }
@@ -24048,9 +24726,16 @@ var SliderPopup = function SliderPopup(_ref) {
         transformOrigin: 'center center'
       }
     }
-  })) : /*#__PURE__*/React__default.createElement(SvgDownload, null)), /*#__PURE__*/React__default.createElement(Actions, null, /*#__PURE__*/React__default.createElement(ActionItem, {
+  })) : /*#__PURE__*/React__default.createElement(SvgDownload, null)), /*#__PURE__*/React__default.createElement(IconWrapper, {
+    hideInMobile: true,
+    margin: '0 32px',
+    onClick: handleToggleForwardMessagePopup
+  }, /*#__PURE__*/React__default.createElement(SvgForward, null)), /*#__PURE__*/React__default.createElement(IconWrapper, {
+    hideInMobile: true,
+    onClick: handleToggleDeleteMessagePopup
+  }, /*#__PURE__*/React__default.createElement(SvgDeleteChannel, null))), /*#__PURE__*/React__default.createElement(ClosePopupWrapper, null, /*#__PURE__*/React__default.createElement(IconWrapper, {
     onClick: handleClosePopup
-  }, /*#__PURE__*/React__default.createElement(SvgClose, null)))), /*#__PURE__*/React__default.createElement(SliderBody, {
+  }, /*#__PURE__*/React__default.createElement(SvgCancel, null)))), /*#__PURE__*/React__default.createElement(SliderBody, {
     onClick: handleClicks
   }, attachmentsList && attachmentsList.length ?
   /*#__PURE__*/
@@ -24114,22 +24799,42 @@ var SliderPopup = function SliderPopup(_ref) {
       videoFileId: file.id,
       src: downloadedFiles[file.id]
     }))));
-  })) : /*#__PURE__*/React__default.createElement(UploadingIcon, null)));
+  })) : /*#__PURE__*/React__default.createElement(UploadingIcon, null)), forwardPopupOpen && /*#__PURE__*/React__default.createElement(ForwardMessagePopup, {
+    handleForward: handleForwardMessage,
+    togglePopup: handleToggleForwardMessagePopup,
+    buttonText: 'Forward',
+    title: 'Forward message'
+  }), messageToDelete && /*#__PURE__*/React__default.createElement(ConfirmPopup, {
+    handleFunction: handleDeleteMessage,
+    togglePopup: handleToggleDeleteMessagePopup,
+    buttonText: 'Delete',
+    description: 'Who do you want to remove this message for?',
+    isDeleteMessage: true,
+    isIncomingMessage: messageToDelete.incoming,
+    myRole: channel.userRole,
+    allowDeleteIncoming: allowEditDeleteIncomingMessage,
+    isDirectChannel: channel.type === CHANNEL_TYPE.DIRECT,
+    title: 'Delete message'
+  }));
 };
-var Container$b = styled.div(_templateObject$l || (_templateObject$l = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
-var ProgressWrapper = styled.span(_templateObject2$h || (_templateObject2$h = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 35px;\n  height: 35px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
-var SliderHeader = styled.div(_templateObject3$d || (_templateObject3$d = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), function (props) {
+var Container$b = styled.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  position: fixed;\n  top: 0;\n  left: 0;\n  right: 0;\n  bottom: 0;\n  height: 100vh;\n  z-index: 999;\n"])));
+var ProgressWrapper = styled.span(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  display: inline-block;\n  width: 35px;\n  height: 35px;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var SliderHeader = styled.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  height: 60px;\n  background: ", ";\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 0 16px;\n"])), function (props) {
   return props.backgroundColor || colors.textColor1;
 });
-var SliderBody = styled.div(_templateObject4$b || (_templateObject4$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.4);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
-var FileInfo = styled.div(_templateObject5$9 || (_templateObject5$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  color: ", ";\n"])), colors.white);
-var Info = styled.div(_templateObject6$7 || (_templateObject6$7 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
-var Actions = styled.div(_templateObject7$6 || (_templateObject7$6 = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
-var FileDateAndSize = styled.span(_templateObject8$6 || (_templateObject8$6 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
-var FileSize = styled.span(_templateObject9$6 || (_templateObject9$6 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
-var UserName = styled.h4(_templateObject10$5 || (_templateObject10$5 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
-var ActionItem = styled.span(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n"])));
-var ActionDownload = styled.div(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  color: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n"])), colors.white);
+var SliderBody = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: calc(100% - 60px);\n  background: rgba(0, 0, 0, 0.4);\n  display: flex;\n  align-items: center;\n  justify-content: center;\n\n  & .custom_carousel {\n    height: 100%;\n\n    & .rec.rec-carousel,\n    & .rec.rec-slider {\n      height: 100% !important;\n    }\n  }\n  & .rec-carousel-item {\n    display: flex;\n    align-items: center;\n  }\n"])));
+var FileInfo = styled.div(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  width: 40%;\n  font-style: normal;\n  font-weight: normal;\n  font-size: 14px;\n  line-height: 14px;\n  min-width: 230px;\n  color: ", ";\n"])), colors.white);
+var Info = styled.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n"])));
+var ClosePopupWrapper = styled.div(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  width: 40%;\n  display: flex;\n  justify-content: flex-end;\n  color: ", ";\n"])), colors.white);
+var FileDateAndSize = styled.span(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  font-weight: 400;\n  font-size: 13px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n"])), colors.textColor2);
+var FileSize = styled.span(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  margin-left: 12px;\n\n  &:after {\n    content: '';\n    position: absolute;\n    left: -10px;\n    top: 6px;\n    width: 4px;\n    height: 4px;\n    border-radius: 50%;\n    background-color: ", ";\n  }\n"])), colors.textColor2);
+var UserName = styled.h4(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  color: ", "\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n"])), colors.white);
+var ActionsWrapper = styled.div(_templateObject11$4 || (_templateObject11$4 = _taggedTemplateLiteralLoose(["\n  display: flex;\n"])));
+var IconWrapper = styled.span(_templateObject12$2 || (_templateObject12$2 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  cursor: pointer;\n  color: ", ";\n  margin: ", ";\n\n  & > svg {\n    width: 28px;\n    height: 28px;\n  }\n\n  ", "\n"])), colors.white, function (props) {
+  return props.margin;
+}, function (props) {
+  return props.hideInMobile && "\n    @media (max-width: 550px) {\n      display: none;\n    }\n  ";
+});
 var CarouselItem = styled.div(_templateObject13$2 || (_templateObject13$2 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  opacity: ", ";\n  img,\n  video {\n    //max-width: calc(100vw - 300px);\n    min-width: 280px;\n    max-width: 100%;\n    max-height: calc(100vh - 200px);\n    height: 100%;\n    @media (max-width: 480px) {\n      min-width: inherit;\n    }\n  }\n  img {\n    min-width: inherit;\n  }\n"])), function (props) {
   return props.visibleSlide ? 1 : 0;
 });
@@ -24148,125 +24853,7 @@ var ArrowButton = styled.button(_templateObject15$2 || (_templateObject15$2 = _t
   return props.leftButton && '4px';
 });
 
-var _path$A;
-
-function _extends$B() {
-  _extends$B = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$B.apply(this, arguments);
-}
-
-function SvgChoseMedia(props) {
-  return /*#__PURE__*/createElement("svg", _extends$B({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 19 19",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$A || (_path$A = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$B, _defs;
-
-function _extends$C() {
-  _extends$C = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$C.apply(this, arguments);
-}
-
-function SvgNoMessagesIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$C({
-    width: 49,
-    height: 49,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg",
-    xmlnsXlink: "http://www.w3.org/1999/xlink"
-  }, props), _path$B || (_path$B = /*#__PURE__*/createElement("path", {
-    d: "M.5 48.36h48v-48H.5v48z",
-    fill: "url(#noMessagesIcon_svg__pattern0)"
-  })), _defs || (_defs = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("pattern", {
-    id: "noMessagesIcon_svg__pattern0",
-    patternContentUnits: "objectBoundingBox",
-    width: 1,
-    height: 1
-  }, /*#__PURE__*/createElement("use", {
-    xlinkHref: "#noMessagesIcon_svg__image0_2070_42990",
-    transform: "scale(.00625)"
-  })), /*#__PURE__*/createElement("image", {
-    id: "noMessagesIcon_svg__image0_2070_42990",
-    width: 160,
-    height: 160,
-    xlinkHref: "data:image/png;base64,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"
-  }))));
-}
-
-var _path$C, _path2$3;
-
-function _extends$D() {
-  _extends$D = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$D.apply(this, arguments);
-}
-
-function SvgForward(props) {
-  return /*#__PURE__*/createElement("svg", _extends$D({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$C || (_path$C = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.764 7.12a.86.86 0 00-.86-.86h-7.63C3.77 6.26 1.8 8.36 1.8 10.88c0 2.519 1.97 4.62 4.473 4.62H7.96a.86.86 0 000-1.72H6.273c-1.49 0-2.754-1.266-2.754-2.9 0-1.635 1.265-2.901 2.754-2.901h7.631a.86.86 0 00.86-.86z",
-    fill: "CurrentColor"
-  })), _path2$3 || (_path2$3 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M11.16 2.75a.86.86 0 00-.003 1.216l3.182 3.192-3.182 3.192a.86.86 0 001.218 1.214l3.786-3.799a.86.86 0 000-1.214l-3.786-3.798a.86.86 0 00-1.216-.002z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _circle, _path$D;
+var _path$D;
 
 function _extends$E() {
   _extends$E = Object.assign ? Object.assign.bind() : function (target) {
@@ -24285,28 +24872,22 @@ function _extends$E() {
   return _extends$E.apply(this, arguments);
 }
 
-function SvgErrorIcon(props) {
+function SvgChoseMedia(props) {
   return /*#__PURE__*/createElement("svg", _extends$E({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 18,
+    height: 18,
+    viewBox: "0 0 19 19",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle || (_circle = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 12,
-    stroke: "#FA4C56",
-    strokeWidth: 2
-  })), _path$D || (_path$D = /*#__PURE__*/createElement("path", {
+  }, props), _path$D || (_path$D = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
-    fill: "#ED4D60"
+    d: "M3.614 2.052C4.366 1.65 5.107 1.5 6.798 1.5h4.404c1.691 0 2.432.15 3.184.552.672.36 1.203.89 1.562 1.562.402.752.552 1.493.552 3.184v4.404c0 1.691-.15 2.432-.552 3.184a3.763 3.763 0 01-1.562 1.562c-.752.402-1.493.552-3.184.552H6.798c-1.691 0-2.432-.15-3.184-.552a3.764 3.764 0 01-1.562-1.562c-.402-.752-.552-1.493-.552-3.184V6.798c0-1.691.15-2.432.552-3.184.36-.672.89-1.203 1.562-1.562zm7.16 7.07a.297.297 0 01.482.004l3.04 4.193c.101.139.074.335-.06.44a.297.297 0 01-.183.062h-9.57a.309.309 0 01-.304-.314c0-.07.022-.137.064-.192l2.22-2.954a.297.297 0 01.473-.008l1.528 1.861 2.31-3.092zM5.785 6.857a1.071 1.071 0 100-2.143 1.071 1.071 0 000 2.143z",
+    fill: "CurrentColor"
   })));
 }
 
-var _path$E;
+var _path$E, _defs;
 
 function _extends$F() {
   _extends$F = Object.assign ? Object.assign.bind() : function (target) {
@@ -24325,22 +24906,33 @@ function _extends$F() {
   return _extends$F.apply(this, arguments);
 }
 
-function SvgSelectionIcon(props) {
+function SvgNoMessagesIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$F({
-    width: 24,
-    height: 24,
-    viewBox: "0 0 24.01 24.01",
+    width: 49,
+    height: 49,
     fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
+    xmlns: "http://www.w3.org/2000/svg",
+    xmlnsXlink: "http://www.w3.org/1999/xlink"
   }, props), _path$E || (_path$E = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11zm5.749-13.501a1 1 0 00-1.414-1.414l-6.168 6.167-2.502-2.5a1 1 0 00-1.414 1.413l3.209 3.209a1 1 0 001.414 0l6.875-6.875z",
-    fill: "CurrentColor"
-  })));
+    d: "M.5 48.36h48v-48H.5v48z",
+    fill: "url(#noMessagesIcon_svg__pattern0)"
+  })), _defs || (_defs = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("pattern", {
+    id: "noMessagesIcon_svg__pattern0",
+    patternContentUnits: "objectBoundingBox",
+    width: 1,
+    height: 1
+  }, /*#__PURE__*/createElement("use", {
+    xlinkHref: "#noMessagesIcon_svg__image0_2070_42990",
+    transform: "scale(.00625)"
+  })), /*#__PURE__*/createElement("image", {
+    id: "noMessagesIcon_svg__image0_2070_42990",
+    width: 160,
+    height: 160,
+    xlinkHref: "data:image/png;base64,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"
+  }))));
 }
 
-var _path$F;
+var _circle, _path$F;
 
 function _extends$G() {
   _extends$G = Object.assign ? Object.assign.bind() : function (target) {
@@ -24359,15 +24951,24 @@ function _extends$G() {
   return _extends$G.apply(this, arguments);
 }
 
-function SvgDeleteIcon(props) {
+function SvgErrorIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$G({
-    width: 20,
-    height: 20,
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$F || (_path$F = /*#__PURE__*/createElement("path", {
-    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
-    fill: "#FA4C56"
+  }, props), _circle || (_circle = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 12,
+    stroke: "#FA4C56",
+    strokeWidth: 2
+  })), _path$F || (_path$F = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M16 9c.552 0 1 .537 1 1.2v6c0 .663-.448 1.2-1 1.2s-1-.537-1-1.2v-6c0-.663.448-1.2 1-1.2zM15 20.994c0-.55.445-.994.994-.994h.012a.994.994 0 110 1.988h-.012a.994.994 0 01-.994-.994z",
+    fill: "#ED4D60"
   })));
 }
 
@@ -24390,17 +24991,17 @@ function _extends$H() {
   return _extends$H.apply(this, arguments);
 }
 
-function SvgCheckCircle(props) {
+function SvgSelectionIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$H({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$G || (_path$G = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M9 2.6a6.4 6.4 0 100 12.8A6.4 6.4 0 009 2.6zm-5.657.743a8 8 0 1111.314 11.314A8 8 0 013.343 3.343zm8.623 3.491a.8.8 0 010 1.132l-3.2 3.2a.8.8 0 01-1.132 0l-1.6-1.6a.8.8 0 011.132-1.132L8.2 9.47l2.634-2.635a.8.8 0 011.132 0z",
+    d: "M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11zm5.749-13.501a1 1 0 00-1.414-1.414l-6.168 6.167-2.502-2.5a1 1 0 00-1.414 1.413l3.209 3.209a1 1 0 001.414 0l6.875-6.875z",
     fill: "CurrentColor"
   })));
 }
@@ -24424,17 +25025,15 @@ function _extends$I() {
   return _extends$I.apply(this, arguments);
 }
 
-function SvgReportIcon(props) {
+function SvgDeleteIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$I({
-    width: 18,
-    height: 18,
+    width: 20,
+    height: 20,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$H || (_path$H = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.623 1.5h4.754c.51-.001.908.16 1.274.528l3.321 3.32c.362.361.53.756.528 1.275v4.754c.001.519-.166.914-.528 1.274l-3.32 3.321c-.36.362-.756.53-1.275.528H6.623a1.675 1.675 0 01-1.274-.528l-3.321-3.32a1.675 1.675 0 01-.528-1.275V6.623a1.675 1.675 0 01.528-1.274l3.32-3.321A1.675 1.675 0 016.624 1.5zm-.337 1.52L3.02 6.285c-.136.136-.155.183-.155.375v4.678c0 .19.019.239.155.375l3.267 3.267c.136.136.183.155.375.155h4.678c.192 0 .239-.019.375-.155l3.267-3.267c.136-.136.155-.186.155-.375V6.66c0-.192-.02-.24-.155-.375L11.714 3.02c-.137-.136-.184-.155-.375-.155H6.66c-.192 0-.241.021-.375.155zm3.472 9.01a.758.758 0 11-1.516 0 .758.758 0 011.516 0zm-.076-6.136a.682.682 0 00-1.364 0v3.94a.682.682 0 001.364 0v-3.94z",
-    fill: "currentColor"
+    d: "M15.714 7.143v7.5a3.214 3.214 0 01-3.214 3.214h-5a3.214 3.214 0 01-3.214-3.214v-7.5h-.507a.922.922 0 01-.922-.922V5.178c0-1.085.88-1.964 1.964-1.964h1.18a2.144 2.144 0 011.856-1.071h4.286c.783 0 1.482.423 1.856 1.071h1.18c1.085 0 1.964.88 1.964 1.964v1.043a.922.922 0 01-.922.922h-.507zM15 5.714h.714v-.536a.536.536 0 00-.535-.535h-1.652a.714.714 0 01-.692-.537.715.715 0 00-.692-.535H7.857a.715.715 0 00-.692.535.714.714 0 01-.691.537H4.82a.536.536 0 00-.535.535v.536H15zM5.714 7.143v7.5c0 .986.8 1.785 1.786 1.785h5c.986 0 1.786-.8 1.786-1.785v-7.5H5.714z",
+    fill: "#FA4C56"
   })));
 }
 
@@ -24457,17 +25056,17 @@ function _extends$J() {
   return _extends$J.apply(this, arguments);
 }
 
-function SvgEditIcon(props) {
+function SvgCheckCircle(props) {
   return /*#__PURE__*/createElement("svg", _extends$J({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$I || (_path$I = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
+    d: "M9 2.6a6.4 6.4 0 100 12.8A6.4 6.4 0 009 2.6zm-5.657.743a8 8 0 1111.314 11.314A8 8 0 013.343 3.343zm8.623 3.491a.8.8 0 010 1.132l-3.2 3.2a.8.8 0 01-1.132 0l-1.6-1.6a.8.8 0 011.132-1.132L8.2 9.47l2.634-2.635a.8.8 0 011.132 0z",
     fill: "CurrentColor"
   })));
 }
@@ -24491,20 +25090,21 @@ function _extends$K() {
   return _extends$K.apply(this, arguments);
 }
 
-function SvgResend(props) {
+function SvgReportIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$K({
-    width: 17,
-    height: 15,
+    width: 18,
+    height: 18,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$J || (_path$J = /*#__PURE__*/createElement("path", {
-    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
-    stroke: "currentColor",
-    strokeWidth: 1.4
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.623 1.5h4.754c.51-.001.908.16 1.274.528l3.321 3.32c.362.361.53.756.528 1.275v4.754c.001.519-.166.914-.528 1.274l-3.32 3.321c-.36.362-.756.53-1.275.528H6.623a1.675 1.675 0 01-1.274-.528l-3.321-3.32a1.675 1.675 0 01-.528-1.275V6.623a1.675 1.675 0 01.528-1.274l3.32-3.321A1.675 1.675 0 016.624 1.5zm-.337 1.52L3.02 6.285c-.136.136-.155.183-.155.375v4.678c0 .19.019.239.155.375l3.267 3.267c.136.136.183.155.375.155h4.678c.192 0 .239-.019.375-.155l3.267-3.267c.136-.136.155-.186.155-.375V6.66c0-.192-.02-.24-.155-.375L11.714 3.02c-.137-.136-.184-.155-.375-.155H6.66c-.192 0-.241.021-.375.155zm3.472 9.01a.758.758 0 11-1.516 0 .758.758 0 011.516 0zm-.076-6.136a.682.682 0 00-1.364 0v3.94a.682.682 0 001.364 0v-3.94z",
+    fill: "currentColor"
   })));
 }
 
-var _path$K, _path2$4;
+var _path$K;
 
 function _extends$L() {
   _extends$L = Object.assign ? Object.assign.bind() : function (target) {
@@ -24523,7 +25123,7 @@ function _extends$L() {
   return _extends$L.apply(this, arguments);
 }
 
-function SvgEmojiSmileIcon(props) {
+function SvgEditIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$L({
     width: 20,
     height: 20,
@@ -24533,12 +25133,7 @@ function SvgEmojiSmileIcon(props) {
   }, props), _path$K || (_path$K = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
-    fill: "CurrentColor"
-  })), _path2$4 || (_path2$4 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
+    d: "M11.883 6.232l-7.531 7.53a.917.917 0 00-.269.65v1.422c0 .046.038.083.084.083h1.422a.917.917 0 00.648-.268l7.531-7.531-1.885-1.886zm1.06-1.06l1.886 1.885.943-.943a.5.5 0 000-.707l-1.179-1.179a.5.5 0 00-.707 0l-.943.943zm-9.652 7.53l9.534-9.534a2 2 0 012.829 0l1.178 1.178a2 2 0 010 2.829l-9.534 9.534a2.417 2.417 0 01-1.709.708H4.167a1.583 1.583 0 01-1.584-1.583V14.41c0-.64.255-1.256.708-1.709z",
     fill: "CurrentColor"
   })));
 }
@@ -24562,22 +25157,20 @@ function _extends$M() {
   return _extends$M.apply(this, arguments);
 }
 
-function SvgReplyIcon(props) {
+function SvgResend(props) {
   return /*#__PURE__*/createElement("svg", _extends$M({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 17,
+    height: 15,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$L || (_path$L = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
-    fill: "CurrentColor"
+    d: "M15.913 7.425l-7.23-6.281a.1.1 0 00-.165.075v3.585a.101.101 0 01-.095.101c-.616.037-4.069.305-5.627 1.728C.894 8.371.966 12.608 1.02 13.726c.005.093.123.126.179.05.49-.66 2.003-2.597 3.359-3.243 1.268-.604 3.411-.476 3.872-.44a.097.097 0 01.089.098v3.59a.1.1 0 00.166.075l7.23-6.28a.1.1 0 000-.151z",
+    stroke: "currentColor",
+    strokeWidth: 1.4
   })));
 }
 
-var _path$M;
+var _path$M, _path2$4;
 
 function _extends$N() {
   _extends$N = Object.assign ? Object.assign.bind() : function (target) {
@@ -24596,7 +25189,7 @@ function _extends$N() {
   return _extends$N.apply(this, arguments);
 }
 
-function SvgCopyIcon(props) {
+function SvgEmojiSmileIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$N({
     width: 20,
     height: 20,
@@ -24606,7 +25199,12 @@ function SvgCopyIcon(props) {
   }, props), _path$M || (_path$M = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
+    d: "M10 3.043a6.957 6.957 0 100 13.914 6.957 6.957 0 000-13.914zM1.667 10a8.333 8.333 0 1116.666 0 8.333 8.333 0 01-16.666 0zm4.97-2.293a1.07 1.07 0 112.14 0 1.07 1.07 0 01-2.14 0zm4.586 0a1.07 1.07 0 112.141 0 1.07 1.07 0 01-2.14 0z",
+    fill: "CurrentColor"
+  })), _path2$4 || (_path2$4 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.546 11.287a.714.714 0 01.977.26 2.865 2.865 0 004.955 0 .714.714 0 011.235.717 4.293 4.293 0 01-7.426 0 .714.714 0 01.26-.977z",
     fill: "CurrentColor"
   })));
 }
@@ -24630,7 +25228,7 @@ function _extends$O() {
   return _extends$O.apply(this, arguments);
 }
 
-function SvgReplyInThreadIcon(props) {
+function SvgReplyIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$O({
     width: 20,
     height: 20,
@@ -24640,27 +25238,80 @@ function SvgReplyInThreadIcon(props) {
   }, props), _path$N || (_path$N = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
+    d: "M6.364 3.637a.75.75 0 010 1.06L4.31 6.75h9.439a4.5 4.5 0 110 9H10a.75.75 0 010-1.5h3.75a3 3 0 100-6H4.31l2.054 2.053a.75.75 0 01-1.061 1.061L1.97 8.031a.75.75 0 010-1.061l3.333-3.333a.75.75 0 011.06 0z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$O;
+
+function _extends$P() {
+  _extends$P = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$P.apply(this, arguments);
+}
+
+function SvgCopyIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$P({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$O || (_path$O = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.121 3.564c-.497-.041-1.134-.042-2.042-.042H6.401a.72.72 0 010-1.439h5.71c.868 0 1.565 0 2.127.046.578.047 1.079.146 1.54.381a3.919 3.919 0 011.711 1.712c.235.46.334.961.382 1.54.046.562.046 1.258.046 2.127v5.71a.72.72 0 01-1.44 0V7.92c0-.908 0-1.545-.041-2.043-.04-.489-.115-.778-.229-1.002a2.48 2.48 0 00-1.083-1.083c-.224-.114-.514-.19-1.003-.23zM5.334 4.882h6.533c.424 0 .785 0 1.081.024.311.025.614.081.904.229.436.222.79.577 1.013 1.013.147.29.203.592.229.903.024.297.024.657.024 1.081v6.534c0 .424 0 .784-.024 1.08-.026.312-.082.615-.229.904a2.32 2.32 0 01-1.013 1.014c-.29.147-.593.203-.904.228-.296.024-.657.024-1.08.024H5.333c-.424 0-.785 0-1.081-.024-.311-.025-.614-.08-.904-.228a2.32 2.32 0 01-1.013-1.014c-.147-.29-.203-.592-.229-.903-.024-.296-.024-.657-.024-1.081V8.132c0-.424 0-.784.024-1.08.026-.312.082-.615.229-.904a2.319 2.319 0 011.013-1.013c.29-.148.593-.204.904-.229.296-.024.657-.024 1.08-.024zM4.37 6.34c-.222.018-.314.05-.367.076a.88.88 0 00-.384.385c-.027.052-.059.144-.077.367-.019.23-.02.532-.02.991v6.478c0 .46.001.761.02.992.018.222.05.314.077.367a.88.88 0 00.384.384c.053.027.145.058.367.076.23.02.532.02.992.02h6.477c.46 0 .761 0 .992-.02.222-.018.314-.05.367-.076a.88.88 0 00.384-.384c.027-.053.059-.145.077-.367.019-.231.02-.533.02-.992V8.16c0-.46-.001-.76-.02-.991-.018-.223-.05-.315-.077-.367a.88.88 0 00-.384-.385c-.053-.027-.145-.058-.367-.076-.23-.02-.532-.02-.992-.02H5.362c-.46 0-.761 0-.992.02z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$P;
+
+function _extends$Q() {
+  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$Q.apply(this, arguments);
+}
+
+function SvgReplyInThreadIcon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$Q({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$P || (_path$P = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
     d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
     fill: "CurrentColor"
   })));
 }
 
-function usePermissions(myRole) {
-  var dispatch = useDispatch();
-  var rolesMap = useSelector(rolesMapSelector, shallowEqual);
-  var myPermissions = myRole && rolesMap && rolesMap[myRole] ? rolesMap[myRole].permissions : [];
-
-  var checkActionPermission = function checkActionPermission(actionName) {
-    return myPermissions.includes(actionName);
-  };
-
-  useEffect(function () {
-    dispatch(getRolesAC());
-  }, []);
-  return [checkActionPermission, myPermissions];
-}
-
-var _templateObject$m, _templateObject2$i, _templateObject3$e;
+var _templateObject$p, _templateObject2$l, _templateObject3$f;
 function MessageActions(_ref) {
   var editModeToggle = _ref.editModeToggle,
       channel = _ref.channel,
@@ -24841,7 +25492,7 @@ function MessageActions(_ref) {
     direction: 'top'
   }, reportIconTooltipText || 'Report'), reportIcon || /*#__PURE__*/React__default.createElement(SvgReportIcon, null))));
 }
-var MessageActionsWrapper = styled.div(_templateObject$m || (_templateObject$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 90;\n"])), function (_ref2) {
+var MessageActionsWrapper = styled.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: ", ";\n  right: ", ";\n  direction: ", ";\n  top: -46px;\n  padding: 0 0 8px;\n  z-index: 90;\n"])), function (_ref2) {
   var isThreadMessage = _ref2.isThreadMessage,
       rtlDirection = _ref2.rtlDirection;
   return !rtlDirection && (isThreadMessage ? '8px' : '0');
@@ -24851,12 +25502,12 @@ var MessageActionsWrapper = styled.div(_templateObject$m || (_templateObject$m =
 }, function (props) {
   return props.rtlDirection ? 'initial' : '';
 });
-var EditMessageContainer = styled.div(_templateObject2$i || (_templateObject2$i = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
+var EditMessageContainer = styled.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  direction: ", ";\n  background-color: ", ";\n  box-sizing: border-box;\n  border-radius: 12px;\n  box-shadow: 0 0 2px rgba(17, 21, 57, 0.08), 0 0 24px rgba(17, 21, 57, 0.16);\n  //opacity: 0;\n  //visibility: hidden;\n  transition: all 0.2s;\n  z-index: 100;\n"])), function (props) {
   return props.rtlDirection && 'initial';
 }, function (props) {
   return props.backgroundColor;
 });
-var Action = styled.div(_templateObject3$e || (_templateObject3$e = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:first-child {\n    margin-left: 8px;\n  }\n\n  &:last-child {\n    margin-right: 8px;\n  }\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
+var Action = styled.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  padding: 4px;\n  margin: 8px 6px;\n  cursor: pointer;\n  transition: all 0.2s;\n  order: ", ";\n  color: ", ";\n  border-radius: 50%;\n\n  &:first-child {\n    margin-left: 8px;\n  }\n\n  &:last-child {\n    margin-right: 8px;\n  }\n\n  &:hover {\n    color: ", ";\n    background-color: ", ";\n\n    ", " {\n      display: block;\n    }\n  }\n"])), function (props) {
   return props.order || 1;
 }, function (props) {
   return props.iconColor || colors.textColor2;
@@ -24866,76 +25517,7 @@ var Action = styled.div(_templateObject3$e || (_templateObject3$e = _taggedTempl
   return props.hoverBackgroundColor || colors.backgroundColor;
 }, ItemNote);
 
-var _path$O;
-
-function _extends$P() {
-  _extends$P = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$P.apply(this, arguments);
-}
-
-function SvgCancel(props) {
-  return /*#__PURE__*/createElement("svg", _extends$P({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$O || (_path$O = /*#__PURE__*/createElement("path", {
-    d: "M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z",
-    fill: "#fff"
-  })));
-}
-
-var _rect$1, _path$P;
-
-function _extends$Q() {
-  _extends$Q = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$Q.apply(this, arguments);
-}
-
-function SvgFileIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$Q({
-    width: 40,
-    height: 40,
-    viewBox: "0 0 40.01 40.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
-    width: 40,
-    height: 40,
-    rx: 20,
-    fill: "Transparent"
-  })), _path$P || (_path$P = /*#__PURE__*/createElement("path", {
-    d: "M22.48 10.097c.298.068.56.177.819.338.258.162.468.332 1.015.88l3.372 3.37c.547.548.717.758.879 1.016.161.258.27.521.338.818.069.297.097.565.097 1.34v7.295c0 1.337-.14 1.822-.4 2.311a2.726 2.726 0 01-1.135 1.134c-.489.262-.974.401-2.31.401h-9.31c-1.337 0-1.821-.14-2.31-.4a2.726 2.726 0 01-1.134-1.135c-.262-.489-.401-.974-.401-2.31v-11.31c0-1.337.14-1.821.4-2.31a2.726 2.726 0 011.135-1.134c.489-.262.973-.401 2.31-.401h5.296c.775 0 1.043.028 1.34.097zm-.68 1.827a.3.3 0 00-.3.3V16a.5.5 0 00.5.5h3.776a.3.3 0 00.212-.512l-3.976-3.976a.3.3 0 00-.212-.088z",
-    fill: "#fff"
-  })));
-}
-
-var _circle$1, _path$Q;
+var _rect$1, _path$Q;
 
 function _extends$R() {
   _extends$R = Object.assign ? Object.assign.bind() : function (target) {
@@ -24954,30 +25536,25 @@ function _extends$R() {
   return _extends$R.apply(this, arguments);
 }
 
-function SvgDeleteUpload(props) {
+function SvgFileIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$R({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 40,
+    height: 40,
+    viewBox: "0 0 40.01 40.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$1 || (_circle$1 = /*#__PURE__*/createElement("circle", {
-    cx: 10,
-    cy: 10,
-    r: 9.3,
-    fill: "CurrentColor",
-    stroke: "#fff",
-    strokeWidth: 1.4
+  }, props), _rect$1 || (_rect$1 = /*#__PURE__*/createElement("rect", {
+    width: 40,
+    height: 40,
+    rx: 20,
+    fill: "Transparent"
   })), _path$Q || (_path$Q = /*#__PURE__*/createElement("path", {
-    d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
-    stroke: "#fff",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
+    d: "M22.48 10.097c.298.068.56.177.819.338.258.162.468.332 1.015.88l3.372 3.37c.547.548.717.758.879 1.016.161.258.27.521.338.818.069.297.097.565.097 1.34v7.295c0 1.337-.14 1.822-.4 2.311a2.726 2.726 0 01-1.135 1.134c-.489.262-.974.401-2.31.401h-9.31c-1.337 0-1.821-.14-2.31-.4a2.726 2.726 0 01-1.134-1.135c-.262-.489-.401-.974-.401-2.31v-11.31c0-1.337.14-1.821.4-2.31a2.726 2.726 0 011.135-1.134c.489-.262.973-.401 2.31-.401h5.296c.775 0 1.043.028 1.34.097zm-.68 1.827a.3.3 0 00-.3.3V16a.5.5 0 00.5.5h3.776a.3.3 0 00.212-.512l-3.976-3.976a.3.3 0 00-.212-.088z",
+    fill: "#fff"
   })));
 }
 
-var _path$R;
+var _circle$1, _path$R;
 
 function _extends$S() {
   _extends$S = Object.assign ? Object.assign.bind() : function (target) {
@@ -24996,22 +25573,30 @@ function _extends$S() {
   return _extends$S.apply(this, arguments);
 }
 
-function SvgUpload(props) {
+function SvgDeleteUpload(props) {
   return /*#__PURE__*/createElement("svg", _extends$S({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 32.01 32.01",
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
-    fill: "#fff"
+  }, props), _circle$1 || (_circle$1 = /*#__PURE__*/createElement("circle", {
+    cx: 10,
+    cy: 10,
+    r: 9.3,
+    fill: "CurrentColor",
+    stroke: "#fff",
+    strokeWidth: 1.4
+  })), _path$R || (_path$R = /*#__PURE__*/createElement("path", {
+    d: "M13.5 6.5l-7 7M6.5 6.5l7 7",
+    stroke: "#fff",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _circle$2, _path$S;
+var _path$S;
 
 function _extends$T() {
   _extends$T = Object.assign ? Object.assign.bind() : function (target) {
@@ -25030,8 +25615,42 @@ function _extends$T() {
   return _extends$T.apply(this, arguments);
 }
 
-function SvgPlayVideo(props) {
+function SvgUpload(props) {
   return /*#__PURE__*/createElement("svg", _extends$T({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 32.01 32.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M14.5 20.5a1.5 1.5 0 003 0V7.121l4.44 4.44a1.5 1.5 0 002.12-2.122l-7-7a1.5 1.5 0 00-2.12 0l-7 7a1.5 1.5 0 002.12 2.122l4.44-4.44V20.5zm-9 4.5a1.5 1.5 0 000 3h21a1.5 1.5 0 000-3h-21z",
+    fill: "#fff"
+  })));
+}
+
+var _circle$2, _path$T;
+
+function _extends$U() {
+  _extends$U = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$U.apply(this, arguments);
+}
+
+function SvgPlayVideo(props) {
+  return /*#__PURE__*/createElement("svg", _extends$U({
     width: 56,
     height: 56,
     fill: "none",
@@ -25042,7 +25661,7 @@ function SvgPlayVideo(props) {
     r: 28,
     fill: "#17191C",
     fillOpacity: 0.4
-  })), _path$S || (_path$S = /*#__PURE__*/createElement("path", {
+  })), _path$T || (_path$T = /*#__PURE__*/createElement("path", {
     d: "M38.048 26.262c1.27.767 1.27 2.706 0 3.473l-13.224 7.996c-1.258.76-2.824-.202-2.824-1.737V20.003c0-1.535 1.566-2.498 2.824-1.737l13.224 7.996z",
     fill: "#fff"
   })));
@@ -25108,7 +25727,7 @@ var getFrame = function getFrame(videoSrc, time) {
   }
 };
 
-var _templateObject$n, _templateObject2$j, _templateObject3$f, _templateObject4$c, _templateObject5$a, _templateObject6$8, _templateObject7$7;
+var _templateObject$q, _templateObject2$m, _templateObject3$g, _templateObject4$d, _templateObject5$b, _templateObject6$9, _templateObject7$8;
 var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
   var width = _ref.width,
       height = _ref.height,
@@ -25250,8 +25869,8 @@ var VideoPreview = /*#__PURE__*/memo(function VideoPreview(_ref) {
     isRepliedMessage: isPreview || isRepliedMessage
   }, !isRepliedMessage && !isPreview && /*#__PURE__*/React__default.createElement(SvgVideoCall, null), videoCurrentTime)));
 });
-var VideoControls = styled.div(_templateObject$n || (_templateObject$n = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
-var VideoTime = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
+var VideoControls = styled.div(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 0;\n  width: 100%;\n  height: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n"])));
+var VideoTime = styled.div(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  top: ", ";\n  bottom: ", ";\n  left: ", ";\n  font-size: ", ";\n  display: flex;\n  align-items: center;\n  border-radius: 16px;\n  padding: ", ";\n  background-color: rgba(1, 1, 1, 0.3);\n  line-height: 14px;\n  color: ", ";\n\n  & > svg {\n    color: ", ";\n    margin-right: 4px;\n  }\n"])), function (props) {
   return props.isRepliedMessage ? '3px' : props.isDetailsView ? undefined : '8px';
 }, function (props) {
   return props.isDetailsView ? '8px' : undefined;
@@ -25262,10 +25881,10 @@ var VideoTime = styled.div(_templateObject2$j || (_templateObject2$j = _taggedTe
 }, function (props) {
   return props.isRepliedMessage ? '0 3px' : '4px 6px';
 }, colors.white, colors.white);
-var VideoPlayButton = styled.div(_templateObject3$f || (_templateObject3$f = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
+var VideoPlayButton = styled.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  visibility: ", ";\n"])), function (props) {
   return props.showOnHover && 'hidden';
 });
-var Component$1 = styled.div(_templateObject4$c || (_templateObject4$c = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: 100%;\n  max-height: 100%;\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: 100%;\n    max-height: 100%;\n    width: ", ";\n    height: ", ";\n    min-height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
+var Component$1 = styled.div(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  max-width: 100%;\n  max-height: 100%;\n  width: ", ";\n  height: ", ";\n  min-height: ", ";\n\n  ", ";\n  /*width: 100vw;\n  background-color: transparent;\n  margin-top: -50vw;\n  padding: 0 40px;\n  z-index: 20;*/\n\n  & > video {\n    max-width: 100%;\n    max-height: 100%;\n    width: ", ";\n    height: ", ";\n    min-height: ", ";\n    border: ", ";\n    object-fit: cover;\n    box-sizing: border-box;\n    border-radius: ", ";\n  }\n\n  &:hover {\n    & ", " {\n      visibility: visible;\n    }\n  }\n"])), function (props) {
   return props.width;
 }, function (props) {
   return props.height;
@@ -25284,8 +25903,8 @@ var Component$1 = styled.div(_templateObject4$c || (_templateObject4$c = _tagged
 }, function (props) {
   return props.borderRadius ? props.borderRadius : props.isRepliedMessage ? '4px' : '8px';
 }, VideoPlayButton);
-var DownloadFile = styled.a(_templateObject5$a || (_templateObject5$a = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
-var AttachmentFile = styled.div(_templateObject6$8 || (_templateObject6$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
+var DownloadFile = styled.a(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  visibility: hidden;\n  opacity: 0;\n  margin-left: auto;\n  cursor: pointer;\n  transition: all 0.1s;\n"])));
+var AttachmentFile = styled.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: 6px 12px;\n  width: 350px;\n  height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  margin-top: ", ";\n  border-radius: ", ";\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  & > ", " svg {\n    width: 36px;\n    height: 36px;\n  }\n"])), function (props) {
   return props.background || '#ffffff';
 }, function (props) {
   return props.border || "1px solid " + colors.gray1;
@@ -25296,48 +25915,11 @@ var AttachmentFile = styled.div(_templateObject6$8 || (_templateObject6$8 = _tag
 }, function (props) {
   return props.borderRadius || '6px';
 }, DownloadFile, AttachmentIconCont);
-var AttachmentImg = styled.img(_templateObject7$7 || (_templateObject7$7 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
+var AttachmentImg = styled.img(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  border-radius: ", ";\n  object-fit: cover;\n"])), function (props) {
   return props.borderRadius || '6px';
 });
 
-var _circle$3, _path$T;
-
-function _extends$U() {
-  _extends$U = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$U.apply(this, arguments);
-}
-
-function SvgPlay(props) {
-  return /*#__PURE__*/createElement("svg", _extends$U({
-    width: 32,
-    height: 32,
-    viewBox: "0 0 33 33",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$3 || (_circle$3 = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "CurrentColor"
-  })), _path$T || (_path$T = /*#__PURE__*/createElement("path", {
-    d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
-    fill: "#fff"
-  })));
-}
-
-var _circle$4, _path$U;
+var _circle$3, _path$U;
 
 function _extends$V() {
   _extends$V = Object.assign ? Object.assign.bind() : function (target) {
@@ -25356,8 +25938,45 @@ function _extends$V() {
   return _extends$V.apply(this, arguments);
 }
 
-function SvgPause(props) {
+function SvgPlay(props) {
   return /*#__PURE__*/createElement("svg", _extends$V({
+    width: 32,
+    height: 32,
+    viewBox: "0 0 33 33",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _circle$3 || (_circle$3 = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "CurrentColor"
+  })), _path$U || (_path$U = /*#__PURE__*/createElement("path", {
+    d: "M21.652 15.022c.714.432.714 1.522 0 1.954l-7.438 4.498c-.708.428-1.589-.114-1.589-.977v-8.995c0-.864.88-1.405 1.589-.977l7.438 4.497z",
+    fill: "#fff"
+  })));
+}
+
+var _circle$4, _path$V;
+
+function _extends$W() {
+  _extends$W = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$W.apply(this, arguments);
+}
+
+function SvgPause(props) {
+  return /*#__PURE__*/createElement("svg", _extends$W({
     width: 32,
     height: 32,
     viewBox: "0 0 33 33",
@@ -25368,13 +25987,13 @@ function SvgPause(props) {
     cy: 16,
     r: 16,
     fill: "CurrentColor"
-  })), _path$U || (_path$U = /*#__PURE__*/createElement("path", {
+  })), _path$V || (_path$V = /*#__PURE__*/createElement("path", {
     d: "M13.721 10.375c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12h-1.067c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067zm5.625 0c.401 0 .547.042.694.12a.818.818 0 01.34.34c.078.147.12.293.12.694v8.942c0 .401-.042.547-.12.694a.818.818 0 01-.34.34c-.147.078-.293.12-.694.12H18.28c-.401 0-.547-.042-.694-.12a.818.818 0 01-.34-.34c-.078-.147-.12-.293-.12-.694V11.53c0-.401.042-.547.12-.694a.818.818 0 01.34-.34c.147-.078.293-.12.694-.12h1.067z",
     fill: "#fff"
   })));
 }
 
-var _templateObject$o, _templateObject2$k, _templateObject3$g, _templateObject4$d, _templateObject5$b, _templateObject6$9;
+var _templateObject$r, _templateObject2$n, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$a;
 
 var AudioPlayer = function AudioPlayer(_ref) {
   var url = _ref.url,
@@ -25602,16 +26221,16 @@ var AudioPlayer = function AudioPlayer(_ref) {
     onClick: handleSetAudioRate
   }, audioRate, /*#__PURE__*/React__default.createElement("span", null, "X"))), /*#__PURE__*/React__default.createElement(Timer, null, currentTime));
 };
-var Container$c = styled.div(_templateObject$o || (_templateObject$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
-var PlayPause = styled.div(_templateObject2$k || (_templateObject2$k = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var Container$c = styled.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: flex-start;\n  width: 230px;\n  padding: 8px 12px;\n"])));
+var PlayPause = styled.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n\n  & > svg {\n    color: ", ";\n    display: flex;\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return props.iconColor || colors.primary;
 });
-var AudioVisualization = styled.div(_templateObject3$g || (_templateObject3$g = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
-var AudioRate = styled.div(_templateObject4$d || (_templateObject4$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
-var WaveContainer = styled.div(_templateObject5$b || (_templateObject5$b = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
-var Timer = styled.div(_templateObject6$9 || (_templateObject6$9 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
+var AudioVisualization = styled.div(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  width: 100%;\n"])));
+var AudioRate = styled.div(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  background-color: ", ";\n  width: 30px;\n  min-width: 30px;\n  border-radius: 12px;\n  font-weight: 600;\n  font-size: 12px;\n  line-height: 14px;\n  color: ", ";\n  height: 18px;\n  box-sizing: border-box;\n  margin-left: 14px;\n  cursor: pointer;\n\n  & > span {\n    margin-top: auto;\n    line-height: 16px;\n    font-size: 9px;\n  }\n"])), colors.white, colors.textColor2);
+var WaveContainer = styled.div(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  display: flex;\n  margin-left: 8px;\n"])));
+var Timer = styled.div(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  left: 59px;\n  bottom: 12px;\n  display: inline-block;\n  font-weight: 400;\n  font-size: 11px;\n  line-height: 12px;\n  color: ", ";\n"])), colors.textColor2);
 
-var _templateObject$p, _templateObject2$l, _templateObject3$h, _templateObject4$e, _templateObject5$c, _templateObject6$a, _templateObject7$8, _templateObject8$7, _templateObject9$7, _templateObject10$6, _templateObject11$5, _templateObject12$3, _templateObject13$3;
+var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$b, _templateObject7$9, _templateObject8$8, _templateObject9$8, _templateObject10$7, _templateObject11$5, _templateObject12$3, _templateObject13$3;
 
 var Attachment = function Attachment(_ref) {
   var attachment = _ref.attachment,
@@ -26145,7 +26764,7 @@ var Attachment = function Attachment(_ref) {
     draggable: false,
     isPreview: isPreview,
     isUploading: attachmentCompilationState[attachment.tid] === UPLOAD_STATE.UPLOADING || attachmentCompilationState[attachment.tid] === UPLOAD_STATE.PAUSED,
-    borderRadius: borderRadius,
+    borderRadius: isRepliedMessage ? '50%' : borderRadius,
     background: backgroundColor && backgroundColor !== 'inherit' ? backgroundColor : colors.primaryLight,
     isRepliedMessage: isRepliedMessage,
     border: selectedFileAttachmentsBoxBorder || (theme === THEME.DARK ? 'none' : ''),
@@ -26227,8 +26846,8 @@ var Attachment = function Attachment(_ref) {
 var Attachment$1 = /*#__PURE__*/React__default.memo(Attachment, function (prevProps, nextProps) {
   return prevProps.attachment.url === nextProps.attachment.url && prevProps.attachment.id === nextProps.attachment.id && prevProps.handleMediaItemClick === nextProps.handleMediaItemClick && prevProps.attachment.attachmentUrl === nextProps.attachment.attachmentUrl;
 });
-var DownloadImage = styled.div(_templateObject$p || (_templateObject$p = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
-var AttachmentImgCont = styled.div(_templateObject2$l || (_templateObject2$l = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  max-width: 100%;\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
+var DownloadImage = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  visibility: hidden;\n  opacity: 0;\n  width: 28px;\n  height: 28px;\n  top: 12px;\n  right: 17px;\n  border-radius: 50%;\n  line-height: 35px;\n  text-align: center;\n  cursor: pointer;\n  background: #ffffff;\n  box-shadow: 0 4px 4px rgba(6, 10, 38, 0.2);\n  transition: all 0.1s;\n\n  & > svg {\n    width: 16px;\n  }\n"])));
+var AttachmentImgCont = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: flex-end;\n  //flex-direction: column;\n  margin-right: ", ";\n  //max-width: 420px;\n  //max-height: 400px;\n  min-width: ", ";\n  height: ", ";\n\n  width: ", ";\n  max-width: 100%;\n  height: ", ";\n  max-height: 400px;\n  min-height: ", ";\n  cursor: pointer;\n\n  ", "\n\n  &:hover ", " {\n    visibility: visible;\n    opacity: 1;\n  }\n\n  ", "\n"])), function (props) {
   return props.isPreview ? '16px' : props.isRepliedMessage ? '8px' : '';
 }, function (props) {
   return !props.isRepliedMessage && !props.fitTheContainer && '165px';
@@ -26245,17 +26864,17 @@ var AttachmentImgCont = styled.div(_templateObject2$l || (_templateObject2$l = _
 }, DownloadImage, function (props) {
   return props.isPreview && "\n      width: 48px;\n      min-width: 48px;\n      height: 48px;\n  ";
 });
-var FileThumbnail = styled.img(_templateObject3$h || (_templateObject3$h = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
-var DownloadFile$1 = styled.span(_templateObject4$e || (_templateObject4$e = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  position: ", ";\n  border-radius: ", ";\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
+var FileThumbnail = styled.img(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  object-fit: cover;\n  border-radius: 8px;\n"])));
+var DownloadFile$1 = styled.span(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  display: none;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  background-color: ", ";\n  min-width: 40px;\n  max-width: 40px;\n  height: 40px;\n  position: ", ";\n  border-radius: ", ";\n\n  & > svg {\n    width: 20px;\n    height: 20px;\n  }\n"])), function (props) {
   return props.backgroundColor || colors.primary;
 }, function (props) {
   return props.widthThumb && 'absolute';
 }, function (props) {
   return props.widthThumb ? '8px' : '50%';
 });
-var ProgressWrapper$1 = styled.span(_templateObject5$c || (_templateObject5$c = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
-var SizeProgress = styled.span(_templateObject6$a || (_templateObject6$a = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: -26px;\n  background-color: rgba(0, 0, 0, 0.4);\n  color: ", ";\n  font-size: 12px;\n  border-radius: 12px;\n  padding: 3px 6px;\n  white-space: nowrap;\n"])), colors.white);
-var AttachmentFile$1 = styled.div(_templateObject7$8 || (_templateObject7$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  //width: ", ";\n  min-width: ", ";\n  transition: all 0.1s;\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
+var ProgressWrapper$1 = styled.span(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  width: 100%;\n  height: 100%;\n  animation: preloader 1.5s linear infinite;\n\n  @keyframes preloader {\n    0% {\n      transform: rotate(0deg);\n    }\n    100% {\n      transform: rotate(360deg);\n    }\n  }\n"])));
+var SizeProgress = styled.span(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  bottom: -26px;\n  background-color: rgba(0, 0, 0, 0.4);\n  color: ", ";\n  font-size: 12px;\n  border-radius: 12px;\n  padding: 3px 6px;\n  white-space: nowrap;\n"])), colors.white);
+var AttachmentFile$1 = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  position: relative;\n  align-items: center;\n  padding: ", ";\n  //width: ", ";\n  min-width: ", ";\n  transition: all 0.1s;\n  //height: 70px;\n  background: ", ";\n  border: ", ";\n  box-sizing: border-box;\n  margin-right: ", ";\n  border-radius: ", ";\n\n  ", "\n\n  & > ", " svg {\n    width: 40px;\n    height: 40px;\n  }\n"])), function (props) {
   return !props.isRepliedMessage && '8px 12px;';
 }, function (props) {
   return !props.isRepliedMessage && (props.width ? props.width + "px" : '350px');
@@ -26272,13 +26891,13 @@ var AttachmentFile$1 = styled.div(_templateObject7$8 || (_templateObject7$8 = _t
 }, function (props) {
   return !props.isRepliedMessage && !props.isPreview && !props.isUploading && "\n      &:hover " + DownloadFile$1 + " {\n        display: flex;\n      }\n\n      &:hover " + UploadPercent + " {\n        border-radius: 50%\n      }\n\n      &:hover " + FileThumbnail + " {\n      }\n        &:hover " + AttachmentIconCont + " {\n    display: none;\n  }\n  ";
 }, AttachmentIconCont);
-var RemoveChosenFile = styled(SvgDeleteUpload)(_templateObject8$7 || (_templateObject8$7 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
+var RemoveChosenFile = styled(SvgDeleteUpload)(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  position: absolute;\n  width: 20px;\n  height: 20px !important;\n  top: -11px;\n  right: -11px;\n  padding: 2px;\n  cursor: pointer;\n  color: ", ";\n  z-index: 4;\n"])), function (props) {
   return props.color || colors.textColor3;
 });
-var AttachmentName = styled.h3(_templateObject9$7 || (_templateObject9$7 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
+var AttachmentName = styled.h3(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  font-size: 15px;\n  font-weight: 500;\n  line-height: 18px;\n  color: ", ";\n  max-width: 275px;\n  white-space: nowrap;\n  margin: 0;\n"])), function (props) {
   return props.color || colors.textColor1;
 });
-var AttachmentSize = styled.span(_templateObject10$6 || (_templateObject10$6 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
+var AttachmentSize = styled.span(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  font-size: 13px;\n  color: ", ";\n  & > span {\n    color: ", ";\n    margin-left: 8px;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, colors.red1);
 var AttachmentFileInfo = styled.div(_templateObject11$5 || (_templateObject11$5 = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  ", "\n"])), function (props) {
@@ -26306,416 +26925,6 @@ var AttachmentImg$1 = styled.img(_templateObject12$3 || (_templateObject12$3 = _
 var VideoCont = styled.div(_templateObject13$3 || (_templateObject13$3 = _taggedTemplateLiteralLoose(["\n  position: relative;\n  cursor: pointer;\n  height: ", ";\n"])), function (props) {
   return props.isDetailsView && '100%';
 });
-
-var _templateObject$q, _templateObject2$m;
-
-var CustomRadio$1 = function CustomRadio(_ref) {
-  var index = _ref.index,
-      state = _ref.state,
-      _onChange = _ref.onChange,
-      checkedBorder = _ref.checkedBorder,
-      border = _ref.border,
-      borderRadius = _ref.borderRadius,
-      size = _ref.size,
-      disabled = _ref.disabled;
-  return /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(CustomLabel$1, {
-    isChecked: state,
-    size: size,
-    checkedBorder: checkedBorder,
-    border: border,
-    borderRadius: borderRadius,
-    htmlFor: "radio-" + index
-  }), /*#__PURE__*/React__default.createElement(Radio, {
-    disabled: disabled,
-    type: 'radio',
-    id: "radio-" + index,
-    checked: state,
-    onChange: function onChange(e) {
-      return _onChange(e);
-    }
-  }));
-};
-var CustomLabel$1 = styled.label(_templateObject$q || (_templateObject$q = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  box-sizing: border-box;\n  width: ", ";\n  height: ", ";\n  cursor: pointer;\n  border: ", ";\n  border-radius: ", ";\n"])), function (props) {
-  return props.size || '12px';
-}, function (props) {
-  return props.size || '12px';
-}, function (props) {
-  return props.isChecked ? props.checkedBorder || "6px solid " + colors.primary : props.border || "1px solid " + colors.textColor2;
-}, function (props) {
-  return props.borderRadius || '50%';
-});
-var Radio = styled.input(_templateObject2$m || (_templateObject2$m = _taggedTemplateLiteralLoose(["\n  display: none;\n"])));
-
-var _templateObject$r, _templateObject2$n;
-
-function ConfirmPopup(_ref) {
-  var title = _ref.title,
-      description = _ref.description,
-      theme = _ref.theme,
-      buttonText = _ref.buttonText,
-      buttonTextColor = _ref.buttonTextColor,
-      buttonBackground = _ref.buttonBackground,
-      togglePopup = _ref.togglePopup,
-      handleFunction = _ref.handleFunction,
-      isDeleteMessage = _ref.isDeleteMessage,
-      isIncomingMessage = _ref.isIncomingMessage,
-      allowDeleteIncoming = _ref.allowDeleteIncoming,
-      isDirectChannel = _ref.isDirectChannel,
-      _ref$myRole = _ref.myRole,
-      myRole = _ref$myRole === void 0 ? '' : _ref$myRole,
-      loading = _ref.loading;
-
-  var _usePermissions = usePermissions(myRole),
-      checkActionPermission = _usePermissions[0];
-
-  var _useState = useState(true),
-      initialRender = _useState[0],
-      setInitialRender = _useState[1];
-
-  var deleteForEveryoneIsPermitted = isIncomingMessage ? allowDeleteIncoming && !isDirectChannel && checkActionPermission('deleteAnyMessage') : isDirectChannel || checkActionPermission('deleteOwnMessage');
-
-  var _useState2 = useState(deleteForEveryoneIsPermitted ? 'forEveryone' : 'forMe'),
-      deleteMessageOption = _useState2[0],
-      setDeleteMessageOption = _useState2[1];
-
-  var handleDelete = function handleDelete() {
-    handleFunction(isDeleteMessage && deleteMessageOption);
-    togglePopup();
-  };
-
-  var handleChoseDeleteOption = function handleChoseDeleteOption(e, option) {
-    if (e.target.checked) {
-      setDeleteMessageOption(option);
-    }
-  };
-
-  useEffect(function () {
-    setInitialRender(false);
-  }, []);
-  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
-    theme: theme,
-    backgroundColor: colors.backgroundColor,
-    maxWidth: '520px',
-    minWidth: '520px',
-    isLoading: loading,
-    padding: '0'
-  }, /*#__PURE__*/React__default.createElement(PopupBody, {
-    paddingH: '24px',
-    paddingV: '24px'
-  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
-    color: colors.textColor1,
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }), /*#__PURE__*/React__default.createElement(PopupName, {
-    color: colors.textColor1,
-    isDelete: true,
-    marginBottom: '20px'
-  }, title), /*#__PURE__*/React__default.createElement(PopupDescription, null, description), isDeleteMessage && /*#__PURE__*/React__default.createElement(DeleteMessageOptions, null, deleteForEveryoneIsPermitted && /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
-    onClick: function onClick() {
-      return setDeleteMessageOption('forEveryone');
-    }
-  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
-    index: '1',
-    size: '18px',
-    state: deleteMessageOption === 'forEveryone',
-    onChange: function onChange(e) {
-      return handleChoseDeleteOption(e, 'forEveryone');
-    }
-  }), "Delete for everyone"), /*#__PURE__*/React__default.createElement(DeleteOptionItem, {
-    onClick: function onClick() {
-      return setDeleteMessageOption('forMe');
-    }
-  }, /*#__PURE__*/React__default.createElement(CustomRadio$1, {
-    index: '2',
-    size: '18px',
-    state: deleteMessageOption === 'forMe',
-    onChange: function onChange(e) {
-      return handleChoseDeleteOption(e, 'forMe');
-    }
-  }), "Delete for me"))), /*#__PURE__*/React__default.createElement(PopupFooter, {
-    backgroundColor: colors.backgroundColor
-  }, /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    color: colors.textColor1,
-    backgroundColor: 'transparent',
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    backgroundColor: buttonBackground || colors.red1,
-    color: buttonTextColor,
-    borderRadius: '8px',
-    onClick: handleDelete,
-    disabled: initialRender
-  }, buttonText || 'Delete'))));
-}
-var DeleteMessageOptions = styled.div(_templateObject$r || (_templateObject$r = _taggedTemplateLiteralLoose(["\n  margin-top: 14px;\n"])));
-var DeleteOptionItem = styled.div(_templateObject2$n || (_templateObject2$n = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  cursor: pointer;\n  font-size: 15px;\n  line-height: 160%;\n  color: ", ";\n  margin-bottom: 12px;\n\n  & > label {\n    margin-right: 10px;\n  }\n"])), colors.textColor2);
-
-var _templateObject$s, _templateObject2$o, _templateObject3$i, _templateObject4$f, _templateObject5$d, _templateObject6$b, _templateObject7$9, _templateObject8$8, _templateObject9$8, _templateObject10$7;
-
-function ForwardMessagePopup(_ref) {
-  var title = _ref.title,
-      buttonText = _ref.buttonText,
-      togglePopup = _ref.togglePopup,
-      handleForward = _ref.handleForward,
-      loading = _ref.loading;
-  var ChatClient = getClient();
-  var user = ChatClient.user;
-  var dispatch = useDispatch();
-  var channels = useSelector(channelsForForwardSelector) || [];
-  var searchedChannels = useSelector(searchedChannelsForForwardSelector) || [];
-  var contactsMap = useSelector(contactsMapSelector);
-  var getFromContacts = getShowOnlyContactUsers();
-  var channelsLoading = useSelector(channelsLoadingStateForForwardSelector);
-  var channelsHasNext = useSelector(channelsForForwardHasNextSelector);
-
-  var _useState = useState(''),
-      searchValue = _useState[0],
-      setSearchValue = _useState[1];
-
-  var _useState2 = useState(0),
-      selectedChannelsContHeight = _useState2[0],
-      setSelectedChannelsHeight = _useState2[1];
-
-  var _useState3 = useState([]),
-      selectedChannels = _useState3[0],
-      setSelectedChannels = _useState3[1];
-
-  var selectedChannelsContRef = useRef();
-
-  var handleForwardMessage = function handleForwardMessage() {
-    handleForward(selectedChannels.map(function (channel) {
-      return channel.id;
-    }));
-    togglePopup();
-  };
-
-  var handleChannelListScroll = function handleChannelListScroll(event) {
-    if (event.target.scrollTop >= event.target.scrollHeight - event.target.offsetHeight - 100) {
-      if (channelsLoading === LOADING_STATE.LOADED && channelsHasNext) {
-        dispatch(loadMoreChannelsForForward(15));
-      }
-    }
-  };
-
-  var handleSearchValueChange = function handleSearchValueChange(e) {
-    var value = e.target.value;
-    setSearchValue(value);
-  };
-
-  var getMyChannels = function getMyChannels() {
-    setSearchValue('');
-  };
-
-  var handleChannelSelect = function handleChannelSelect(event, channel) {
-    var newSelectedChannels = [].concat(selectedChannels);
-    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-      return member.id !== user.id;
-    });
-
-    if (event.target.checked && selectedChannels.length < 5) {
-      newSelectedChannels.push({
-        id: channel.id,
-        displayName: channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')
-      });
-    } else {
-      var itemToDeleteIndex = newSelectedChannels.findIndex(function (chan) {
-        return channel.id === chan.id;
-      });
-
-      if (itemToDeleteIndex >= 0) {
-        newSelectedChannels.splice(itemToDeleteIndex, 1);
-      }
-    }
-
-    setSearchValue('');
-    setSelectedChannels(newSelectedChannels);
-  };
-
-  var removeChannel = function removeChannel(channel) {
-    var newSelectedChannels = [].concat(selectedChannels);
-    var itemToDeleteIndex = newSelectedChannels.findIndex(function (c) {
-      return channel.id === c.id;
-    });
-
-    if (itemToDeleteIndex >= 0) {
-      newSelectedChannels.splice(itemToDeleteIndex, 1);
-    }
-
-    setSelectedChannels(newSelectedChannels);
-  };
-
-  useEffect(function () {
-    if (selectedChannelsContRef.current) {
-      setSelectedChannelsHeight(selectedChannelsContRef.current.offsetHeight);
-    } else {
-      setSelectedChannelsHeight(0);
-    }
-  }, [selectedChannels]);
-  useEffect(function () {
-    dispatch(getChannelsForForwardAC());
-    return function () {
-      dispatch(setSearchedChannelsForForwardAC({
-        chats_groups: [],
-        channels: [],
-        contacts: []
-      }));
-    };
-  }, []);
-  useEffect(function () {
-    if (searchValue) {
-      dispatch(searchChannelsForForwardAC({
-        search: searchValue
-      }, contactsMap));
-    } else {
-      dispatch(setSearchedChannelsForForwardAC({
-        chats_groups: [],
-        channels: [],
-        contacts: []
-      }));
-    }
-  }, [searchValue]);
-  return /*#__PURE__*/React__default.createElement(PopupContainer, null, /*#__PURE__*/React__default.createElement(Popup, {
-    maxWidth: '522px',
-    minWidth: '522px',
-    height: '540px',
-    isLoading: loading,
-    padding: '0'
-  }, /*#__PURE__*/React__default.createElement(PopupBody, {
-    paddingH: '24px',
-    paddingV: '24px',
-    withFooter: true
-  }, /*#__PURE__*/React__default.createElement(CloseIcon, {
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }), /*#__PURE__*/React__default.createElement(PopupName, {
-    isDelete: true,
-    marginBottom: '20px'
-  }, title), /*#__PURE__*/React__default.createElement(ChannelSearch, {
-    searchValue: searchValue,
-    handleSearchValueChange: handleSearchValueChange,
-    getMyChannels: getMyChannels
-  }), /*#__PURE__*/React__default.createElement(SelectedChannelsContainer, {
-    ref: selectedChannelsContRef
-  }, selectedChannels.map(function (channel) {
-    return /*#__PURE__*/React__default.createElement(SelectedChannelBuble, {
-      key: "selected-" + channel.id
-    }, /*#__PURE__*/React__default.createElement(SelectedChannelName, null, channel.displayName), /*#__PURE__*/React__default.createElement(StyledSubtractSvg$1, {
-      onClick: function onClick() {
-        return removeChannel(channel);
-      }
-    }));
-  })), /*#__PURE__*/React__default.createElement(ForwardChannelsCont, {
-    onScroll: handleChannelListScroll,
-    selectedChannelsHeight: selectedChannelsContHeight
-  }, searchValue ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, !!(searchedChannels.chats_groups && searchedChannels.chats_groups.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, {
-    margin: '0 0 12px'
-  }, "Chats & Groups"), searchedChannels.chats_groups.map(function (channel) {
-    var isSelected = selectedChannels.findIndex(function (chan) {
-      return chan.id === channel.id;
-    }) >= 0;
-    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-      return member.id !== user.id;
-    });
-    return /*#__PURE__*/React__default.createElement(ChannelItem, {
-      key: channel.id
-    }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: directChannelUser ? directChannelUser.firstName || directChannelUser.id : channel.subject || '',
-      image: directChannelUser ? directChannelUser.avatarUrl : channel.avatarUrl,
-      size: 40,
-      textSize: 12,
-      setDefaultAvatar: true
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, isDirectChannel ? directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : 'Deleted User' : channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : '')), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
-      index: channel.id,
-      disabled: selectedChannels.length >= 5 && !isSelected,
-      state: isSelected,
-      onChange: function onChange(e) {
-        return handleChannelSelect(e, channel);
-      },
-      size: '18px'
-    }));
-  })), !!(searchedChannels.channels && searchedChannels.channels.length) && /*#__PURE__*/React__default.createElement(React__default.Fragment, null, /*#__PURE__*/React__default.createElement(ChannelsGroupTitle, null, "Channels"), searchedChannels.channels.map(function (channel) {
-    var isSelected = selectedChannels.findIndex(function (chan) {
-      return chan.id === channel.id;
-    }) >= 0;
-    return /*#__PURE__*/React__default.createElement(ChannelItem, {
-      key: channel.id
-    }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: channel.subject || '',
-      image: channel.avatarUrl,
-      size: 40,
-      textSize: 12,
-      setDefaultAvatar: false
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject), /*#__PURE__*/React__default.createElement(ChannelMembers, null, channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
-      index: channel.id,
-      disabled: selectedChannels.length >= 5 && !isSelected,
-      state: isSelected,
-      onChange: function onChange(e) {
-        return handleChannelSelect(e, channel);
-      },
-      size: '18px'
-    }));
-  }))) : channels.map(function (channel) {
-    var isDirectChannel = channel.type === CHANNEL_TYPE.DIRECT;
-    var directChannelUser = isDirectChannel && channel.members.find(function (member) {
-      return member.id !== user.id;
-    });
-    var isSelected = selectedChannels.findIndex(function (chan) {
-      return chan.id === channel.id;
-    }) >= 0;
-    return /*#__PURE__*/React__default.createElement(ChannelItem, {
-      key: channel.id
-    }, /*#__PURE__*/React__default.createElement(Avatar, {
-      name: channel.subject || (isDirectChannel && directChannelUser ? directChannelUser.firstName || directChannelUser.id : ''),
-      image: channel.avatarUrl || (isDirectChannel && directChannelUser ? directChannelUser.avatarUrl : ''),
-      size: 40,
-      textSize: 12,
-      setDefaultAvatar: isDirectChannel
-    }), /*#__PURE__*/React__default.createElement(ChannelInfo$3, null, /*#__PURE__*/React__default.createElement(ChannelTitle, null, channel.subject || (isDirectChannel && directChannelUser ? makeUsername(contactsMap[directChannelUser.id], directChannelUser, getFromContacts) : '')), /*#__PURE__*/React__default.createElement(ChannelMembers, null, isDirectChannel && directChannelUser ? (hideUserPresence && hideUserPresence(directChannelUser) ? '' : directChannelUser.presence && directChannelUser.presence.state === USER_PRESENCE_STATUS.ONLINE) ? 'Online' : directChannelUser && directChannelUser.presence && directChannelUser.presence.lastActiveAt && userLastActiveDateFormat(directChannelUser.presence.lastActiveAt) : channel.memberCount + " " + (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? channel.memberCount > 1 ? 'subscribers' : 'subscriber' : channel.memberCount > 1 ? 'members' : 'member') + " ")), /*#__PURE__*/React__default.createElement(CustomCheckbox, {
-      index: channel.id,
-      disabled: selectedChannels.length >= 5 && !isSelected,
-      state: isSelected,
-      onChange: function onChange(e) {
-        return handleChannelSelect(e, channel);
-      },
-      size: '18px'
-    }));
-  }))), /*#__PURE__*/React__default.createElement(PopupFooter, {
-    backgroundColor: colors.backgroundColor
-  }, /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    color: colors.textColor1,
-    backgroundColor: 'transparent',
-    onClick: function onClick() {
-      return togglePopup();
-    }
-  }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
-    type: 'button',
-    backgroundColor: colors.primary,
-    borderRadius: '8px',
-    onClick: handleForwardMessage
-  }, buttonText || 'Forward'))));
-}
-var ForwardChannelsCont = styled.div(_templateObject$s || (_templateObject$s = _taggedTemplateLiteralLoose(["\n  overflow-y: auto;\n  margin-top: 16px;\n  max-height: ", ";\n  padding-right: 22px;\n"])), function (props) {
-  return "calc(100% - " + (props.selectedChannelsHeight + 64) + "px)";
-});
-var ChannelItem = styled.div(_templateObject2$o || (_templateObject2$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  margin-bottom: 8px;\n"])));
-var ChannelInfo$3 = styled.div(_templateObject3$i || (_templateObject3$i = _taggedTemplateLiteralLoose(["\n  margin-left: 12px;\n  margin-right: auto;\n  max-width: calc(100% - 74px);\n"])));
-var ChannelsGroupTitle = styled.h4(_templateObject4$f || (_templateObject4$f = _taggedTemplateLiteralLoose(["\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 14px;\n  margin: ", ";\n  color: ", ";\n"])), function (props) {
-  return props.margin || '20px 0 12px';
-}, colors.textColor2);
-var ChannelTitle = styled.h3(_templateObject5$d || (_templateObject5$d = _taggedTemplateLiteralLoose(["\n  margin: 0 0 2px;\n  font-weight: 500;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor1);
-var ChannelMembers = styled.h4(_templateObject6$b || (_templateObject6$b = _taggedTemplateLiteralLoose(["\n  margin: 0;\n  font-weight: 400;\n  font-size: 14px;\n  line-height: 16px;\n  letter-spacing: -0.078px;\n  color: ", ";\n  white-space: nowrap;\n  text-overflow: ellipsis;\n  overflow: hidden;\n"])), colors.textColor2);
-var SelectedChannelsContainer = styled.div(_templateObject7$9 || (_templateObject7$9 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: flex-start;\n  flex-wrap: wrap;\n  width: 100%;\n  max-height: 85px;\n  overflow-x: hidden;\n  padding-top: 2px;\n  box-sizing: border-box;\n  //flex: 0 0 auto;\n"])));
-var SelectedChannelBuble = styled.div(_templateObject8$8 || (_templateObject8$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  justify-content: space-between;\n  background: ", ";\n  border-radius: 16px;\n  align-items: center;\n  padding: 4px 10px;\n  height: 26px;\n  margin: 8px 8px 0 0;\n  box-sizing: border-box;\n"])), colors.backgroundColor);
-var SelectedChannelName = styled.span(_templateObject9$8 || (_templateObject9$8 = _taggedTemplateLiteralLoose(["\n  font-style: normal;\n  font-weight: 500;\n  font-size: 14px;\n  line-height: 16px;\n  color: ", ";\n"])), colors.textColor1);
-var StyledSubtractSvg$1 = styled(SvgCross)(_templateObject10$7 || (_templateObject10$7 = _taggedTemplateLiteralLoose(["\n  cursor: pointer;\n  margin-left: 4px;\n  transform: translate(2px, 0);\n"])));
 
 var LOADING_STATE$1 = {
   LOADING: 1,
@@ -26966,41 +27175,7 @@ var ReactionScoreItem = styled.div(_templateObject8$9 || (_templateObject8$9 = _
 var ReactionKey = styled.span(_templateObject9$9 || (_templateObject9$9 = _taggedTemplateLiteralLoose(["\n  font-family: apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla,\n    twemoji mozilla, segoe ui symbol;\n  font-size: 20px;\n  cursor: pointer;\n"])));
 var ReactionItem$1 = styled.li(_templateObject10$8 || (_templateObject10$8 = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  font-size: 15px;\n  padding: 6px 16px;\n  transition: all 0.2s;\n\n  & ", " {\n    width: 10px;\n    height: 10px;\n  }\n"])), UserStatus);
 
-var _path$V;
-
-function _extends$W() {
-  _extends$W = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$W.apply(this, arguments);
-}
-
-function SvgEmojiAnimalIcon(props) {
-  return /*#__PURE__*/createElement("svg", _extends$W({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$V || (_path$V = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M7.188 3.875a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm7.938-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zM3.437 7.624a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.312.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm15.438-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm-6.393-.359a3.563 3.563 0 015.567 1.862c.193.672.643 1.24 1.252 1.582a3.25 3.25 0 01-1.548 6.102h-.002c-.435 0-.864-.086-1.265-.253a4.859 4.859 0 00-3.722 0h.001a3.28 3.28 0 01-1.265.253h-.003a3.25 3.25 0 01-1.548-6.101A2.657 2.657 0 006.576 9.94a3.563 3.563 0 011.28-1.862zM10 8.863a2.062 2.062 0 00-1.982 1.493 4.156 4.156 0 01-1.964 2.478l-.008.004a1.75 1.75 0 001.517 3.15l.001-.001a6.358 6.358 0 014.872 0h.001a1.75 1.75 0 001.516-3.15l-.007-.003a4.156 4.156 0 01-1.964-2.478A2.062 2.062 0 0010 8.863z",
-    fill: "CurrentColor"
-  })));
-}
-
-var _path$W, _path2$5, _path3$2;
+var _path$W;
 
 function _extends$X() {
   _extends$X = Object.assign ? Object.assign.bind() : function (target) {
@@ -27019,7 +27194,7 @@ function _extends$X() {
   return _extends$X.apply(this, arguments);
 }
 
-function SvgEmojiFoodIcon(props) {
+function SvgEmojiAnimalIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$X({
     width: 20,
     height: 20,
@@ -27029,22 +27204,12 @@ function SvgEmojiFoodIcon(props) {
   }, props), _path$W || (_path$W = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
-    fill: "CurrentColor"
-  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M10.083 2.222c-.616.616-.81 1.522-.797 2.367a6.008 6.008 0 00-1.905-.306c-3.438 0-5.952 2.45-5.952 5.858 0 1.644.588 3.698 1.574 5.35.968 1.622 2.465 3.08 4.378 3.08a5.98 5.98 0 002.62-.596 5.98 5.98 0 002.618.597c1.914 0 3.41-1.46 4.378-3.081.986-1.652 1.574-3.706 1.574-5.35 0-3.208-2.229-5.568-5.36-5.833.223-.434.307-.893.34-1.244.049-.518-.016-1.016-.09-1.528-.513-.072-1.01-.14-1.528-.09-.524.048-1.288.213-1.85.776zM7.38 5.712c-2.674 0-4.524 1.835-4.524 4.43 0 1.356.503 3.16 1.372 4.616.887 1.486 2.01 2.385 3.152 2.385.758 0 1.454-.178 2.075-.492a1.206 1.206 0 011.088 0 4.55 4.55 0 002.075.492c1.142 0 2.265-.899 3.152-2.385.869-1.456 1.372-3.26 1.372-4.617 0-2.594-1.85-4.43-4.524-4.43a4.57 4.57 0 00-2.073.493 1.206 1.206 0 01-1.09 0 4.551 4.551 0 00-2.075-.492zm3.341-1.437c.362-.026.776-.105 1.043-.37.265-.267.344-.682.37-1.043-.361.026-.776.104-1.042.37-.266.267-.345.681-.37 1.043z",
-    fill: "CurrentColor"
-  })), _path3$2 || (_path3$2 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M12.857 7.14a.714.714 0 000 1.43c.458 0 .807.15 1.037.374.227.221.392.565.392 1.054a.714.714 0 101.428 0c0-.83-.289-1.557-.824-2.078-.532-.518-1.254-.78-2.033-.78z",
+    d: "M7.188 3.875a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm7.938-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zM3.437 7.624a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.312.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm15.438-.813a.813.813 0 100 1.625.813.813 0 000-1.625zm-2.313.813a2.312 2.312 0 114.625 0 2.312 2.312 0 01-4.625 0zm-6.393-.359a3.563 3.563 0 015.567 1.862c.193.672.643 1.24 1.252 1.582a3.25 3.25 0 01-1.548 6.102h-.002c-.435 0-.864-.086-1.265-.253a4.859 4.859 0 00-3.722 0h.001a3.28 3.28 0 01-1.265.253h-.003a3.25 3.25 0 01-1.548-6.101A2.657 2.657 0 006.576 9.94a3.563 3.563 0 011.28-1.862zM10 8.863a2.062 2.062 0 00-1.982 1.493 4.156 4.156 0 01-1.964 2.478l-.008.004a1.75 1.75 0 001.517 3.15l.001-.001a6.358 6.358 0 014.872 0h.001a1.75 1.75 0 001.516-3.15l-.007-.003a4.156 4.156 0 01-1.964-2.478A2.062 2.062 0 0010 8.863z",
     fill: "CurrentColor"
   })));
 }
 
-var _path$X;
+var _path$X, _path2$5, _path3$2;
 
 function _extends$Y() {
   _extends$Y = Object.assign ? Object.assign.bind() : function (target) {
@@ -27063,7 +27228,7 @@ function _extends$Y() {
   return _extends$Y.apply(this, arguments);
 }
 
-function SvgEmojiTravelIcon(props) {
+function SvgEmojiFoodIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$Y({
     width: 20,
     height: 20,
@@ -27073,12 +27238,22 @@ function SvgEmojiTravelIcon(props) {
   }, props), _path$X || (_path$X = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M13.763 2.458a2.6 2.6 0 013.748 3.604l-2.135 2.236a5.065 5.065 0 00-.188.204.076.076 0 00-.004.017l.004.03c.008.05.024.116.053.241l1.327 5.754.012.05c.044.189.096.412.079.639-.015.197-.07.39-.162.564-.106.202-.268.364-.406.5l-.036.037-.306.306c-.215.215-.409.408-.58.55-.175.147-.406.309-.705.362a1.46 1.46 0 01-1.124-.266c-.244-.18-.378-.429-.47-.638-.089-.204-.175-.464-.272-.752l-1.2-3.6-1.779 1.78a4.815 4.815 0 00-.172.178.076.076 0 00-.005.015l.001.027c.003.045.01.105.022.22l.141 1.27.005.045c.02.168.042.368.01.567a1.46 1.46 0 01-.172.49c-.1.176-.242.317-.362.437l-.032.032-.152.151-.018.019c-.166.166-.32.32-.46.438-.15.125-.338.258-.583.322a1.46 1.46 0 01-1.007-.1 1.49 1.49 0 01-.508-.43c-.114-.142-.236-.325-.366-.52l-1.22-1.83a4.929 4.929 0 00-.063-.09l-.009-.006a4.655 4.655 0 00-.077-.052l-1.829-1.22a7.783 7.783 0 01-.52-.365 1.492 1.492 0 01-.43-.509 1.46 1.46 0 01-.1-1.006c.065-.245.197-.434.323-.584.117-.14.272-.294.438-.46l.018-.018.152-.152.031-.032c.12-.12.262-.262.437-.362.152-.086.318-.145.49-.172a2.09 2.09 0 01.568.01l.044.005 1.27.141a4.747 4.747 0 00.247.023.075.075 0 00.015-.005 4.867 4.867 0 00.178-.172l1.78-1.78-3.6-1.199a9.48 9.48 0 01-.752-.272c-.209-.092-.457-.226-.638-.47a1.46 1.46 0 01-.265-1.124c.053-.298.215-.53.36-.705.143-.171.337-.365.552-.58l.02-.02.285-.285.037-.037c.136-.137.298-.3.5-.406a1.46 1.46 0 01.564-.161c.228-.018.45.034.64.078l.05.012 5.731 1.323a5.096 5.096 0 00.275.057.075.075 0 00.019-.005 5.146 5.146 0 00.199-.197l2.082-2.152zm2.728.948a1.216 1.216 0 00-1.734.014l-2.082 2.151-.036.037c-.132.137-.288.3-.483.407a1.46 1.46 0 01-.602.178c-.223.016-.442-.036-.627-.079l-.05-.011L5.146 4.78a5.06 5.06 0 00-.279-.059.077.077 0 00-.017.005 5.065 5.065 0 00-.205.197l-.285.285c-.243.243-.39.392-.487.508a.915.915 0 00-.063.083c0 .006.002.012.004.018.016.01.045.025.094.046.138.06.337.128.662.236l4.633 1.544a.692.692 0 01.27 1.146l-2.57 2.57-.032.032c-.12.12-.261.262-.436.362a1.459 1.459 0 01-.492.172 2.09 2.09 0 01-.567-.01l-.044-.005-1.27-.141a4.747 4.747 0 00-.247-.023.075.075 0 00-.015.005 4.867 4.867 0 00-.178.172l-.152.152c-.19.19-.301.302-.375.39a.735.735 0 00-.045.058c0 .008 0 .015.002.023.01.009.027.025.056.048.09.072.22.16.444.309l1.808 1.205.015.01a1.466 1.466 0 01.507.507l.01.016 1.206 1.807c.15.225.237.355.308.444.024.03.04.047.049.056a.076.076 0 00.022.002.723.723 0 00.059-.045c.087-.073.199-.184.39-.375l.151-.151a4.89 4.89 0 00.172-.178.077.077 0 00.005-.016v-.026a4.94 4.94 0 00-.023-.22l-.14-1.27-.006-.045a2.091 2.091 0 01-.01-.567 1.46 1.46 0 01.172-.491c.1-.175.242-.317.363-.437l.031-.031 2.57-2.57a.692.692 0 011.146.27L13.9 15.43c.109.325.175.523.236.662a.9.9 0 00.046.093.073.073 0 00.019.004.917.917 0 00.083-.063c.116-.096.264-.244.507-.486l.285-.285a5.078 5.078 0 00.197-.206.073.073 0 00.005-.017 5.042 5.042 0 00-.058-.279l-1.328-5.753-.011-.049c-.044-.184-.095-.401-.079-.624a1.46 1.46 0 01.152-.553c.1-.199.255-.36.386-.496l.034-.037 2.136-2.236a1.216 1.216 0 00-.02-1.7z",
+    d: "M12.143 7.855c0-.395.32-.714.714-.714.779 0 1.501.261 2.033.779.535.52.824 1.249.824 2.078a.714.714 0 11-1.428 0c0-.49-.165-.833-.392-1.054-.23-.224-.579-.375-1.037-.375a.714.714 0 01-.714-.714z",
+    fill: "CurrentColor"
+  })), _path2$5 || (_path2$5 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M10.083 2.222c-.616.616-.81 1.522-.797 2.367a6.008 6.008 0 00-1.905-.306c-3.438 0-5.952 2.45-5.952 5.858 0 1.644.588 3.698 1.574 5.35.968 1.622 2.465 3.08 4.378 3.08a5.98 5.98 0 002.62-.596 5.98 5.98 0 002.618.597c1.914 0 3.41-1.46 4.378-3.081.986-1.652 1.574-3.706 1.574-5.35 0-3.208-2.229-5.568-5.36-5.833.223-.434.307-.893.34-1.244.049-.518-.016-1.016-.09-1.528-.513-.072-1.01-.14-1.528-.09-.524.048-1.288.213-1.85.776zM7.38 5.712c-2.674 0-4.524 1.835-4.524 4.43 0 1.356.503 3.16 1.372 4.616.887 1.486 2.01 2.385 3.152 2.385.758 0 1.454-.178 2.075-.492a1.206 1.206 0 011.088 0 4.55 4.55 0 002.075.492c1.142 0 2.265-.899 3.152-2.385.869-1.456 1.372-3.26 1.372-4.617 0-2.594-1.85-4.43-4.524-4.43a4.57 4.57 0 00-2.073.493 1.206 1.206 0 01-1.09 0 4.551 4.551 0 00-2.075-.492zm3.341-1.437c.362-.026.776-.105 1.043-.37.265-.267.344-.682.37-1.043-.361.026-.776.104-1.042.37-.266.267-.345.681-.37 1.043z",
+    fill: "CurrentColor"
+  })), _path3$2 || (_path3$2 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M12.857 7.14a.714.714 0 000 1.43c.458 0 .807.15 1.037.374.227.221.392.565.392 1.054a.714.714 0 101.428 0c0-.83-.289-1.557-.824-2.078-.532-.518-1.254-.78-2.033-.78z",
     fill: "CurrentColor"
   })));
 }
 
-var _g, _defs$1;
+var _path$Y;
 
 function _extends$Z() {
   _extends$Z = Object.assign ? Object.assign.bind() : function (target) {
@@ -27097,29 +27272,22 @@ function _extends$Z() {
   return _extends$Z.apply(this, arguments);
 }
 
-function SvgEmojiObjectIcon(props) {
+function SvgEmojiTravelIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$Z({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _g || (_g = /*#__PURE__*/createElement("g", {
-    clipPath: "url(#emojiObjectIcon_svg__clip0_1048_8610)"
-  }, /*#__PURE__*/createElement("path", {
+  }, props), _path$Y || (_path$Y = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M10 .917a.75.75 0 01.75.75V2.5a.75.75 0 01-1.5 0v-.833a.75.75 0 01.75-.75zM3.553 3.553a.75.75 0 011.06 0l.5.5a.75.75 0 11-1.06 1.061l-.5-.5a.75.75 0 010-1.06zm12.894 0a.75.75 0 010 1.061l-.5.5a.75.75 0 11-1.06-1.06l.5-.5a.75.75 0 011.06 0zM10 5.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM4.25 10a5.75 5.75 0 118.167 5.22v1.447a2.417 2.417 0 01-4.834 0v-1.448A5.75 5.75 0 014.25 10zm4.833 5.678v.989a.917.917 0 101.834 0v-.99a5.795 5.795 0 01-1.834 0zM.917 10a.75.75 0 01.75-.75H2.5a.75.75 0 110 1.5h-.833a.75.75 0 01-.75-.75zm15.833 0a.75.75 0 01.75-.75h.833a.75.75 0 110 1.5H17.5a.75.75 0 01-.75-.75z",
+    d: "M13.763 2.458a2.6 2.6 0 013.748 3.604l-2.135 2.236a5.065 5.065 0 00-.188.204.076.076 0 00-.004.017l.004.03c.008.05.024.116.053.241l1.327 5.754.012.05c.044.189.096.412.079.639-.015.197-.07.39-.162.564-.106.202-.268.364-.406.5l-.036.037-.306.306c-.215.215-.409.408-.58.55-.175.147-.406.309-.705.362a1.46 1.46 0 01-1.124-.266c-.244-.18-.378-.429-.47-.638-.089-.204-.175-.464-.272-.752l-1.2-3.6-1.779 1.78a4.815 4.815 0 00-.172.178.076.076 0 00-.005.015l.001.027c.003.045.01.105.022.22l.141 1.27.005.045c.02.168.042.368.01.567a1.46 1.46 0 01-.172.49c-.1.176-.242.317-.362.437l-.032.032-.152.151-.018.019c-.166.166-.32.32-.46.438-.15.125-.338.258-.583.322a1.46 1.46 0 01-1.007-.1 1.49 1.49 0 01-.508-.43c-.114-.142-.236-.325-.366-.52l-1.22-1.83a4.929 4.929 0 00-.063-.09l-.009-.006a4.655 4.655 0 00-.077-.052l-1.829-1.22a7.783 7.783 0 01-.52-.365 1.492 1.492 0 01-.43-.509 1.46 1.46 0 01-.1-1.006c.065-.245.197-.434.323-.584.117-.14.272-.294.438-.46l.018-.018.152-.152.031-.032c.12-.12.262-.262.437-.362.152-.086.318-.145.49-.172a2.09 2.09 0 01.568.01l.044.005 1.27.141a4.747 4.747 0 00.247.023.075.075 0 00.015-.005 4.867 4.867 0 00.178-.172l1.78-1.78-3.6-1.199a9.48 9.48 0 01-.752-.272c-.209-.092-.457-.226-.638-.47a1.46 1.46 0 01-.265-1.124c.053-.298.215-.53.36-.705.143-.171.337-.365.552-.58l.02-.02.285-.285.037-.037c.136-.137.298-.3.5-.406a1.46 1.46 0 01.564-.161c.228-.018.45.034.64.078l.05.012 5.731 1.323a5.096 5.096 0 00.275.057.075.075 0 00.019-.005 5.146 5.146 0 00.199-.197l2.082-2.152zm2.728.948a1.216 1.216 0 00-1.734.014l-2.082 2.151-.036.037c-.132.137-.288.3-.483.407a1.46 1.46 0 01-.602.178c-.223.016-.442-.036-.627-.079l-.05-.011L5.146 4.78a5.06 5.06 0 00-.279-.059.077.077 0 00-.017.005 5.065 5.065 0 00-.205.197l-.285.285c-.243.243-.39.392-.487.508a.915.915 0 00-.063.083c0 .006.002.012.004.018.016.01.045.025.094.046.138.06.337.128.662.236l4.633 1.544a.692.692 0 01.27 1.146l-2.57 2.57-.032.032c-.12.12-.261.262-.436.362a1.459 1.459 0 01-.492.172 2.09 2.09 0 01-.567-.01l-.044-.005-1.27-.141a4.747 4.747 0 00-.247-.023.075.075 0 00-.015.005 4.867 4.867 0 00-.178.172l-.152.152c-.19.19-.301.302-.375.39a.735.735 0 00-.045.058c0 .008 0 .015.002.023.01.009.027.025.056.048.09.072.22.16.444.309l1.808 1.205.015.01a1.466 1.466 0 01.507.507l.01.016 1.206 1.807c.15.225.237.355.308.444.024.03.04.047.049.056a.076.076 0 00.022.002.723.723 0 00.059-.045c.087-.073.199-.184.39-.375l.151-.151a4.89 4.89 0 00.172-.178.077.077 0 00.005-.016v-.026a4.94 4.94 0 00-.023-.22l-.14-1.27-.006-.045a2.091 2.091 0 01-.01-.567 1.46 1.46 0 01.172-.491c.1-.175.242-.317.363-.437l.031-.031 2.57-2.57a.692.692 0 011.146.27L13.9 15.43c.109.325.175.523.236.662a.9.9 0 00.046.093.073.073 0 00.019.004.917.917 0 00.083-.063c.116-.096.264-.244.507-.486l.285-.285a5.078 5.078 0 00.197-.206.073.073 0 00.005-.017 5.042 5.042 0 00-.058-.279l-1.328-5.753-.011-.049c-.044-.184-.095-.401-.079-.624a1.46 1.46 0 01.152-.553c.1-.199.255-.36.386-.496l.034-.037 2.136-2.236a1.216 1.216 0 00-.02-1.7z",
     fill: "CurrentColor"
-  }))), _defs$1 || (_defs$1 = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("clipPath", {
-    id: "emojiObjectIcon_svg__clip0_1048_8610"
-  }, /*#__PURE__*/createElement("path", {
-    fill: "CurrentColor",
-    d: "M0 0h20v20H0z"
-  })))));
+  })));
 }
 
-var _path$Y;
+var _g, _defs$1;
 
 function _extends$_() {
   _extends$_ = Object.assign ? Object.assign.bind() : function (target) {
@@ -27138,19 +27306,26 @@ function _extends$_() {
   return _extends$_.apply(this, arguments);
 }
 
-function SvgEmojiSymbolsIcon(props) {
+function SvgEmojiObjectIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$_({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$Y || (_path$Y = /*#__PURE__*/createElement("path", {
+  }, props), _g || (_g = /*#__PURE__*/createElement("g", {
+    clipPath: "url(#emojiObjectIcon_svg__clip0_1048_8610)"
+  }, /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M8.04 1.76a.75.75 0 01.616.863l-.548 3.294h5.146l.59-3.54a.75.75 0 111.48.246l-.55 3.294h2.31a.75.75 0 010 1.5h-2.56l-.86 5.167h2.586a.75.75 0 110 1.5h-2.837l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H6.745l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H2.083a.75.75 0 010-1.5h3.393l.86-5.167h-3.42a.75.75 0 110-1.5h3.67l.59-3.54a.75.75 0 01.864-.617zm-.182 5.657l-.862 5.167h5.146l.862-5.167H7.858z",
+    d: "M10 .917a.75.75 0 01.75.75V2.5a.75.75 0 01-1.5 0v-.833a.75.75 0 01.75-.75zM3.553 3.553a.75.75 0 011.06 0l.5.5a.75.75 0 11-1.06 1.061l-.5-.5a.75.75 0 010-1.06zm12.894 0a.75.75 0 010 1.061l-.5.5a.75.75 0 11-1.06-1.06l.5-.5a.75.75 0 011.06 0zM10 5.75a4.25 4.25 0 100 8.5 4.25 4.25 0 000-8.5zM4.25 10a5.75 5.75 0 118.167 5.22v1.447a2.417 2.417 0 01-4.834 0v-1.448A5.75 5.75 0 014.25 10zm4.833 5.678v.989a.917.917 0 101.834 0v-.99a5.795 5.795 0 01-1.834 0zM.917 10a.75.75 0 01.75-.75H2.5a.75.75 0 110 1.5h-.833a.75.75 0 01-.75-.75zm15.833 0a.75.75 0 01.75-.75h.833a.75.75 0 110 1.5H17.5a.75.75 0 01-.75-.75z",
     fill: "CurrentColor"
-  })));
+  }))), _defs$1 || (_defs$1 = /*#__PURE__*/createElement("defs", null, /*#__PURE__*/createElement("clipPath", {
+    id: "emojiObjectIcon_svg__clip0_1048_8610"
+  }, /*#__PURE__*/createElement("path", {
+    fill: "CurrentColor",
+    d: "M0 0h20v20H0z"
+  })))));
 }
 
 var _path$Z;
@@ -27172,7 +27347,7 @@ function _extends$$() {
   return _extends$$.apply(this, arguments);
 }
 
-function SvgEmojiFlagicon(props) {
+function SvgEmojiSymbolsIcon(props) {
   return /*#__PURE__*/createElement("svg", _extends$$({
     width: 20,
     height: 20,
@@ -27180,6 +27355,40 @@ function SvgEmojiFlagicon(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$Z || (_path$Z = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M8.04 1.76a.75.75 0 01.616.863l-.548 3.294h5.146l.59-3.54a.75.75 0 111.48.246l-.55 3.294h2.31a.75.75 0 010 1.5h-2.56l-.86 5.167h2.586a.75.75 0 110 1.5h-2.837l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H6.745l-.59 3.54a.75.75 0 11-1.48-.247l.55-3.293H2.083a.75.75 0 010-1.5h3.393l.86-5.167h-3.42a.75.75 0 110-1.5h3.67l.59-3.54a.75.75 0 01.864-.617zm-.182 5.657l-.862 5.167h5.146l.862-5.167H7.858z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _path$_;
+
+function _extends$10() {
+  _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$10.apply(this, arguments);
+}
+
+function SvgEmojiFlagicon(props) {
+  return /*#__PURE__*/createElement("svg", _extends$10({
+    width: 20,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$_ || (_path$_ = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
     d: "M4.167 3.25a.917.917 0 00-.917.917v7.764c.288-.118.6-.181.917-.181h5.416a.75.75 0 01.53.22l.614.613h5.56L14.329 8.67a.75.75 0 010-.671l1.957-3.915H10.75V7.5a.75.75 0 01-1.5 0V3.25H4.167zm6.56-.667l-.613-.613a.75.75 0 00-.53-.22H4.166A2.417 2.417 0 001.75 4.167V17.5a.75.75 0 001.5 0v-3.333a.917.917 0 01.917-.917h5.106l.613.614c.141.14.332.22.53.22H17.5a.75.75 0 00.67-1.086l-2.332-4.665 2.333-4.664a.75.75 0 00-.671-1.086h-6.773z",
@@ -27681,10 +27890,10 @@ var Emoji = styled.li(_templateObject8$a || (_templateObject8$a = _taggedTemplat
   return props.hoverBackgroundColor || colors.backgroundColor;
 });
 
-var _path$_;
+var _path$$;
 
-function _extends$10() {
-  _extends$10 = Object.assign ? Object.assign.bind() : function (target) {
+function _extends$11() {
+  _extends$11 = Object.assign ? Object.assign.bind() : function (target) {
     for (var i = 1; i < arguments.length; i++) {
       var source = arguments[i];
 
@@ -27697,17 +27906,17 @@ function _extends$10() {
 
     return target;
   };
-  return _extends$10.apply(this, arguments);
+  return _extends$11.apply(this, arguments);
 }
 
 function SvgPlus(props) {
-  return /*#__PURE__*/createElement("svg", _extends$10({
+  return /*#__PURE__*/createElement("svg", _extends$11({
     width: 20,
     height: 20,
     viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$_ || (_path$_ = /*#__PURE__*/createElement("path", {
+  }, props), _path$$ || (_path$$ = /*#__PURE__*/createElement("path", {
     d: "M10 3.778c.43 0 .778.348.778.778v4.666h4.666a.778.778 0 110 1.556h-4.666v4.666a.778.778 0 11-1.556 0v-4.666H4.556a.778.778 0 110-1.556h4.666V4.556c0-.43.348-.778.778-.778z",
     fill: "#818C99"
   })));
@@ -28203,18 +28412,7 @@ var Message = function Message(_ref) {
   };
 
   var handleDeletePendingMessage = function handleDeletePendingMessage() {
-    if (message.attachments && message.attachments.length) {
-      var customUploader = getCustomUploader();
-      message.attachments.forEach(function (att) {
-        if (customUploader) {
-          cancelUpload(att.tid);
-          deletePendingAttachment(att.tid);
-        }
-      });
-    }
-
-    removeMessageFromMap(channel.id, message.id || message.tid);
-    removeMessageFromAllMessages(message.id || message.tid);
+    deletePendingMessage(channel.id, message);
     dispatch(deleteMessageFromListAC(message.id || message.tid));
   };
 
@@ -28534,7 +28732,7 @@ var Message = function Message(_ref) {
     contactsMap: contactsMap,
     getFromContacts: getFromContacts,
     asSampleText: true
-  }) : parentNotLinkAttachment && (message.parentMessage.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parentMessage.attachments[0].type === attachmentTypes.video ? 'Video' : message.parentMessage.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.forwardingDetails && message.forwardingDetails.user && message.user && message.forwardingDetails.user.id !== message.user.id && /*#__PURE__*/React__default.createElement(ForwardedTitle, {
+  }) : parentNotLinkAttachment && (message.parentMessage.attachments[0].type === attachmentTypes.image ? 'Photo' : message.parentMessage.attachments[0].type === attachmentTypes.video ? 'Video' : message.parentMessage.attachments[0].type === attachmentTypes.voice ? ' Voice' : 'File')))), message.state !== MESSAGE_STATUS.DELETE && message.forwardingDetails && message.forwardingDetails.user && message.user && message.forwardingDetails.user.id !== message.user.id && /*#__PURE__*/React__default.createElement(ForwardedTitle, {
     withPadding: withAttachments && notLinkAttachment,
     withAttachments: withAttachments,
     withMediaAttachment: withMediaAttachment,
@@ -29680,14 +29878,14 @@ var MessageList = function MessageList(_ref2) {
     draggable: true,
     onDrop: handleDropFile,
     onDragOver: handleDragOver
-  }, /*#__PURE__*/React__default.createElement(IconWrapper, {
+  }, /*#__PURE__*/React__default.createElement(IconWrapper$1, {
     draggable: true,
     iconColor: colors.primary
   }, /*#__PURE__*/React__default.createElement(SvgChoseFile, null)), "Drag & drop to send as file"), isDragging === 'media' && /*#__PURE__*/React__default.createElement(DropAttachmentArea, {
     draggable: true,
     onDrop: handleDropMedia,
     onDragOver: handleDragOver
-  }, /*#__PURE__*/React__default.createElement(IconWrapper, {
+  }, /*#__PURE__*/React__default.createElement(IconWrapper$1, {
     draggable: true,
     iconColor: colors.primary
   }, /*#__PURE__*/React__default.createElement(SvgChoseMedia, null)), "Drag & drop to send as media")), /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showTopFixedDate && /*#__PURE__*/React__default.createElement(MessageTopDate, {
@@ -29890,7 +30088,7 @@ var MessageList = function MessageList(_ref2) {
   }, "No Messages yet"), /*#__PURE__*/React__default.createElement(NoMessagesText, {
     color: colors.textColor2
   }, "No messages yet, start the chat")), attachmentsPreview && mediaFile && /*#__PURE__*/React__default.createElement(SliderPopup, {
-    channelId: channel.id,
+    channel: channel,
     setIsSliderOpen: setMediaFile,
     currentMediaFile: mediaFile
   }))));
@@ -29924,12 +30122,12 @@ var DragAndDropContainer = styled.div(_templateObject5$h || (_templateObject5$h 
 }, function (props) {
   return props.height ? props.height + 30 + "px" : '100%';
 }, colors.white);
-var IconWrapper = styled.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.backgroundColor, function (props) {
+var IconWrapper$1 = styled.span(_templateObject6$f || (_templateObject6$f = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  height: 64px;\n  width: 64px;\n  background-color: ", ";\n  border-radius: 50%;\n  text-align: center;\n  margin-bottom: 16px;\n  transition: all 0.3s;\n  pointer-events: none;\n  & > svg {\n    color: ", ";\n    width: 32px;\n    height: 32px;\n  }\n"])), colors.backgroundColor, function (props) {
   return props.iconColor || colors.primary;
 });
 var DropAttachmentArea = styled.div(_templateObject7$d || (_templateObject7$d = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  border: 1px dashed ", ";\n  border-radius: 16px;\n  margin: ", ";\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n  transition: all 0.1s;\n\n  &.dragover {\n    background-color: ", ";\n\n    ", " {\n      background-color: ", ";\n    }\n  }\n"])), colors.textColor2, function (props) {
   return props.margin || '12px 32px 32px';
-}, colors.textColor1, colors.backgroundColor, IconWrapper, colors.white);
+}, colors.textColor1, colors.backgroundColor, IconWrapper$1, colors.white);
 var MessageWrapper = styled.div(_templateObject8$c || (_templateObject8$c = _taggedTemplateLiteralLoose(["\n  &.highlight {\n    & .messageBody {\n      transform: scale(1.1);\n      background-color: #d5d5d5;\n    }\n  }\n"])));
 var NoMessagesContainer = styled.div(_templateObject9$b || (_templateObject9$b = _taggedTemplateLiteralLoose(["\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  flex-direction: column;\n  height: 100%;\n  width: 100%;\n  font-weight: 400;\n  font-size: 15px;\n  line-height: 18px;\n  letter-spacing: -0.2px;\n  color: ", ";\n"])), function (props) {
   return props.color || colors.textColor1;
@@ -30624,40 +30822,6 @@ var MemberName$2 = styled.h3(_templateObject5$i || (_templateObject5$i = _tagged
   return props.color || colors.textColor1;
 });
 
-var _path$$;
-
-function _extends$11() {
-  _extends$11 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$11.apply(this, arguments);
-}
-
-function SvgBold(props) {
-  return /*#__PURE__*/createElement("svg", _extends$11({
-    width: 18,
-    height: 18,
-    viewBox: "0 0 18.01 18.01",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$$ || (_path$$ = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.35 3.029A1.1 1.1 0 005 4.1v10a1.1 1.1 0 001.35 1.072c.08.018.164.028.25.028h3.429c1.998 0 3.671-1.583 3.671-3.6a3.566 3.566 0 00-1.596-2.969c.38-.588.596-1.294.596-2.031 0-1.904-1.444-3.6-3.408-3.6H6.6c-.086 0-.17.01-.25.029zm3.41 7.138a3.318 3.318 0 01-.468.033H7.2V13h2.829c.842 0 1.471-.656 1.471-1.4 0-.744-.63-1.4-1.471-1.4a1.1 1.1 0 01-.268-.033zM7.2 8h2.092c.586 0 1.208-.542 1.208-1.4 0-.858-.622-1.4-1.208-1.4H7.2V8z",
-    fill: "CurrentColor"
-  })));
-}
-
 var _path$10;
 
 function _extends$12() {
@@ -30677,7 +30841,7 @@ function _extends$12() {
   return _extends$12.apply(this, arguments);
 }
 
-function SvgItalic(props) {
+function SvgBold(props) {
   return /*#__PURE__*/createElement("svg", _extends$12({
     width: 18,
     height: 18,
@@ -30687,12 +30851,12 @@ function SvgItalic(props) {
   }, props), _path$10 || (_path$10 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
-    d: "M9.984 3.2H8a.8.8 0 000 1.6h1.024l-1.68 8.4H6a.8.8 0 100 1.6h4a.8.8 0 000-1.6H8.976l1.68-8.4H12a.8.8 0 000-1.6H9.984z",
+    d: "M6.35 3.029A1.1 1.1 0 005 4.1v10a1.1 1.1 0 001.35 1.072c.08.018.164.028.25.028h3.429c1.998 0 3.671-1.583 3.671-3.6a3.566 3.566 0 00-1.596-2.969c.38-.588.596-1.294.596-2.031 0-1.904-1.444-3.6-3.408-3.6H6.6c-.086 0-.17.01-.25.029zm3.41 7.138a3.318 3.318 0 01-.468.033H7.2V13h2.829c.842 0 1.471-.656 1.471-1.4 0-.744-.63-1.4-1.471-1.4a1.1 1.1 0 01-.268-.033zM7.2 8h2.092c.586 0 1.208-.542 1.208-1.4 0-.858-.622-1.4-1.208-1.4H7.2V8z",
     fill: "CurrentColor"
   })));
 }
 
-var _g$1;
+var _path$11;
 
 function _extends$13() {
   _extends$13 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30711,25 +30875,22 @@ function _extends$13() {
   return _extends$13.apply(this, arguments);
 }
 
-function SvgStrikethrough(props) {
+function SvgItalic(props) {
   return /*#__PURE__*/createElement("svg", _extends$13({
     width: 18,
     height: 18,
     viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _g$1 || (_g$1 = /*#__PURE__*/createElement("g", {
+  }, props), _path$11 || (_path$11 = /*#__PURE__*/createElement("path", {
     fillRule: "evenodd",
     clipRule: "evenodd",
+    d: "M9.984 3.2H8a.8.8 0 000 1.6h1.024l-1.68 8.4H6a.8.8 0 100 1.6h4a.8.8 0 000-1.6H8.976l1.68-8.4H12a.8.8 0 000-1.6H9.984z",
     fill: "CurrentColor"
-  }, /*#__PURE__*/createElement("path", {
-    d: "M8.565 4.766c1.043-.104 1.987.287 2.447 1.138a.75.75 0 101.32-.713c-.821-1.519-2.44-2.064-3.915-1.918-2.504.248-3.581 2.265-3.144 3.93.228.868.738 1.423 1.342 1.797h4.835a4.345 4.345 0 00-.457-.205c-.514-.196-1.105-.325-1.634-.44l-.314-.07c-1.343-.301-2.097-.611-2.32-1.462-.197-.748.227-1.898 1.84-2.057zM12.937 11H11.38c.195.497.15 1.007-.113 1.392-.285.418-.943.858-2.277.858-2.072 0-2.685-1.118-2.762-1.428a.75.75 0 10-1.455.363c.255 1.021 1.503 2.565 4.217 2.565 1.656 0 2.867-.56 3.517-1.513.466-.685.582-1.486.43-2.237z"
-  }), /*#__PURE__*/createElement("path", {
-    d: "M2.7 9a.8.8 0 01.8-.8h11a.8.8 0 010 1.6h-11a.8.8 0 01-.8-.8z"
-  }))));
+  })));
 }
 
-var _path$11;
+var _g$1;
 
 function _extends$14() {
   _extends$14 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30748,20 +30909,25 @@ function _extends$14() {
   return _extends$14.apply(this, arguments);
 }
 
-function SvgMono(props) {
+function SvgStrikethrough(props) {
   return /*#__PURE__*/createElement("svg", _extends$14({
     width: 18,
     height: 18,
     viewBox: "0 0 18.01 18.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$11 || (_path$11 = /*#__PURE__*/createElement("path", {
-    d: "M4.98 14.753A.826.826 0 014.37 15a.882.882 0 01-.624-.247.882.882 0 01-.247-.624V3.87c0-.24.082-.444.247-.608A.853.853 0 014.37 3c.581 0 1.003.258 1.266.773l3.238 6.28c0 .01.006.015.017.015.01 0 .016-.005.016-.016l3.222-6.247c.274-.537.712-.805 1.315-.805.252 0 .466.088.641.263a.873.873 0 01.263.641v10.192a.873.873 0 01-.263.641.872.872 0 01-.64.263.873.873 0 01-.642-.263.873.873 0 01-.263-.641V6.14c0-.011-.005-.017-.016-.017s-.017.006-.017.017l-2.433 4.833c-.252.493-.646.74-1.183.74s-.932-.247-1.184-.74L5.275 6.14c0-.011-.005-.017-.016-.017s-.017.006-.017.017v7.989c0 .24-.087.45-.263.624z",
+  }, props), _g$1 || (_g$1 = /*#__PURE__*/createElement("g", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
     fill: "CurrentColor"
-  })));
+  }, /*#__PURE__*/createElement("path", {
+    d: "M8.565 4.766c1.043-.104 1.987.287 2.447 1.138a.75.75 0 101.32-.713c-.821-1.519-2.44-2.064-3.915-1.918-2.504.248-3.581 2.265-3.144 3.93.228.868.738 1.423 1.342 1.797h4.835a4.345 4.345 0 00-.457-.205c-.514-.196-1.105-.325-1.634-.44l-.314-.07c-1.343-.301-2.097-.611-2.32-1.462-.197-.748.227-1.898 1.84-2.057zM12.937 11H11.38c.195.497.15 1.007-.113 1.392-.285.418-.943.858-2.277.858-2.072 0-2.685-1.118-2.762-1.428a.75.75 0 10-1.455.363c.255 1.021 1.503 2.565 4.217 2.565 1.656 0 2.867-.56 3.517-1.513.466-.685.582-1.486.43-2.237z"
+  }), /*#__PURE__*/createElement("path", {
+    d: "M2.7 9a.8.8 0 01.8-.8h11a.8.8 0 010 1.6h-11a.8.8 0 01-.8-.8z"
+  }))));
 }
 
-var _g$2;
+var _path$12;
 
 function _extends$15() {
   _extends$15 = Object.assign ? Object.assign.bind() : function (target) {
@@ -30780,8 +30946,40 @@ function _extends$15() {
   return _extends$15.apply(this, arguments);
 }
 
-function SvgUnderline(props) {
+function SvgMono(props) {
   return /*#__PURE__*/createElement("svg", _extends$15({
+    width: 18,
+    height: 18,
+    viewBox: "0 0 18.01 18.01",
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$12 || (_path$12 = /*#__PURE__*/createElement("path", {
+    d: "M4.98 14.753A.826.826 0 014.37 15a.882.882 0 01-.624-.247.882.882 0 01-.247-.624V3.87c0-.24.082-.444.247-.608A.853.853 0 014.37 3c.581 0 1.003.258 1.266.773l3.238 6.28c0 .01.006.015.017.015.01 0 .016-.005.016-.016l3.222-6.247c.274-.537.712-.805 1.315-.805.252 0 .466.088.641.263a.873.873 0 01.263.641v10.192a.873.873 0 01-.263.641.872.872 0 01-.64.263.873.873 0 01-.642-.263.873.873 0 01-.263-.641V6.14c0-.011-.005-.017-.016-.017s-.017.006-.017.017l-2.433 4.833c-.252.493-.646.74-1.183.74s-.932-.247-1.184-.74L5.275 6.14c0-.011-.005-.017-.016-.017s-.017.006-.017.017v7.989c0 .24-.087.45-.263.624z",
+    fill: "CurrentColor"
+  })));
+}
+
+var _g$2;
+
+function _extends$16() {
+  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$16.apply(this, arguments);
+}
+
+function SvgUnderline(props) {
+  return /*#__PURE__*/createElement("svg", _extends$16({
     width: 18,
     height: 18,
     viewBox: "0 0 18.01 18.01",
@@ -30966,7 +31164,6 @@ function TextFormatFloatingToolbar(_ref) {
     editor.getEditorState().read(function () {
       updateTextFormatFloatingToolbar();
     });
-    console.log('registering update listener. .. ');
     return mergeRegister(editor.registerUpdateListener(function (_ref2) {
       var editorState = _ref2.editorState;
       editorState.read(function () {
@@ -31429,11 +31626,22 @@ function useFormatMessage(editor, editorState, setMessageBodyAttributes, setMess
       });
     }
   }, [editor]);
+  var onDelete = useCallback(function (event) {
+    event.preventDefault();
+    var selection = $getSelection();
+    var node = getSelectedNode(selection);
+
+    if ($isMentionNode(node)) {
+      node.remove();
+    }
+
+    return false;
+  }, [editor]);
   useEffect(function () {
-    editor.registerCommand(PASTE_COMMAND, function (e) {
+    return mergeRegister(editor.registerCommand(PASTE_COMMAND, function (e) {
       handlePast(e);
       return true;
-    }, COMMAND_PRIORITY_NORMAL);
+    }, COMMAND_PRIORITY_NORMAL), editor.registerCommand(KEY_DELETE_COMMAND, onDelete, COMMAND_PRIORITY_LOW), editor.registerCommand(KEY_BACKSPACE_COMMAND, onDelete, COMMAND_PRIORITY_LOW));
   }, []);
   useDidUpdate(function () {
     if (editorState) {
@@ -31794,43 +32002,7 @@ var Emoji$1 = styled.li(_templateObject8$d || (_templateObject8$d = _taggedTempl
 
 var CAN_USE_DOM = typeof window !== 'undefined' && typeof window.document !== 'undefined' && typeof window.document.createElement !== 'undefined';
 
-var _circle$5, _path$12;
-
-function _extends$16() {
-  _extends$16 = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$16.apply(this, arguments);
-}
-
-function SvgSend(props) {
-  return /*#__PURE__*/createElement("svg", _extends$16({
-    width: 32,
-    height: 32,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/createElement("circle", {
-    cx: 16,
-    cy: 16,
-    r: 16,
-    fill: "currentColor"
-  })), _path$12 || (_path$12 = /*#__PURE__*/createElement("path", {
-    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
-    fill: "#fff"
-  })));
-}
-
-var _path$13;
+var _circle$5, _path$13;
 
 function _extends$17() {
   _extends$17 = Object.assign ? Object.assign.bind() : function (target) {
@@ -31849,15 +32021,20 @@ function _extends$17() {
   return _extends$17.apply(this, arguments);
 }
 
-function SvgEye(props) {
+function SvgSend(props) {
   return /*#__PURE__*/createElement("svg", _extends$17({
-    width: 25,
-    height: 24,
+    width: 32,
+    height: 32,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$13 || (_path$13 = /*#__PURE__*/createElement("path", {
-    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
-    fill: "CurrentColor"
+  }, props), _circle$5 || (_circle$5 = /*#__PURE__*/createElement("circle", {
+    cx: 16,
+    cy: 16,
+    r: 16,
+    fill: "currentColor"
+  })), _path$13 || (_path$13 = /*#__PURE__*/createElement("path", {
+    d: "M10.953 18.945c-.545 1.46-.888 2.485-1.028 3.076-.439 1.856-.758 2.274.879 1.392 1.637-.882 9.56-5.251 11.329-6.222 2.304-1.266 2.335-1.167-.124-2.511-1.873-1.024-9.704-5.279-11.205-6.115-1.501-.835-1.318-.464-.879 1.392.142.6.49 1.634 1.043 3.105a3.143 3.143 0 002.35 1.98l4.595.88a.079.079 0 010 .155l-4.606.88a3.143 3.143 0 00-2.354 1.988z",
+    fill: "#fff"
   })));
 }
 
@@ -31880,15 +32057,14 @@ function _extends$18() {
   return _extends$18.apply(this, arguments);
 }
 
-function SvgAddAttachment(props) {
+function SvgEye(props) {
   return /*#__PURE__*/createElement("svg", _extends$18({
-    width: 24,
+    width: 25,
     height: 24,
-    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$14 || (_path$14 = /*#__PURE__*/createElement("path", {
-    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+    d: "M12.5 5c6 0 10 5.6 10 7 0 1.4-4 7-10 7s-10-5.6-10-7c0-1.4 4-7 10-7zm0 2a5 5 0 100 10 5 5 0 000-10zm.001 2.5a2.5 2.5 0 110 5 2.5 2.5 0 010-5z",
     fill: "CurrentColor"
   })));
 }
@@ -31912,15 +32088,16 @@ function _extends$19() {
   return _extends$19.apply(this, arguments);
 }
 
-function SvgErrorCircle(props) {
+function SvgAddAttachment(props) {
   return /*#__PURE__*/createElement("svg", _extends$19({
-    width: 25,
+    width: 24,
     height: 24,
+    viewBox: "0 0 24.01 24.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$15 || (_path$15 = /*#__PURE__*/createElement("path", {
-    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
-    fill: "#FFB73D"
+    d: "M12 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.286-10.286 10.286C6.32 22.286 1.714 17.68 1.714 12 1.714 6.32 6.32 1.714 12 1.714zm0 1.715a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 3.428c.473 0 .857.384.857.857v3.429h3.429a.857.857 0 010 1.714h-3.429v3.429a.857.857 0 11-1.714 0v-3.429H7.714a.857.857 0 110-1.714h3.429V7.714c0-.473.384-.857.857-.857z",
+    fill: "CurrentColor"
   })));
 }
 
@@ -31943,16 +32120,15 @@ function _extends$1a() {
   return _extends$1a.apply(this, arguments);
 }
 
-function SvgPlayRecord(props) {
+function SvgErrorCircle(props) {
   return /*#__PURE__*/createElement("svg", _extends$1a({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 25,
+    height: 24,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$16 || (_path$16 = /*#__PURE__*/createElement("path", {
-    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
-    fill: "CurrentColor"
+    d: "M12.5 1.714c5.68 0 10.286 4.605 10.286 10.286 0 5.68-4.605 10.285-10.286 10.285C6.82 22.285 2.214 17.68 2.214 12 2.214 6.319 6.82 1.714 12.5 1.714zm0 1.714a8.571 8.571 0 100 17.143 8.571 8.571 0 000-17.143zm0 11.657a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4zm.063-8.228c.204 0 .332.032.443.091.112.06.2.148.26.26.06.111.091.24.091.443v5.269c0 .204-.032.331-.091.443a.623.623 0 01-.26.26c-.111.059-.24.09-.443.09h-.126c-.204 0-.332-.031-.443-.09a.624.624 0 01-.26-.26c-.06-.112-.091-.24-.091-.443V7.65c0-.203.032-.33.091-.442.06-.112.148-.2.26-.26.111-.06.24-.091.443-.091h.126z",
+    fill: "#FFB73D"
   })));
 }
 
@@ -31975,7 +32151,7 @@ function _extends$1b() {
   return _extends$1b.apply(this, arguments);
 }
 
-function SvgPauseRecord(props) {
+function SvgPlayRecord(props) {
   return /*#__PURE__*/createElement("svg", _extends$1b({
     width: 20,
     height: 20,
@@ -31983,7 +32159,7 @@ function SvgPauseRecord(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$17 || (_path$17 = /*#__PURE__*/createElement("path", {
-    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    d: "M16.28 8.913c.793.48.793 1.692 0 2.172l-8.265 4.997c-.787.475-1.765-.126-1.765-1.086V5.002c0-.96.979-1.561 1.765-1.086l8.265 4.997z",
     fill: "CurrentColor"
   })));
 }
@@ -32007,21 +32183,20 @@ function _extends$1c() {
   return _extends$1c.apply(this, arguments);
 }
 
-function SvgStopRecord(props) {
+function SvgPauseRecord(props) {
   return /*#__PURE__*/createElement("svg", _extends$1c({
     width: 20,
     height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$18 || (_path$18 = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M4.421 5.441c-.254.5-.254 1.153-.254 2.46v4.2c0 1.306 0 1.96.254 2.459.224.439.581.796 1.02 1.02.5.254 1.153.254 2.46.254h4.2c1.306 0 1.96 0 2.459-.255.439-.223.796-.58 1.02-1.02.254-.498.254-1.152.254-2.459V7.9c0-1.306 0-1.96-.255-2.459a2.333 2.333 0 00-1.02-1.02c-.498-.254-1.152-.254-2.459-.254H7.9c-1.306 0-1.96 0-2.459.254-.439.224-.796.581-1.02 1.02z",
-    fill: "#FA4C56"
+    d: "M7.468 3.75c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.163.088-.324.134-.77.134H6.282c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.909.909 0 01.378-.378c.163-.088.324-.134.77-.134h1.186zm6.25 0c.446 0 .607.046.77.134.163.087.291.215.378.378.088.163.134.324.134.77v9.936c0 .446-.046.607-.134.77a.908.908 0 01-.378.378c-.162.088-.324.134-.77.134h-1.186c-.446 0-.607-.046-.77-.134a.908.908 0 01-.378-.378c-.088-.162-.134-.324-.134-.77V5.032c0-.446.046-.607.134-.77a.908.908 0 01.378-.378c.162-.088.324-.134.77-.134h1.186z",
+    fill: "CurrentColor"
   })));
 }
 
-var _circle$6, _path$19, _path2$6;
+var _path$19;
 
 function _extends$1d() {
   _extends$1d = Object.assign ? Object.assign.bind() : function (target) {
@@ -32040,8 +32215,41 @@ function _extends$1d() {
   return _extends$1d.apply(this, arguments);
 }
 
-function SvgRecordButton(props) {
+function SvgStopRecord(props) {
   return /*#__PURE__*/createElement("svg", _extends$1d({
+    width: 20,
+    height: 20,
+    fill: "none",
+    xmlns: "http://www.w3.org/2000/svg"
+  }, props), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M4.421 5.441c-.254.5-.254 1.153-.254 2.46v4.2c0 1.306 0 1.96.254 2.459.224.439.581.796 1.02 1.02.5.254 1.153.254 2.46.254h4.2c1.306 0 1.96 0 2.459-.255.439-.223.796-.58 1.02-1.02.254-.498.254-1.152.254-2.459V7.9c0-1.306 0-1.96-.255-2.459a2.333 2.333 0 00-1.02-1.02c-.498-.254-1.152-.254-2.459-.254H7.9c-1.306 0-1.96 0-2.459.254-.439.224-.796.581-1.02 1.02z",
+    fill: "#FA4C56"
+  })));
+}
+
+var _circle$6, _path$1a, _path2$6;
+
+function _extends$1e() {
+  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+  return _extends$1e.apply(this, arguments);
+}
+
+function SvgRecordButton(props) {
+  return /*#__PURE__*/createElement("svg", _extends$1e({
     width: 32,
     height: 32,
     viewBox: "0 0 32.01 32.01",
@@ -32052,7 +32260,7 @@ function SvgRecordButton(props) {
     cy: 16,
     r: 16,
     fill: "CurrentColor"
-  })), _path$19 || (_path$19 = /*#__PURE__*/createElement("path", {
+  })), _path$1a || (_path$1a = /*#__PURE__*/createElement("path", {
     d: "M12.875 10.375a3.125 3.125 0 116.25 0v5a3.125 3.125 0 11-6.25 0v-5zM15.219 22.406a.781.781 0 111.562 0v1.563a.781.781 0 11-1.562 0v-1.563zM23.5 14.906a.781.781 0 11-1.563 0 .781.781 0 011.563 0zM10.063 14.906a.781.781 0 11-1.563 0 .781.781 0 011.563 0z",
     fill: "#fff"
   })), _path2$6 || (_path2$6 = /*#__PURE__*/createElement("path", {
@@ -33099,18 +33307,7 @@ var SendMessageInput = function SendMessageInput(_ref3) {
   };
 
   var handleDeletePendingMessage = function handleDeletePendingMessage(message) {
-    if (message.attachments && message.attachments.length) {
-      var customUploader = getCustomUploader();
-      message.attachments.forEach(function (att) {
-        if (customUploader) {
-          cancelUpload(att.tid);
-          deletePendingAttachment(att.tid);
-        }
-      });
-    }
-
-    removeMessageFromMap(activeChannel.id, message.id || message.tid);
-    removeMessageFromAllMessages(message.id || message.tid);
+    deletePendingMessage(activeChannel.id, message);
     dispatch(deleteMessageFromListAC(message.id || message.tid));
   };
 
@@ -34113,41 +34310,7 @@ var CustomButton = styled.span(_templateObject31$1 || (_templateObject31$1 = _ta
 });
 var CloseIconWrapper = styled.span(_templateObject32$1 || (_templateObject32$1 = _taggedTemplateLiteralLoose(["\n  display: inline-flex;\n  cursor: pointer;\n  margin-left: auto;\n  padding: 10px;\n"])));
 
-var _path$1a;
-
-function _extends$1e() {
-  _extends$1e = Object.assign ? Object.assign.bind() : function (target) {
-    for (var i = 1; i < arguments.length; i++) {
-      var source = arguments[i];
-
-      for (var key in source) {
-        if (Object.prototype.hasOwnProperty.call(source, key)) {
-          target[key] = source[key];
-        }
-      }
-    }
-
-    return target;
-  };
-  return _extends$1e.apply(this, arguments);
-}
-
-function SvgBottom(props) {
-  return /*#__PURE__*/createElement("svg", _extends$1e({
-    width: 12,
-    height: 7,
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg"
-  }, props), _path$1a || (_path$1a = /*#__PURE__*/createElement("path", {
-    d: "M1.5 1.5l4.5 4 4.5-4",
-    stroke: "#676A7C",
-    strokeWidth: 1.4,
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  })));
-}
-
-var _path$1b, _path2$7;
+var _path$1b;
 
 function _extends$1f() {
   _extends$1f = Object.assign ? Object.assign.bind() : function (target) {
@@ -34166,23 +34329,22 @@ function _extends$1f() {
   return _extends$1f.apply(this, arguments);
 }
 
-function SvgMarkAsUnRead(props) {
+function SvgBottom(props) {
   return /*#__PURE__*/createElement("svg", _extends$1f({
-    width: 20,
-    height: 20,
-    viewBox: "0 0 20.01 20.01",
+    width: 12,
+    height: 7,
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1b || (_path$1b = /*#__PURE__*/createElement("path", {
-    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
-    fill: "currentColor"
-  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
-    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
-    fill: "currentColor"
+    d: "M1.5 1.5l4.5 4 4.5-4",
+    stroke: "#676A7C",
+    strokeWidth: 1.4,
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
   })));
 }
 
-var _path$1c;
+var _path$1c, _path2$7;
 
 function _extends$1g() {
   _extends$1g = Object.assign ? Object.assign.bind() : function (target) {
@@ -34201,7 +34363,7 @@ function _extends$1g() {
   return _extends$1g.apply(this, arguments);
 }
 
-function SvgMarkAsRead(props) {
+function SvgMarkAsUnRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$1g({
     width: 20,
     height: 20,
@@ -34209,9 +34371,10 @@ function SvgMarkAsRead(props) {
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1c || (_path$1c = /*#__PURE__*/createElement("path", {
-    fillRule: "evenodd",
-    clipRule: "evenodd",
-    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    d: "M18.25 7.189v3.843c0 .673 0 1.224-.037 1.671-.037.464-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.2-.81.28-1.273.318-.447.036-.998.036-1.671.036h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608c-.154.124-.307.246-.441.335-.129.085-.366.228-.67.228-.356 0-.692-.16-.914-.438-.19-.239-.226-.513-.24-.667-.015-.16-.015-.356-.015-.554v-1.228c-.358-.01-.655-.034-.924-.107a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.881.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037h6.342c-.19.464-.3.97-.31 1.5h-6c-.713 0-1.203 0-1.582.032-.37.03-.57.086-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.088.059 1.286a1.75 1.75 0 001.237 1.238c.199.053.463.06 1.286.06a.75.75 0 01.75.75v1.772L8.49 15.25c.355-.284.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.031.37-.03.57-.086.713-.16a1.75 1.75 0 00.765-.764c.074-.144.13-.343.16-.714.03-.38.031-.868.031-1.58V7.498c.53-.01 1.036-.12 1.5-.31z",
+    fill: "currentColor"
+  })), _path2$7 || (_path2$7 = /*#__PURE__*/createElement("path", {
+    d: "M5.833 6.334a.75.75 0 100 1.5H10a.75.75 0 000-1.5H5.833zM5.833 9.25a.75.75 0 100 1.5H12.5a.75.75 0 100-1.5H5.833zM19.167 3.333a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z",
     fill: "currentColor"
   })));
 }
@@ -34235,15 +34398,18 @@ function _extends$1h() {
   return _extends$1h.apply(this, arguments);
 }
 
-function SvgDeleteChannel(props) {
+function SvgMarkAsRead(props) {
   return /*#__PURE__*/createElement("svg", _extends$1h({
     width: 20,
-    height: 21,
+    height: 20,
+    viewBox: "0 0 20.01 20.01",
     fill: "none",
     xmlns: "http://www.w3.org/2000/svg"
   }, props), _path$1d || (_path$1d = /*#__PURE__*/createElement("path", {
-    d: "M5 16.333C5 17.25 5.75 18 6.667 18h6.666C14.25 18 15 17.25 15 16.333V8c0-.917-.75-1.667-1.667-1.667H6.667C5.75 6.333 5 7.083 5 8v8.333zm10-12.5h-2.083l-.592-.591A.84.84 0 0011.742 3H8.258a.84.84 0 00-.583.242l-.592.591H5a.836.836 0 00-.833.834c0 .458.375.833.833.833h10a.836.836 0 00.833-.833.836.836 0 00-.833-.834z",
-    fill: "CurrentColor"
+    fillRule: "evenodd",
+    clipRule: "evenodd",
+    d: "M6.469 1.75h7.062c.674 0 1.225 0 1.672.037.463.037.882.118 1.273.317a3.25 3.25 0 011.42 1.42c.199.391.28.81.317 1.273.037.448.037.998.037 1.672v4.562c0 .674 0 1.224-.037 1.672-.037.463-.118.882-.317 1.273a3.25 3.25 0 01-1.42 1.42c-.391.199-.81.28-1.273.317-.447.037-.998.037-1.671.037h-2.129c-.55 0-.72.004-.878.036a1.752 1.752 0 00-.444.156c-.143.073-.279.177-.708.52l-2.01 1.608a6.553 6.553 0 01-.441.334c-.129.085-.366.229-.67.23-.356 0-.692-.162-.914-.44-.19-.238-.226-.513-.24-.666-.015-.16-.015-.356-.015-.554v-1.229c-.358-.008-.655-.034-.924-.106a3.25 3.25 0 01-2.298-2.298c-.111-.415-.111-.896-.111-1.566V6.469c0-.674 0-1.224.037-1.672.037-.463.118-.882.317-1.272a3.25 3.25 0 011.42-1.42c.391-.2.81-.28 1.273-.318.448-.037.998-.037 1.672-.037zm-1.55 1.532c-.37.03-.57.085-.713.159a1.75 1.75 0 00-.765.765c-.074.144-.13.343-.16.713-.03.38-.03.869-.03 1.581v5.167c0 .823.006 1.087.059 1.286a1.75 1.75 0 001.237 1.237c.199.054.463.06 1.286.06a.75.75 0 01.75.75v1.773l1.853-1.482.053-.042c.355-.285.614-.492.91-.643.26-.133.538-.23.825-.29.324-.066.657-.066 1.112-.066H13.5c.713 0 1.202 0 1.581-.032.37-.03.57-.085.713-.159a1.75 1.75 0 00.765-.764c.074-.145.13-.344.16-.714.03-.38.031-.869.031-1.581V6.5c0-.712 0-1.202-.032-1.58-.03-.371-.085-.57-.159-.714a1.75 1.75 0 00-.765-.765c-.144-.074-.343-.13-.713-.16-.38-.03-.868-.031-1.58-.031h-7c-.713 0-1.203 0-1.582.032zm.164 3.801a.75.75 0 01.75-.75H10a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75zm0 2.917a.75.75 0 01.75-.75H12.5a.75.75 0 010 1.5H5.833a.75.75 0 01-.75-.75z",
+    fill: "currentColor"
   })));
 }
 
@@ -34412,7 +34578,7 @@ function SvgPin(props) {
 
 var _templateObject$E, _templateObject2$z, _templateObject3$s, _templateObject4$o, _templateObject5$m, _templateObject6$j;
 
-var Actions$1 = function Actions(_ref) {
+var Actions = function Actions(_ref) {
   var channel = _ref.channel,
       actionMenuOpen = _ref.actionMenuOpen,
       theme = _ref.theme,
@@ -34639,7 +34805,7 @@ var Actions$1 = function Actions(_ref) {
     isOpen: menuIsOpen
   }, /*#__PURE__*/React__default.createElement(SvgBottom, null))), /*#__PURE__*/React__default.createElement(ActionsMenu, {
     isOpen: menuIsOpen
-  }, showMuteUnmuteNotifications && !channel.isMockChannel && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && (channel.muted ? /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, showMuteUnmuteNotifications && !channel.isMockChannel && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && (channel.muted ? /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 0,
     order: muteUnmuteNotificationsOrder,
     onClick: function onClick() {
@@ -34654,7 +34820,7 @@ var Actions$1 = function Actions(_ref) {
     height: 'auto',
     position: 'left',
     order: muteUnmuteNotificationsOrder,
-    trigger: /*#__PURE__*/React__default.createElement(ActionItem$1, {
+    trigger: /*#__PURE__*/React__default.createElement(ActionItem, {
       key: 0,
       disableEvent: true,
       iconColor: unmuteNotificationIconColor || colors.textColor2,
@@ -34693,7 +34859,7 @@ var Actions$1 = function Actions(_ref) {
     onClick: function onClick() {
       return handleNotificationOnOff();
     }
-  }, "Mute forever")))), showStarredMessages && !channel.isMockChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, "Mute forever")))), showStarredMessages && !channel.isMockChannel && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 1,
     onClick: function onClick() {
       return console.log('stared messages');
@@ -34702,7 +34868,7 @@ var Actions$1 = function Actions(_ref) {
     iconColor: staredMessagesIconColor || colors.textColor2,
     color: staredMessagesTextColor || colors.textColor1,
     hoverColor: staredMessagesTextColor || colors.textColor1
-  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, staredMessagesIcon || /*#__PURE__*/React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && !channel.isMockChannel && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, staredMessagesIcon || /*#__PURE__*/React__default.createElement(SvgStar, null), " Starred messages ")), showPinChannel && !channel.isMockChannel && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 2,
     onClick: function onClick() {
       return console.log('pin channel');
@@ -34711,21 +34877,21 @@ var Actions$1 = function Actions(_ref) {
     iconColor: pinChannelIconColor || colors.textColor2,
     color: pinChannelTextColor || colors.textColor1,
     hoverColor: pinChannelTextColor || colors.textColor1
-  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, pinChannelIcon || /*#__PURE__*/React__default.createElement(SvgPin, null), " Pin")), showMarkAsReadUnread && !channel.isMockChannel && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && (channel.unread ? /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, pinChannelIcon || /*#__PURE__*/React__default.createElement(SvgPin, null), " Pin")), showMarkAsReadUnread && !channel.isMockChannel && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && (channel.unread ? /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 3,
     onClick: handleToggleChannelMarkAs,
     order: markAsReadUnreadOrder,
     iconColor: markAsReadIconColor || colors.textColor2,
     color: markAsReadUnreadTextColor || colors.textColor1,
     hoverColor: markAsReadUnreadTextColor || colors.textColor1
-  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, markAsReadIcon || /*#__PURE__*/React__default.createElement(SvgMarkAsRead, null), " Mark as read")) : /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, markAsReadIcon || /*#__PURE__*/React__default.createElement(SvgMarkAsRead, null), " Mark as read")) : /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 3,
     order: markAsReadUnreadOrder,
     onClick: handleToggleChannelMarkAs,
     iconColor: markAsUnreadIconColor || colors.textColor2,
     color: markAsReadUnreadTextColor || colors.textColor1,
     hoverColor: markAsReadUnreadTextColor || colors.textColor1
-  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, markAsUnreadIcon || /*#__PURE__*/React__default.createElement(SvgMarkAsUnRead, null), " Mark as unread"))), !isDirectChannel && showLeaveChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(React__default.Fragment, null, markAsUnreadIcon || /*#__PURE__*/React__default.createElement(SvgMarkAsUnRead, null), " Mark as unread"))), !isDirectChannel && showLeaveChannel && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 4,
     order: leaveChannelOrder,
     color: leaveChannelTextColor || colors.red1,
@@ -34736,14 +34902,14 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type));
       handleToggleLeaveChannelPopupOpen();
     }
-  }, leaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgLeave, null), " Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type)), isDirectChannel && otherMembers.length === 1 ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showBlockUser && !disableAction && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && (directChannelUser && directChannelUser.blocked ? /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, leaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgLeave, null), " Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type)), isDirectChannel && otherMembers.length === 1 ? /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showBlockUser && !disableAction && (isDirectChannel && directChannelUser ? directChannelUser.state !== USER_STATE.DELETED : true) && (directChannelUser && directChannelUser.blocked ? /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 5,
     color: unblockUserTextColor || colors.textColor1,
     hoverColor: unblockUserTextColor || colors.textColor1,
     onClick: function onClick() {
       handleUnblockUser();
     }
-  }, unblockUserIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), " Unblock user") : /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, unblockUserIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), " Unblock user") : /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 6,
     color: deleteChannelTextColor || colors.red1,
     iconColor: deleteChannelIconColor || colors.red1,
@@ -34753,7 +34919,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Block user');
       handleToggleBlockUserPopupOpen();
     }
-  }, blockAndLeaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), " Block user")), showReportChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, blockAndLeaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), " Block user")), showReportChannel && /*#__PURE__*/React__default.createElement(ActionItem, {
     color: deleteChannelTextColor || colors.red1,
     iconColor: deleteChannelIconColor || colors.red1,
     hoverColor: deleteChannelTextColor || colors.red1,
@@ -34761,7 +34927,7 @@ var Actions$1 = function Actions(_ref) {
     onClick: function onClick() {
       return toggleReportUserPopup();
     }
-  }, /*#__PURE__*/React__default.createElement(SvgReport, null), "Report user")) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && !channel.isMockChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, /*#__PURE__*/React__default.createElement(SvgReport, null), "Report user")) : /*#__PURE__*/React__default.createElement(React__default.Fragment, null, showBlockAndLeaveChannel && !channel.isMockChannel && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 8,
     color: blockAndLeaveChannelTextColor || colors.red1,
     iconColor: blockAndLeaveChannelIconColor || colors.red1,
@@ -34771,7 +34937,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Block and Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.DIRECT ? 'chat' : channel.type));
       handleToggleBlockChannelPopupOpen();
     }
-  }, blockAndLeaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), "Block and Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === 'direct' ? 'chat' : channel.type) + "\n                "), showReportChannel && !channel.isMockChannel && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, blockAndLeaveChannelIcon || /*#__PURE__*/React__default.createElement(SvgBlockChannel, null), "Block and Leave " + (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === 'direct' ? 'chat' : channel.type) + "\n                "), showReportChannel && !channel.isMockChannel && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 9,
     order: reportChannelOrder,
     color: reportChannelTextColor || colors.red1,
@@ -34782,7 +34948,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Report channel');
       console.log('Report channel');
     }
-  }, reportChannelIcon || /*#__PURE__*/React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), showClearHistory && !channel.isMockChannel && (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE || channel.type === CHANNEL_TYPE.DIRECT) && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, reportChannelIcon || /*#__PURE__*/React__default.createElement(SvgReport, null), " Report", ' ', channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC ? 'channel' : channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE ? 'group' : 'chat')), showClearHistory && !channel.isMockChannel && (channel.type === CHANNEL_TYPE.GROUP || channel.type === CHANNEL_TYPE.PRIVATE || channel.type === CHANNEL_TYPE.DIRECT) && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 10,
     color: clearHistoryTextColor || colors.red1,
     iconColor: clearHistoryTextColor || colors.red1,
@@ -34793,7 +34959,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle('Clear history');
       handleToggleClearHistoryPopup();
     }
-  }, clearHistoryIcon || /*#__PURE__*/React__default.createElement(SvgClear, null), " Clear history"), showClearHistory && !channel.isMockChannel && (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC) && checkActionPermission('clearAllMessages') && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, clearHistoryIcon || /*#__PURE__*/React__default.createElement(SvgClear, null), " Clear history"), showClearHistory && !channel.isMockChannel && (channel.type === CHANNEL_TYPE.BROADCAST || channel.type === CHANNEL_TYPE.PUBLIC) && checkActionPermission('clearAllMessages') && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 11,
     color: deleteAllMessagesTextColor || colors.red1,
     iconColor: deleteAllMessagesTextColor || colors.red1,
@@ -34804,7 +34970,7 @@ var Actions$1 = function Actions(_ref) {
       setPopupTitle("Clear history");
       handleToggleDeleteAllMessagesPopup();
     }
-  }, deleteAllMessagesIcon || /*#__PURE__*/React__default.createElement(SvgClear, null), " Clear history"), showDeleteChannel && !channel.isMockChannel && checkActionPermission('deleteChannel') && /*#__PURE__*/React__default.createElement(ActionItem$1, {
+  }, deleteAllMessagesIcon || /*#__PURE__*/React__default.createElement(SvgClear, null), " Clear history"), showDeleteChannel && !channel.isMockChannel && checkActionPermission('deleteChannel') && /*#__PURE__*/React__default.createElement(ActionItem, {
     key: 12,
     order: deleteChannelOrder,
     color: deleteChannelTextColor || colors.red1,
@@ -34868,7 +35034,7 @@ var MenuTriggerIcon = styled.span(_templateObject3$s || (_templateObject3$s = _t
 });
 var ActionsMenu = styled.ul(_templateObject4$o || (_templateObject4$o = _taggedTemplateLiteralLoose(["\n  display: flex;\n  flex-direction: column;\n  margin: 0;\n  padding: 0;\n  list-style: none;\n  transition: all 0.2s;\n"])));
 var DefaultMutedIcon = styled(SvgUnmuteNotifications)(_templateObject5$m || (_templateObject5$m = _taggedTemplateLiteralLoose([""])));
-var ActionItem$1 = styled.li(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
+var ActionItem = styled.li(_templateObject6$j || (_templateObject6$j = _taggedTemplateLiteralLoose(["\n  position: relative;\n  display: flex;\n  align-items: center;\n  padding: 10px 0;\n  font-size: 15px;\n  color: ", ";\n  cursor: pointer;\n  order: ", ";\n  pointer-events: ", ";\n\n  & > div {\n    margin-left: auto;\n  }\n\n  & > svg {\n    margin-right: 16px;\n    color: ", ";\n  }\n\n  &:hover {\n    color: ", ";\n  }\n\n  &:last-child {\n    //margin-bottom: 0;\n  }\n"])), function (props) {
   return props.color || colors.textColor1;
 }, function (props) {
   return props.order;
@@ -35392,7 +35558,7 @@ var RoleBadge = styled.span(_templateObject9$d || (_templateObject9$d = _taggedT
 var _templateObject$H, _templateObject2$C;
 
 var Media = function Media(_ref) {
-  var channelId = _ref.channelId;
+  var channel = _ref.channel;
   var attachments = useSelector(activeTabAttachmentsSelector, shallowEqual) || [];
 
   var _useState = useState(null),
@@ -35407,8 +35573,8 @@ var Media = function Media(_ref) {
 
   useEffect(function () {
     dispatch(setAttachmentsAC([]));
-    dispatch(getAttachmentsAC(channelId, channelDetailsTabs.media));
-  }, [channelId]);
+    dispatch(getAttachmentsAC(channel.id, channelDetailsTabs.media));
+  }, [channel.id]);
   return /*#__PURE__*/React__default.createElement(Container$n, null, attachments.map(function (file) {
     return /*#__PURE__*/React__default.createElement(MediaItem, {
       key: file.id
@@ -35432,7 +35598,7 @@ var Media = function Media(_ref) {
       isDetailsView: true
     }));
   }), mediaFile && /*#__PURE__*/React__default.createElement(SliderPopup, {
-    channelId: channelId,
+    channel: channel,
     setIsSliderOpen: setMediaFile,
     mediaFiles: attachments,
     currentMediaFile: mediaFile
@@ -36205,7 +36371,7 @@ var DetailsTab = function DetailsTab(_ref) {
     showKickAndBlockMember: showKickAndBlockMember,
     showMakeMemberAdmin: showMakeMemberAdmin
   }), activeTab === channelDetailsTabs.media && /*#__PURE__*/React__default.createElement(Media, {
-    channelId: channel.id
+    channel: channel
   }), activeTab === channelDetailsTabs.file && /*#__PURE__*/React__default.createElement(Files, {
     channelId: channel.id,
     theme: theme,
@@ -36285,13 +36451,21 @@ var EditChannel = function EditChannel(_ref) {
       newSubject = _useState4[0],
       setNewSubject = _useState4[1];
 
-  var _useState5 = useState(channel.metadata && channel.metadata.d),
-      newDescription = _useState5[0],
-      setNewDescription = _useState5[1];
+  var _useState5 = useState(false),
+      subjectIsWrong = _useState5[0],
+      setSubjectIsWrong = _useState5[1];
 
-  var _useState6 = useState(null),
-      offsetTop = _useState6[0],
-      setOffsetTop = _useState6[1];
+  var _useState6 = useState(channel.metadata && channel.metadata.d),
+      newDescription = _useState6[0],
+      setNewDescription = _useState6[1];
+
+  var _useState7 = useState(false),
+      descriptionIsWrong = _useState7[0],
+      setDescriptionIsWrong = _useState7[1];
+
+  var _useState8 = useState(null),
+      offsetTop = _useState8[0],
+      setOffsetTop = _useState8[1];
 
   var _useStateComplex = useStateComplex({
     src: {},
@@ -36361,15 +36535,21 @@ var EditChannel = function EditChannel(_ref) {
 
   var handleSave = function handleSave() {
     if (newSubject !== channel.subject || newDescription !== (channel.metadata.d || channel.metadata) || newAvatar.url !== channel.avatarUrl) {
-      handleUpdateChannel(_extends({}, newSubject !== channel.subject && {
-        subject: newSubject
-      }, newDescription !== (channel.metadata.d || channel.metadata) && {
-        metadata: {
-          d: newDescription
-        }
-      }, newAvatar.url !== channel.avatarUrl && {
-        avatar: newAvatar.src.file
-      }));
+      if (!newSubject || newSubject.length < 1 || newSubject.length > 250) {
+        setSubjectIsWrong(true);
+      } else if (newDescription && (newDescription === null || newDescription === void 0 ? void 0 : newDescription.length) > 2000) {
+        setDescriptionIsWrong(true);
+      } else {
+        handleUpdateChannel(_extends({}, newSubject !== channel.subject && {
+          subject: newSubject
+        }, newDescription !== (channel.metadata.d || channel.metadata) && {
+          metadata: {
+            d: newDescription
+          }
+        }, newAvatar.url !== channel.avatarUrl && {
+          avatar: newAvatar.src.file
+        }));
+      }
     }
   };
 
@@ -36383,6 +36563,20 @@ var EditChannel = function EditChannel(_ref) {
       url: channel.avatarUrl
     });
   }, [channel]);
+  useEffect(function () {
+    if (!newSubject || newSubject.length < 1 || newSubject.length > 250) {
+      setSubjectIsWrong(true);
+    } else {
+      setSubjectIsWrong(false);
+    }
+  }, [newSubject]);
+  useEffect(function () {
+    if (newDescription && newDescription.length > 2000) {
+      setDescriptionIsWrong(true);
+    } else {
+      setDescriptionIsWrong(false);
+    }
+  }, [newDescription]);
   useEffect(function () {
     setOffsetTop(editContainer && editContainer.current && editContainer.current.offsetTop);
   }, []);
@@ -36420,6 +36614,7 @@ var EditChannel = function EditChannel(_ref) {
     name: isDirectChannel && directChannelUser ? directChannelUser.id : channel.subject || channel.id,
     textSize: 55
   })), /*#__PURE__*/React__default.createElement(Label, null, " Name "), /*#__PURE__*/React__default.createElement(CustomInput, {
+    error: subjectIsWrong,
     theme: theme,
     color: colors.textColor1,
     placeholder: 'Channel Subject',
@@ -36427,7 +36622,8 @@ var EditChannel = function EditChannel(_ref) {
     onChange: function onChange(e) {
       return setNewSubject(e.target.value);
     }
-  }), /*#__PURE__*/React__default.createElement(Label, null, " Description "), /*#__PURE__*/React__default.createElement(CustomInput, {
+  }), subjectIsWrong && /*#__PURE__*/React__default.createElement(InputErrorMessage, null, "Channel name must be a minimum of 1 and a maximum of 250 symbols."), /*#__PURE__*/React__default.createElement(Label, null, " Description "), /*#__PURE__*/React__default.createElement(CustomInput, {
+    error: descriptionIsWrong,
     theme: theme,
     color: colors.textColor1,
     placeholder: 'Channel description',
@@ -36435,7 +36631,7 @@ var EditChannel = function EditChannel(_ref) {
     onChange: function onChange(e) {
       return setNewDescription(e.target.value);
     }
-  }), /*#__PURE__*/React__default.createElement(EditChannelFooter, null, /*#__PURE__*/React__default.createElement(Button, {
+  }), descriptionIsWrong && /*#__PURE__*/React__default.createElement(InputErrorMessage, null, "Channel description must be maximum of 2000 symbols."), /*#__PURE__*/React__default.createElement(EditChannelFooter, null, /*#__PURE__*/React__default.createElement(Button, {
     type: 'button',
     borderRadius: '8px',
     color: editChannelCancelButtonTextColor || colors.textColor1,
@@ -36444,6 +36640,7 @@ var EditChannel = function EditChannel(_ref) {
       return handleToggleEditMode(false);
     }
   }, "Cancel"), /*#__PURE__*/React__default.createElement(Button, {
+    disabled: subjectIsWrong || descriptionIsWrong,
     borderRadius: '8px',
     color: editChannelSaveButtonTextColor,
     backgroundColor: editChannelSaveButtonBackgroundColor || colors.primary,
@@ -36677,7 +36874,7 @@ var Details = function Details(_ref) {
     }
   }, channelEditIcon || /*#__PURE__*/React__default.createElement(SvgEditIcon, null)))), showAboutChannel && channel.metadata && channel.metadata.d && /*#__PURE__*/React__default.createElement(AboutChannel, null, showAboutChannelTitle && /*#__PURE__*/React__default.createElement(AboutChannelTitle, null, "About"), /*#__PURE__*/React__default.createElement(AboutChannelText, {
     color: colors.textColor1
-  }, channel.metadata && channel.metadata.d ? channel.metadata.d : ''))), channel.userRole && /*#__PURE__*/React__default.createElement(Actions$1, {
+  }, channel.metadata && channel.metadata.d ? channel.metadata.d : ''))), channel.userRole && /*#__PURE__*/React__default.createElement(Actions, {
     theme: theme,
     showMuteUnmuteNotifications: showMuteUnmuteNotifications,
     muteUnmuteNotificationsOrder: muteUnmuteNotificationsOrder,
